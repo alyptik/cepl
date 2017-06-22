@@ -4,9 +4,7 @@
 for instantaneous prototyping, mathematical calculations, and
 general algorithm exploration.
 
-**WIP**
-
-Some parts not fully implemented yet.
+> **WIP**: Some parts not fully implemented yet.
 
 ## Usage
 ```sh
