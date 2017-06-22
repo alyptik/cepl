@@ -6,6 +6,7 @@
  */
 
 #include <err.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,9 +22,8 @@
 int compile(char const *cc, char *src, char *const ccargs[], char *const execargs[])
 {
 	int fd, pipecc[2], pipeexec[2];
-	/* char *buf; */
-	/* 2MB */
-	/* int count = 1024 * 1024 * 2; */
+	/* flags for pipemain[0] */
+	int flags;
 
 	/* create pipes */
 	pipe(pipecc);
@@ -40,6 +40,12 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 	if (fcntl(pipemain[0], F_SETFD, FD_CLOEXEC) == -1)
 		err(EXIT_FAILURE, "%s", "error during fnctl");
 	if (fcntl(pipemain[1], F_SETFD, FD_CLOEXEC) == -1)
+		err(EXIT_FAILURE, "%s", "error during fnctl");
+	flags = fcntl(pipemain[0], F_GETFL, 0);
+	if (fcntl(pipemain[0], F_SETFL, flags | O_NONBLOCK) == -1)
+		err(EXIT_FAILURE, "%s", "error during fnctl");
+	flags = fcntl(pipemain[1], F_GETFL, 0);
+	if (fcntl(pipemain[1], F_SETFL, flags | O_NONBLOCK) == -1)
 		err(EXIT_FAILURE, "%s", "error during fnctl");
 
 	/* fork compiler */
@@ -76,10 +82,10 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 
 	/* child */
 	case 0:
-		/* execl("/tmp/cepl", "cepl", NULL); */
-		/* [> fexecve() should never return <] */
-		/* err(EXIT_FAILURE, "%s", "execl returned"); */
-		/* break; */
+		execl("/tmp/cepl", "cepl", NULL);
+		/* fexecve() should never return */
+		err(EXIT_FAILURE, "%s", "execl returned");
+		break;
 
 /* TODO: fix memfd compile method */
 		/*
@@ -142,14 +148,24 @@ inline int pipe_fd(int in_fd, int out_fd)
 		/* 2 MB */
 		size_t count = 1024 * 1024 * 2;
 		char buf[count];
-		if ((buflen = read(in_fd, buf, count)) == -1)
-			err(EXIT_FAILURE, "%s", "error reading stdout from compiler");
+		if ((buflen = read(in_fd, buf, count)) == -1) {
+			if (errno == EINTR || errno == EAGAIN) {
+				continue;
+			} else {
+				err(EXIT_FAILURE, "%s", "error reading input fd");
+			}
+		}
 		total += buflen;
 		/* break on EOF */
 		if (buflen == 0)
 			break;
-		if (write(out_fd, buf, buflen) == -1)
-			err(EXIT_FAILURE, "%s", "error writing to memfd");
+		if (write(out_fd, buf, buflen) == -1) {
+			if (errno == EINTR || errno == EAGAIN) {
+				continue;
+			} else {
+			err(EXIT_FAILURE, "%s", "error writing to output fd");
+			}
+		}
 	}
 	return total;
 }

@@ -15,7 +15,6 @@
 
 /* silence linter */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-extern int pipemain[2];
 
 int main(int argc, char *argv[])
 {
@@ -79,13 +78,13 @@ int main(int argc, char *argv[])
 		/* memcpy(final, dest, strlen(dest) + 1); */
 		strcpy(final, dest);
 		strcat(final, "return 0;\n}\n");
-		puts(final);
 
+		puts(final);
 		if (compile("gcc", final, args, argv) == 0)
 			err(EXIT_FAILURE, "no fd returned by compile()");
 
-		/* pipe_fd(pipemain[0], out_fd); */
 		/* TODO: remove after logic finalized */
+		/* pipe_fd(pipemain[0], STDOUT_FILENO); */
 		printf("%s - %d:\n%s\n", argv[0], argc, dest);
 		/* prompt character */
 		printf("%s", "> ");
