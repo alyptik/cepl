@@ -7,6 +7,7 @@
 
 #include <err.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -18,19 +19,20 @@ int compile(char const *cc, char *src, char *const *args)
 	int fd;
 
 	if ((pid = fork()) == -1)
-		err(1, "%s", "error forking compiler process");
+		err(EXIT_FAILURE, "%s", "error forking compiler process");
 
 	switch (pid) {
 
 	/* child */
 	case 0:
 		if ((fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-			err(1, "%s", "error opening /dev/null");
+			err(EXIT_FAILURE, "%s", "error opening /dev/null");
 		/* redirect stdout to /dev/null */
 		dup2(fd, 1);
 		execvp(cc, args);
-		/* execv should never return */
-		err(1, "execv returned");
+		/* execvp() should never return */
+		warn("execvp() returned");
+		return -1;
 		break;
 
 	/* parent */

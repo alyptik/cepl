@@ -26,32 +26,33 @@ int main(int argc, char **argv)
 	printf("%s", "> ");
 
 	while ((ret = getline(&buf, &bufsize, stdin)) > 1) {
-		dest = realloc(dest, sizeof *dest + (strlen(buf) + 3));
 		/* allocate space for input + ";\n" */
+		dest = realloc(dest, sizeof *dest + (strlen(buf) + 3));
 		if (sizeof *dest == prevsize) {
-			warn("%s", "error during realloc");
+			warn("%s", "error during realloc()");
 			break;
 		}
-
 		dest = strcat(dest, strtok(buf, "\n"));
 		/* append ; to the end of dest buffer if no trailing ; */
 		if (strrchr(buf, ';') == NULL || strrchr(buf, ';') + 1 < buf + strlen(buf))
 			dest = strcat(dest, ";");
 		dest = strcat(dest, "\n");
 
+		/* TODO: remove after logic finalized */
 		printf("%s - %d:\n%s\n", argv[0], argc, dest);
 		/* prompt character */
 		printf("%s", "> ");
 	}
 
-	if (ret == -1)
-		err(1, "error reading input with getline");
 	if (buf)
 		free(buf);
 	if (dest)
 		free(dest);
-	printf("\n%s\n\n", "Terminating program.");
+	/* getline failed to allocate memory */
+	if (ret == -1)
+		err(EXIT_FAILURE, "error reading input with getline()");
 
+	printf("\n%s\n\n", "Terminating program.");
 	return 0;
 }
 
