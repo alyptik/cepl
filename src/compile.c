@@ -19,24 +19,23 @@
 
 #define UNUSED __attribute__ ((unused))
 extern char **environ;
+/* silence linter */
+long syscall(long number, ...);
+int fexecve(int fd, char *const argv[], char *const envp[]);
 
-int compile(char const *cc, char *src, char *const *args)
+int compile(char const *cc, char *src, char *const args[])
 {
-	int fd;
-	int pipecc[2];
-	int pipeexec[2];
-	int status;
+	int fd, pipecc[2], pipeexec[2];
 	char *buf;
-	int buflen;
+	/* 2MB */
 	int count = 1024 * 1024 * 2;
 	char *const execargv[] = {"memfd", NULL};
-	pid_t pid;
 
 	pipe(pipecc);
 	pipe(pipeexec);
 
 	/* fork compiler */
-	switch (pid = fork()) {
+	switch (fork()) {
 	/* error */
 	case -1:
 		close(pipecc[0]);
@@ -48,8 +47,6 @@ int compile(char const *cc, char *src, char *const *args)
 
 	/* child */
 	case 0:
-		close(pipeexec[0]);
-		close(pipecc[1]);
 		dup2(pipecc[0], 0);
 		dup2(pipeexec[1], 1);
 		execvp(cc, args);
@@ -85,6 +82,7 @@ int compile(char const *cc, char *src, char *const *args)
 
 		/* read output from compiler in a loop */
 		for (;;) {
+			int buflen;
 			if ((buflen = read(pipeexec[0], buf, count)) == -1) {
 				free(buf);
 				buf = NULL;

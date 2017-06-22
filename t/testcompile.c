@@ -11,7 +11,7 @@
 int main (void)
 {
 	char *src = "puts(\"foobar\");";
-	char *const args[] = {"gcc", "-xc", "/tmp/test.c", "-o", "/tmp/test", NULL};
+	char *const args[] = {"gcc", "/tmp/test.c", "-o", "/tmp/test", NULL};
 
 	plan(1);
 	ok(compile("gcc", src, args) == 0, "compiler forked successfully.");
