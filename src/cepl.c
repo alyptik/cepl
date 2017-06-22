@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
 	char *final = malloc(74);
 	size_t bufsize = 0;
 	ssize_t ret;
-	char *const args[] = {"gcc", "-xc", "-", "-o", "/dev/stdout", NULL};
+	/* char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL}; */
+	char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/tmp/cepl", NULL};
 
 	strcpy(dest, "#include <stdio.h>\n#include <stdlib.h>\nint main(void) {\n");
 	strcpy(final, dest);
@@ -78,7 +79,8 @@ int main(int argc, char *argv[])
 		strcat(final, "return 0;\n}\n");
 		puts(final);
 
-		compile("gcc", final, args);
+		compile("gcc", final, args, argv);
+		fflush(stdout);
 		/* TODO: remove after logic finalized */
 		printf("%s - %d:\n%s\n", argv[0], argc, dest);
 		/* prompt character */

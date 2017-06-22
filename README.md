@@ -4,6 +4,10 @@
 for instantaneous prototyping, mathematical calculations, and
 general algorithm exploration.
 
+**WIP**
+
+Some parts not fully implemented yet.
+
 ## Usage
 ```sh
 ./cepl [-hv] [-l<library>] [-I<include dir>] [-o<sessionlog.c>]

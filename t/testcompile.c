@@ -10,11 +10,12 @@
 
 int main (void)
 {
-	char *src = "puts(\"foobar\");";
-	char *const args[] = {"gcc", "/tmp/test.c", "-o", "/tmp/test", NULL};
+	char *const argv[] = {NULL};
+	char *src = "#include <stdio.h>\nint main(void) { puts(\"wee\"); return 0; }";
+	char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/tmp/test", NULL};
 
 	plan(1);
-	ok(compile("gcc", src, args) == 0, "compiler forked successfully.");
+	ok(compile("gcc", src, args, argv) == 0, "compiler forked successfully.");
 	/* ok(bronze << 2 > silver, "not quite"); */
 	/* is("gold", "gold", "gold is gold"); */
 	/* cmp_ok(silver, "<", gold, "%d <= %d", silver, gold); */

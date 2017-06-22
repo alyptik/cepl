@@ -23,13 +23,12 @@ extern char **environ;
 long syscall(long number, ...);
 int fexecve(int fd, char *const argv[], char *const envp[]);
 
-int compile(char const *cc, char *src, char *const args[])
+int compile(char const *cc, char *src, char *const ccargs[], char *const execargs[])
 {
 	int fd, pipecc[2], pipeexec[2];
 	char *buf;
 	/* 2MB */
 	int count = 1024 * 1024 * 2;
-	char *const execargv[] = {NULL};
 
 	/* create pipes */
 	pipe(pipecc);
@@ -54,7 +53,7 @@ int compile(char const *cc, char *src, char *const args[])
 		close(pipecc[1]);
 		close(pipeexec[0]);
 		close(pipeexec[1]);
-		execvp(cc, args);
+		execvp(cc, ccargs);
 		/* execvp() should never return */
 		err(EXIT_FAILURE, "%s", "error forking compiler");
 		break;
@@ -78,9 +77,14 @@ int compile(char const *cc, char *src, char *const args[])
 
 	/* child */
 	case 0:
+		execl("/tmp/cepl", "cepl", NULL);
+		/* fexecve() should never return */
+		err(EXIT_FAILURE, "%s", "error forking executable");
+		break;
+
+/* TODO: fix memfd compile method */
 		if ((fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
 			err(EXIT_FAILURE, "%s", "error creating memfd");
-
 		if ((buf = malloc(count)) == NULL)
 			err(EXIT_FAILURE, "%s", "error allocating buffer");
 
@@ -95,7 +99,6 @@ int compile(char const *cc, char *src, char *const args[])
 			/* break on EOF */
 			if (buflen == 0)
 			break;
-
 			if (write(fd, buf, buflen) == -1) {
 				free(buf);
 				buf = NULL;
@@ -105,10 +108,13 @@ int compile(char const *cc, char *src, char *const args[])
 
 		free(buf);
 		buf = NULL;
-		fexecve(fd, execargv, environ);
+		close(pipeexec[0]);
+		close(pipeexec[1]);
+		fexecve(fd, execargs, environ);
 		/* fexecve() should never return */
 		err(EXIT_FAILURE, "%s", "error forking executable");
 		break;
+/* TODO: fix memfd compile method */
 
 	/* parent */
 	default:
