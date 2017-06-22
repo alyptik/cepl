@@ -20,6 +20,7 @@ int main(int argc, char **argv)
 	size_t bufsize = 0;
 	size_t prevsize = 0;
 	ssize_t ret;
+	char *const args[] = {"gcc", "-xc", "-", "-o", "/dev/stdout", NULL};
 
 	printf("\n%s\n\n", "CEPL v0.1.1");
 	/* prompt character */
@@ -28,13 +29,14 @@ int main(int argc, char **argv)
 	while ((ret = getline(&buf, &bufsize, stdin)) > 1) {
 		/* allocate space for input + ";\n" */
 		dest = realloc(dest, sizeof *dest + (strlen(buf) + 3));
-		if (sizeof *dest == prevsize) {
+		if (strlen(dest) == prevsize) {
 			warn("%s", "error during realloc()");
 			break;
 		}
+		prevsize = strlen(dest);
 		dest = strcat(dest, strtok(buf, "\n"));
-		/* append ; to the end of dest buffer if no trailing ; */
-		if (strrchr(buf, ';') == NULL || strrchr(buf, ';') + 1 < buf + strlen(buf))
+		/* append ';' to dest buffer if no trailing ';' or '}' */
+		if (buf[strlen(buf) - 1] != '}' && buf[strlen(buf) - 1] != ';')
 			dest = strcat(dest, ";");
 		dest = strcat(dest, "\n");
 

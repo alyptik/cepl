@@ -6,37 +6,111 @@
  */
 
 #include <err.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <linux/memfd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/syscall.h>
+
+#define UNUSED __attribute__ ((unused))
+extern char **environ;
 
 int compile(char const *cc, char *src, char *const *args)
 {
-	pid_t pid;
 	int fd;
+	int pipecc[2];
+	int pipeexec[2];
+	int status;
+	char *buf;
+	int buflen;
+	int count = 1024 * 1024 * 2;
+	char *const execargv[] = {"memfd", NULL};
+	pid_t pid;
 
-	if ((pid = fork()) == -1)
-		err(EXIT_FAILURE, "%s", "error forking compiler process");
+	pipe(pipecc);
+	pipe(pipeexec);
 
-	switch (pid) {
+	/* fork compiler */
+	switch (pid = fork()) {
+	/* error */
+	case -1:
+		close(pipecc[0]);
+		close(pipecc[1]);
+		close(pipeexec[0]);
+		close(pipeexec[1]);
+		err(EXIT_FAILURE, "%s", "error forking compiler");
+		break;
 
 	/* child */
 	case 0:
-		if ((fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-			err(EXIT_FAILURE, "%s", "error opening /dev/null");
-		/* redirect stdout to /dev/null */
-		dup2(fd, 1);
+		close(pipeexec[0]);
+		close(pipecc[1]);
+		dup2(pipecc[0], 0);
+		dup2(pipeexec[1], 1);
 		execvp(cc, args);
 		/* execvp() should never return */
-		warn("execvp() returned");
-		return -1;
+		err(EXIT_FAILURE, "%s", "error forking compiler");
 		break;
 
 	/* parent */
-	default: printf("%s - %s: %d\n", "parent", "child pid", pid);
+	default:
+		write(pipecc[1], src, strlen(src));
+	}
+
+	close(pipecc[0]);
+	close(pipecc[1]);
+	if ((fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
+		err(EXIT_FAILURE, "%s", "error creating memfd");
+
+	/* fork executable */
+	switch (fork()) {
+	/* error */
+	case -1:
+		close(pipeexec[0]);
+		close(pipeexec[1]);
+		err(EXIT_FAILURE, "%s", "error forking executable");
+		break;
+
+	/* child */
+	case 0:
+		if ((buf = malloc(count)) == NULL)
+			err(EXIT_FAILURE, "%s", "error allocating buffer");
+		free(buf);
+		buf = NULL;
+
+		/* read output from compiler in a loop */
+		for (;;) {
+			if ((buflen = read(pipeexec[0], buf, count)) == -1) {
+				free(buf);
+				buf = NULL;
+				err(EXIT_FAILURE, "%s", "error reading stdout from compiler");
+			}
+			/* break on EOF */
+			if (buflen == 0)
+			break;
+
+			if (write(fd, buf, buflen) == -1) {
+				free(buf);
+				buf = NULL;
+				err(EXIT_FAILURE, "%s", "error writing to memfd");
+			}
+		}
+		close(pipeexec[0]);
+		close(pipeexec[1]);
+		fexecve(fd, execargv, environ);
+		/* fexecve() should never return */
+		err(EXIT_FAILURE, "%s", "error forking executable");
+		break;
+
+	/* parent */
+	default:
+		close(pipeexec[0]);
+		close(pipeexec[1]);
 	}
 
 	return 0;
