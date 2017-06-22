@@ -5,7 +5,6 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,8 +22,8 @@ int main(int argc, char *argv[])
 	char *final = malloc(74);
 	size_t bufsize = 0;
 	ssize_t ret;
-	/* char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL}; */
-	char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/tmp/cepl", NULL};
+	char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
+	/* char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/tmp/cepl", NULL}; */
 
 	strcpy(dest, "#include <stdio.h>\n#include <stdlib.h>\nint main(void) {\n");
 	strcpy(final, dest);
@@ -79,13 +78,14 @@ int main(int argc, char *argv[])
 		strcpy(final, dest);
 		strcat(final, "return 0;\n}\n");
 
-		puts(final);
-		if (compile("gcc", final, args, argv) == 0)
-			err(EXIT_FAILURE, "no fd returned by compile()");
+		compile("gcc", final, args, argv);
 
 		/* TODO: remove after logic finalized */
-		/* pipe_fd(pipemain[0], STDOUT_FILENO); */
-		printf("%s - %d:\n%s\n", argv[0], argc, dest);
+		printf("%s - %d:\n%s\n", argv[0], argc, final);
+		/* TODO: find better way to wait on compiler */
+		usleep(500000);
+		putchar('\n');
+
 		/* prompt character */
 		printf("%s", "> ");
 	}
