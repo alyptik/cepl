@@ -11,8 +11,8 @@
 int main (void)
 {
 	char *const argv[] = {NULL};
-	char *src = "#include <stdio.h>\nint main(void) { puts(\"wee\"); return 0; }";
-	char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
+	char *src = "#include <stdio.h>\nint main(void) { return 0; }";
+	char *const args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
 
 	plan(1);
 	ok(compile("gcc", src, args, argv) == 0, "compiler forked successfully.");
