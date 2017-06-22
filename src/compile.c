@@ -29,8 +29,9 @@ int compile(char const *cc, char *src, char *const args[])
 	char *buf;
 	/* 2MB */
 	int count = 1024 * 1024 * 2;
-	char *const execargv[] = {"memfd", NULL};
+	char *const execargv[] = {NULL};
 
+	/* create pipes */
 	pipe(pipecc);
 	pipe(pipeexec);
 
@@ -49,6 +50,10 @@ int compile(char const *cc, char *src, char *const args[])
 	case 0:
 		dup2(pipecc[0], 0);
 		dup2(pipeexec[1], 1);
+		close(pipecc[0]);
+		close(pipecc[1]);
+		close(pipeexec[0]);
+		close(pipeexec[1]);
 		execvp(cc, args);
 		/* execvp() should never return */
 		err(EXIT_FAILURE, "%s", "error forking compiler");
@@ -57,12 +62,10 @@ int compile(char const *cc, char *src, char *const args[])
 	/* parent */
 	default:
 		write(pipecc[1], src, strlen(src));
+		fsync(pipecc[1]);
+		close(pipecc[0]);
+		close(pipecc[1]);
 	}
-
-	close(pipecc[0]);
-	close(pipecc[1]);
-	if ((fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
-		err(EXIT_FAILURE, "%s", "error creating memfd");
 
 	/* fork executable */
 	switch (fork()) {
@@ -75,10 +78,11 @@ int compile(char const *cc, char *src, char *const args[])
 
 	/* child */
 	case 0:
+		if ((fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
+			err(EXIT_FAILURE, "%s", "error creating memfd");
+
 		if ((buf = malloc(count)) == NULL)
 			err(EXIT_FAILURE, "%s", "error allocating buffer");
-		free(buf);
-		buf = NULL;
 
 		/* read output from compiler in a loop */
 		for (;;) {
@@ -98,8 +102,9 @@ int compile(char const *cc, char *src, char *const args[])
 				err(EXIT_FAILURE, "%s", "error writing to memfd");
 			}
 		}
-		close(pipeexec[0]);
-		close(pipeexec[1]);
+
+		free(buf);
+		buf = NULL;
 		fexecve(fd, execargv, environ);
 		/* fexecve() should never return */
 		err(EXIT_FAILURE, "%s", "error forking executable");
