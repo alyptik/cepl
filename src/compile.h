@@ -41,6 +41,7 @@ static inline int pipe_fd(int in_fd, int out_fd)
 				continue;
 			} else {
 				warn("%s", "error reading input fd");
+				return 0;
 			}
 		}
 		total += buflen;
@@ -52,6 +53,7 @@ static inline int pipe_fd(int in_fd, int out_fd)
 				continue;
 			} else {
 				warn("%s", "error writing to output fd");
+				return 0;
 			}
 		}
 	}
