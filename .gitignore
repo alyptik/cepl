@@ -5,7 +5,9 @@ vgcore*
 
 # Binaries
 cepl
-t/test
+t/*
+!t/*.c
+!t/*.h
 
 # Object files
 *.o
