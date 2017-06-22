@@ -23,7 +23,6 @@ int main(int argc, char *argv[])
 	size_t bufsize = 0;
 	ssize_t ret;
 	char *const args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
-	/* char *const args[] = {"gcc", "-xc", "/dev/stdin", "-o", "/tmp/cepl", NULL}; */
 
 	strcpy(dest, "#include <stdio.h>\n#include <stdlib.h>\nint main(void) {\n");
 	strcpy(final, dest);

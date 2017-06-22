@@ -23,6 +23,7 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 	/* create pipes */
 	pipe(pipe_cc);
 	pipe(pipe_exec);
+	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc[0]);
 	set_cloexec(pipe_cc[1]);
 	set_cloexec(pipe_exec[0]);
@@ -68,7 +69,6 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 		if (pipe_fd(pipe_exec[0], memfd) == 0)
 			err(EXIT_FAILURE, "%s", "zero bytes written by pipe_fd()");
 		close(pipe_exec[0]);
-		/* dup2(pipemain[1], STDOUT_FILENO); */
 		fexecve(memfd, execargs, environ);
 		/* fexecve() should never return */
 		err(EXIT_FAILURE, "%s", "error forking executable");
