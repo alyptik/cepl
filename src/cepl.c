@@ -11,12 +11,14 @@
 #include <sys/types.h>
 #include "compile.h"
 
-#define PROG_START "#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <string.h>\n#include <stdlib.h>\n#define _GNU_SOURCE\nint main(void) {\n"
+#define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\nint main(void)\n{\n"
 #define PROG_END "\treturn 0;\n}\n"
-#define START_SIZE (strlen(PROG_START) + 2)
-#define END_SIZE (START_SIZE + strlen(PROG_END) + 2)
+#define START_SIZE (strlen(PROG_START) + 1)
+#define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
 
-/* silence linter */
+/* arguments to pass to compiler */
+static char *const cc_args[] = {"gcc", "-O2", "-pipe", "-Wall", "-Wextra", "-pedantic-errors", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
+/* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 int main(int argc, char *argv[])
@@ -35,7 +37,7 @@ int main(int argc, char *argv[])
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
-	printf("\n%s\n\n", "CEPL v0.1.1");
+	printf("\n%s\n\n", "CEPL v0.1.2");
 	/* prompt character */
 	printf("%s", "> ");
 
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 		strcat(prog_end, PROG_END);
 
 		/* TODO: finalize output format */
-		printf("\n%s - %d:\n\n%s\n", argv[0], argc, prog_end);
+		printf("\n[%s] = \"%s\" — [%s] = \"%d\":\n\n%s\n", "argv", argv[0], "argc", argc, prog_end);
 
 		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, cc_args, argv));
 		/* prompt character */
