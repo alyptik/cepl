@@ -40,8 +40,6 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 	case 0:
 		dup2(pipe_cc[0], 0);
 		dup2(pipe_exec[1], 1);
-		close(pipe_cc[1]);
-		close(pipe_exec[0]);
 		execvp(cc, ccargs);
 		/* execvp() should never return */
 		err(EXIT_FAILURE, "%s", "error forking compiler");
@@ -68,7 +66,6 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 			err(EXIT_FAILURE, "%s", "error creating memfd");
 		if (pipe_fd(pipe_exec[0], memfd) == 0)
 			err(EXIT_FAILURE, "%s", "zero bytes written by pipe_fd()");
-		close(pipe_exec[0]);
 		fexecve(memfd, execargs, environ);
 		/* fexecve() should never return */
 		err(EXIT_FAILURE, "%s", "error forking executable");
