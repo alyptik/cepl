@@ -16,9 +16,9 @@
 #include <sys/syscall.h>
 #include "compile.h"
 
-int compile(char const *cc, char *src, char *const ccargs[], char *const execargs[])
+int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[])
 {
-	int memfd, pipe_cc[2], pipe_exec[2];
+	int mem_fd, pipe_cc[2], pipe_exec[2];
 	int status;
 
 	/* create pipes */
@@ -41,7 +41,7 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 	case 0:
 		dup2(pipe_cc[0], 0);
 		dup2(pipe_exec[1], 1);
-		execvp(cc, ccargs);
+		execvp(cc, cc_args);
 		/* execvp() should never return */
 		err(EXIT_FAILURE, "%s", "error forking compiler");
 		break;
@@ -67,11 +67,11 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 
 	/* child */
 	case 0:
-		if ((memfd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
-			err(EXIT_FAILURE, "%s", "error creating memfd");
-		if (pipe_fd(pipe_exec[0], memfd) == 0)
+		if ((mem_fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
+			err(EXIT_FAILURE, "%s", "error creating mem_fd");
+		if (pipe_fd(pipe_exec[0], mem_fd) == 0)
 			err(EXIT_FAILURE, "%s", "zero bytes written by pipe_fd()");
-		fexecve(memfd, execargs, environ);
+		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
 		err(EXIT_FAILURE, "%s", "error forking executable");
 		break;

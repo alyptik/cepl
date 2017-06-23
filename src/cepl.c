@@ -22,12 +22,12 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 int main(int argc, char *argv[])
 {
-	size_t bufsize = 0;
+	size_t buf_size = 0;
 	ssize_t line_size = 0;
 	char *buf = NULL;
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
-	char *const args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
+	char *const cc_args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
 
 	memset(prog_start, 0, START_SIZE);
 	memset(prog_end, 0, END_SIZE);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	/* prompt character */
 	printf("%s", "> ");
 
-	while ((line_size = getline(&buf, &bufsize, stdin)) > 1) {
+	while ((line_size = getline(&buf, &buf_size, stdin)) > 1) {
 		/* allocate space for input + ";\n" */
 		if ((prog_start = realloc(prog_start, strlen(prog_start) + (strlen(buf) + 4))) == NULL) {
 			free(buf);
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 		/* TODO: finalize output format */
 		printf("\n%s - %d:\n\n%s\n", argv[0], argc, prog_end);
 
-		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, args, argv));
+		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, cc_args, argv));
 		/* prompt character */
 		printf("%s", "> ");
 	}

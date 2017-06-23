@@ -15,15 +15,15 @@
 #define UNUSED __attribute__ ((unused))
 extern char **environ;
 
-int compile(char const *cc, char *src, char *const ccargs[], char *const execargs[]);
+int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[]);
 
 /* silence linter */
 long syscall(long number, ...);
 int fexecve(int fd, char *const argv[], char *const envp[]);
 
-static inline void set_cloexec(int setfd)
+static inline void set_cloexec(int set_fd)
 {
-	if (fcntl(setfd, F_SETFD, FD_CLOEXEC) == -1)
+	if (fcntl(set_fd, F_SETFD, FD_CLOEXEC) == -1)
 		warn("%s", "error during fnctl");
 }
 
@@ -32,11 +32,11 @@ static inline int pipe_fd(int in_fd, int out_fd)
 	int total = 0;
 	/* read output in a loop */
 	for (;;) {
-		int buflen;
+		int buf_len;
 		/* 2 MB */
 		int count = 1024 * 1024 * 2;
 		char buf[count];
-		if ((buflen = read(in_fd, buf, count)) == -1) {
+		if ((buf_len = read(in_fd, buf, count)) == -1) {
 			if (errno == EINTR || errno == EAGAIN) {
 				continue;
 			} else {
@@ -44,11 +44,11 @@ static inline int pipe_fd(int in_fd, int out_fd)
 				return 0;
 			}
 		}
-		total += buflen;
+		total += buf_len;
 		/* break on EOF */
-		if (buflen == 0)
+		if (buf_len == 0)
 			break;
-		if (write(out_fd, buf, buflen) == -1) {
+		if (write(out_fd, buf, buf_len) == -1) {
 			if (errno == EINTR || errno == EAGAIN) {
 				continue;
 			} else {
