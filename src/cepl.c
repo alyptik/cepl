@@ -12,45 +12,44 @@
 #include <sys/types.h>
 #include "compile.h"
 
+#define START_SIZE 65
+#define END_SIZE 80
+#define PROG_START "#include <stdio.h>\n#include <stdlib.h>\nint main(void) {\n"
+#define PROG_END "\treturn 0;\n}\n"
+
 /* silence linter */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 int main(int argc, char *argv[])
 {
+	int ret;
 	char *buf = NULL;
-	char *dest = malloc(60);
-	char *final = malloc(74);
+	char *prog_start = malloc(START_SIZE);
+	char *prog_end = malloc(END_SIZE);
 	size_t bufsize = 0;
-	ssize_t ret;
+	ssize_t line_size;
 	char *const args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
 
-	strcpy(dest, "#include <stdio.h>\n#include <stdlib.h>\nint main(void) {\n");
-	strcpy(final, dest);
-	strcat(final, "return 0;\n}\n");
+	strcpy(prog_start, PROG_START);
+	strcpy(prog_end, prog_start);
+	strcat(prog_end, PROG_END);
 
 	printf("\n%s\n\n", "CEPL v0.1.1");
 	/* prompt character */
 	printf("%s", "> ");
 
-	while ((ret = getline(&buf, &bufsize, stdin)) > 1) {
+	while ((line_size = getline(&buf, &bufsize, stdin)) > 1) {
 		/* allocate space for input + ";\n" */
-		char *tmp;
-		if ((tmp = realloc(dest, strlen(dest) + (strlen(buf) + 3))) == NULL) {
+		if ((prog_start = realloc(prog_start, strlen(prog_start) + (strlen(buf) + 4))) == NULL) {
 			free(buf);
-			free(dest);
-			free(final);
+			free(prog_start);
+			free(prog_end);
 			err(EXIT_FAILURE, "error calling realloc()");
 		}
-		dest = tmp;
 
-		/* dest = strcat(dest, strtok(buf, "\n")); */
-		/* [> append ';' to dest buffer if no leading '#' or trailing '}' <] */
-		/* if (buf[0] != ';' && buf[0] != '#' && buf[strlen(buf) - 1] != '}') */
-		/*         dest = strcat(dest, ";"); */
-		/* dest = strcat(dest, "\n"); */
-
-		strcat(dest, strtok(buf, "\n"));
-		/* append ';' to dest buffer if no trailing ';' or '}' */
+		strcat(prog_start, "\t");
+		strcat(prog_start, strtok(buf, "\n"));
+		/* append ';' to prog_start buffer if no trailing ';' or '}' */
 		switch (buf[0]) {
 		/* TODO: command handling */
 		case ';':
@@ -60,43 +59,39 @@ int main(int argc, char *argv[])
 			case '}':
 			case ';': break;
 			default:
-				  dest = strcat(dest, ";");
+				  prog_start = strcat(prog_start, ";");
 			}
 		}
-		strcat(dest, "\n");
+		strcat(prog_start, "\n");
 
-		if ((tmp = realloc(final, strlen(final) + (strlen(buf) + 3))) == NULL) {
+		if ((prog_end = realloc(prog_end, strlen(prog_end) + (strlen(buf) + 4))) == NULL) {
 			free(buf);
-			free(dest);
-			free(final);
+			free(prog_start);
+			free(prog_end);
 			err(EXIT_FAILURE, "error calling realloc()");
 		}
-		final = tmp;
+		/* memcpy(prog_end, prog_start, strlen(prog_start) + 1); */
+		strcpy(prog_end, prog_start);
+		strcat(prog_end, PROG_END);
 
-		/* memcpy(final, dest, strlen(dest) + 1); */
-		strcpy(final, dest);
-		strcat(final, "return 0;\n}\n");
+		/* TODO: remove after logic prog_endized */
+		printf("\n%s - %d:\n\n%s\n", argv[0], argc, prog_end);
 
-		compile("gcc", final, args, argv);
-
-		/* TODO: remove after logic finalized */
-		printf("%s - %d:\n%s\n", argv[0], argc, final);
-		/* TODO: find better way to wait on compiler */
-		usleep(500000);
-		putchar('\n');
-
+		ret = compile("gcc", prog_end, args, argv);
+		/* putchar('\n'); */
+		printf("\n%s: %d\n\n", "exit status:", ret);
 		/* prompt character */
 		printf("%s", "> ");
 	}
 
 	if (buf)
 		free(buf);
-	if (dest)
-		free(dest);
-	if (final)
-		free(final);
+	if (prog_start)
+		free(prog_start);
+	if (prog_end)
+		free(prog_end);
 	/* getline failed to allocate memory */
-	if (ret == -1)
+	if (line_size == -1)
 		err(EXIT_FAILURE, "error reading input with getline()");
 
 	printf("\n%s\n\n", "Terminating program.");

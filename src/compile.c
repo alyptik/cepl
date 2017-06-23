@@ -19,6 +19,7 @@
 int compile(char const *cc, char *src, char *const ccargs[], char *const execargs[])
 {
 	int memfd, pipe_cc[2], pipe_exec[2];
+	int status;
 
 	/* create pipes */
 	pipe(pipe_cc);
@@ -53,6 +54,10 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 		close(pipe_cc[1]);
 	}
 
+	wait(&status);
+	if (status != 0)
+		err(EXIT_FAILURE, "%s", "compiler returned non-zero exit code");
+
 	/* fork executable */
 	switch (fork()) {
 	/* error */
@@ -76,6 +81,7 @@ int compile(char const *cc, char *src, char *const ccargs[], char *const execarg
 		close(pipe_exec[0]);
 	}
 
+	wait(&status);
 	/* TODO: make return value useful */
-	return 0;
+	return status;
 }

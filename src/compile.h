@@ -5,8 +5,8 @@
  * See LICENSE file for copyright and license details.
  */
 
-#ifndef _COMPILE_H
-#define _COMPILE_H
+#ifndef COMPILE_H
+#define COMPILE_H
 
 #include <err.h>
 #include <errno.h>
@@ -59,4 +59,5 @@ static inline int pipe_fd(int in_fd, int out_fd)
 	}
 	return total;
 }
+
 #endif
