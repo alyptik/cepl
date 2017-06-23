@@ -22,16 +22,18 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 int main(int argc, char *argv[])
 {
-	int ret;
+	size_t bufsize = 0;
+	ssize_t line_size = 0;
 	char *buf = NULL;
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
-	size_t bufsize = 0;
-	ssize_t line_size;
 	char *const args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
 
-	strcpy(prog_start, PROG_START);
-	strcpy(prog_end, prog_start);
+	memset(prog_start, 0, START_SIZE);
+	memset(prog_end, 0, END_SIZE);
+	memcpy(prog_start, PROG_START, strlen(PROG_START) + 1);
+	strcat(prog_start, "\n");
+	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
 	printf("\n%s\n\n", "CEPL v0.1.1");
@@ -44,42 +46,46 @@ int main(int argc, char *argv[])
 			free(buf);
 			free(prog_start);
 			free(prog_end);
-			err(EXIT_FAILURE, "error calling realloc()");
+			err(EXIT_FAILURE, "error calling realloc() on prog_start");
 		}
-
-		strcat(prog_start, "\t");
-		strcat(prog_start, strtok(buf, "\n"));
-		/* append ';' to prog_start buffer if no trailing ';' or '}' */
-		switch (buf[0]) {
-		/* TODO: command handling */
-		case ';':
-		case '#': break;
-		default:
-			switch(buf[strlen(buf) - 1]) {
-			case '}':
-			case ';': break;
-			default:
-				  prog_start = strcat(prog_start, ";");
-			}
-		}
-		strcat(prog_start, "\n");
-
 		if ((prog_end = realloc(prog_end, strlen(prog_end) + (strlen(buf) + 4))) == NULL) {
 			free(buf);
 			free(prog_start);
 			free(prog_end);
-			err(EXIT_FAILURE, "error calling realloc()");
+			err(EXIT_FAILURE, "error calling realloc() on prog_end");
 		}
-		/* memcpy(prog_end, prog_start, strlen(prog_start) + 1); */
-		strcpy(prog_end, prog_start);
+		strcat(prog_start, "\t");
+		strcat(prog_start, strtok(buf, "\n"));
+
+		switch (buf[0]) {
+		case ';':
+			switch(buf[1]) {
+			case 'r':
+				memset(prog_start, 0, START_SIZE);
+				memset(prog_end, 0, END_SIZE);
+				memcpy(prog_start, PROG_START, strlen(PROG_START) + 1);
+				break;
+			/* TODO: more command handling */
+			}
+		/* fallthrough */
+		case '#': break;
+		default:
+			/* append ';' to prog_start buffer if no trailing ';' or '}' */
+			switch(buf[strlen(buf) - 1]) {
+			case '}':
+			case ';': break;
+			default:
+				prog_start = strcat(prog_start, ";");
+			}
+		}
+		strcat(prog_start, "\n");
+		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 		strcat(prog_end, PROG_END);
 
-		/* TODO: remove after logic prog_endized */
+		/* TODO: finalize output format */
 		printf("\n%s - %d:\n\n%s\n", argv[0], argc, prog_end);
 
-		ret = compile("gcc", prog_end, args, argv);
-		/* putchar('\n'); */
-		printf("\n%s: %d\n\n", "exit status:", ret);
+		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, args, argv));
 		/* prompt character */
 		printf("%s", "> ");
 	}
