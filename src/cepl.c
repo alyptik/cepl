@@ -26,12 +26,12 @@ int main(int argc, char *argv[])
 	char *buf = NULL;
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
-	char *const cc_args[] = {"gcc", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
+	/* temp pointer for realloc */
+	char *tmp = NULL;
 
 	memset(prog_start, 0, START_SIZE);
 	memset(prog_end, 0, END_SIZE);
 	memcpy(prog_start, PROG_START, START_SIZE);
-	strcat(prog_start, "\n");
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
@@ -40,22 +40,25 @@ int main(int argc, char *argv[])
 	printf("%s", "> ");
 
 	while ((line_size = getline(&buf, &buf_size, stdin)) > 1) {
-		/* allocate space for input + ";\n" */
-		if ((prog_start = realloc(prog_start, strlen(prog_start) + (strlen(buf) + 4))) == NULL) {
+		/* re-allocate enough for buf + '\t' + ';' + '\n' + '\0' */
+		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(buf) + 4)) == NULL) {
 			free(buf);
 			free(prog_start);
 			free(prog_end);
-			err(EXIT_FAILURE, "error calling realloc() on prog_start");
+			err(EXIT_FAILURE, "error during realloc() for prog_start");
 		}
-		if ((prog_end = realloc(prog_end, strlen(prog_end) + (strlen(buf) + 4))) == NULL) {
+		prog_start = tmp;
+		if ((tmp = realloc(prog_end, strlen(prog_end) + strlen(buf) + 4)) == NULL) {
 			free(buf);
 			free(prog_start);
 			free(prog_end);
-			err(EXIT_FAILURE, "error calling realloc() on prog_end");
+			err(EXIT_FAILURE, "error during realloc() for prog_end");
 		}
+		prog_end = tmp;
+
+		/* build program source */
 		strcat(prog_start, "\t");
 		strcat(prog_start, strtok(buf, "\n"));
-
 		switch (buf[0]) {
 		case ';':
 			switch(buf[1]) {
@@ -70,8 +73,8 @@ int main(int argc, char *argv[])
 		/* don't append ';' for preprocessor directives */
 		case '#': break;
 		default:
-			/* append ';' to prog_start buffer if no trailing ';' or '}' */
 			switch(buf[strlen(buf) - 1]) {
+			/* don't append ';' if trailing ';' or '}' */
 			case '}':
 			case ';': break;
 			default:
@@ -99,6 +102,7 @@ int main(int argc, char *argv[])
 	if (line_size == -1)
 		err(EXIT_FAILURE, "error reading input with getline()");
 	printf("\n%s\n\n", "Terminating program.");
+
 	return 0;
 }
 
