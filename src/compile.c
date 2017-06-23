@@ -56,7 +56,7 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 
 	wait(&status);
 	if (status != 0)
-		err(EXIT_FAILURE, "%s", "compiler returned non-zero exit code");
+		warn("%s", "compiler returned non-zero exit code");
 
 	/* fork executable */
 	switch (fork()) {
@@ -81,7 +81,9 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 		close(pipe_exec[0]);
 	}
 
-	wait(&status);
-	/* TODO: make return value useful */
+	if (wait(&status) != 0)
+		warn("%s", "executable returned non-zero exit code");
+
+	/* TODO: make return value more useful */
 	return status;
 }
