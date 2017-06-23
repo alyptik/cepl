@@ -13,14 +13,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define UNUSED __attribute__ ((unused))
 extern char **environ;
 
 int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[]);
 
 /* silence linter */
 long syscall(long number, ...);
-int fexecve(int fd, char *const argv[], char *const envp[]);
+int fexecve(int mem_fd, char *const argv[], char *const envp[]);
 
 static inline void set_cloexec(int set_fd)
 {

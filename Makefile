@@ -35,6 +35,7 @@ $(OBJ): %.o: %.c $(HDR)
 
 check test: tests
 	./t/testcompile
+	./t/testreadline
 
 tests: $(TESTS)
 

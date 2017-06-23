@@ -15,7 +15,8 @@ int main (void)
 	char *const cc_args[] = {"gcc", "-O2", "-pipe", "-Wall", "-Wextra", "-pedantic-errors", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
 
 	plan(1);
-	ok(compile("gcc", src, cc_args, argv) == 0, "compile() returned success.");
+
+	ok(compile("gcc", src, cc_args, argv) == 0, "compile test program.");
 
 	done_testing();
 }

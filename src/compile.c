@@ -5,7 +5,6 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -17,9 +16,9 @@
 
 int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[])
 {
-	int mem_fd, pipe_cc[2], pipe_exec[2];
-	int status;
-	int ret = 0;
+	int mem_fd;
+	int pipe_cc[2], pipe_exec[2];
+	int status, ret = 0;
 
 	/* create pipes */
 	pipe(pipe_cc);
