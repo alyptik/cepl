@@ -22,7 +22,7 @@ TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 TARGET = cepl
 
 %:
-	$(CC) $(LDFLAGS) $(LDLIBS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
 
 %.o:
 	$(CC) $(CFLAGS) $(LDLIBS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@

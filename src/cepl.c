@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 #include "compile.h"
 
 #define CEPL_VERSION "CEPL v0.1.2"
@@ -17,16 +19,16 @@
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
 
-/* arguments to pass to compiler */
-static char *const cc_args[] = {"gcc", "-O2", "-pipe", "-Wall", "-Wextra", "-pedantic-errors", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
 /* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
+/* arguments to pass to compiler */
+static char *const cc_args[] = {"gcc", "-O2", "-pipe", "-Wall", "-Wextra", "-pedantic-errors", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
+/* readline buffer */
+static char *buf = NULL;
+
 int main(int argc, char *argv[])
 {
-	size_t buf_size = 0;
-	ssize_t line_size = 0;
-	char *buf = NULL;
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
 	/* temp pointer for realloc */
@@ -39,10 +41,11 @@ int main(int argc, char *argv[])
 	strcat(prog_end, PROG_END);
 
 	printf("\n%s\n\n", CEPL_VERSION);
-	/* prompt character */
-	printf("%s", "> ");
 
-	while ((line_size = getline(&buf, &buf_size, stdin)) > 1) {
+	while ((buf = readline("> ")) != NULL && *buf) {
+		/* add to readline history */
+		add_history(buf);
+
 		/* re-allocate enough for buf + '\t' + ';' + '\n' + '\0' */
 		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(buf) + 4)) == NULL) {
 			free(buf);
@@ -90,10 +93,12 @@ int main(int argc, char *argv[])
 
 		/* TODO: finalize output format */
 		printf("\n%s — [%s] = \"%d\":\n\n%s\n", argv[0], "argc", argc, prog_end);
-
 		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, cc_args, argv));
-		/* prompt character */
-		printf("%s", "> ");
+
+		if (buf) {
+			free(buf);
+			buf = NULL;
+		}
 	}
 
 	if (buf)
@@ -102,8 +107,8 @@ int main(int argc, char *argv[])
 		free(prog_start);
 	if (prog_end)
 		free(prog_end);
-	if (line_size == -1)
-		err(EXIT_FAILURE, "error reading input with getline()");
+	/* if (line_size == -1) */
+	/*         err(EXIT_FAILURE, "error reading input with getline()"); */
 	printf("\n%s\n\n", "Terminating program.");
 
 	return 0;
