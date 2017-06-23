@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include "compile.h"
 
+#define CEPL_VERSION "CEPL v0.1.2"
 #define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\nint main(void)\n{\n"
 #define PROG_END "\treturn 0;\n}\n"
 #define START_SIZE (strlen(PROG_START) + 1)
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
-	printf("\n%s\n\n", "CEPL v0.1.2");
+	printf("\n%s\n\n", CEPL_VERSION);
 	/* prompt character */
 	printf("%s", "> ");
 
