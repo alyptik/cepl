@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 		strcat(prog_end, PROG_END);
 
 		/* TODO: finalize output format */
-		printf("\n[%s] = \"%s\" — [%s] = \"%d\":\n\n%s\n", "argv", argv[0], "argc", argc, prog_end);
+		printf("\n%s — [%s] = \"%d\":\n\n%s\n", argv[0], "argc", argc, prog_end);
 
 		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, cc_args, argv));
 		/* prompt character */

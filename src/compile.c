@@ -19,6 +19,7 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 {
 	int mem_fd, pipe_cc[2], pipe_exec[2];
 	int status;
+	int ret = 0;
 
 	/* create pipes */
 	pipe(pipe_cc);
@@ -52,14 +53,16 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 	/* parent */
 	default:
 		close(pipe_cc[0]);
-		close(pipe_exec[1]);
 		write(pipe_cc[1], src, strlen(src));
 		close(pipe_cc[1]);
+		close(pipe_exec[1]);
 	}
 
 	wait(&status);
-	if (status != 0)
+	if (status != 0) {
 		warn("%s", "compiler returned non-zero exit code");
+		ret = status;
+	}
 
 	/* fork executable */
 	switch (fork()) {
@@ -86,9 +89,12 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 	}
 
 	wait(&status);
-	if (status != 0)
+	/* don't overwrite non-zero exit status from compiler */
+	if (status != 0 && ret == 0) {
 		warn("%s", "executable returned non-zero exit code");
+		ret = status;
+	}
 
 	/* TODO: make return value more useful */
-	return status;
+	return ret;
 }
