@@ -11,6 +11,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define UNUSED __attribute__ ((unused))
 extern char **environ;
@@ -33,14 +34,14 @@ static inline int pipe_fd(int in_fd, int out_fd)
 	/* read output in a loop */
 	for (;;) {
 		int buf_len;
-		/* 2 MB */
-		int count = 1024 * 1024 * 2;
+		size_t count = sysconf(_SC_PAGESIZE);
+
 		char buf[count];
 		if ((buf_len = read(in_fd, buf, count)) == -1) {
 			if (errno == EINTR || errno == EAGAIN) {
 				continue;
 			} else {
-				warn("%s", "error reading input fd");
+				warn("%s", "error reading from input fd");
 				return 0;
 			}
 		}

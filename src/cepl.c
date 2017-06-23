@@ -8,14 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include "compile.h"
 
-#define START_SIZE 65
-#define END_SIZE 80
-#define PROG_START "#include <stdio.h>\n#include <stdlib.h>\nint main(void) {\n"
+#define PROG_START "#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <string.h>\n#include <stdlib.h>\n#define _GNU_SOURCE\nint main(void) {\n"
 #define PROG_END "\treturn 0;\n}\n"
+#define START_SIZE (strlen(PROG_START) + 2)
+#define END_SIZE (START_SIZE + strlen(PROG_END) + 2)
 
 /* silence linter */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
@@ -31,7 +30,7 @@ int main(int argc, char *argv[])
 
 	memset(prog_start, 0, START_SIZE);
 	memset(prog_end, 0, END_SIZE);
-	memcpy(prog_start, PROG_START, strlen(PROG_START) + 1);
+	memcpy(prog_start, PROG_START, START_SIZE);
 	strcat(prog_start, "\n");
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
@@ -60,14 +59,15 @@ int main(int argc, char *argv[])
 		switch (buf[0]) {
 		case ';':
 			switch(buf[1]) {
+			/* reset state */
 			case 'r':
 				memset(prog_start, 0, START_SIZE);
 				memset(prog_end, 0, END_SIZE);
-				memcpy(prog_start, PROG_START, strlen(PROG_START) + 1);
+				memcpy(prog_start, PROG_START, START_SIZE);
 				break;
 			/* TODO: more command handling */
 			}
-		/* fallthrough */
+		/* don't append ';' for preprocessor directives */
 		case '#': break;
 		default:
 			/* append ';' to prog_start buffer if no trailing ';' or '}' */
@@ -96,10 +96,8 @@ int main(int argc, char *argv[])
 		free(prog_start);
 	if (prog_end)
 		free(prog_end);
-	/* getline failed to allocate memory */
 	if (line_size == -1)
 		err(EXIT_FAILURE, "error reading input with getline()");
-
 	printf("\n%s\n\n", "Terminating program.");
 	return 0;
 }

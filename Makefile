@@ -34,7 +34,6 @@ $(TARGET): $(OBJ)
 $(OBJ): %.o: %.c $(HDR)
 
 check test: tests
-	./t/test
 	./t/testcompile
 
 tests: $(TESTS)

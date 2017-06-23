@@ -8,12 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <linux/memfd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/syscall.h>
+#include <linux/memfd.h>
 #include "compile.h"
 
 int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[])
@@ -81,7 +80,8 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 		close(pipe_exec[0]);
 	}
 
-	if (wait(&status) != 0)
+	wait(&status);
+	if (status != 0)
 		warn("%s", "executable returned non-zero exit code");
 
 	/* TODO: make return value more useful */
