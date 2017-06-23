@@ -33,6 +33,10 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 	switch (fork()) {
 	/* error */
 	case -1:
+		close(pipe_cc[0]);
+		close(pipe_cc[1]);
+		close(pipe_exec[0]);
+		close(pipe_exec[1]);
 		err(EXIT_FAILURE, "%s", "error forking compiler");
 		break;
 
@@ -61,6 +65,7 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 	switch (fork()) {
 	/* error */
 	case -1:
+		close(pipe_exec[0]);
 		err(EXIT_FAILURE, "%s", "error forking executable");
 		break;
 
