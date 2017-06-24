@@ -12,7 +12,7 @@
 #include "compile.h"
 #include "readline.h"
 
-#define CEPL_VERSION "CEPL v0.1.2"
+#define CEPL_VERSION "CEPL v0.1.3"
 #define PROG_MAIN_START "int main(void)\n{\n"
 #define PROG_MAIN_END "\n\treturn 0;\n}\n"
 #define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n" PROG_MAIN_START
@@ -56,12 +56,15 @@ int main(int argc UNUSED, char *argv[])
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
-	/* disable filename completion */
-	rl_bind_key('\t', rl_abort);
+	/* enable completion */
+	rl_attempted_completion_function = rl_completer;
+	rl_bind_key('\t', rl_complete);
 	printf("\n%s\n", CEPL_VERSION);
 
 	/* repeat readline() until EOF is read */
 	while ((line = readline("\n>>> ")) != NULL && *line) {
+		/* re-enable completion if disabled */
+		rl_bind_key('\t', rl_complete);
 		/* add to readline history */
 		add_history(line);
 
@@ -150,8 +153,6 @@ int main(int argc UNUSED, char *argv[])
 		}
 	}
 
-	if (line)
-		free(line);
 	if (prog_main_start)
 		free(prog_main_start);
 	if (prog_main_end)
@@ -160,6 +161,8 @@ int main(int argc UNUSED, char *argv[])
 		free(prog_start);
 	if (prog_end)
 		free(prog_end);
+	if (line)
+		free(line);
 
 	printf("\n%s\n\n", "Terminating program.");
 	return 0;

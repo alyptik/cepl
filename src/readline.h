@@ -12,7 +12,14 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-/* TODO: implement completion */
-void rl_completor(void);
+#define UNUSED __attribute__ ((unused))
+
+char *generator(const char *text, int state);
+
+static inline char **rl_completer(const char *text, int start UNUSED, int end UNUSED)
+{
+	char **matches = rl_completion_matches((char *)text, &generator);
+	return matches;
+}
 
 #endif
