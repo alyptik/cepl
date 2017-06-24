@@ -19,6 +19,7 @@ char *generator(const char *text, int state);
 static inline char **rl_completer(const char *text, int start, int end UNUSED)
 {
 	char **matches = NULL;
+	rl_completion_append_character = '\0';
 	if (start == 0)
 		matches = rl_completion_matches((char *)text, &generator);
 	else

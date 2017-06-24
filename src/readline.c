@@ -14,7 +14,12 @@
 #include "readline.h"
 
 /* TODO: generate useful completion list */
-static char *cmd[] = { "sizeof(", "malloc(", "printf(", "puts(", " ", };
+static char *cmd[] = {
+	" ", ";reset", "NULL", "sizeof(", "malloc(", "printf(", "puts(",
+	"char", "int", "long", "float", "double", "size_t", "ssize_t",
+	"const", "static", "inline", "register", "extern",
+	"#include", "#define", "if", "while", "for", "do", "return",
+};
 
 char *generator(const char *text, int state)
 {

@@ -57,7 +57,10 @@ int main(int argc UNUSED, char *argv[])
 	strcat(prog_end, PROG_END);
 
 	/* enable completion */
-	rl_attempted_completion_function = rl_completer;
+	rl_completion_entry_function = &generator;
+	rl_attempted_completion_function = &rl_completer;
+	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{(";
+	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
 	printf("\n%s\n", CEPL_VERSION);
 
