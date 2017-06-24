@@ -22,13 +22,16 @@
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
 #define UNUSED __attribute__ ((unused))
+
 /* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* arguments to pass to compiler */
-static char *const cc_args[] = {"gcc", "-O2", "-pipe", "-Wall", "-Wextra", "-pedantic-errors", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL};
-/* readline buffer */
-static char *line = NULL;
+static char *const cc_args[] = {
+	"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
+	"-pedantic-errors", "-std=c11", "-xc",
+	"/dev/stdin", "-o", "/dev/stdout", NULL
+};
 
 int main(int argc UNUSED, char *argv[])
 {
@@ -38,6 +41,8 @@ int main(int argc UNUSED, char *argv[])
 	char *prog_end = malloc(END_SIZE);
 	/* temp char pointer for realloc() */
 	char *tmp = NULL;
+	/* readline buffer */
+	char *line = NULL;
 
 	/* initial sanity check */
 	if (prog_main_start == NULL || prog_main_end == NULL || prog_start == NULL || prog_end == NULL)
@@ -49,6 +54,7 @@ int main(int argc UNUSED, char *argv[])
 	memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE);
 	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 	strcat(prog_main_end, PROG_MAIN_END);
+
 	/* main program */
 	memset(prog_start, 0, START_SIZE);
 	memset(prog_end, 0, END_SIZE);
@@ -71,7 +77,7 @@ int main(int argc UNUSED, char *argv[])
 		/* add to readline history */
 		add_history(line);
 
-		/* re-allocate enough for line + '\t' + ';' + '\n' + '\0' */
+		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		if ((tmp = realloc(prog_main_start, strlen(prog_main_start) + strlen(line) + 4)) == NULL) {
 			free(line);
 			free(prog_main_start);
@@ -109,11 +115,13 @@ int main(int argc UNUSED, char *argv[])
 		}
 		prog_end = tmp;
 
-		/* build program source */
+		/* start building program source */
 		strcat(prog_main_start, "\t");
 		strcat(prog_start, "\t");
 		strcat(prog_main_start, strtok(line, "\n"));
 		strcat(prog_start, strtok(line, "\n"));
+
+		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
 		case ';':
 			switch(line[1]) {
@@ -140,6 +148,8 @@ int main(int argc UNUSED, char *argv[])
 				prog_start = strcat(prog_start, ";");
 			}
 		}
+
+		/* finish building current iteration of source code */
 		strcat(prog_main_start, "\n");
 		strcat(prog_start, "\n");
 		memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
