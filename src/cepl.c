@@ -21,7 +21,6 @@
 #define MAIN_END_SIZE (MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
-
 #define UNUSED __attribute__ ((unused))
 /* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
@@ -40,10 +39,8 @@ int main(int argc UNUSED, char *argv[])
 	/* temp char pointer for realloc() */
 	char *tmp = NULL;
 
-	/* disable filename completion */
-	rl_bind_key('\t',rl_abort);
 	/* initial sanity check */
-	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end)
+	if (prog_main_start == NULL || prog_main_end == NULL || prog_start == NULL || prog_end == NULL)
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
 
 	/* truncated output to show user */
@@ -59,6 +56,8 @@ int main(int argc UNUSED, char *argv[])
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
+	/* disable filename completion */
+	rl_bind_key('\t',rl_abort);
 	printf("\n%s\n\n", CEPL_VERSION);
 
 	while ((line = readline("> ")) != NULL && *line) {
@@ -68,37 +67,37 @@ int main(int argc UNUSED, char *argv[])
 		/* re-allocate enough for line + '\t' + ';' + '\n' + '\0' */
 		if ((tmp = realloc(prog_main_start, strlen(prog_main_start) + strlen(line) + 4)) == NULL) {
 			free(line);
-			free(prog_start);
-			free(prog_end);
 			free(prog_main_start);
 			free(prog_main_end);
-			err(EXIT_FAILURE, "error during realloc() for prog_start");
+			free(prog_start);
+			free(prog_end);
+			err(EXIT_FAILURE, "error during realloc() for prog_main_start");
 		}
 		prog_main_start = tmp;
 		if ((tmp = realloc(prog_main_end, strlen(prog_main_end) + strlen(line) + 4)) == NULL) {
 			free(line);
-			free(prog_start);
-			free(prog_end);
 			free(prog_main_start);
 			free(prog_main_end);
-			err(EXIT_FAILURE, "error during realloc() for prog_end");
+			free(prog_start);
+			free(prog_end);
+			err(EXIT_FAILURE, "error during realloc() for prog_main_end");
 		}
 		prog_main_end = tmp;
 		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(line) + 4)) == NULL) {
 			free(line);
-			free(prog_start);
-			free(prog_end);
 			free(prog_main_start);
 			free(prog_main_end);
+			free(prog_start);
+			free(prog_end);
 			err(EXIT_FAILURE, "error during realloc() for prog_start");
 		}
 		prog_start = tmp;
 		if ((tmp = realloc(prog_end, strlen(prog_end) + strlen(line) + 4)) == NULL) {
 			free(line);
-			free(prog_start);
-			free(prog_end);
 			free(prog_main_start);
 			free(prog_main_end);
+			free(prog_start);
+			free(prog_end);
 			err(EXIT_FAILURE, "error during realloc() for prog_end");
 		}
 		prog_end = tmp;
@@ -144,7 +143,6 @@ int main(int argc UNUSED, char *argv[])
 		/* TODO: finalize output format */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
 		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, cc_args, argv));
-
 		if (line) {
 			free(line);
 			line = NULL;
@@ -153,14 +151,14 @@ int main(int argc UNUSED, char *argv[])
 
 	if (line)
 		free(line);
-	if (prog_start)
-		free(prog_start);
-	if (prog_end)
-		free(prog_end);
 	if (prog_main_start)
 		free(prog_main_start);
 	if (prog_main_end)
 		free(prog_main_end);
+	if (prog_start)
+		free(prog_start);
+	if (prog_end)
+		free(prog_end);
 
 	printf("\n%s\n\n", "Terminating program.");
 	return 0;
