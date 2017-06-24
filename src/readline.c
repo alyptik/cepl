@@ -15,24 +15,21 @@
 
 /* TODO: generate useful completion list */
 static char *cmd[] = {
-	" ", ";reset", "NULL", "sizeof(", "malloc(", "printf(", "puts(",
+	";reset", "NULL", "sizeof(", "malloc(", "printf(", "puts(",
+	"#include", "#define", "if", "while", "for", "do", "return",
 	"char", "int", "long", "float", "double", "size_t", "ssize_t",
 	"const", "static", "inline", "register", "extern",
-	"#include", "#define", "if", "while", "for", "do", "return",
 };
 
 char *generator(const char *text, int state)
 {
 	static int list_index, len;
 	char *name, *buf;
-
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);
 	}
-
-	while ((name = cmd[list_index])) {
-		list_index++;
+	while ((name = cmd[list_index++])) {
 		if (strncmp(name, text, len) == 0) {
 			if ((buf = malloc(strlen(name) + 1)) == NULL)
 				err(EXIT_FAILURE, "%s", "error allocating generator string");
@@ -40,6 +37,5 @@ char *generator(const char *text, int state)
 			return buf;
 		}
 	}
-
 	return NULL;
 }
