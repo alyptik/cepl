@@ -34,7 +34,6 @@ static inline int pipe_fd(int in_fd, int out_fd)
 	for (;;) {
 		int buf_len;
 		size_t count = sysconf(_SC_PAGESIZE);
-
 		char buf[count];
 		if ((buf_len = read(in_fd, buf, count)) == -1) {
 			if (errno == EINTR || errno == EAGAIN) {

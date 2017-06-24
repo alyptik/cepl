@@ -17,8 +17,7 @@ int main (void)
 
 	plan(1);
 
-	diag("%s\n", "type any character string");
-	ok((line = readline("> ")) != NULL && *line, "read keyboard input.");
+	ok((line = readline("> ")) != NULL && *line, "send keyboard input to readline.");
 	if (line)
 		free(line);
 
