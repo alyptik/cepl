@@ -57,10 +57,11 @@ int main(int argc UNUSED, char *argv[])
 	strcat(prog_end, PROG_END);
 
 	/* disable filename completion */
-	rl_bind_key('\t',rl_abort);
-	printf("\n%s\n\n", CEPL_VERSION);
+	rl_bind_key('\t', rl_abort);
+	printf("\n%s\n", CEPL_VERSION);
 
-	while ((line = readline("> ")) != NULL && *line) {
+	/* repeat readline() until EOF is read */
+	while ((line = readline("\n>>> ")) != NULL && *line) {
 		/* add to readline history */
 		add_history(line);
 
@@ -142,7 +143,7 @@ int main(int argc UNUSED, char *argv[])
 
 		/* TODO: finalize output format */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
-		printf("\n%s: %d\n\n", "exit status", compile("gcc", prog_end, cc_args, argv));
+		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_args, argv));
 		if (line) {
 			free(line);
 			line = NULL;
