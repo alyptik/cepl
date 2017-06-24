@@ -58,13 +58,13 @@ int main(int argc UNUSED, char *argv[])
 
 	/* enable completion */
 	rl_attempted_completion_function = rl_completer;
-	rl_bind_key('\t', rl_complete);
+	rl_bind_key('\t', &rl_complete);
 	printf("\n%s\n", CEPL_VERSION);
 
 	/* repeat readline() until EOF is read */
 	while ((line = readline("\n>>> ")) != NULL && *line) {
 		/* re-enable completion if disabled */
-		rl_bind_key('\t', rl_complete);
+		rl_bind_key('\t', &rl_complete);
 		/* add to readline history */
 		add_history(line);
 

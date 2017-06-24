@@ -14,13 +14,12 @@
 #include "readline.h"
 
 /* TODO: generate useful completion list */
-static char *cmd[] ={ "foo", "bar", "baz", ";reset", " " };
+static char *cmd[] = { "sizeof(", "malloc(", "printf(", "puts(", " ", };
 
 char *generator(const char *text, int state)
 {
 	static int list_index, len;
-	char *name;
-	char *buf;
+	char *name, *buf;
 
 	if (!state) {
 		list_index = 0;

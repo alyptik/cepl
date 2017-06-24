@@ -16,9 +16,13 @@
 
 char *generator(const char *text, int state);
 
-static inline char **rl_completer(const char *text, int start UNUSED, int end UNUSED)
+static inline char **rl_completer(const char *text, int start, int end UNUSED)
 {
-	char **matches = rl_completion_matches((char *)text, &generator);
+	char **matches = NULL;
+	if (start == 0)
+		matches = rl_completion_matches((char *)text, &generator);
+	else
+		rl_bind_key('\t', &rl_complete);
 	return matches;
 }
 

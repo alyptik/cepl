@@ -10,9 +10,6 @@
 
 int main (void)
 {
-	/* char *const argv[] = {"testcompile", NULL}; */
-	/* char *src = "int main(void) { return 0; }"; */
-	/* char *const cc_args[] = {"gcc", "-O2", "-pipe", "-Wall", "-Wextra", "-pedantic-errors", "-std=c11", "-xc", "/dev/stdin", "-o", "/dev/stdout", NULL}; */
 	char *line = "foobar";
 
 	plan(1);
