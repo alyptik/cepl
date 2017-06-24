@@ -21,7 +21,6 @@
 #define MAIN_END_SIZE (MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
-#define UNUSED __attribute__ ((unused))
 
 /* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
@@ -32,8 +31,10 @@ static char *const cc_args[] = {
 	"-pedantic-errors", "-std=c11", "-xc",
 	"/dev/stdin", "-o", "/dev/stdout", NULL
 };
+/* option list */
+static char *optstring = "hvl:I:o:";
 
-int main(int argc UNUSED, char *argv[])
+int main(int argc, char *argv[])
 {
 	char *prog_main_start = malloc(MAIN_START_SIZE);
 	char *prog_main_end = malloc(MAIN_END_SIZE);

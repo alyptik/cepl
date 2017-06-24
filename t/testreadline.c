@@ -1,5 +1,5 @@
 /*
- * t/testreadline.c - Unit-test for readline.c
+ * t/testreadline.c - unit-test for readline.c
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
  * See LICENSE file for copyright and license details.

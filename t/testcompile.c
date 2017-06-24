@@ -1,5 +1,5 @@
 /*
- * t/testcompile.c - Unit-test for compile.c
+ * t/testcompile.c - unit-test for compile.c
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
  * See LICENSE file for copyright and license details.
