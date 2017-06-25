@@ -11,6 +11,6 @@
 #define CEPL_VERSION "CEPL v0.1.4"
 
 char *const *parse_opts(int argc, char *argv[], char *optstring);
-int free_cc_argv(char ***cc_argv);
+int free_cc_argv(char **cc_argv);
 
 #endif

@@ -16,7 +16,7 @@
 
 char *generator(const char *text, int state);
 
-static inline char **rl_completer(const char *text, int start, int end UNUSED)
+static inline char **completer(const char *text, int start, int end UNUSED)
 {
 	char **matches = NULL;
 	/* don't append space after completions */

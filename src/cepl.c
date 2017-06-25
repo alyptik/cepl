@@ -22,43 +22,39 @@
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
 
-/* silence linter warnings */
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+#define MEM_INIT(C) memset(prog_main_start, C, MAIN_START_SIZE); \
+		memset(prog_main_end, C, MAIN_END_SIZE); \
+		memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
+		memset(prog_start, C, START_SIZE); \
+		memset(prog_end, C, END_SIZE); \
+		memcpy(prog_start, PROG_START, START_SIZE);
 
 int main(int argc, char *argv[])
 {
+	char optstring[] = "hvl:I:o:";
 	char *prog_main_start = malloc(MAIN_START_SIZE);
 	char *prog_main_end = malloc(MAIN_END_SIZE);
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
-	char *optstring = "hvl:I:o:";
 	char *const *cc_argv = parse_opts(argc, argv, optstring);
-	/* temp char pointer for realloc() */
-	char *tmp = NULL;
 	/* readline buffer */
-	char *line = NULL;
+	char *tmp = NULL, *line = NULL;
 
 	/* initial sanity check */
 	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end)
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
-
+	/* initialize source buffers */
+	MEM_INIT(0);
 	/* truncated output to show user */
-	memset(prog_main_start, 0, MAIN_START_SIZE);
-	memset(prog_main_end, 0, MAIN_END_SIZE);
-	memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE);
 	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 	strcat(prog_main_end, PROG_MAIN_END);
-
 	/* main program */
-	memset(prog_start, 0, START_SIZE);
-	memset(prog_end, 0, END_SIZE);
-	memcpy(prog_start, PROG_START, START_SIZE);
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 
 	/* enable completion */
 	rl_completion_entry_function = &generator;
-	rl_attempted_completion_function = &rl_completer;
+	rl_attempted_completion_function = &completer;
 	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{(";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
@@ -77,8 +73,7 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			free(line);
-			if (free_cc_argv((char ***)&cc_argv) == -1)
+			if (free_cc_argv((char **)cc_argv) == -1)
 				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_main_start");
 		}
@@ -88,8 +83,7 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			free(line);
-			if (free_cc_argv((char ***)&cc_argv) == -1)
+			if (free_cc_argv((char **)cc_argv) == -1)
 				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_main_end");
 		}
@@ -99,8 +93,7 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			free(line);
-			if (free_cc_argv((char ***)&cc_argv) == -1)
+			if (free_cc_argv((char **)cc_argv) == -1)
 				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_start");
 		}
@@ -110,8 +103,7 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			free(line);
-			if (free_cc_argv((char ***)&cc_argv) == -1)
+			if (free_cc_argv((char **)cc_argv) == -1)
 				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_end");
 		}
@@ -129,12 +121,7 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
-				memset(prog_main_start, 0, MAIN_START_SIZE);
-				memset(prog_main_end, 0, MAIN_END_SIZE);
-				memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE);
-				memset(prog_start, 0, START_SIZE);
-				memset(prog_end, 0, END_SIZE);
-				memcpy(prog_start, PROG_START, START_SIZE);
+				MEM_INIT(0);
 				break;
 			/* TODO: more command handling */
 			}
@@ -158,8 +145,7 @@ int main(int argc, char *argv[])
 		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 		strcat(prog_main_end, PROG_MAIN_END);
 		strcat(prog_end, PROG_END);
-
-		/* TODO: finalize output format */
+		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
 		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_argv, argv));
 		if (line) {
@@ -168,6 +154,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	printf("\n%s\n\n", "Terminating program.");
 	if (prog_main_start)
 		free(prog_main_start);
 	if (prog_main_end)
@@ -178,9 +165,7 @@ int main(int argc, char *argv[])
 		free(prog_end);
 	if (line)
 		free(line);
-	if (free_cc_argv((char ***)&cc_argv) == -1)
+	if (free_cc_argv((char **)cc_argv) == -1)
 		err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
-	printf("\n%s\n\n", "Terminating program.");
 	return 0;
 }
-
