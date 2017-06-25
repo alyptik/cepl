@@ -14,11 +14,11 @@
 #include "readline.h"
 
 /* TODO: generate useful completion list */
-static char *cmd[] = {
+static char *comps[] = {
 	";reset", "NULL", "sizeof(", "malloc(", "printf(", "puts(",
 	"#include", "#define", "if", "while", "for", "do", "return",
 	"char", "int", "long", "float", "double", "size_t", "ssize_t",
-	"const", "static", "inline", "register", "extern",
+	"const", "static", "inline", "register", "extern", NULL,
 };
 
 char *generator(const char *text, int state)
@@ -29,7 +29,7 @@ char *generator(const char *text, int state)
 		list_index = 0;
 		len = strlen(text);
 	}
-	while ((name = cmd[list_index++])) {
+	while ((name = comps[list_index++])) {
 		if (strncmp(name, text, len) == 0) {
 			if ((buf = malloc(strlen(name) + 1)) == NULL)
 				err(EXIT_FAILURE, "%s", "error allocating generator string");

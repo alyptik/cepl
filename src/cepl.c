@@ -25,28 +25,21 @@
 /* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
-/* option list */
-static char optstring[] UNUSED = "hvl:I:o:";
-/* arguments to pass to compiler */
-static char *cc_args[] = {
-	"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
-	"-pedantic-errors", "-std=c11", "-xc",
-	"/dev/stdin", "-o", "/dev/stdout", NULL
-};
-
-int main(int argc UNUSED, char *argv[])
+int main(int argc, char *argv[])
 {
 	char *prog_main_start = malloc(MAIN_START_SIZE);
 	char *prog_main_end = malloc(MAIN_END_SIZE);
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
+	char *optstring = "hvl:I:o:";
+	char *const *cc_argv = parse_opts(argc, argv, optstring);
 	/* temp char pointer for realloc() */
 	char *tmp = NULL;
 	/* readline buffer */
 	char *line = NULL;
 
 	/* initial sanity check */
-	if (prog_main_start == NULL || prog_main_end == NULL || prog_start == NULL || prog_end == NULL)
+	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end)
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
 
 	/* truncated output to show user */
@@ -80,38 +73,46 @@ int main(int argc UNUSED, char *argv[])
 
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		if ((tmp = realloc(prog_main_start, strlen(prog_main_start) + strlen(line) + 4)) == NULL) {
-			free(line);
 			free(prog_main_start);
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
+			free(line);
+			if (free_cc_argv((char ***)&cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_main_start");
 		}
 		prog_main_start = tmp;
 		if ((tmp = realloc(prog_main_end, strlen(prog_main_end) + strlen(line) + 4)) == NULL) {
-			free(line);
 			free(prog_main_start);
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
+			free(line);
+			if (free_cc_argv((char ***)&cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_main_end");
 		}
 		prog_main_end = tmp;
 		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(line) + 4)) == NULL) {
-			free(line);
 			free(prog_main_start);
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
+			free(line);
+			if (free_cc_argv((char ***)&cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_start");
 		}
 		prog_start = tmp;
 		if ((tmp = realloc(prog_end, strlen(prog_end) + strlen(line) + 4)) == NULL) {
-			free(line);
 			free(prog_main_start);
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
+			free(line);
+			if (free_cc_argv((char ***)&cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_end");
 		}
 		prog_end = tmp;
@@ -160,7 +161,7 @@ int main(int argc UNUSED, char *argv[])
 
 		/* TODO: finalize output format */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
-		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_args, argv));
+		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_argv, argv));
 		if (line) {
 			free(line);
 			line = NULL;
@@ -177,7 +178,8 @@ int main(int argc UNUSED, char *argv[])
 		free(prog_end);
 	if (line)
 		free(line);
-
+	if (free_cc_argv((char ***)&cc_argv) == -1)
+		err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
 	printf("\n%s\n\n", "Terminating program.");
 	return 0;
 }

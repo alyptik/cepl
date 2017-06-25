@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include "parseopts.h"
 
-/* silent linter */
+/* silence linter */
 int getopt(int argc, char * const argv[], const char *optstring);
 int getopt_long(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex);
 
@@ -97,6 +97,26 @@ char *const *parse_opts(int argc, char *argv[], char *optstring)
 		memcpy(cc_list[arg_count - 1], cc_arg_list[i], strlen(cc_arg_list[i]) + 1);
 	}
 
+	if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
+		free(cc_list);
+		err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+	}
+	cc_list = tmp;
+	cc_list[arg_count - 1] = NULL;
+
 	arg_list = cc_list;
 	return arg_list;
+}
+
+int free_cc_argv(char ***cc_argv)
+{
+	int i;
+	if (!cc_argv || *cc_argv == NULL) {
+		warnx("%s", "NULL pointer passed to free_cc_argv()");
+		return -1;
+	}
+	for (i = 0; (*cc_argv)[i]; i++)
+		free((*cc_argv)[i]);
+	free(*cc_argv);
+	return i;
 }

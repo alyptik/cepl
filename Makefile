@@ -10,7 +10,7 @@ PREFIX ?= $(DESTDIR)/usr/local
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
 LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-z,now
-LDLIBS = -lreadline $(shell pkg-config --cflags --libs libpcre)
+LDLIBS = -lreadline
 TAP = t/tap
 SRC = $(wildcard src/*.c)
 TSRC = $(wildcard t/*.c)

@@ -1,27 +1,42 @@
-# CEPL - *C11 Read-Eval-Print Loop*
+# CEPL - *C Read-Eval-Print Loop*
 
 **CEPL** is a command-line, interactive **C11 REPL**, useful
 for instantaneous prototyping, mathematical calculations, and
-general algorithm exploration.
+general algorithm exploration. Currently supports readline
+key-bindings/tab-completion and linking against arbitrary
+libraries with command-line switches.
 
-> **WIP**: Some parts not fully implemented yet.
+> **WIP**: Some features not fully implemented yet.
+
+## Dependencies
+
+Recent versions of the `readline` library and `gcc`.
 
 ## Usage
-```sh
-./cepl [-hv] [-l<library>] [-I<include dir>] [-o<sessionlog.c>]
+```bash
+./cepl [-hv] [-l<library>] [-I<include dir>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
 
+#### CEPL understands the following control sequences:
+
+Any input lines prefixed with a `;` are used to control the internal state.
+
+	;r[eset]: Reset CEPL to its initial program state
+
 #### CEPL understands the following options:
 
-* -h: Show help.
-* -v: Show version.
-* -l: Link with specified library (can be repeated).
-* -I: Search directory for header files (can be repeated).
-* -o: Name of the file where the session transcript will be written.
+	-h: Show help/usage information.
+	-v: Show version.
+	-l: Link against specified library (can be repeated).
+	-I: Search directory for header files (can be repeated).
 
-## Libraries
-> Uses the libtap unit-testing framework ([zorgnax/libtap](https://github.com/zorgnax/libtap))
-* GNU Readline
-* PCRE
+_Not yet implemented (WIP):_
+
+	-o: Name of file to save source output in.
+
+## Libraries used:
+
+* readline
+* libtap ([zorgnax/libtap](https://github.com/zorgnax/libtap))
