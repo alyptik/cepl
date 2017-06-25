@@ -10,10 +10,11 @@
 
 int main (void)
 {
+	FILE *ofile = NULL;
 	int argc = 5;
-	char *argv[] = {"cepl", "-llib", "-l slib", "-Iinc", "-I sinc", "-o out", NULL};
+	char *argv[] = {"cepl", "-llib", "-l", "slib", "-Iinc", "-I", "sinc", "-o/tmp/test", NULL};
 	char optstring[] = "hvl:I:o:";
-	char *const *result = parse_opts(argc, argv, optstring);
+	char *const *result = parse_opts(argc, argv, optstring, &ofile);
 
 	plan(2);
 
@@ -22,7 +23,7 @@ int main (void)
 		printf("%s ", result[i]);
 	putchar('\n');
 	is(result[0], "gcc", "test option parsing.");
-	like(result[5], "^-O2$", "test cc_argv.");
+	like(result[4], "^-O2$", "test cc_argv.");
 	free_cc_argv((char **)result);
 
 	done_testing();

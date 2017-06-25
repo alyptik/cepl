@@ -19,7 +19,7 @@ int getopt_long(int argc, char * const argv[], const char *optstring, const stru
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-char *const *parse_opts(int argc, char *argv[], char *optstring)
+char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
 	int opt, cc_count = 10, arg_count = 0;
 	char **tmp, **cc_list;
@@ -34,6 +34,7 @@ char *const *parse_opts(int argc, char *argv[], char *optstring)
 
 	/* don't print an error if option not found */
 	opterr = 0;
+	*ofile = NULL;
 
 	/* initilize cc argument list */
 	if ((cc_list = malloc((sizeof *cc_list) * ++arg_count)) == NULL)
@@ -75,7 +76,9 @@ char *const *parse_opts(int argc, char *argv[], char *optstring)
 		case 'o':
 			if (out_file != NULL)
 				errx(EXIT_FAILURE, "%s", "too many output files specified");
-			/* TODO: add output file support */
+			out_file = optarg;
+			if ((*ofile = fopen(out_file, "w")) == NULL)
+				err(EXIT_FAILURE, "%s", "failed to create output file");
 			break;
 		case 'h':
 		case '?':

@@ -15,7 +15,7 @@
 
 #define PROG_MAIN_START "int main(void)\n{\n"
 #define PROG_MAIN_END "\n\treturn 0;\n}\n"
-#define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n" PROG_MAIN_START
+#define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\n" PROG_MAIN_START
 #define PROG_END PROG_MAIN_END
 #define MAIN_START_SIZE (strlen(PROG_MAIN_START) + 1)
 #define MAIN_END_SIZE (MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
 	char *prog_main_end = malloc(MAIN_END_SIZE);
 	char *prog_start = malloc(START_SIZE);
 	char *prog_end = malloc(END_SIZE);
-	char *const *cc_argv = parse_opts(argc, argv, optstring);
+	FILE *ofile = NULL;
+	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* readline buffer */
 	char *tmp = NULL, *line = NULL;
 
@@ -152,6 +153,13 @@ int main(int argc, char *argv[])
 			free(line);
 			line = NULL;
 		}
+	}
+
+	/* write out program to file if applicable */
+	if (ofile) {
+		fwrite(prog_end, strlen(prog_end), 1, ofile);
+		fputc('\n', ofile);
+		fclose(ofile);
 	}
 
 	printf("\n%s\n\n", "Terminating program.");
