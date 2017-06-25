@@ -36,6 +36,7 @@ $(OBJ): %.o: %.c $(HDR)
 check test: tests
 	./t/testcompile
 	./t/testreadline <<<"sending test string."
+	./t/testparseopts
 
 tests: $(TESTS)
 

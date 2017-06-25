@@ -19,12 +19,10 @@ int getopt_long(int argc, char * const argv[], const char *optstring, const stru
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-static char optstring[] = "hvl:I:o:";
-
-char *const *parse_opts(int *argc, char **argv[], char *optstring)
+char *const *parse_opts(int argc, char *argv[], char *optstring)
 {
-	int opt, libc = 0, incc = 0, ccc = 0;
-	char **libs, **inc_dirs;
+	int opt, cc_count = 10, arg_count = 0;
+	char **tmp, **cc_list;
 	char *out_file = NULL;
 	char *const cc = "gcc";
 	char *const cc_arg_list[] = {
@@ -32,35 +30,73 @@ char *const *parse_opts(int *argc, char **argv[], char *optstring)
 		"-pedantic-errors", "-std=c11", "-xc",
 		"/dev/stdin", "-o", "/dev/stdout", NULL
 	};
-	char *const *cc_args;
-	char **arg_list;
+	char *const *arg_list;
+
+	/* don't print an error if option not found */
+	opterr = 0;
 
 	/* initilize cc argument list */
-	if ((arg_list[ccc++] = malloc(strlen(cc) + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during arg_list[0] malloc()");
-	memset(arg_list[ccc], 0, strlen(cc) + 1);
-	memcpy(arg_list[ccc], cc, strlen(cc) + 1);
+	if ((cc_list = malloc((sizeof *cc_list) * ++arg_count)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+	if ((cc_list[arg_count - 1] = malloc(strlen(cc) + 1)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+	memset(cc_list[arg_count - 1], 0, strlen(cc) + 1);
+	memcpy(cc_list[arg_count - 1], cc, strlen(cc) + 1);
 
-	while ((opt = getopt(*argc, *argv, optstring)) != -1) {
+	while ((opt = getopt(argc, argv, optstring)) != -1) {
 		switch (opt) {
 		case 'v':
 			errx(EXIT_FAILURE, "%s", CEPL_VERSION);
 			break;
 		case 'l':
+			if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
+				free(cc_list);
+				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			}
+			cc_list = tmp;
+			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL)
+				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
+			memcpy(cc_list[arg_count - 1], "-l", 2);
+			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
 			break;
 		case 'I':
+			if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
+				free(cc_list);
+				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			}
+			cc_list = tmp;
+			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL)
+				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
+			memcpy(cc_list[arg_count - 1], "-l", 2);
+			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
 			break;
 		case 'o':
 			if (out_file != NULL)
 				errx(EXIT_FAILURE, "%s", "too many output files specified");
+			/* TODO: add output file support */
 			break;
 		case 'h':
 		case '?':
 		default:
-			errx(EXIT_FAILURE, "usage: %s [-hv] [-l<library>] [-I<include dir>] [-o<sessionlog.c>]", *argv[0]);
+			errx(EXIT_FAILURE, "usage: %s [-hv] [-l<library>] [-I<include dir>] [-o<sessionlog.c>]", argv[0]);
 		}
 	}
 
-	cc_args = arg_list;
-	return cc_args;
+	/* finalize cc argument list */
+	for (int i = 0; i < cc_count; i++) {
+		if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
+			free(cc_list);
+			err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+		}
+		cc_list = tmp;
+		if ((cc_list[arg_count - 1] = malloc(strlen(cc_arg_list[i]) + 1)) == NULL)
+			err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+		memset(cc_list[arg_count - 1], 0, strlen(cc_arg_list[i]) + 1);
+		memcpy(cc_list[arg_count - 1], cc_arg_list[i], strlen(cc_arg_list[i]) + 1);
+	}
+
+	arg_list = cc_list;
+	return arg_list;
 }

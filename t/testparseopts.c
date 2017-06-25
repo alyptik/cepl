@@ -10,11 +10,18 @@
 
 int main (void)
 {
-	/* char *line = "foobar"; */
+	int argc = 5;
+	char *argv[] = {"cepl", "-llib", "-l slib", "-Iinc", "-I sinc", "-o out"};
+	char optstring[] = "hvl:I:o:";
+	char *const *result = parse_opts(argc, argv, optstring);
 
 	plan(1);
 
-	/* ok((line = readline("> ")) != NULL && *line, "send keyboard input to readline."); */
+	printf("%s\n%s", "# generated compiler string: ", "# ");
+	for (int i = 0; i < 15; i++)
+		printf("%s ", result[i]);
+	putchar('\n');
+	is(result[0], "gcc", "test option parsing.");
 
 	done_testing();
 }

@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include "compile.h"
 #include "readline.h"
+#include "parseopts.h"
 
 #define PROG_MAIN_START "int main(void)\n{\n"
 #define PROG_MAIN_END "\n\treturn 0;\n}\n"
@@ -24,16 +25,16 @@
 /* silence linter warnings */
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
+/* option list */
+static char optstring[] UNUSED = "hvl:I:o:";
 /* arguments to pass to compiler */
-static char *const cc_args[] = {
+static char *cc_args[] = {
 	"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
 	"-pedantic-errors", "-std=c11", "-xc",
 	"/dev/stdin", "-o", "/dev/stdout", NULL
 };
-/* option list */
-static char optstring[] = "hvl:I:o:";
 
-int main(int argc, char *argv[])
+int main(int argc UNUSED, char *argv[])
 {
 	char *prog_main_start = malloc(MAIN_START_SIZE);
 	char *prog_main_end = malloc(MAIN_END_SIZE);
