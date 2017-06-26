@@ -13,8 +13,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#define COUNT sysconf(_SC_PAGESIZE)
 extern char **environ;
-
 int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[]);
 
 /* silence linter */
@@ -27,23 +27,20 @@ static inline void set_cloexec(int set_fd)
 		warn("%s", "error during fnctl");
 }
 
-static inline int pipe_fd(int in_fd, int out_fd)
+static inline void pipe_fd(int in_fd, int out_fd)
 {
-	int total = 0;
 	/* read output in a loop */
 	for (;;) {
-		int buf_len;
-		size_t count = sysconf(_SC_PAGESIZE);
-		char buf[count];
-		if ((buf_len = read(in_fd, buf, count)) == -1) {
+		ssize_t buf_len;
+		char buf[COUNT];
+		if ((buf_len = read(in_fd, buf, COUNT)) == -1) {
 			if (errno == EINTR || errno == EAGAIN) {
 				continue;
 			} else {
 				warn("%s", "error reading from input fd");
-				return 0;
+				return;
 			}
 		}
-		total += buf_len;
 		/* break on EOF */
 		if (buf_len == 0)
 			break;
@@ -52,11 +49,10 @@ static inline int pipe_fd(int in_fd, int out_fd)
 				continue;
 			} else {
 				warn("%s", "error writing to output fd");
-				return 0;
+				return;
 			}
 		}
 	}
-	return total;
 }
 
 #endif

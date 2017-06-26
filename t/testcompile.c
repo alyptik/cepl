@@ -18,9 +18,10 @@ int main (void)
 		"/dev/stdin", "-o", "/dev/stdout", NULL
 	};
 
-	plan(1);
+	plan(2);
 
 	ok(compile("gcc", src, cc_args, argv) == 0, "compile test program.");
+	lives_ok({pipe_fd(256, 256);}, "test pipe_fd() with invalid fds.");
 
 	done_testing();
 }

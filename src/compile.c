@@ -55,12 +55,11 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 		write(pipe_cc[1], src, strlen(src));
 		close(pipe_cc[1]);
 		close(pipe_exec[1]);
-	}
-
-	wait(&status);
-	if (status != 0) {
-		warn("%s", "compiler returned non-zero exit code");
-		ret = status;
+		wait(&status);
+		if (status != 0) {
+			warn("%s", "compiler returned non-zero exit code");
+			ret = status;
+		}
 	}
 
 	/* fork executable */
@@ -75,8 +74,7 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 	case 0:
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
 			err(EXIT_FAILURE, "%s", "error creating mem_fd");
-		if (pipe_fd(pipe_exec[0], mem_fd) == 0)
-			err(EXIT_FAILURE, "%s", "zero bytes written by pipe_fd()");
+		pipe_fd(pipe_exec[0], mem_fd);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
 		err(EXIT_FAILURE, "%s", "error forking executable");
@@ -85,15 +83,13 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 	/* parent */
 	default:
 		close(pipe_exec[0]);
+		wait(&status);
+		/* don't overwrite non-zero exit status from compiler */
+		if (status != 0 && ret == 0) {
+			warn("%s", "executable returned non-zero exit code");
+			ret = status;
+		}
 	}
 
-	wait(&status);
-	/* don't overwrite non-zero exit status from compiler */
-	if (status != 0 && ret == 0) {
-		warn("%s", "executable returned non-zero exit code");
-		ret = status;
-	}
-
-	/* TODO: make return value more useful */
 	return ret;
 }
