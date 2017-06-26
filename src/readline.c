@@ -5,20 +5,23 @@
  * See LICENSE file for copyright and license details.
  */
 
-/* TODO: implement completion */
-/* void rl_completor(void) {} */
-
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
 #include "readline.h"
 
-/* TODO: generate useful completion list */
-static char *comps[] = {
-	";reset", "NULL", "sizeof(", "malloc(", "printf(", "puts(",
-	"#include", "#define", "if", "while", "for", "do", "return",
-	"char", "int", "long", "float", "double", "size_t", "ssize_t",
-	"const", "static", "inline", "register", "extern", NULL,
+/* TODO: generate larger list of useful completions */
+static char *const comps[] = {
+	"auto", "break", "case", "char", "const", "continue", "default",
+	"do", "double", "else", "enum", "extern", "float", "for", "goto",
+	"if", "inline", "int", "long", "register", "restrict", "return",
+	"short", "signed", "sizeof", "static", "struct", "switch",
+	"typedef", "union", "unsigned", "void", "volatile", "while",
+	"_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
+	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
+	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
+	"bool", "true", "false", "free", "malloc(", "printf(", "puts(",
+	";reset", NULL,
 };
 
 char *generator(const char *text, int state)

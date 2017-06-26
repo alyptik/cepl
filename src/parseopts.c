@@ -6,7 +6,6 @@
  */
 
 #include <err.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -14,7 +13,6 @@
 
 /* silence linter */
 int getopt(int argc, char * const argv[], const char *optstring);
-int getopt_long(int argc, char * const argv[], const char *optstring, const struct option *longopts, int *longindex);
 
 extern char *optarg;
 extern int optind, opterr, optopt;
