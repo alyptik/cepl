@@ -108,16 +108,3 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	arg_list = cc_list;
 	return arg_list;
 }
-
-int free_cc_argv(char **cc_argv)
-{
-	int i;
-	if (!cc_argv || cc_argv[0] == NULL) {
-		warnx("%s", "NULL pointer passed to free_cc_argv()");
-		return -1;
-	}
-	for (i = 0; (cc_argv)[i]; i++)
-		free((cc_argv)[i]);
-	free(cc_argv);
-	return i;
-}
