@@ -15,8 +15,8 @@ int main (void)
 	plan(1);
 
 	ok((line = readline("> ")) != NULL && *line, "send keyboard input to readline.");
-	if (line)
-		free(line);
 
 	done_testing();
+
+	free(line);
 }

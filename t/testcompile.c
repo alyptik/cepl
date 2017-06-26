@@ -6,11 +6,12 @@
  */
 
 #include "tap.h"
+#include <limits.h>
 #include "../src/compile.h"
 
-int main (void)
+int main(void)
 {
-	char *src = "int main(void) { return 0; }";
+	char *src = "int main(void) { return 0; }\n";
 	char *const argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
 		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
@@ -21,7 +22,7 @@ int main (void)
 	plan(2);
 
 	ok(compile("gcc", src, cc_args, argv) == 0, "compile test program.");
-	lives_ok({pipe_fd(256, 256);}, "test pipe_fd() with invalid fds.");
+	lives_ok({pipe_fd(INT_MAX, INT_MAX);}, "test pipe_fd() with invalid fds.");
 
 	done_testing();
 }
