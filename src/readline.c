@@ -26,16 +26,18 @@ static char *const comps[] = {
 
 char *generator(const char *text, int state)
 {
-	static int list_index, len;
+	static size_t list_index, len;
 	char *name, *buf;
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);
 	}
 	while ((name = comps[list_index++])) {
-		if (strncmp(name, text, len) == 0) {
-			if ((buf = malloc(strlen(name) + 1)) == NULL)
-				err(EXIT_FAILURE, "%s", "error allocating generator string");
+		if (memcmp(name, text, len) == 0) {
+			if ((buf = malloc(strlen(name) + 1)) == NULL) {
+				warn("%s", "error allocating generator string");
+				return NULL;
+			}
 			memcpy(buf, name, strlen(name) + 1);
 			return buf;
 		}
