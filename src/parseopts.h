@@ -9,7 +9,7 @@
 #define PARSEOPTS_H
 
 #include <stdio.h>
-#define CEPL_VERSION "CEPL v0.1.5"
+#define CEPL_VERSION "CEPL v0.1.6"
 
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile);
 

@@ -3,8 +3,8 @@
 **CEPL** is a command-line, interactive **C11 REPL**, useful
 for instantaneous prototyping, mathematical calculations, and
 general algorithm exploration. Currently supports readline
-key-bindings/tab-completion and linking against arbitrary
-libraries with command-line switches.
+key-bindings/tab-completion and ability to specify additional
+libraries or headers with command-line switches.
 
 > **WIP**: Some features not fully implemented yet.
 
@@ -14,7 +14,7 @@ Recent versions of the `readline` library and `gcc`.
 
 ## Usage
 ```bash
-./cepl [-hv] [-l<library>] [-I<include dir>] [-o<output.c>]
+./cepl [-hv] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -28,10 +28,10 @@ Any input lines prefixed with a `;` are used to control the internal state.
 #### CEPL understands the following options:
 
 	-h: Show help/usage information.
-	-v: Show version.
-	-l: Link against specified library (can be repeated).
-	-I: Search directory for header files (can be repeated).
-	-o: Name of file to output source to.
+	-v: Show version information.
+	-l: Link against specified library (flag can be repeated).
+	-I: Search directory for header files (flag can be repeated).
+	-o: Name of the file to output source to.
 
 ## Libraries used:
 

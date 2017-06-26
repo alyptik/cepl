@@ -1,5 +1,5 @@
 #
-# cepl - C REPL
+# cepl - C Read-Eval-Print Loop
 #
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE file for copyright and license details.
