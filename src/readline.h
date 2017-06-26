@@ -16,17 +16,23 @@
 
 char *generator(const char *text, int state);
 
-static inline char **completer(const char *text, int start, int end UNUSED)
+static inline char **completer(const char *text, int start UNUSED, int end UNUSED)
 {
 	char **matches = NULL;
 	/* don't append space after completions */
 	rl_completion_append_character = '\0';
-	if (start == 0) {
-		rl_bind_key('\t', &rl_complete);
-		matches = rl_completion_matches((char *)text, &generator);
-	} else {
-		rl_bind_key('\t', &rl_abort);
-	}
+	/* always list completions */
+	rl_bind_key('\t', &rl_complete);
+	matches = rl_completion_matches((char *)text, &generator);
+	/* only list completions at start of line */
+	/*
+	 * if (start == 0) {
+	 *         rl_bind_key('\t', &rl_complete);
+	 *         matches = rl_completion_matches((char *)text, &generator);
+	 * } else {
+	 *         rl_bind_key('\t', &rl_insert);
+	 * }
+	 */
 	return matches;
 }
 

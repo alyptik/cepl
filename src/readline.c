@@ -21,7 +21,7 @@ static char *const comps[] = {
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
 	"bool", "true", "false", "free", "malloc(", "printf(", "puts(",
-	";reset", NULL,
+	";reset", NULL
 };
 
 char *generator(const char *text, int state)
