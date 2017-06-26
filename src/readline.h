@@ -18,21 +18,12 @@ char *generator(const char *text, int state);
 
 static inline char **completer(const char *text, int start UNUSED, int end UNUSED)
 {
-	char **matches = NULL;
+	char **matches;
 	/* don't append space after completions */
 	rl_completion_append_character = '\0';
 	/* always list completions */
 	rl_bind_key('\t', &rl_complete);
-	matches = rl_completion_matches((char *)text, &generator);
-	/* only list completions at start of line */
-	/*
-	 * if (start == 0) {
-	 *         rl_bind_key('\t', &rl_complete);
-	 *         matches = rl_completion_matches((char *)text, &generator);
-	 * } else {
-	 *         rl_bind_key('\t', &rl_insert);
-	 * }
-	 */
+	matches = rl_completion_matches(text, &generator);
 	return matches;
 }
 
