@@ -21,32 +21,33 @@ HDR = $(wildcard src/*.h) $(wildcard t/*.h)
 TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 TARGET = cepl
 
+all: $(TARGET) check
+
 %:
 	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
 
 %.o:
 	$(CC) $(CFLAGS) $(LDLIBS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@
 
-all: $(TARGET) tests
-
 $(TARGET): $(OBJ)
 
 $(OBJ): %.o: %.c $(HDR)
 
-debug: CFLAGS = -O0 -ggdb -pipe -MMD -I. -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-debug: $(OBJ) tests
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $(TARGET)
-
-check test: tests
-	./t/testcompile
-	./t/testreadline <<<"sending test string."
-	./t/testparseopts
-
-tests: $(TESTS)
-
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test, src/, %), $(filter-out src/$(TARGET).o, $(OBJ)))
 
 $(TOBJ): %.o: %.c $(HDR)
+
+debug: CFLAGS = -Og -ggdb -pipe -MMD -I. -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+
+debug: $(OBJ) check
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $(TARGET)
+
+check test: tests
+	./t/testreadline <<<"test string."
+	./t/testcompile
+	./t/testparseopts
+
+tests: $(TESTS)
 
 install: $(TARGET)
 	@printf "%s\n" "installing"
