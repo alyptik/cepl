@@ -10,9 +10,11 @@ libraries or headers with command-line switches.
 
 Recent versions of the `readline` library and `gcc`.
 
+> `perl` required to use the `-p` switch
+
 ## Usage
 ```bash
-./cepl [-hvw] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
+./cepl [-hvwp] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -28,6 +30,7 @@ Input lines prefixed with a `;` are used to control the internal state.
 	-h: Show help/usage information.
 	-v: Show version information.
 	-w: Compile with "-pedantic-errors -Wall -Wextra" flags.
+	-p: Add symbols from dynamic libraries to readline completion.
 	-l: Link against specified library (flag can be repeated).
 	-I: Search directory for header files (flag can be repeated).
 	-o: Name of the file to output source to.
