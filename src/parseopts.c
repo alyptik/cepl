@@ -5,24 +5,20 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/syscall.h>
-#include <linux/memfd.h>
-
 #include <err.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include "parseopts.h"
 #include "readline.h"
 
 /* silence linter */
 int getopt(int argc, char * const argv[], const char *optstring);
+FILE *fdopen(int fd, const char *mode);
+ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -31,7 +27,7 @@ extern char **comp_list, *comps[];
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
 	int opt, arg_count = 0, lib_count = 0, comp_count = 0;
-	char **tmp, **cc_list, **syms;
+	char **tmp, **cc_list, **sym_list;
 	char *out_file = NULL;
 	char *const cc = "gcc";
 	char *const cc_arg_list[] = {
@@ -44,6 +40,7 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	};
 	char *const *arg_list;
 	char **lib_list = malloc(sizeof *lib_list);
+	lib_list[lib_count++] = "cepl";
 
 	/* don't print an error if option not found */
 	opterr = 0;
@@ -177,7 +174,14 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	cc_list = tmp;
 	cc_list[arg_count - 1] = NULL;
 
-	syms = parse_libs(lib_list);
+	if ((tmp = realloc(lib_list, (sizeof *lib_list) * ++lib_count)) == NULL) {
+		free(lib_list);
+		err(EXIT_FAILURE, "%s[%d] %s", "error during library lib_list", lib_count - 1, "malloc()");
+	}
+	lib_list = tmp;
+	lib_list[lib_count - 1] = NULL;
+	sym_list = parse_libs(lib_list);
+
 	if (perl_flag) {
 		for (int i = 0; comps[i]; i++) {
 			if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
@@ -194,19 +198,19 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 			memcpy(comp_list[comp_count - 1], comps[i], strlen(comps[i]) + 1);
 		}
 
-		for (int j = 0; syms[j]; j++) {
+		for (int j = 0; sym_list[j]; j++) {
 			if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
 				free(comp_list);
 				err(EXIT_FAILURE, "%s[%d] %s", "error during library comp_list", arg_count - 1, "malloc()");
 			}
 			comp_list = tmp;
 
-			if ((comp_list[comp_count - 1] = malloc(strlen(syms[j]) + 1)) == NULL) {
+			if ((comp_list[comp_count - 1] = malloc(strlen(sym_list[j]) + 1)) == NULL) {
 				free(comp_list);
 				err(EXIT_FAILURE, "%s[%d] %s", "error during comp_list", comp_count - 1, "malloc()");
 			}
-			memset(comp_list[comp_count - 1], 0, strlen(syms[j]) + 1);
-			memcpy(comp_list[comp_count - 1], syms[j], strlen(syms[j]) + 1);
+			memset(comp_list[comp_count - 1], 0, strlen(sym_list[j]) + 1);
+			memcpy(comp_list[comp_count - 1], sym_list[j], strlen(sym_list[j]) + 1);
 		}
 	}
 
@@ -215,15 +219,14 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter comp_list", comp_count - 1, "malloc()");
 	}
 	comp_list = tmp;
-	comp_list[comp_count - 1] = NULL;
-	printf("\n\n%s %s\n", syms[0], comp_list[0]);
 
+	comp_list[comp_count - 1] = NULL;
 	arg_list = cc_list;
 	return arg_list;
 }
 
 char **parse_libs(char *libs[]) {
-	int status, i;
+	int status, i = 0;
 	int pipe_nm[2];
 	char **tokens, **tmp;
 	FILE *nm_input;
@@ -264,20 +267,15 @@ char **parse_libs(char *libs[]) {
 		close(pipe_nm[0]);
 		if ((tokens = malloc(sizeof *tokens)) == NULL)
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tokens malloc()");
-		tokens[0] = strtok(input_line, " ");
+		tokens[i++] = strtok(input_line, " \n");
 
-		for (i = 1; (tokens[i - 1] = strtok(NULL, " ")); i++) {
+		for (; (tokens[i - 1] = strtok(NULL, " \n")); i++) {
 			if ((tmp = realloc(tokens, (sizeof *tokens) * (i + 1))) == NULL) {
 				free(tokens);
 				err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
 			}
 			tokens = tmp;
 		}
-		if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
-			free(tokens);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter comp_list", i - 1, "malloc()");
-		}
-		tokens = tmp;
 		tokens[i - 1] = NULL;
 
 		return tokens;
