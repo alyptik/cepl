@@ -11,7 +11,7 @@
 #include "readline.h"
 
 /* TODO: generate larger list of useful completions */
-static char *const comps[] = {
+char *comps[] = {
 	"auto", "break", "case", "char", "const", "continue", "default",
 	"do", "double", "else", "enum", "extern", "float", "for", "goto",
 	"if", "inline", "int", "long", "register", "restrict", "return",
@@ -23,19 +23,27 @@ static char *const comps[] = {
 	"bool", "true", "false", "free(", "malloc(", "realloc(", "calloc(",
 	"printf(", "open(", "close(", "read(", "write(", "fopen(", "fclose(",
 	"fread(", "fwrite(", "memcpy(", "memset(", "strcpy(", "strlen(",
-	"strcat(", "strtok(", "puts(", "putc(", "getc", "putchar(", "getchar("
+	"strcat(", "strtok(", "puts(", "putc(", "getc", "putchar(", "getchar(",
 	";reset", NULL
 };
+char **comp_list = NULL;
+
 
 char *generator(const char *text, int state)
 {
 	static size_t list_index, len;
 	char *name, *buf;
+	char **completions = NULL;
+	if (comp_list)
+		completions = comp_list;
+	else
+		completions = comps;
+
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);
 	}
-	while ((name = comps[list_index++])) {
+	while ((name = completions[list_index++])) {
 		if (memcmp(name, text, len) == 0) {
 			if ((buf = malloc(strlen(name) + 1)) == NULL) {
 				warn("%s", "error allocating generator string");

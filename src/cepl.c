@@ -31,7 +31,7 @@
 
 int main(int argc, char *argv[])
 {
-	char optstring[] = "hvwl:I:o:";
+	char optstring[] = "hvwpl:I:o:";
 	char *prog_main_start = malloc(MAIN_START_SIZE);
 	char *prog_main_end = malloc(MAIN_END_SIZE);
 	char *prog_start = malloc(START_SIZE);
