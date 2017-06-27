@@ -35,6 +35,6 @@ int main (void)
 
 	done_testing();
 
-	free_cc_argv((char **)result);
+	free_argv((char **)result);
 
 }

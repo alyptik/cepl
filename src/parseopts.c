@@ -27,7 +27,7 @@ extern char **comp_list, *comps[];
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
 	int opt, arg_count = 0, lib_count = 0, comp_count = 0;
-	char **tmp, **cc_list, **sym_list;
+	char **tmp, **cc_list, **lib_list, **sym_list;
 	char *out_file = NULL;
 	char *const cc = "gcc";
 	char *const cc_arg_list[] = {
@@ -39,8 +39,12 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 		"-pedantic-errors", "-Wall", "-Wextra", NULL
 	};
 	char *const *arg_list;
-	char **lib_list = malloc(sizeof *lib_list);
-	lib_list[lib_count++] = "cepl";
+	if ((lib_list = malloc(sizeof *lib_list)) == NULL)
+		err(EXIT_FAILURE, "%s", "error duing lib_list malloc()");
+	if ((lib_list[lib_count++] = malloc(strlen("cepl") + 1)) == NULL)
+		err(EXIT_FAILURE, "%s", "error duing lib_list malloc()");
+	memset(lib_list[lib_count - 1], 0, strlen("cepl") + 1);
+	memcpy(lib_list[lib_count - 1], "cepl", strlen("cepl") + 1);
 
 	/* don't print an error if option not found */
 	opterr = 0;
@@ -180,9 +184,10 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	}
 	lib_list = tmp;
 	lib_list[lib_count - 1] = NULL;
-	sym_list = parse_libs(lib_list);
 
 	if (perl_flag) {
+		sym_list = parse_libs(lib_list);
+
 		for (int i = 0; comps[i]; i++) {
 			if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
 				free(comp_list);
@@ -212,15 +217,18 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 			memset(comp_list[comp_count - 1], 0, strlen(sym_list[j]) + 1);
 			memcpy(comp_list[comp_count - 1], sym_list[j], strlen(sym_list[j]) + 1);
 		}
+		if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
+			free(comp_list);
+			err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter comp_list", comp_count - 1, "malloc()");
+		}
+		comp_list = tmp;
+		comp_list[comp_count - 1] = NULL;
+
+		free(sym_list);
 	}
 
-	if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
-		free(comp_list);
-		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter comp_list", comp_count - 1, "malloc()");
-	}
-	comp_list = tmp;
-
-	comp_list[comp_count - 1] = NULL;
+	if (free_argv(lib_list) == -1)
+			warnx("%s", "error freeing lib_list");
 	arg_list = cc_list;
 	return arg_list;
 }
@@ -264,19 +272,23 @@ char **parse_libs(char *libs[]) {
 		}
 		getline(&input_line, &line_size, nm_input);
 		fclose(nm_input);
-		close(pipe_nm[0]);
 		if ((tokens = malloc(sizeof *tokens)) == NULL)
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tokens malloc()");
-		tokens[i++] = strtok(input_line, " \n");
+		tokens[i++] = strtok(input_line, " ");
 
-		for (; (tokens[i - 1] = strtok(NULL, " \n")); i++) {
-			if ((tmp = realloc(tokens, (sizeof *tokens) * (i + 1))) == NULL) {
+		if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
+			free(tokens);
+			err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
+		}
+		tokens = tmp;
+
+		while ((tokens[i - 1] = strtok(NULL, " ")) != NULL) {
+			if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
 				free(tokens);
 				err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
 			}
 			tokens = tmp;
 		}
-		tokens[i - 1] = NULL;
 
 		return tokens;
 	}

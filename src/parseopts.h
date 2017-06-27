@@ -17,14 +17,14 @@
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile);
 char **parse_libs(char *libs[]);
 
-static inline int free_cc_argv(char **cc_argv)
+static inline int free_argv(char **argv)
 {
 	int i;
-	if (!cc_argv || !cc_argv[0])
+	if (!argv || !argv[0])
 		return -1;
-	for (i = 0; cc_argv[i]; i++)
-		free(cc_argv[i]);
-	free(cc_argv);
+	for (i = 0; argv[i]; i++)
+		free(argv[i]);
+	free(argv);
 	return i;
 }
 

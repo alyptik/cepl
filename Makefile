@@ -20,6 +20,7 @@ HDR = $(wildcard src/*.h) $(wildcard t/*.h)
 
 TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 TARGET = cepl
+PERL_SCRIPT = elfsyms.pl
 
 all: $(TARGET) check
 
@@ -53,16 +54,17 @@ install: $(TARGET)
 	@printf "%s\n" "installing"
 	@mkdir -pv $(PREFIX)/bin
 	install -c $(TARGET) $(prefix)/bin
+	install -c $(PERL_SCRIPT) $(prefix)/bin
 
 uninstall:
-	@rm -fv $(PREFIX)/bin/$(TARGET)
+	@rm -fv $(PREFIX)/bin/$(TARGET) $(PREFIX)/bin/$(PERL_SCRIPT)
 
 dist: clean
 	@printf "%s\n" "creating dist tarball"
-	@mkdir -pv $(TARGET)
-	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(TARGET)
-	tar -czf $(TARGET).tar.gz $(TARGET)
-	@rm -rfv $(TARGET)
+	@mkdir -pv $(TARGET)/
+	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(PERL_SCRIPT) $(TARGET)/
+	tar -czf $(TARGET).tar.gz $(TARGET)/
+	@rm -rfv $(TARGET)/
 
 clean:
 	@printf "%s\n" "cleaning"

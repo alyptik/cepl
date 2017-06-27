@@ -29,6 +29,8 @@
 		memset(prog_end, C, END_SIZE); \
 		memcpy(prog_start, PROG_START, START_SIZE);
 
+extern char **comp_list;
+
 int main(int argc, char *argv[])
 {
 	char optstring[] = "hvwpl:I:o:";
@@ -42,8 +44,11 @@ int main(int argc, char *argv[])
 	char *tmp = NULL, *line = NULL;
 
 	/* initial sanity check */
-	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end)
+	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end) {
+		if (comp_list)
+			free_argv(comp_list);
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
+	}
 	/* initialize source buffers */
 	MEM_INIT(0);
 	/* truncated output to show user */
@@ -76,8 +81,10 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			if (free_cc_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
+			if (comp_list)
+				free_argv(comp_list);
+			if (free_argv((char **)cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_main_start");
 		}
 		prog_main_start = tmp;
@@ -86,8 +93,10 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			if (free_cc_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
+			if (comp_list)
+				free_argv(comp_list);
+			if (free_argv((char **)cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_main_end");
 		}
 		prog_main_end = tmp;
@@ -96,8 +105,10 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			if (free_cc_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
+			if (comp_list)
+				free_argv(comp_list);
+			if (free_argv((char **)cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_start");
 		}
 		prog_start = tmp;
@@ -106,8 +117,10 @@ int main(int argc, char *argv[])
 			free(prog_main_end);
 			free(prog_start);
 			free(prog_end);
-			if (free_cc_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
+			if (comp_list)
+				free_argv(comp_list);
+			if (free_argv((char **)cc_argv) == -1)
+				err(EXIT_FAILURE, "%s", "error during free_argv() call");
 			err(EXIT_FAILURE, "error during realloc() for prog_end");
 		}
 		prog_end = tmp;
@@ -175,7 +188,9 @@ int main(int argc, char *argv[])
 		free(prog_end);
 	if (line)
 		free(line);
-	if (free_cc_argv((char **)cc_argv) == -1)
-		err(EXIT_FAILURE, "%s", "error during free_cc_argv() call");
+	if (comp_list)
+		free_argv(comp_list);
+	if (free_argv((char **)cc_argv) == -1)
+		err(EXIT_FAILURE, "%s", "error during free_argv() call");
 	return 0;
 }
