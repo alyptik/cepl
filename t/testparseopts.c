@@ -11,20 +11,25 @@
 int main (void)
 {
 	FILE *ofile = NULL;
-	int argc = 5;
-	char *argv[] = {"cepl", "-llib", "-l", "slib", "-Iinc", "-I", "sinc", "-o/tmp/test", NULL};
+	int argc = 0;
+	char *argv[] = {
+		"cepl", "-llib", "-l", "slib",
+		"-Iinc", "-I", "sinc",
+		"-o/tmp/test", NULL
+	};
 	char optstring[] = "hvl:I:o:";
-	char *const *result = parse_opts(argc, argv, optstring, &ofile);
+	char *const *result;
 
+	for (; argv[argc]; argc++);
+	result = parse_opts(argc, argv, optstring, &ofile);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
-	for (int i = 0; i < 15; i++)
-		printf("%s ", result[i]);
+	for (int i = 0; result[i]; (printf("%s ", result[i]), i++));
 	putchar('\n');
 
 	plan(2);
 
 	is(result[0], "gcc", "test option parsing.");
-	like(result[4], "^-O2$", "test cc_argv.");
+	like(result[5], "^-O2$", "test cc_argv[5] matches \"-O2\"");
 
 	done_testing();
 

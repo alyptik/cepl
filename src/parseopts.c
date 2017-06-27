@@ -19,7 +19,7 @@ extern int optind, opterr, optopt;
 
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
-	int opt, cc_count = 10, arg_count = 0;
+	int opt, arg_count = 0;
 	char **tmp, **cc_list;
 	char *out_file = NULL;
 	char *const cc = "gcc";
@@ -53,8 +53,10 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
 			}
 			cc_list = tmp;
-			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL)
+			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL) {
+				free(cc_list);
 				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			}
 			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
 			memcpy(cc_list[arg_count - 1], "-l", 2);
 			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
@@ -65,10 +67,12 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
 			}
 			cc_list = tmp;
-			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL)
+			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL) {
+				free(cc_list);
 				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			}
 			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
-			memcpy(cc_list[arg_count - 1], "-l", 2);
+			memcpy(cc_list[arg_count - 1], "-I", 2);
 			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
 			break;
 		case 'o':
@@ -86,14 +90,16 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	}
 
 	/* finalize cc argument list */
-	for (int i = 0; i < cc_count; i++) {
+	for (int i = 0; cc_arg_list[i]; i++) {
 		if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 			free(cc_list);
 			err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
 		}
 		cc_list = tmp;
-		if ((cc_list[arg_count - 1] = malloc(strlen(cc_arg_list[i]) + 1)) == NULL)
+		if ((cc_list[arg_count - 1] = malloc(strlen(cc_arg_list[i]) + 1)) == NULL) {
+			free(cc_list);
 			err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+		}
 		memset(cc_list[arg_count - 1], 0, strlen(cc_arg_list[i]) + 1);
 		memcpy(cc_list[arg_count - 1], cc_arg_list[i], strlen(cc_arg_list[i]) + 1);
 	}
