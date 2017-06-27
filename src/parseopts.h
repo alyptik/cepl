@@ -9,7 +9,9 @@
 #define PARSEOPTS_H 1
 
 #include <stdio.h>
-#define CEPL_VERSION "CEPL v0.1.6"
+
+#define CEPL_VERSION "CEPL v0.1.7"
+#define USAGE "Usage: %s [-hvw] [-l<library>] [-I<include dir>] [-o<sessionlog.c>]\n\n\t-h: Show help/usage information.\n\t-v: Show version information.\n\t-w: Compile with \"-pedantic-errors -Wall -Wextra\" flags.\n\t-l: Link against specified library (flag can be repeated).\n\t-I: Search directory for header files (flag can be repeated).\n\t-o: Name of the file to output source to."
 
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile);
 

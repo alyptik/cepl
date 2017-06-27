@@ -6,6 +6,7 @@
  */
 
 #include <err.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -24,9 +25,12 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	char *out_file = NULL;
 	char *const cc = "gcc";
 	char *const cc_arg_list[] = {
-		"-O2", "-pipe", "-Wall", "-Wextra",
-		"-pedantic-errors", "-std=c11", "-xc",
+		"-O2", "-pipe", "-std=c11", "-xc",
 		"/dev/stdin", "-o", "/dev/stdout", NULL
+	};
+	bool warn_set = false;
+	char *const warn_list[] = {
+		"-pedantic-errors", "-Wall", "-Wextra", NULL
 	};
 	char *const *arg_list;
 
@@ -36,45 +40,47 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 
 	/* initilize cc argument list */
 	if ((cc_list = malloc((sizeof *cc_list) * ++arg_count)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+		err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", arg_count - 1, "malloc()");
 	if ((cc_list[arg_count - 1] = malloc(strlen(cc) + 1)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+		err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", arg_count - 1, "malloc()");
 	memset(cc_list[arg_count - 1], 0, strlen(cc) + 1);
 	memcpy(cc_list[arg_count - 1], cc, strlen(cc) + 1);
 
 	while ((opt = getopt(argc, argv, optstring)) != -1) {
 		switch (opt) {
-		case 'v':
-			errx(EXIT_FAILURE, "%s", CEPL_VERSION);
-			break;
+		/* dynamic library flag */
 		case 'l':
 			if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 				free(cc_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+				err(EXIT_FAILURE, "%s[%d] %s", "error during library cc_list", arg_count - 1, "malloc()");
 			}
 			cc_list = tmp;
 			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL) {
 				free(cc_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+				err(EXIT_FAILURE, "%s[%d] %s", "error during library cc_list", arg_count - 1, "malloc()");
 			}
 			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
 			memcpy(cc_list[arg_count - 1], "-l", 2);
 			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
 			break;
+
+		/* header directory flag */
 		case 'I':
 			if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 				free(cc_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+				err(EXIT_FAILURE, "%s[%d] %s", "error during header cc_list", arg_count - 1, "malloc()");
 			}
 			cc_list = tmp;
 			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL) {
 				free(cc_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+				err(EXIT_FAILURE, "%s[%d] %s", "error during header cc_list", arg_count - 1, "malloc()");
 			}
 			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
 			memcpy(cc_list[arg_count - 1], "-I", 2);
 			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
 			break;
+
+		/* output file flag */
 		case 'o':
 			if (out_file != NULL)
 				errx(EXIT_FAILURE, "%s", "too many output files specified");
@@ -82,10 +88,42 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 			if ((*ofile = fopen(out_file, "w")) == NULL)
 				err(EXIT_FAILURE, "%s", "failed to create output file");
 			break;
+
+		/* warning flag */
+		case 'w':
+			/* break early if already set */
+			if (warn_set)
+				break;
+			for (int i = 0; warn_list[i]; i++) {
+				if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
+					free(cc_list);
+					err(EXIT_FAILURE, "%s[%d] %s", "error during warning cc_list", arg_count - 1, "malloc()");
+				}
+				cc_list = tmp;
+				if ((cc_list[arg_count - 1] = malloc(strlen(warn_list[i]) + 1)) == NULL) {
+					free(cc_list);
+					err(EXIT_FAILURE, "%s[%d] %s", "error during warning cc_list", arg_count - 1, "malloc()");
+				}
+				memset(cc_list[arg_count - 1], 0, strlen(warn_list[i]) + 1);
+				memcpy(cc_list[arg_count - 1], warn_list[i], strlen(warn_list[i]) + 1);
+			}
+			warn_set = true;
+			break;
+
+		/* version flag */
+		case 'v':
+			free(cc_list[arg_count - 1]);
+			free(cc_list);
+			errx(EXIT_FAILURE, "%s", CEPL_VERSION);
+			break;
+
+		/* usage and unrecognized flags */
 		case 'h':
 		case '?':
 		default:
-			errx(EXIT_FAILURE, "usage: %s [-hv] [-l<library>] [-I<include dir>] [-o<sessionlog.c>]", argv[0]);
+			free(cc_list[arg_count - 1]);
+			free(cc_list);
+			errx(EXIT_FAILURE, USAGE, argv[0]);
 		}
 	}
 
@@ -93,12 +131,12 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	for (int i = 0; cc_arg_list[i]; i++) {
 		if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 			free(cc_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			err(EXIT_FAILURE, "%s[%d] %s", "error during final cc_list", arg_count - 1, "malloc()");
 		}
 		cc_list = tmp;
 		if ((cc_list[arg_count - 1] = malloc(strlen(cc_arg_list[i]) + 1)) == NULL) {
 			free(cc_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+			err(EXIT_FAILURE, "%s[%d] %s", "error during final cc_list", arg_count - 1, "malloc()");
 		}
 		memset(cc_list[arg_count - 1], 0, strlen(cc_arg_list[i]) + 1);
 		memcpy(cc_list[arg_count - 1], cc_arg_list[i], strlen(cc_arg_list[i]) + 1);
@@ -106,7 +144,7 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 
 	if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 		free(cc_list);
-		err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list", arg_count - 1, "malloc()");
+		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter cc_list", arg_count - 1, "malloc()");
 	}
 	cc_list = tmp;
 	cc_list[arg_count - 1] = NULL;

@@ -17,7 +17,7 @@ int main (void)
 		"-Iinc", "-I", "sinc",
 		"-o/tmp/test", NULL
 	};
-	char optstring[] = "hvl:I:o:";
+	char optstring[] = "hvwl:I:o:";
 	char *const *result;
 
 	for (; argv[argc]; argc++);

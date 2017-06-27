@@ -16,9 +16,8 @@
 
 int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[])
 {
-	int mem_fd;
+	int mem_fd, status;
 	int pipe_cc[2], pipe_exec[2];
-	int status, ret = 0;
 
 	/* create pipes */
 	pipe(pipe_cc);
@@ -57,8 +56,8 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 		close(pipe_exec[1]);
 		wait(&status);
 		if (status != 0) {
-			warn("%s", "compiler returned non-zero exit code");
-			ret = status;
+			warnx("%s", "compiler returned non-zero exit code");
+			return status;
 		}
 	}
 
@@ -85,11 +84,11 @@ int compile(char const *cc, char *src, char *const cc_args[], char *const exec_a
 		close(pipe_exec[0]);
 		wait(&status);
 		/* don't overwrite non-zero exit status from compiler */
-		if (status != 0 && ret == 0) {
-			warn("%s", "executable returned non-zero exit code");
-			ret = status;
+		if (status != 0) {
+			warnx("%s", "executable returned non-zero exit code");
+			return status;
 		}
 	}
 
-	return ret;
+	return 0;
 }

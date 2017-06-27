@@ -31,7 +31,7 @@
 
 int main(int argc, char *argv[])
 {
-	char optstring[] = "hvl:I:o:";
+	char optstring[] = "hvwl:I:o:";
 	char *prog_main_start = malloc(MAIN_START_SIZE);
 	char *prog_main_end = malloc(MAIN_END_SIZE);
 	char *prog_start = malloc(START_SIZE);
@@ -59,7 +59,9 @@ int main(int argc, char *argv[])
 	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{(";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
-	printf("\n%s\n", CEPL_VERSION);
+	putchar('\n');
+	printf(CEPL_VERSION);
+	putchar('\n');
 
 	/* repeat readline() until EOF is read */
 	while ((line = readline("\n>>> ")) != NULL && *line) {
