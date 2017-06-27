@@ -6,7 +6,7 @@
  */
 
 #ifndef PARSEOPTS_H
-#define PARSEOPTS_H
+#define PARSEOPTS_H 1
 
 #include <stdio.h>
 #define CEPL_VERSION "CEPL v0.1.6"
