@@ -4,18 +4,11 @@
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE file for copyright and license details.
 
-DEBUG ?= 0
-
-ifeq ($(DEBUG), 1)
-CFLAGS = -O0 -ggdb -pipe -I. -MMD -Wall -Wextra -std=c11 -pedantic-errors -DDEBUG -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-else
-CFLAGS = -O2 -pipe -I. -MMD -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-endif
-
 CC ?= gcc
 LD ?= $(CC)
 PREFIX ?= $(DESTDIR)/usr/local
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
+CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
 LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-z,now
 LDLIBS = -lreadline
 TAP = t/tap
@@ -24,6 +17,7 @@ TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(SRC))
 TOBJ = $(patsubst %, %.o, $(TESTS))
 HDR = $(wildcard src/*.h) $(wildcard t/*.h)
+
 TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 TARGET = cepl
 
@@ -35,10 +29,13 @@ TARGET = cepl
 
 all: $(TARGET) tests
 
-debug: $(TARGET) tests
-$(TARGET): $(OBJ)`
+$(TARGET): $(OBJ)
 
 $(OBJ): %.o: %.c $(HDR)
+
+debug: CFLAGS = -O0 -ggdb -pipe -MMD -I. -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+debug: $(OBJ) tests
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $(TARGET)
 
 check test: tests
 	./t/testcompile
@@ -71,4 +68,4 @@ clean:
 	@rm -fv $(TARGET) $(OBJ) $(TOBJ) $(TESTS) $(TARGET).tar.gz $(wildcard t/*.d) $(wildcard src/*.d)
 
 -include $(wildcard src/*.d) $(wildcard t/*.d)
-.PHONY: all cle an debug install uninstall dist check test tests
+.PHONY: all clean install uninstall dist debug check test tests
