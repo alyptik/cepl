@@ -20,7 +20,10 @@ static char *const comps[] = {
 	"_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
-	"bool", "true", "false", "free", "malloc(", "printf(", "puts(",
+	"bool", "true", "false", "free(", "malloc(", "realloc(", "calloc(",
+	"printf(", "open(", "close(", "read(", "write(", "fopen(", "fclose(",
+	"fread(", "fwrite(", "memcpy(", "memset(", "strcpy(", "strlen(",
+	"strcat(", "strtok(", "puts(", "putc(", "getc", "putchar(", "getchar("
 	";reset", NULL
 };
 
