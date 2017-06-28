@@ -22,12 +22,18 @@
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
 
-#define MEM_INIT(C) memset(prog_main_start, C, MAIN_START_SIZE); \
-		memset(prog_main_end, C, MAIN_END_SIZE); \
-		memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
-		memset(prog_start, C, START_SIZE); \
-		memset(prog_end, C, END_SIZE); \
-		memcpy(prog_start, PROG_START, START_SIZE);
+#define MEM_INIT do { memset(prog_main_start, 0, MAIN_START_SIZE); \
+			memset(prog_main_end, 0, MAIN_END_SIZE); \
+			memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
+			memset(prog_start, 0, START_SIZE); \
+			memset(prog_end, 0, END_SIZE); \
+			memcpy(prog_start, PROG_START, START_SIZE); } while (0)
+
+#define FREE_PROGS do { if (prog_main_start) free(prog_main_start); \
+			if (prog_main_end) free(prog_main_end); \
+			if (prog_start) free(prog_start); \
+			if (prog_end) free(prog_end); } while (0)
+
 
 extern char **comp_list;
 
@@ -45,18 +51,23 @@ int main(int argc, char *argv[])
 
 	/* initial sanity check */
 	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end) {
+		FREE_PROGS;
 		if (comp_list)
 			free_argv(comp_list);
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
 	}
+
 	/* initialize source buffers */
-	MEM_INIT(0);
+	MEM_INIT;
 	/* truncated output to show user */
 	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 	strcat(prog_main_end, PROG_MAIN_END);
 	/* main program */
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
+	putchar('\n');
+	printf(CEPL_VERSION);
+	putchar('\n');
 
 	/* enable completion */
 	rl_completion_entry_function = &generator;
@@ -64,9 +75,6 @@ int main(int argc, char *argv[])
 	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{(";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
-	putchar('\n');
-	printf(CEPL_VERSION);
-	putchar('\n');
 
 	/* repeat readline() until EOF is read */
 	while ((line = readline("\n>>> ")) != NULL && *line) {
@@ -77,10 +85,7 @@ int main(int argc, char *argv[])
 
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		if ((tmp = realloc(prog_main_start, strlen(prog_main_start) + strlen(line) + 4)) == NULL) {
-			free(prog_main_start);
-			free(prog_main_end);
-			free(prog_start);
-			free(prog_end);
+			FREE_PROGS;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -89,10 +94,7 @@ int main(int argc, char *argv[])
 		}
 		prog_main_start = tmp;
 		if ((tmp = realloc(prog_main_end, strlen(prog_main_end) + strlen(line) + 4)) == NULL) {
-			free(prog_main_start);
-			free(prog_main_end);
-			free(prog_start);
-			free(prog_end);
+			FREE_PROGS;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -101,10 +103,7 @@ int main(int argc, char *argv[])
 		}
 		prog_main_end = tmp;
 		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(line) + 4)) == NULL) {
-			free(prog_main_start);
-			free(prog_main_end);
-			free(prog_start);
-			free(prog_end);
+			FREE_PROGS;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -113,10 +112,7 @@ int main(int argc, char *argv[])
 		}
 		prog_start = tmp;
 		if ((tmp = realloc(prog_end, strlen(prog_end) + strlen(line) + 4)) == NULL) {
-			free(prog_main_start);
-			free(prog_main_end);
-			free(prog_start);
-			free(prog_end);
+			FREE_PROGS;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -137,7 +133,7 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
-				MEM_INIT(0);
+				MEM_INIT;
 				break;
 			/* TODO: more command handling */
 			}
@@ -176,21 +172,14 @@ int main(int argc, char *argv[])
 		fputc('\n', ofile);
 		fclose(ofile);
 	}
-
-	printf("\n%s\n\n", "Terminating program.");
-	if (prog_main_start)
-		free(prog_main_start);
-	if (prog_main_end)
-		free(prog_main_end);
-	if (prog_start)
-		free(prog_start);
-	if (prog_end)
-		free(prog_end);
+	FREE_PROGS;
 	if (line)
 		free(line);
 	if (comp_list)
 		free_argv(comp_list);
 	if (free_argv((char **)cc_argv) == -1)
 		err(EXIT_FAILURE, "%s", "error during free_argv() call");
+	printf("\n%s\n\n", "Terminating program.");
+
 	return 0;
 }

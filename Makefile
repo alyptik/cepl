@@ -39,7 +39,6 @@ $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test, src/, %), $(filter-out src/$(
 $(TOBJ): %.o: %.c $(HDR)
 
 debug: CFLAGS = -Og -ggdb -pipe -MMD -I. -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-
 debug: $(OBJ) check
 	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $(TARGET)
 

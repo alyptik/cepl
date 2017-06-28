@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#define CEPL_VERSION "CEPL v0.1.8"
+#define CEPL_VERSION "CEPL v0.2.1"
 #define USAGE "Usage: %s [-hvwp] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t-h: Show help/usage information.\n\t-v: Show version information.\n\t-w: Compile with ”-pedantic-errors -Wall -Wextra” flags.\n\t-p: Add symbols from dynamic libraries to readline completion.\n\t-l: Link against specified library (flag can be repeated).\n\t-I: Search directory for header files (flag can be repeated).\n\t-o: Name of the file to output source to."
 #define COUNT sysconf(_SC_PAGESIZE)
 

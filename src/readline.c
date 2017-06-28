@@ -28,7 +28,6 @@ char *comps[] = {
 };
 char **comp_list = NULL;
 
-
 char *generator(const char *text, int state)
 {
 	static size_t list_index, len;
