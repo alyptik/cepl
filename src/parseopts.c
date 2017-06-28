@@ -23,6 +23,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 extern char *optarg;
 extern int optind, opterr, optopt;
 extern char **comp_list, *comps[];
+char *line_ptr = NULL;
 
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
@@ -229,6 +230,10 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 
 	if (free_argv(lib_list) == -1)
 		warnx("%s", "error freeing lib_list");
+	if (line_ptr) {
+		free(line_ptr);
+		line_ptr = NULL;
+	}
 	arg_list = cc_list;
 	return arg_list;
 }
@@ -238,7 +243,7 @@ char **parse_libs(char *libs[]) {
 	int pipe_nm[2];
 	char **tokens, **tmp;
 	FILE *nm_input;
-	char *input_line = NULL;
+	char *line_ptr = NULL;
 	size_t line_size = 0;
 
 	pipe(pipe_nm);
@@ -271,13 +276,13 @@ char **parse_libs(char *libs[]) {
 			return NULL;
 		}
 
-		getline(&input_line, &line_size, nm_input);
+		getline(&line_ptr, &line_size, nm_input);
 		fclose(nm_input);
 		close(pipe_nm[0]);
 
 		if ((tokens = malloc(sizeof *tokens)) == NULL)
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tokens malloc()");
-		tokens[i++] = strtok(input_line, " \t\n");
+		tokens[i++] = strtok(line_ptr, " \t\n");
 		if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
 			free(tokens);
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
@@ -292,7 +297,6 @@ char **parse_libs(char *libs[]) {
 			tokens = tmp;
 		}
 
-		free(input_line);
 		return tokens;
 	}
 }

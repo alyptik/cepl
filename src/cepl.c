@@ -33,7 +33,7 @@
 			memset(prog_end, 0, END_SIZE); \
 			memcpy(prog_start, PROG_START, START_SIZE); } while (0)
 
-#define FREE_PROGS do {	if (prog_main_start) free(prog_main_start); \
+#define MEM_FREE do {	if (prog_main_start) free(prog_main_start); \
 			if (prog_main_end) free(prog_main_end); \
 			if (prog_start) free(prog_start); \
 			if (prog_end) free(prog_end); } while (0)
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	MEM_INIT;
 	/* initial sanity check */
 	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end) {
-		FREE_PROGS;
+		MEM_FREE;
 		if (comp_list)
 			free_argv(comp_list);
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		if ((tmp = realloc(prog_main_start, strlen(prog_main_start) + strlen(line) + 4)) == NULL) {
-			FREE_PROGS;
+			MEM_FREE;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 		}
 		prog_main_start = tmp;
 		if ((tmp = realloc(prog_main_end, strlen(prog_main_end) + strlen(line) + 4)) == NULL) {
-			FREE_PROGS;
+			MEM_FREE;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 		}
 		prog_main_end = tmp;
 		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(line) + 4)) == NULL) {
-			FREE_PROGS;
+			MEM_FREE;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 		}
 		prog_start = tmp;
 		if ((tmp = realloc(prog_end, strlen(prog_end) + strlen(line) + 4)) == NULL) {
-			FREE_PROGS;
+			MEM_FREE;
 			if (comp_list)
 				free_argv(comp_list);
 			if (free_argv((char **)cc_argv) == -1)
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
-				FREE_PROGS;
+				MEM_FREE;
 				MEM_INIT;
 				break;
 			/* TODO: more command handling */
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 		fputc('\n', ofile);
 		fclose(ofile);
 	}
-	FREE_PROGS;
+	MEM_FREE;
 	if (line)
 		free(line);
 	if (comp_list)
