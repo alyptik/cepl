@@ -13,14 +13,14 @@
 #include "readline.h"
 #include "parseopts.h"
 
-#define PROG_MAIN_START "int main(int argc, char *argv[])\n{\n"
-#define PROG_MAIN_END "\n\treturn 0;\n}\n"
-#define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\n"PROG_MAIN_START
-#define PROG_END PROG_MAIN_END
-#define MAIN_START_SIZE (strlen(PROG_MAIN_START) + 1)
-#define MAIN_END_SIZE (MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
-#define START_SIZE (strlen(PROG_START) + 1)
-#define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
+#define PROG_MAIN_START	"int main(int argc, char *argv[])\n{\n"
+#define PROG_MAIN_END	"\n\treturn 0;\n}\n"
+#define PROG_START	"#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n\n"PROG_MAIN_START
+#define PROG_END	PROG_MAIN_END
+#define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 1)
+#define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
+#define START_SIZE	(strlen(PROG_START) + 1)
+#define END_SIZE	(START_SIZE + strlen(PROG_END) + 1)
 
 #define MEM_INIT do {	prog_main_start = malloc(MAIN_START_SIZE); \
 			prog_main_end = malloc(MAIN_END_SIZE); \
