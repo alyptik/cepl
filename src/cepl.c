@@ -32,12 +32,18 @@
 			memset(prog_start, 0, START_SIZE); \
 			memset(prog_end, 0, END_SIZE); \
 			memcpy(prog_start, PROG_START, START_SIZE); } while (0)
-
 #define MEM_FREE do {	if (prog_main_start) free(prog_main_start); \
 			if (prog_main_end) free(prog_main_end); \
 			if (prog_start) free(prog_start); \
 			if (prog_end) free(prog_end); } while (0)
-
+#define RESIZE(P) do {	char *tmp; \
+			if ((tmp = realloc(P, strlen(P) + strlen(line) + 4)) == NULL) { \
+				MEM_FREE; \
+				if (free_argv((char **)cc_argv) == -1) \
+					err(EXIT_FAILURE, "%s", "error during free_argv() call"); \
+				if (comp_list) free_argv(comp_list); \
+					err(EXIT_FAILURE, "error during realloc() for prog_end"); \
+			} P = tmp; } while (0)
 
 extern char **comp_list;
 
@@ -48,7 +54,7 @@ int main(int argc, char *argv[])
 	FILE *ofile = NULL;
 	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* readline buffer */
-	char *tmp = NULL, *line = NULL;
+	char *line = NULL;
 
 	/* initialize source buffers */
 	MEM_INIT;
@@ -85,43 +91,10 @@ int main(int argc, char *argv[])
 		add_history(line);
 
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		if ((tmp = realloc(prog_main_start, strlen(prog_main_start) + strlen(line) + 4)) == NULL) {
-			MEM_FREE;
-			if (comp_list)
-				free_argv(comp_list);
-			if (free_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_argv() call");
-			err(EXIT_FAILURE, "error during realloc() for prog_main_start");
-		}
-		prog_main_start = tmp;
-		if ((tmp = realloc(prog_main_end, strlen(prog_main_end) + strlen(line) + 4)) == NULL) {
-			MEM_FREE;
-			if (comp_list)
-				free_argv(comp_list);
-			if (free_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_argv() call");
-			err(EXIT_FAILURE, "error during realloc() for prog_main_end");
-		}
-		prog_main_end = tmp;
-		if ((tmp = realloc(prog_start, strlen(prog_start) + strlen(line) + 4)) == NULL) {
-			MEM_FREE;
-			if (comp_list)
-				free_argv(comp_list);
-			if (free_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_argv() call");
-			err(EXIT_FAILURE, "error during realloc() for prog_start");
-		}
-		prog_start = tmp;
-		if ((tmp = realloc(prog_end, strlen(prog_end) + strlen(line) + 4)) == NULL) {
-			MEM_FREE;
-			if (comp_list)
-				free_argv(comp_list);
-			if (free_argv((char **)cc_argv) == -1)
-				err(EXIT_FAILURE, "%s", "error during free_argv() call");
-			err(EXIT_FAILURE, "error during realloc() for prog_end");
-		}
-		prog_end = tmp;
-
+		RESIZE(prog_main_start);
+		RESIZE(prog_main_end);
+		RESIZE(prog_start);
+		RESIZE(prog_end);
 		/* start building program source */
 		strcat(prog_main_start, "\t");
 		strcat(prog_start, "\t");
