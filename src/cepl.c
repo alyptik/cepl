@@ -13,23 +13,27 @@
 #include "readline.h"
 #include "parseopts.h"
 
-#define PROG_MAIN_START "int main(void)\n{\n"
+#define PROG_MAIN_START "int main(int argc, char *argv[])\n{\n"
 #define PROG_MAIN_END "\n\treturn 0;\n}\n"
-#define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\n" PROG_MAIN_START
+#define PROG_START "#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\n"PROG_MAIN_START
 #define PROG_END PROG_MAIN_END
 #define MAIN_START_SIZE (strlen(PROG_MAIN_START) + 1)
 #define MAIN_END_SIZE (MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
 #define START_SIZE (strlen(PROG_START) + 1)
 #define END_SIZE (START_SIZE + strlen(PROG_END) + 1)
 
-#define MEM_INIT do { memset(prog_main_start, 0, MAIN_START_SIZE); \
+#define MEM_INIT do {	prog_main_start = malloc(MAIN_START_SIZE); \
+			prog_main_end = malloc(MAIN_END_SIZE); \
+			prog_start = malloc(START_SIZE); \
+			prog_end = malloc(END_SIZE); \
+			memset(prog_main_start, 0, MAIN_START_SIZE); \
 			memset(prog_main_end, 0, MAIN_END_SIZE); \
 			memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
 			memset(prog_start, 0, START_SIZE); \
 			memset(prog_end, 0, END_SIZE); \
 			memcpy(prog_start, PROG_START, START_SIZE); } while (0)
 
-#define FREE_PROGS do { if (prog_main_start) free(prog_main_start); \
+#define FREE_PROGS do {	if (prog_main_start) free(prog_main_start); \
 			if (prog_main_end) free(prog_main_end); \
 			if (prog_start) free(prog_start); \
 			if (prog_end) free(prog_end); } while (0)
@@ -40,15 +44,14 @@ extern char **comp_list;
 int main(int argc, char *argv[])
 {
 	char optstring[] = "hvwpl:I:o:";
-	char *prog_main_start = malloc(MAIN_START_SIZE);
-	char *prog_main_end = malloc(MAIN_END_SIZE);
-	char *prog_start = malloc(START_SIZE);
-	char *prog_end = malloc(END_SIZE);
+	char *prog_main_start, *prog_main_end, *prog_start, *prog_end;
 	FILE *ofile = NULL;
 	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* readline buffer */
 	char *tmp = NULL, *line = NULL;
 
+	/* initialize source buffers */
+	MEM_INIT;
 	/* initial sanity check */
 	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end) {
 		FREE_PROGS;
@@ -57,8 +60,6 @@ int main(int argc, char *argv[])
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
 	}
 
-	/* initialize source buffers */
-	MEM_INIT;
 	/* truncated output to show user */
 	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 	strcat(prog_main_end, PROG_MAIN_END);
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
 	putchar('\n');
-	printf(CEPL_VERSION);
+	printf("%s", CEPL_VERSION);
 	putchar('\n');
 
 	/* enable completion */
@@ -133,6 +134,7 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
+				FREE_PROGS;
 				MEM_INIT;
 				break;
 			/* TODO: more command handling */

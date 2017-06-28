@@ -292,6 +292,7 @@ char **parse_libs(char *libs[]) {
 			tokens = tmp;
 		}
 
+		free(input_line);
 		return tokens;
 	}
 }
