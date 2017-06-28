@@ -228,7 +228,7 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 	}
 
 	if (free_argv(lib_list) == -1)
-			warnx("%s", "error freeing lib_list");
+		warnx("%s", "error freeing lib_list");
 	arg_list = cc_list;
 	return arg_list;
 }
@@ -270,19 +270,21 @@ char **parse_libs(char *libs[]) {
 			warnx("%s", "nm non-zero exit code");
 			return NULL;
 		}
+
 		getline(&input_line, &line_size, nm_input);
 		fclose(nm_input);
+		close(pipe_nm[0]);
+
 		if ((tokens = malloc(sizeof *tokens)) == NULL)
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tokens malloc()");
-		tokens[i++] = strtok(input_line, " ");
-
+		tokens[i++] = strtok(input_line, " \t\n");
 		if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
 			free(tokens);
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
 		}
 		tokens = tmp;
 
-		while ((tokens[i - 1] = strtok(NULL, " ")) != NULL) {
+		while ((tokens[i - 1] = strtok(NULL, " \t\n")) != NULL) {
 			if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
 				free(tokens);
 				err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
