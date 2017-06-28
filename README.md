@@ -10,7 +10,7 @@ using `nm` and `perl` by passing the `-p` switch.
 
 ## Dependencies
 
-* GNU C Compiler.
+* gcc (GNU C Compiler)
 * readline library
 > **Optional:**
 > * perl
