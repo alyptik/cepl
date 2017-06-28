@@ -23,7 +23,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 extern char *optarg;
 extern int optind, opterr, optopt;
 extern char **comp_list, *comps[];
-char *line_ptr = NULL;
+static char *line_ptr = NULL;
 
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
