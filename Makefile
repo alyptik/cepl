@@ -54,6 +54,7 @@ install: $(TARGET)
 	@mkdir -pv $(PREFIX)/bin
 	install -c $(TARGET) $(PREFIX)/bin
 	install -c $(PERL_SCRIPT) $(PREFIX)/bin
+	install -c $(TARGET).7 $(PREFIX)/share/man/man7
 
 uninstall:
 	@rm -fv $(PREFIX)/bin/$(TARGET) $(PREFIX)/bin/$(PERL_SCRIPT)
