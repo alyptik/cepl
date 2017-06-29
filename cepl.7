@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v0.2.4" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v0.2.5" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -6,22 +6,20 @@ cepl \- a C11 Read-Eval-Print Loop
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hvwp] [\-l<library name>] [\-I<additional header directory>] [\-o<output.c>]
+\fIcepl\fR [\-hpvw] [\-l<library name>] [\-I<additional header directory>] [\-o<output.c>]
 .fi
 
 .SH "DESCRIPTION"
 .sp
-CEPL is a command-line, interactive C11 Read-Eval-Print Loop,
-useful for instantaneous prototyping, mathematical calculations, and
+CEPL is a command-line, interactive C11 Read-Eval-Print Loop, useful for instantaneous prototyping, mathematical calculations, and
 general algorithm exploration.
 
 .SH "USAGE"
 .sp
-CEPL currently supports readline key-bindings/tab-completion and the ability to specify additional
-shared libraries or headers with the “-l” or “-I” switches respectively.
+CEPL currently supports readline key-bindings/tab-completion and the ability to specify additional shared libraries or headers with the “-l” or “-I” switches respectively.
 .sp
-A list of completions can also be generated on-demand for each “-l” library
-using “nm” and “perl” by passing the “-p” switch.
+A list of completions can also be generated on-demand for each “-l” library using “nm” and “perl” by passing the “-p” switch.
+
 .SS "COMMANDS"
 Input lines prefixed with a “;” are used to control the internal state.
 
@@ -33,11 +31,11 @@ Input lines prefixed with a “;” are used to control the internal state.
 .HP
 \fB\-h\fR: Show help/usage information.
 .HP
+\fB\-p\fR: Add symbols from dynamic libraries to readline completion.
+.HP
 \fB\-v\fR: Show version information.
 .HP
 \fB\-w\fR: Compile with “\-pedantic\-errors \fB\-Wall\fR \fB\-Wextra\fR” flags.
-.HP
-\fB\-p\fR: Add symbols from dynamic libraries to readline completion.
 .HP
 \fB\-l\fR: Link against specified library (flag can be repeated).
 .HP
