@@ -23,7 +23,6 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 extern char *optarg;
 extern int optind, opterr, optopt;
 extern char **comp_list, *comps[];
-static char *line_ptr = NULL;
 
 char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 {
@@ -225,15 +224,14 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 		comp_list = tmp;
 		comp_list[comp_count - 1] = NULL;
 
-		free(sym_list);
+		if (sym_list) {
+			free(*sym_list);
+			free(sym_list);
+		}
 	}
 
 	if (free_argv(lib_list) == -1)
 		warnx("%s", "error freeing lib_list");
-	if (line_ptr) {
-		free(line_ptr);
-		line_ptr = NULL;
-	}
 	arg_list = cc_list;
 	return arg_list;
 }
@@ -242,8 +240,8 @@ char **parse_libs(char *libs[]) {
 	int status, i = 0;
 	int pipe_nm[2];
 	char **tokens, **tmp;
-	FILE *nm_input;
 	char *line_ptr = NULL;
+	FILE *nm_input;
 	size_t line_size = 0;
 
 	pipe(pipe_nm);

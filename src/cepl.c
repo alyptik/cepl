@@ -49,9 +49,9 @@ extern char **comp_list;
 
 int main(int argc, char *argv[])
 {
+	FILE *ofile = NULL;
 	char optstring[] = "hvwpl:I:o:";
 	char *prog_main_start, *prog_main_end, *prog_start, *prog_end;
-	FILE *ofile = NULL;
 	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* readline buffer */
 	char *line = NULL;
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	rl_bind_key('\t', &rl_complete);
 
 	/* repeat readline() until EOF is read */
-	while ((line = readline("\n>>> ")) != NULL && *line) {
+	while ((line = readline("\n>>> ")) && *line) {
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* add to readline history */
