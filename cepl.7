@@ -1,0 +1,54 @@
+.TH CEPL: "7" "June 2017" "cepl: CEPL v0.2.3" "User Commands"
+
+.SH "NAME"
+cepl \- a C11 Read-Eval-Print Loop
+
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIcepl\fR [\-hvwp] [\-l<library name>] [\-I<additional header directory>] [\-o<output.c>]
+.fi
+
+.SH "DESCRIPTION"
+.sp
+CEPL is a command-line, interactive C11 Read-Eval-Print Loop,
+useful for instantaneous prototyping, mathematical calculations, and
+general algorithm exploration.
+
+.SH "USAGE"
+.sp
+CEPL currently supports readline key-bindings/tab-completion and the ability to specify additional
+shared libraries or headers with the “-l” or “-I” switches respectively.
+.sp
+A list of completions can also be generated on-demand for each “-l” library
+using “nm” and “perl” by passing the “-p” switch.
+.SS "COMMANDS"
+Input lines prefixed with a “;” are used to control the internal state.
+
+.HP
+\fB;r[eset]\fR: Reset CEPL to its initial program state
+
+.SS "OPTIONS"
+
+.HP
+\fB\-h\fR: Show help/usage information.
+.HP
+\fB\-v\fR: Show version information.
+.HP
+\fB\-w\fR: Compile with “\-pedantic\-errors \fB\-Wall\fR \fB\-Wextra\fR” flags.
+.HP
+\fB\-p\fR: Add symbols from dynamic libraries to readline completion.
+.HP
+\fB\-l\fR: Link against specified library (flag can be repeated).
+.HP
+\fB\-I\fR: Search directory for header files (flag can be repeated).
+.HP
+\fB\-o\fR: Name of the file to output source to.
+
+.SH "AUTHOR"
+.sp
+Joey Pabalinas <alyptik@protonmail.org>
+
+.SH "NOTES"
+.sp
+https://github.com/alyptik/cepl
