@@ -13,36 +13,35 @@
 #include "readline.h"
 #include "parseopts.h"
 
-#define PROG_MAIN_START	"int main(int argc, char *argv[])\n{\n"
-#define PROG_MAIN_END	"\n\treturn 0;\n}\n"
-#define PROG_START	"#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n\n"PROG_MAIN_START
-#define PROG_END	PROG_MAIN_END
-#define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 1)
-#define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
-#define START_SIZE	(strlen(PROG_START) + 1)
-#define END_SIZE	(START_SIZE + strlen(PROG_END) + 1)
+#define PROG_MAIN_START	("int main(int argc, char *argv[])\n{\n")
+#define PROG_START	("#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\nint main(int argc, char *argv[])\n{\n")
+#define PROG_MAIN_END	("\n\treturn 0;\n}\n")
+#define PROG_END	("\n\treturn 0;\n}\n")
+#define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 2)
+#define START_SIZE	(strlen(PROG_START) + 2)
+#define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 2)
+#define END_SIZE	(START_SIZE + strlen(PROG_END) + 2)
 
+#define MEM_FREE do {	if (prog_main_start) free(prog_main_start); \
+			if (prog_start) free(prog_start); \
+			if (prog_main_end) free(prog_main_end); \
+			if (prog_end) free(prog_end); } while (0)
 #define MEM_INIT do {	prog_main_start = malloc(MAIN_START_SIZE); \
-			prog_main_end = malloc(MAIN_END_SIZE); \
 			prog_start = malloc(START_SIZE); \
+			prog_main_end = malloc(MAIN_END_SIZE); \
 			prog_end = malloc(END_SIZE); \
 			memset(prog_main_start, 0, MAIN_START_SIZE); \
-			memset(prog_main_end, 0, MAIN_END_SIZE); \
-			memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
 			memset(prog_start, 0, START_SIZE); \
+			memset(prog_main_end, 0, MAIN_END_SIZE); \
 			memset(prog_end, 0, END_SIZE); \
+			memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
 			memcpy(prog_start, PROG_START, START_SIZE); } while (0)
-#define MEM_FREE do {	if (prog_main_start) free(prog_main_start); \
-			if (prog_main_end) free(prog_main_end); \
-			if (prog_start) free(prog_start); \
-			if (prog_end) free(prog_end); } while (0)
 #define RESIZE(P) do {	char *tmp; \
 			if ((tmp = realloc(P, strlen(P) + strlen(line) + 4)) == NULL) { \
 				MEM_FREE; \
-				if (free_argv((char **)cc_argv) == -1) \
-					err(EXIT_FAILURE, "%s", "error during free_argv() call"); \
+				if (cc_argv) free_argv((char **)cc_argv); \
 				if (comp_list) free_argv(comp_list); \
-					err(EXIT_FAILURE, "error during realloc() for prog_end"); \
+				err(EXIT_FAILURE, "error during realloc() for prog_end"); \
 			} P = tmp; } while (0)
 
 extern char **comp_list;
@@ -50,17 +49,20 @@ extern char **comp_list;
 int main(int argc, char *argv[])
 {
 	FILE *ofile = NULL;
-	char optstring[] = "hvwpl:I:o:";
-	char *prog_main_start, *prog_main_end, *prog_start, *prog_end;
-	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* readline buffer */
 	char *line = NULL;
+	/* buffers for source code */
+	char *prog_main_start = NULL, *prog_start = NULL, *prog_main_end = NULL, *prog_end = NULL;
+	char const *const optstring = "hvwpl:I:o:";
+	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 
 	/* initialize source buffers */
 	MEM_INIT;
 	/* initial sanity check */
-	if (!prog_main_start || !prog_main_end || !prog_start || !prog_end) {
+	if (!prog_main_start || !prog_start || !prog_main_end || !prog_end) {
 		MEM_FREE;
+		if (cc_argv)
+			free_argv((char **)cc_argv);
 		if (comp_list)
 			free_argv(comp_list);
 		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
@@ -72,9 +74,7 @@ int main(int argc, char *argv[])
 	/* main program */
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 	strcat(prog_end, PROG_END);
-	putchar('\n');
-	printf("%s", CEPL_VERSION);
-	putchar('\n');
+	printf("\n%s\n", CEPL_VERSION);
 
 	/* enable completion */
 	rl_completion_entry_function = &generator;
@@ -92,14 +92,14 @@ int main(int argc, char *argv[])
 
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		RESIZE(prog_main_start);
-		RESIZE(prog_main_end);
 		RESIZE(prog_start);
+		RESIZE(prog_main_end);
 		RESIZE(prog_end);
 		/* start building program source */
 		strcat(prog_main_start, "\t");
 		strcat(prog_start, "\t");
-		strcat(prog_main_start, strtok(line, "\n"));
-		strcat(prog_start, strtok(line, "\n"));
+		strcat(prog_main_start, strtok(line, "\0\n"));
+		strcat(prog_start, strtok(line, "\0\n"));
 
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
@@ -111,23 +111,25 @@ int main(int argc, char *argv[])
 				MEM_INIT;
 				break;
 			/* TODO: more command handling */
-			}
-		/* don't append ';' for preprocessor directives */
-		case '#': break;
+			} break;
+		/* dont append ; for preprocessor directives */
+		case '#':
+			strcat(prog_main_start, "\n");
+			strcat(prog_start, "\n");
+			break;
 		default:
 			switch(line[strlen(line) - 1]) {
-			/* don't append ';' if trailing ';' or '}' */
+			/* dont append ; if trailing }, ;, or \ */
 			case '}':
-			case ';': break;
+			case ';':
+			case '\\': break;
 			default:
-				prog_main_start = strcat(prog_main_start, ";");
-				prog_start = strcat(prog_start, ";");
+				strcat(prog_main_start, ";\n");
+				strcat(prog_start, ";\n");
 			}
 		}
 
 		/* finish building current iteration of source code */
-		strcat(prog_main_start, "\n");
-		strcat(prog_start, "\n");
 		memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 		strcat(prog_main_end, PROG_MAIN_END);
@@ -135,10 +137,8 @@ int main(int argc, char *argv[])
 		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
 		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_argv, argv));
-		if (line) {
+		if (line)
 			free(line);
-			line = NULL;
-		}
 	}
 
 	/* write out program to file if applicable */
@@ -148,13 +148,12 @@ int main(int argc, char *argv[])
 		fclose(ofile);
 	}
 	MEM_FREE;
-	if (line)
-		free(line);
+	if (cc_argv)
+		free_argv((char **)cc_argv);
 	if (comp_list)
 		free_argv(comp_list);
-	if (free_argv((char **)cc_argv) == -1)
-		err(EXIT_FAILURE, "%s", "error during free_argv() call");
+	if (line)
+		free(line);
 	printf("\n%s\n\n", "Terminating program.");
-
 	return 0;
 }
