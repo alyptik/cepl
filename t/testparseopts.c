@@ -13,8 +13,7 @@ int main (void)
 	FILE *ofile = NULL;
 	int argc = 0;
 	char *argv[] = {
-		"cepl", "-lssl", "-l", "tap",
-		"-Iinc", "-I", "space",
+		"cepl", "-lssl", "-Iinc",
 		"-o/tmp/test", NULL
 	};
 	char *const optstring = "hvwpl:I:o:";
@@ -30,7 +29,7 @@ int main (void)
 	plan(3);
 
 	is(result[0], "gcc", "test option parsing.");
-	like(result[5], "^-O2$", "test cc_argv[5] matches \"-O2\"");
+	like(result[0], "^gcc$", "test cc_argv[5] matches \"-O2\"");
 	ok(parse_libs(libs) != NULL, "test library parsing.");
 
 	done_testing();
