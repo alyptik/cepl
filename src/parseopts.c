@@ -24,10 +24,13 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 extern char **comp_list, *comps[];
 
-char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
+static char *line_ptr = NULL;
+
+char *const *parse_opts(int argc, char *argv[], const char *const optstring, FILE **ofile)
 {
-	int opt, arg_count = 0, lib_count = 0, comp_count = 0;
-	char **tmp, **cc_list, **lib_list, **sym_list;
+	int opt;
+	int arg_count = 0, lib_count = 0, comp_count = 0;
+	char **tmp = NULL, **cc_list = NULL, **lib_list = NULL, **sym_list = NULL;
 	char *out_file = NULL;
 	char *const cc = "gcc";
 	char *const cc_arg_list[] = {
@@ -224,14 +227,16 @@ char *const *parse_opts(int argc, char *argv[], char *optstring, FILE **ofile)
 		comp_list = tmp;
 		comp_list[comp_count - 1] = NULL;
 
-		if (sym_list) {
-			free(*sym_list);
+		if (sym_list)
 			free(sym_list);
-		}
 	}
 
+	if (line_ptr) {
+		free(line_ptr);
+		line_ptr = NULL;
+	}
 	if (free_argv(lib_list) == -1)
-		warnx("%s", "error freeing lib_list");
+		warn("%s", "error freeing lib_list");
 	arg_list = cc_list;
 	return arg_list;
 }
@@ -240,7 +245,6 @@ char **parse_libs(char *libs[]) {
 	int status, i = 0;
 	int pipe_nm[2];
 	char **tokens, **tmp;
-	char *line_ptr = NULL;
 	FILE *nm_input;
 	size_t line_size = 0;
 
