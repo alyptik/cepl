@@ -26,15 +26,15 @@ MANPAGE = $(TARGET).7
 
 all: $(TARGET) check
 
+debug: CFLAGS = $(DEBUG)
+debug: $(OBJ) $(TOBJ)
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o, $^) -o $(TARGET)
+
 %:
 	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
 
 %.o:
 	$(CC) $(CFLAGS) $(LDLIBS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@
-
-debug: CFLAGS = $(DEBUG)
-debug: $(OBJ) $(TOBJ)
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o, $^) -o $(TARGET)
 
 $(TARGET): $(OBJ)
 

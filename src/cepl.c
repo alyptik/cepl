@@ -24,7 +24,11 @@
 #define MEM_FREE do {	if (prog_main_start) free(prog_main_start); \
 			if (prog_start) free(prog_start); \
 			if (prog_main_end) free(prog_main_end); \
-			if (prog_end) free(prog_end); } while (0)
+			if (prog_end) free(prog_end); \
+			prog_main_start = NULL; \
+			prog_start = NULL; \
+			prog_main_end = NULL; \
+			prog_end = NULL; } while (0)
 #define MEM_INIT do {	prog_main_start = malloc(MAIN_START_SIZE); \
 			prog_start = malloc(START_SIZE); \
 			prog_main_end = malloc(MAIN_END_SIZE); \
