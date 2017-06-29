@@ -8,8 +8,9 @@ CC ?= gcc
 LD ?= $(CC)
 PREFIX ?= $(DESTDIR)/usr/local
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+CFLAGS = -O2 -pipe -MMD -Isrc -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
 LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+DEBUG = -Og -ggdb -pipe -MMD -Isrc -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
 LDLIBS = -lreadline
 TAP = t/tap
 SRC = $(wildcard src/*.c)
@@ -31,6 +32,10 @@ all: $(TARGET) check
 %.o:
 	$(CC) $(CFLAGS) $(LDLIBS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@
 
+debug: CFLAGS = $(DEBUG)
+debug: $(OBJ) $(TOBJ)
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o, $^) -o $(TARGET)
+
 $(TARGET): $(OBJ)
 
 $(OBJ): %.o: %.c $(HDR)
@@ -38,10 +43,6 @@ $(OBJ): %.o: %.c $(HDR)
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test, src/, %), $(filter-out src/$(TARGET).o, $(OBJ)))
 
 $(TOBJ): %.o: %.c $(HDR)
-
-debug: CFLAGS = -Og -ggdb -pipe -MMD -I. -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-debug: $(OBJ) check
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $(TARGET)
 
 check test: tests
 	./t/testreadline <<<"test string."
