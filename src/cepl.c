@@ -68,16 +68,16 @@ int main(int argc, char *argv[])
 			free_argv((char **)cc_argv);
 		if (comp_list)
 			free_argv(comp_list);
-		err(EXIT_FAILURE, "%s", "error allocating inital pointers");
+		err(EXIT_FAILURE, "%s", "error allocating initial pointers");
+	} else {
+		/* truncated output to show user */
+		memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
+		strcat(prog_main_end, PROG_MAIN_END);
+		/* main program */
+		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
+		strcat(prog_end, PROG_END);
+		printf("\n%s\n", CEPL_VERSION);
 	}
-
-	/* truncated output to show user */
-	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
-	strcat(prog_main_end, PROG_MAIN_END);
-	/* main program */
-	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
-	strcat(prog_end, PROG_END);
-	printf("\n%s\n", CEPL_VERSION);
 
 	/* enable completion */
 	rl_completion_entry_function = &generator;
@@ -98,11 +98,20 @@ int main(int argc, char *argv[])
 		RESIZE(prog_start);
 		RESIZE(prog_main_end);
 		RESIZE(prog_end);
-		/* start building program source */
-		strcat(prog_main_start, "\t");
-		strcat(prog_start, "\t");
-		strcat(prog_main_start, strtok(line, "\0\n"));
-		strcat(prog_start, strtok(line, "\0\n"));
+		if (!prog_main_start || !prog_start || !prog_main_end || !prog_end) {
+			MEM_FREE;
+			if (cc_argv)
+				free_argv((char **)cc_argv);
+			if (comp_list)
+				free_argv(comp_list);
+			err(EXIT_FAILURE, "%s", "error re-allocating pointers");
+		} else {
+			/* start building program source */
+			strcat(prog_main_start, "\t");
+			strcat(prog_start, "\t");
+			strcat(prog_main_start, strtok(line, "\0\n"));
+			strcat(prog_start, strtok(line, "\0\n"));
+		}
 
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
