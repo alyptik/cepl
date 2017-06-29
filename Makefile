@@ -52,8 +52,8 @@ tests: $(TESTS)
 install: $(TARGET)
 	@printf "%s\n" "installing"
 	@mkdir -pv $(PREFIX)/bin
-	install -c $(TARGET) $(prefix)/bin
-	install -c $(PERL_SCRIPT) $(prefix)/bin
+	install -c $(TARGET) $(PREFIX)/bin
+	install -c $(PERL_SCRIPT) $(PREFIX)/bin
 
 uninstall:
 	@rm -fv $(PREFIX)/bin/$(TARGET) $(PREFIX)/bin/$(PERL_SCRIPT)
