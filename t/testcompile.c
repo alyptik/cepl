@@ -11,8 +11,8 @@
 
 int main(void)
 {
-	char *src = "int main(void) { return 0; }\n";
-	char *const argv[] = {"cepl", NULL};
+	char const *const src = "int main(void) { return 0; }\n";
+	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
 		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
 		"-pedantic-errors", "-std=c11", "-xc",
