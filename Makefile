@@ -9,18 +9,19 @@ LD ?= $(CC)
 PREFIX ?= $(DESTDIR)/usr/local
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CFLAGS = -O2 -pipe -MMD -I. -fPIC -fstack-protector-strong -Wall -Wextra -std=c11 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro -Wl,-z,now
+LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
 LDLIBS = -lreadline
 TAP = t/tap
 SRC = $(wildcard src/*.c)
 TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(SRC))
-TOBJ = $(TAP).o $(patsubst %, %.o, $(TESTS))
+TOBJ = $(patsubst %.c, %.o, $(TSRC))
 HDR = $(wildcard src/*.h) $(wildcard t/*.h)
-
 TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
+
 TARGET = cepl
-PERL_SCRIPT = elfsyms.pl
+ELF_SCRIPT = elfsyms
+MANPAGE = $(TARGET).7
 
 all: $(TARGET) check
 
@@ -52,23 +53,26 @@ tests: $(TESTS)
 install: $(TARGET)
 	@printf "%s\n" "installing"
 	@mkdir -pv $(PREFIX)/bin
+	@mkdir -pv $(PREFIX)/share/man/man7
 	install -c $(TARGET) $(PREFIX)/bin
-	install -c $(PERL_SCRIPT) $(PREFIX)/bin
-	install -c $(TARGET).7 $(PREFIX)/share/man/man7
+	install -c $(ELF_SCRIPT) $(PREFIX)/bin
+	install -c $(MANPAGE) $(PREFIX)/share/man/man7
 
 uninstall:
-	@rm -fv $(PREFIX)/bin/$(TARGET) $(PREFIX)/bin/$(PERL_SCRIPT)
+	@rm -fv $(PREFIX)/bin/$(TARGET)
+	@rm -fv $(PREFIX)/bin/$(ELF_SCRIPT)
+	@rm -fv $(PREFIX)/share/man/man7/$(MANPAGE)
 
 dist: clean
 	@printf "%s\n" "creating dist tarball"
 	@mkdir -pv $(TARGET)/
-	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(PERL_SCRIPT) $(TARGET)/
+	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(ELF_SCRIPT) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
 	@rm -rfv $(TARGET)/
 
 clean:
 	@printf "%s\n" "cleaning"
-	@rm -fv $(TARGET) $(OBJ) $(TOBJ) $(TESTS) $(TARGET).tar.gz $(wildcard t/*.d) $(wildcard src/*.d)
+	@rm -fv $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz $(wildcard t/*.d) $(wildcard src/*.d)
 
 -include $(wildcard src/*.d) $(wildcard t/*.d)
 .PHONY: all clean install uninstall dist debug check test tests

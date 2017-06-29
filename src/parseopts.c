@@ -263,7 +263,7 @@ char **parse_libs(char *libs[]) {
 	case 0:
 		close(pipe_nm[0]);
 		dup2(pipe_nm[1], 1);
-		execv("./elfsyms.pl", libs);
+		execv(ELF_SCRIPT, libs);
 		/* execv() should never return */
 		err(EXIT_FAILURE, "%s", "error forking nm");
 		break;
