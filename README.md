@@ -18,7 +18,7 @@ using `nm` and `perl` by passing the `-p` switch.
 
 ## Usage
 ```bash
-./cepl [-hvwp] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
+./cepl [-hpvw] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -32,9 +32,9 @@ Input lines prefixed with a `;` are used to control the internal state.
 #### CEPL understands the following options:
 
 	-h: Show help/usage information.
+	-p: Add symbols from dynamic libraries to readline completion.
 	-v: Show version information.
 	-w: Compile with “-pedantic-errors -Wall -Wextra” flags.
-	-p: Add symbols from dynamic libraries to readline completion.
 	-l: Link against specified library (flag can be repeated).
 	-I: Search directory for header files (flag can be repeated).
 	-o: Name of the file to output source to.
