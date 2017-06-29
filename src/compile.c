@@ -14,7 +14,7 @@
 #include <linux/memfd.h>
 #include "compile.h"
 
-int compile(char const *cc, char *src, char *const cc_args[], char *const exec_args[])
+int compile(char const *const cc, char const *const src, char *const cc_args[], char *const exec_args[])
 {
 	int mem_fd, status;
 	int pipe_cc[2], pipe_exec[2];
