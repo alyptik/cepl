@@ -15,7 +15,7 @@ TAP = t/tap
 SRC = $(wildcard src/*.c)
 TSRC = $(wildcard t/*.c)
 OBJ = $(patsubst %.c, %.o, $(SRC))
-TOBJ = $(patsubst %, %.o, $(TESTS))
+TOBJ = $(TAP).o $(patsubst %, %.o, $(TESTS))
 HDR = $(wildcard src/*.h) $(wildcard t/*.h)
 
 TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
