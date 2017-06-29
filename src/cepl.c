@@ -12,72 +12,104 @@
 #include "readline.h"
 #include "parseopts.h"
 
+/* source file templates */
 #define PROG_MAIN_START	("int main(int argc, char *argv[])\n{\n")
 #define PROG_START	("#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\nint main(int argc, char *argv[])\n{\n")
 #define PROG_MAIN_END	("\n\treturn 0;\n}\n")
 #define PROG_END	("\n\treturn 0;\n}\n")
+/* character lengths of buffer components */
 #define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 2)
 #define START_SIZE	(strlen(PROG_START) + 2)
 #define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 2)
 #define END_SIZE	(START_SIZE + strlen(PROG_END) + 2)
 
-#define MEM_FREE do {	if (prog_main_start) free(prog_main_start); \
-			if (prog_start) free(prog_start); \
-			if (prog_main_end) free(prog_main_end); \
-			if (prog_end) free(prog_end); \
-			prog_main_start = NULL; \
-			prog_start = NULL; \
-			prog_main_end = NULL; \
-			prog_end = NULL; } while (0)
-#define MEM_INIT do {	prog_main_start = malloc(MAIN_START_SIZE); \
-			prog_start = malloc(START_SIZE); \
-			prog_main_end = malloc(MAIN_END_SIZE); \
-			prog_end = malloc(END_SIZE); \
-			memset(prog_main_start, 0, MAIN_START_SIZE); \
-			memset(prog_start, 0, START_SIZE); \
-			memset(prog_main_end, 0, MAIN_END_SIZE); \
-			memset(prog_end, 0, END_SIZE); \
-			memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE); \
-			memcpy(prog_start, PROG_START, START_SIZE); } while (0)
-#define RESIZE(P) do {	char *tmp; \
-			if ((tmp = realloc(P, strlen(P) + strlen(line) + 4)) == NULL) { \
-				MEM_FREE; \
-				if (cc_argv) free_argv((char **)cc_argv); \
-				if (comp_list) free_argv(comp_list); \
-				err(EXIT_FAILURE, "error during realloc() for prog_end"); \
-			} P = tmp; } while (0)
-
+/* completion list of generated symbols */
 extern char **comp_list;
 
-int main(int argc, char *argv[])
-{
-	FILE *ofile = NULL;
-	/* readline buffer */
-	char *line = NULL;
-	/* buffers for source code */
-	char *prog_main_start = NULL, *prog_start = NULL, *prog_main_end = NULL, *prog_end = NULL;
-	char *const optstring = "hvwpl:I:o:";
-	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
+/* readline buffer */
+static char *line = NULL;
+/* beautified source buffer start block */
+static char *prog_main_start = NULL;
+/* actual source buffer start block */
+static char *prog_start = NULL;
+/* beautified source buffer end block */
+static char *prog_main_end = NULL;
+/* actual source buffer end block */
+static char *prog_end = NULL;
+/* compiler arg array */
+static char *const *cc_argv;
 
-	/* initialize source buffers */
-	MEM_INIT;
-	/* initial sanity check */
+static inline void free_buffers(void)
+{
+	if (prog_main_start)
+		free(prog_main_start);
+	if (prog_start)
+		free(prog_start);
+	if (prog_main_end)
+		free(prog_main_end);
+	if (prog_end)
+		free(prog_end);
+	prog_main_start = NULL;
+	prog_start = NULL;
+	prog_main_end = NULL;
+	prog_end = NULL;
+}
+
+static inline void init_buffers(void)
+{
+	prog_main_start = malloc(MAIN_START_SIZE);
+	prog_start = malloc(START_SIZE);
+	prog_main_end = malloc(MAIN_END_SIZE);
+	prog_end = malloc(END_SIZE);
+	/* sanity check */
 	if (!prog_main_start || !prog_start || !prog_main_end || !prog_end) {
-		MEM_FREE;
+		free_buffers();
 		if (cc_argv)
 			free_argv((char **)cc_argv);
 		if (comp_list)
 			free_argv(comp_list);
 		err(EXIT_FAILURE, "%s", "error allocating initial pointers");
-	} else {
-		/* truncated output to show user */
-		memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
-		strcat(prog_main_end, PROG_MAIN_END);
-		/* main program */
-		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
-		strcat(prog_end, PROG_END);
-		printf("\n%s\n", CEPL_VERSION);
 	}
+	memset(prog_main_start, 0, MAIN_START_SIZE);
+	memset(prog_start, 0, START_SIZE);
+	memset(prog_main_end, 0, MAIN_END_SIZE);
+	memset(prog_end, 0, END_SIZE);
+	memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE);
+	memcpy(prog_start, PROG_START, START_SIZE);
+}
+
+static inline void resize_buffers(char **buffer, size_t offset)
+{
+	char *tmp;
+	/* current length + line length + extra characters + \0 */
+	if ((tmp = realloc(*buffer, strlen(*buffer) + strlen(line) + offset + 1)) == NULL) {
+		free_buffers();
+		if (cc_argv)
+			free_argv((char **)cc_argv);
+		if (comp_list)
+			free_argv(comp_list);
+		err(EXIT_FAILURE, "error during resize_buffers(%s, %lu)", *buffer, offset);
+	}
+	*buffer = tmp;
+}
+
+int main(int argc, char *argv[])
+{
+	FILE *ofile = NULL;
+	char *const optstring = "hvwpl:I:o:";
+
+	/* initialize source buffers */
+	init_buffers();
+	/* initiatalize compiler arg array */
+	cc_argv = parse_opts(argc, argv, optstring, &ofile);
+
+	/* truncated output to show user */
+	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
+	strcat(prog_main_end, PROG_MAIN_END);
+	/* main program */
+	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
+	strcat(prog_end, PROG_END);
+	printf("\n%s\n", CEPL_VERSION);
 
 	/* enable completion */
 	rl_completion_entry_function = &generator;
@@ -92,26 +124,17 @@ int main(int argc, char *argv[])
 		rl_bind_key('\t', &rl_complete);
 		/* add to readline history */
 		add_history(line);
-
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		RESIZE(prog_main_start);
-		RESIZE(prog_start);
-		RESIZE(prog_main_end);
-		RESIZE(prog_end);
-		if (!prog_main_start || !prog_start || !prog_main_end || !prog_end) {
-			MEM_FREE;
-			if (cc_argv)
-				free_argv((char **)cc_argv);
-			if (comp_list)
-				free_argv(comp_list);
-			err(EXIT_FAILURE, "%s", "error re-allocating pointers");
-		} else {
-			/* start building program source */
-			strcat(prog_main_start, "\t");
-			strcat(prog_start, "\t");
-			strcat(prog_main_start, strtok(line, "\0\n"));
-			strcat(prog_start, strtok(line, "\0\n"));
-		}
+		resize_buffers(&prog_main_start, 3);
+		resize_buffers(&prog_start, 3);
+		resize_buffers(&prog_main_end, 3);
+		resize_buffers(&prog_end, 3);
+
+		/* start building program source */
+		strcat(prog_main_start, "\t");
+		strcat(prog_start, "\t");
+		strcat(prog_main_start, strtok(line, "\0\n"));
+		strcat(prog_start, strtok(line, "\0\n"));
 
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
@@ -119,8 +142,8 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
-				MEM_FREE;
-				MEM_INIT;
+				free_buffers();
+				init_buffers();
 				break;
 			/* TODO: more command handling */
 			} break;
@@ -149,6 +172,7 @@ int main(int argc, char *argv[])
 		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
 		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_argv, argv));
+
 		if (line)
 			free(line);
 	}
@@ -159,7 +183,7 @@ int main(int argc, char *argv[])
 		fputc('\n', ofile);
 		fclose(ofile);
 	}
-	MEM_FREE;
+	free_buffers();
 	if (cc_argv)
 		free_argv((char **)cc_argv);
 	if (comp_list)
@@ -167,5 +191,6 @@ int main(int argc, char *argv[])
 	if (line)
 		free(line);
 	printf("\n%s\n\n", "Terminating program.");
+
 	return 0;
 }
