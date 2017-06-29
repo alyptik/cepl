@@ -8,7 +8,6 @@
 #include <err.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -26,7 +25,7 @@ extern char **comp_list, *comps[];
 
 static char *line_ptr = NULL;
 
-char *const *parse_opts(int argc, char *argv[], const char *const optstring, FILE **ofile)
+char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile)
 {
 	int opt;
 	int arg_count = 0, lib_count = 0, comp_count = 0;

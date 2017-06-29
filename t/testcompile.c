@@ -11,7 +11,7 @@
 
 int main(void)
 {
-	char const *const src = "int main(void) { return 0; }\n";
+	char *const src = "int main(void) { return 0; }\n";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
 		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",

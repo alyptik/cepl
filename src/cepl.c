@@ -6,7 +6,6 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include "compile.h"
@@ -53,7 +52,7 @@ int main(int argc, char *argv[])
 	char *line = NULL;
 	/* buffers for source code */
 	char *prog_main_start = NULL, *prog_start = NULL, *prog_main_end = NULL, *prog_end = NULL;
-	char const *const optstring = "hvwpl:I:o:";
+	char *const optstring = "hvwpl:I:o:";
 	char *const *cc_argv = parse_opts(argc, argv, optstring, &ofile);
 
 	/* initialize source buffers */

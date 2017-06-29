@@ -10,7 +10,6 @@
 #include <string.h>
 #include "readline.h"
 
-/* TODO: generate larger list of useful completions */
 char *comps[] = {
 	"auto", "break", "case", "char", "const", "continue", "default",
 	"do", "double", "else", "enum", "extern", "float", "for", "goto",

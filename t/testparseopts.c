@@ -17,7 +17,7 @@ int main (void)
 		"-Iinc", "-I", "space",
 		"-o/tmp/test", NULL
 	};
-	char const *const optstring = "hvwpl:I:o:";
+	char *const optstring = "hvwpl:I:o:";
 	char *libs[] = {"cepl", "ssl", "tap", NULL};
 	char *const *result;
 
