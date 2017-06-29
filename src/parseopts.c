@@ -155,7 +155,7 @@ char *const *parse_opts(int argc, char *argv[], const char *const optstring, FIL
 		default:
 			free(cc_list[arg_count - 1]);
 			free(cc_list);
-			errx(EXIT_FAILURE, USAGE, argv[0]);
+			errx(EXIT_FAILURE, "Usage: %s %s", argv[0], USAGE);
 		}
 	}
 
@@ -180,7 +180,6 @@ char *const *parse_opts(int argc, char *argv[], const char *const optstring, FIL
 	}
 	cc_list = tmp;
 	cc_list[arg_count - 1] = NULL;
-
 	if ((tmp = realloc(lib_list, (sizeof *lib_list) * ++lib_count)) == NULL) {
 		free(lib_list);
 		err(EXIT_FAILURE, "%s[%d] %s", "error during library lib_list", lib_count - 1, "malloc()");
