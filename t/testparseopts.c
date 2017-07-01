@@ -13,11 +13,11 @@ int main (void)
 	FILE *ofile = NULL;
 	int argc = 0;
 	char *argv[] = {
-		"cepl", "-lssl", "-Iinc",
+		"cepl", "-lssl", "-I.",
 		"-o/tmp/test", NULL
 	};
 	char *const optstring = "hvwpl:I:o:";
-	char *libs[] = {"cepl", "ssl", "tap", NULL};
+	char *libs[] = {"cepl", "ssl", "readline", NULL};
 	char *const *result;
 
 	for (; argv[argc]; argc++);
