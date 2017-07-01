@@ -16,7 +16,13 @@
 #include "compile.h"
 
 /* global linker flag array */
-extern char **ld_list;
+char **ld_list = NULL;
+
+/* fallback linker arg array */
+static char *const ld_alt_list[] = {
+	"gcc", "-xassembler", "/proc/self/fd/0",
+	"-o/proc/self/fd/1", NULL
+};
 
 int compile(char *const src, char *const cc_args[], char *const exec_args[])
 {
@@ -85,6 +91,8 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	case 0:
 		dup2(pipe_ld[0], 0);
 		dup2(pipe_exec[1], 1);
+		if (!ld_list)
+			execvp(ld_alt_list[0], ld_alt_list);
 		execvp(ld_list[0], ld_list);
 		/* execvp() should never return */
 		err(EXIT_FAILURE, "%s", "error forking linker");

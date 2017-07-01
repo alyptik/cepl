@@ -16,7 +16,7 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 /* global toggle flag for warnings and completions */
 bool warn_flag = false, perl_flag = false;
 /* global linker flag array */
-char **ld_list = NULL;
+extern char **ld_list;
 
 static char *line_ptr = NULL;
 static char *const cc_arg_list[] = {
@@ -96,14 +96,15 @@ static inline void append_symbols(void)
 char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile)
 {
 	int opt;
-	char *out_file = NULL;
+	char *const *arg_list;
 	char *const gcc = "gcc";
 	char *const ccc = "clang";
 	char *const icc = "icc";
-	char *const *arg_list;
+	char *out_file = NULL;
 
 	/* don't print an error if option not found */
 	opterr = 0;
+	/* initialize variables */
 	*ofile = NULL;
 	lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
 	tmp = NULL, cc_list = NULL, lib_list = NULL, sym_list = NULL;
@@ -227,10 +228,6 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 		}
 	}
 
-	/* default to gcc */
-	if (!cc_list[0][0])
-		memcpy(cc_list[0], gcc, strlen(gcc) + 1);
-
 	/* append NULL to lib_list */
 	if ((tmp = realloc(lib_list, (sizeof *lib_list) * ++lib_count)) == NULL) {
 		free(lib_list);
@@ -238,6 +235,10 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	}
 	lib_list = tmp;
 	lib_list[lib_count - 1] = NULL;
+
+	/* default to gcc as a compiler */
+	if (!cc_list[0][0])
+		memcpy(cc_list[0], gcc, strlen(gcc) + 1);
 
 	/* append warning flags */
 	if (warn_flag)
@@ -268,6 +269,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 		memset(cc_list[arg_count - 1], 0, strlen(cc_arg_list[i]) + 1);
 		memcpy(cc_list[arg_count - 1], cc_arg_list[i], strlen(cc_arg_list[i]) + 1);
 	}
+	/* append NULL to cc_list */
 	if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 		free(cc_list);
 		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter cc_list", arg_count - 1, "malloc()");
@@ -289,6 +291,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 		memset(ld_list[ld_count - 1], 0, strlen(ld_arg_list[i]) + 1);
 		memcpy(ld_list[ld_count - 1], ld_arg_list[i], strlen(ld_arg_list[i]) + 1);
 	}
+	/* append NULL to ld_list */
 	if ((tmp = realloc(ld_list, (sizeof *ld_list) * ++ld_count)) == NULL) {
 		free(ld_list);
 		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter ld_list", ld_count - 1, "malloc()");

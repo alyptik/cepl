@@ -2,9 +2,12 @@
 
 **CEPL** is a command-line, interactive C11 Read-Eval-Print Loop,
 useful for instantaneous prototyping, mathematical calculations, and
-general algorithm exploration. It currently supports readline
-key-bindings/tab-completion and the ability to specify additional
+general algorithm exploration.
+
+**CEPL** currently supports multiple compilers, readline
+key-bindings/tab-completion, and the ability to specify additional
 shared libraries or headers with the `-l` or `-I` switches respectively.
+
 A list of completions can also be generated on-demand for each `-l` library
 using `nm` and `perl` by passing the `-p` switch.
 

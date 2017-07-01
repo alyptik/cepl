@@ -21,7 +21,7 @@ int main(void)
 
 	plan(2);
 
-	ok(compile(src, cc_args, argv) != 0, "fail compiling program.");
+	ok(compile(src, cc_args, argv) == 0, "fail compiling program.");
 	lives_ok({pipe_fd(INT_MAX, INT_MAX);}, "test pipe_fd() with invalid fds.");
 
 	done_testing();
