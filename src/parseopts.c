@@ -15,8 +15,6 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
 bool warn_flag = false, perl_flag = false;
-/* global linker flag array */
-extern char **ld_list;
 
 static char *line_ptr = NULL;
 static char *const cc_arg_list[] = {
@@ -36,6 +34,8 @@ static int lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
 extern char *optarg;
 extern int optind, opterr, optopt;
 extern char **comp_list, *comps[];
+/* global linker flag array */
+extern char **ld_list;
 
 static inline void append_warnings(void)
 {
