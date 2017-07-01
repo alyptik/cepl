@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 			free_argv((char **)cc_argv);
 			/* re-initiatalize compiler arg array */
 			cc_argv = parse_opts(argc, argv, optstring, &ofile);
-			/* fallthough */
+			break;
 
 		/* dont append ; for preprocessor directives */
 		case '#':
@@ -173,8 +173,8 @@ int main(int argc, char *argv[])
 		default:
 			switch(line[strlen(line) - 1]) {
 			/* dont append ; if trailing }, ;, or \ */
-			case '}':
-			case ';':
+			case '}': /* fallthough */
+			case ';': /* fallthough */
 			case '\\': break;
 			default:
 				strcat(prog_main_start, ";\n");
