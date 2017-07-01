@@ -91,9 +91,10 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	case 0:
 		dup2(pipe_ld[0], 0);
 		dup2(pipe_exec[1], 1);
-		if (!ld_list)
-			execvp(ld_alt_list[0], ld_alt_list);
-		execvp(ld_list[0], ld_list);
+		if (ld_list)
+			execvp(ld_list[0], ld_list);
+		/* fallback linker exec */
+		execvp(ld_alt_list[0], ld_alt_list);
 		/* execvp() should never return */
 		err(EXIT_FAILURE, "%s", "error forking linker");
 		break;
@@ -104,7 +105,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_exec[1]);
 		wait(&status);
 		if (status != 0) {
-			warnx("%s", "compiler returned non-zero exit code");
+			warnx("%s", "linker returned non-zero exit code");
 			return status;
 		}
 	}

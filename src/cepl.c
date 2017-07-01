@@ -141,6 +141,13 @@ int main(int argc, char *argv[])
 		case ';':
 			/* TODO: more command handling */
 			switch(line[1]) {
+			/* reset state */
+			case 'r':
+				break;
+			/* toggle warnings */
+			case 'w':
+				warn_flag ^= true;
+				break;
 			/* toggle parsing libraries for completions */
 			case 'p':
 				perl_flag ^= true;
@@ -148,13 +155,7 @@ int main(int argc, char *argv[])
 			/* break from readline loop */
 			case 'q':
 				goto QUIT;
-				break;
-			/* reset state */
-			case 'r':
-				break;
-			/* toggle warnings */
-			case 'w':
-				warn_flag ^= true;
+				/* unused */
 				break;
 			}
 			free_buffers();
