@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v0.3.2" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v0.3.3" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -6,7 +6,7 @@ cepl \- a C11 Read-Eval-Print Loop
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hpvw] [\-l<library name>] [\-I<additional header directory>] [\-o<output.c>]
+\fIcepl\fR [\-chipvw] [\-l<library name>] [\-I<additional header directory>] [\-o<output.c>]
 .fi
 
 .SH "DESCRIPTION"
@@ -39,7 +39,11 @@ Input lines prefixed with a “\fB;\fR” are used to control internal state.
 Command line options:
 
 .HP
+\fB\-c\fR: Use clang as the base compiler.
+.HP
 \fB\-h\fR: Show help/usage information.
+.HP
+\fB\-i\fR: Use icc as the base compiler.
 .HP
 \fB\-p\fR: Add symbols from dynamic libraries to readline completion.
 .HP
