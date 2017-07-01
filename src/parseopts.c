@@ -31,11 +31,13 @@ static char *const warn_list[] = {
 static char **tmp = NULL, **cc_list = NULL, **lib_list = NULL, **sym_list = NULL;
 static int lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
 
-extern char *optarg;
-extern int optind, opterr, optopt;
+/* global completion list */
 extern char **comp_list, *comps[];
 /* global linker flag array */
 extern char **ld_list;
+/* getopts variables */
+extern char *optarg;
+extern int optind, opterr, optopt;
 
 static inline void append_warnings(void)
 {
