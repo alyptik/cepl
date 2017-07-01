@@ -209,6 +209,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	/* append warning flags */
 	if (warn_flag)
 		append_warnings();
+
 	/* parse ELF library for completions */
 	if (perl_flag) {
 		if (comp_list)
