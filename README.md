@@ -13,12 +13,14 @@ using `nm` and `perl` by passing the `-p` switch.
 * gcc (GNU C Compiler)
 * readline library
 > **Optional:**
+> * clang
+> * icc
 > * perl
 > * nm
 
 ## Usage
 ```bash
-./cepl [-hpvw] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
+./cepl [-chipvw] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -34,7 +36,9 @@ Input lines prefixed with a `;` are used to control internal state.
 
 #### CEPL understands the following options:
 
+	-c: Use clang as the base compiler.
 	-h: Show help/usage information.
+	-i: Use icc as the base compiler.
 	-p: Add symbols from dynamic libraries to readline completion.
 	-v: Show version information.
 	-w: Compile with “-pedantic-errors -Wall -Wextra” flags.
