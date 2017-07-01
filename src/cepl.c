@@ -5,8 +5,6 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <stdio.h>
-#include <string.h>
 #include <sys/types.h>
 #include "compile.h"
 #include "readline.h"
@@ -14,7 +12,7 @@
 
 /* source file templates */
 #define PROG_MAIN_START	("int main(int argc, char *argv[])\n{\n")
-#define PROG_START	("#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\nint main(int argc, char *argv[])\n{\n")
+#define PROG_START	("#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#define UNUSED __attribute__ ((unused))\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <stdalign.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n#define _Atomic\n#define _Static_assert(a, b)\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n{\n")
 #define PROG_MAIN_END	("\n\treturn 0;\n}\n")
 #define PROG_END	("\n\treturn 0;\n}\n")
 /* character lengths of buffer components */
@@ -22,9 +20,6 @@
 #define START_SIZE	(strlen(PROG_START) + 2)
 #define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 2)
 #define END_SIZE	(START_SIZE + strlen(PROG_END) + 2)
-
-/* completion list of generated symbols */
-extern char **comp_list;
 
 /* readline buffer */
 static char *line = NULL;
@@ -38,6 +33,11 @@ static char *prog_main_end = NULL;
 static char *prog_end = NULL;
 /* compiler arg array */
 static char *const *cc_argv;
+
+/* completion list of generated symbols */
+extern char **comp_list;
+/* toggle flag for warnings and completions */
+extern bool warn_flag, perl_flag;
 
 static inline void free_buffers(void)
 {
@@ -139,19 +139,37 @@ int main(int argc, char *argv[])
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
 		case ';':
+			/* TODO: more command handling */
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
-				free_buffers();
-				init_buffers();
 				break;
-			/* TODO: more command handling */
-			} break;
+			/* toggle warnings */
+			case 'w':
+				warn_flag ^= true;
+				break;
+			/* toggle parsing libraries for completions */
+			case 'p':
+				perl_flag ^= true;
+				break;
+			/* break from readline loop */
+			case 'q':
+				goto QUIT;
+				break;
+			}
+			free_buffers();
+			init_buffers();
+			free_argv((char **)cc_argv);
+			/* re-initiatalize compiler arg array */
+			cc_argv = parse_opts(argc, argv, optstring, &ofile);
+			/* fallthough */
+
 		/* dont append ; for preprocessor directives */
 		case '#':
 			strcat(prog_main_start, "\n");
 			strcat(prog_start, "\n");
 			break;
+
 		default:
 			switch(line[strlen(line) - 1]) {
 			/* dont append ; if trailing }, ;, or \ */
@@ -177,6 +195,7 @@ int main(int argc, char *argv[])
 			free(line);
 	}
 
+QUIT:
 	/* write out program to file if applicable */
 	if (ofile) {
 		fwrite(prog_end, strlen(prog_end), 1, ofile);
