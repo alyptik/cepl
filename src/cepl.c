@@ -96,7 +96,7 @@ static inline void resize_buffers(char **buffer, size_t offset)
 int main(int argc, char *argv[])
 {
 	FILE *ofile = NULL;
-	char *const optstring = "hvwpl:I:o:";
+	char *const optstring = "chivwpl:I:o:";
 
 	/* initialize source buffers */
 	init_buffers();
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 		strcat(prog_end, PROG_END);
 		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
-		printf("\n%s: %d\n", "exit status", compile("gcc", prog_end, cc_argv, argv));
+		printf("\n%s: %d\n", "exit status", compile(prog_end, cc_argv, argv));
 
 		if (line)
 			free(line);

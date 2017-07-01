@@ -16,7 +16,7 @@
 #define COUNT sysconf(_SC_PAGESIZE)
 
 extern char **environ;
-int compile(char *const cc, char *const src, char *const cc_args[], char *const exec_args[]);
+int compile(char *const src, char *const cc_args[], char *const exec_args[]);
 
 /* silence linter */
 long syscall(long number, ...);
