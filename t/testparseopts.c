@@ -16,7 +16,7 @@ int main (void)
 		"cepl", "-lssl", "-I.",
 		"-o/tmp/test", NULL
 	};
-	char *const optstring = "hvwpl:I:o:";
+	char *const optstring = "chivwpl:I:o:";
 	char *libs[] = {"cepl", "ssl", "readline", NULL};
 	char *const *result;
 
@@ -26,10 +26,10 @@ int main (void)
 	for (int i = 0; result[i]; (printf("%s ", result[i]), i++));
 	putchar('\n');
 
-	plan(3);
+	plan(2);
 
-	is(result[0], "gcc", "test option parsing.");
-	like(result[0], "^gcc$", "test cc_argv[5] matches \"-O2\"");
+	/* is(result[3], "-O2", "test cc_argv[3] matches \"-O2\""); */
+	like(result[0], "^(gcc|icc|clang)$", "test option parsing.");
 	ok(parse_libs(libs) != NULL, "test library parsing.");
 
 	done_testing();

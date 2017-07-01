@@ -14,14 +14,14 @@ int main(void)
 	char *const src = "int main(void) { return 0; }\n";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
-		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
-		"-pedantic-errors", "-std=c11", "-xc",
-		"/dev/stdin", "-o", "/dev/stdout", NULL
+		"clang", "-O2", "-pipe", "-Wall", "-Wextra",
+		"-pedantic-errors", "-std=c11", "-S", "-xc",
+		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
 	};
 
 	plan(2);
 
-	ok(compile("gcc", src, cc_args, argv) == 0, "compile test program.");
+	ok(compile(src, cc_args, argv) != 0, "fail compiling program.");
 	lives_ok({pipe_fd(INT_MAX, INT_MAX);}, "test pipe_fd() with invalid fds.");
 
 	done_testing();
