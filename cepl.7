@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v0.2.6" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v0.3.1" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -24,9 +24,17 @@ A list of completions can also be generated on-demand for each “-l” library 
 Input lines prefixed with a “;” are used to control the internal state.
 
 .HP
+\fB;p[arse]\fR:: Toggle -p (shared library parsing) flag
+.HP
+\fB;q[uit]\fR:: Exit CEPL
+.HP
 \fB;r[eset]\fR: Reset CEPL to its initial program state
+.HP
+\fB:w[arnings]\fR:: Toggle -w (warnings) flag
 
 .SS "OPTIONS"
+.sp
+Command line options:
 
 .HP
 \fB\-h\fR: Show help/usage information.

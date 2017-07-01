@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define CEPL_VERSION "CEPL v0.2.6"
+#define CEPL_VERSION "CEPL v0.3.1"
 #define USAGE "[-hpvw] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t-h: Show help/usage information.\n\t-p: Add symbols from dynamic libraries to readline completion.\n\t-v: Show version information.\n\t-w: Compile with ”-pedantic-errors -Wall -Wextra” flags.\n\t-l: Link against specified library (flag can be repeated).\n\t-I: Search directory for header files (flag can be repeated).\n\t-o: Name of the file to output source to."
 /* perl script to pull symbols from shared libraries */
 #define ELF_SCRIPT "./elfsyms"
