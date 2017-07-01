@@ -27,7 +27,10 @@ Run `make` then `./cepl` to start the interactive REPL.
 
 Input lines prefixed with a `;` are used to control the internal state.
 
+	;p[arse]: Toggle -p (shared library parsing) flag
+	;q[uit]: Exit CEPL
 	;r[eset]: Reset CEPL to its initial program state
+	:w[arnings]: Toggle -w (warnings) flag
 
 #### CEPL understands the following options:
 
