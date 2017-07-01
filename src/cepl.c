@@ -143,26 +143,44 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* reset state */
 			case 'r':
+				free_buffers();
+				init_buffers();
+				free_argv((char **)cc_argv);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
+
 			/* toggle warnings */
 			case 'w':
 				warn_flag ^= true;
+				free_buffers();
+				init_buffers();
+				free_argv((char **)cc_argv);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
+
 			/* toggle parsing libraries for completions */
 			case 'p':
 				perl_flag ^= true;
+				free_buffers();
+				init_buffers();
+				free_argv((char **)cc_argv);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
+
 			/* break from readline loop */
 			case 'q':
 				goto QUIT;
 				/* unused */
 				break;
+
+			/* unknown command becomes a noop */
+			default:
+				strcat(prog_main_start, "\n");
+				strcat(prog_start, "\n");
 			}
-			free_buffers();
-			init_buffers();
-			free_argv((char **)cc_argv);
-			/* re-initiatalize compiler arg array */
-			cc_argv = parse_opts(argc, argv, optstring, &ofile);
 			break;
 
 		/* dont append ; for preprocessor directives */
