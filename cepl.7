@@ -16,21 +16,23 @@ general algorithm exploration.
 
 .SH "USAGE"
 .sp
-CEPL currently supports readline key-bindings/tab-completion and the ability to specify additional shared libraries or headers with the “-l” or “-I” switches respectively.
+CEPL currently supports readline key-bindings/tab-completion and the ability to specify additional shared libraries or headers with the “\fB-l\fR” or “\fB-I\fR” switches respectively.
+
 .sp
-A list of completions can also be generated on-demand for each “-l” library using “nm” and “perl” by passing the “-p” switch.
+A list of completions can also be generated on-demand for each “\fB-l\fR” library using “\fBnm\fR” and “\fBperl\fR” by passing the “\fB-p\fR” switch.
 
 .SS "COMMANDS"
-Input lines prefixed with a “;” are used to control internal state.
+.sp
+Input lines prefixed with a “\fB;\fR” are used to control internal state.
 
 .HP
-\fB;p[arse]\fR:: Toggle -p (shared library parsing) flag
+\fB;p[arse]\fR: Toggle -p (shared library parsing) flag
 .HP
-\fB;q[uit]\fR:: Exit CEPL
+\fB;q[uit]\fR: Exit CEPL
 .HP
 \fB;r[eset]\fR: Reset CEPL to its initial program state
 .HP
-\fB:w[arnings]\fR:: Toggle -w (warnings) flag
+\fB:w[arnings]\fR: Toggle -w (warnings) flag
 
 .SS "OPTIONS"
 .sp
@@ -43,7 +45,7 @@ Command line options:
 .HP
 \fB\-v\fR: Show version information.
 .HP
-\fB\-w\fR: Compile with “\-pedantic\-errors \fB\-Wall\fR \fB\-Wextra\fR” flags.
+\fB\-w\fR: Compile with “\fB\-pedantic\-errors\fR \fB\-Wall\fR \fB\-Wextra\fR” flags.
 .HP
 \fB\-l\fR: Link against specified library (flag can be repeated).
 .HP
