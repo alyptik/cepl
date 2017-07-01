@@ -25,7 +25,7 @@ Run `make` then `./cepl` to start the interactive REPL.
 
 #### CEPL understands the following control sequences:
 
-Input lines prefixed with a `;` are used to control the internal state.
+Input lines prefixed with a `;` are used to control internal state.
 
 	;p[arse]: Toggle -p (shared library parsing) flag
 	;q[uit]: Exit CEPL
