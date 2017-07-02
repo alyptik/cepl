@@ -16,7 +16,7 @@ int main (void)
 		"cepl", "-lssl", "-I.",
 		"-o/tmp/test", NULL
 	};
-	char *const optstring = "chivwpl:I:o:";
+	char *const optstring = "hivwpc:l:I:o:";
 	char *libs[] = {"cepl", "ssl", "readline", NULL};
 	char *const *result;
 
