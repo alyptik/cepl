@@ -96,7 +96,7 @@ static inline void resize_buffers(char **buffer, size_t offset)
 int main(int argc, char *argv[])
 {
 	FILE *ofile = NULL;
-	char *const optstring = "chivwpl:I:o:";
+	char *const optstring = "hivwpc:l:I:o:";
 
 	/* initialize source buffers */
 	init_buffers();
