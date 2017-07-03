@@ -39,62 +39,6 @@ extern char **ld_list;
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-static inline void append_warnings(void)
-{
-	for (int i = 0; warn_list[i]; i++) {
-		if ((tmp_list = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
-			free(cc_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during warning cc_list", arg_count - 1, "malloc()");
-		}
-		cc_list = tmp_list;
-		if ((cc_list[arg_count - 1] = malloc(strlen(warn_list[i]) + 1)) == NULL) {
-			free(cc_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during warning cc_list", arg_count - 1, "malloc()");
-		}
-		memset(cc_list[arg_count - 1], 0, strlen(warn_list[i]) + 1);
-		memcpy(cc_list[arg_count - 1], warn_list[i], strlen(warn_list[i]) + 1);
-	}
-}
-
-static inline void append_symbols(void)
-{
-	for (int i = 0; comps[i]; i++) {
-		if ((tmp_list = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
-			free(comp_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during comp_list", comp_count - 1, "malloc()");
-		}
-		comp_list = tmp_list;
-
-		if ((comp_list[comp_count - 1] = malloc(strlen(comps[i]) + 1)) == NULL) {
-			free(comp_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during comp_list", comp_count - 1, "malloc()");
-		}
-		memset(comp_list[comp_count - 1], 0, strlen(comps[i]) + 1);
-		memcpy(comp_list[comp_count - 1], comps[i], strlen(comps[i]) + 1);
-	}
-
-	for (int j = 0; sym_list[j]; j++) {
-		if ((tmp_list = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
-			free(comp_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during library comp_list", arg_count - 1, "malloc()");
-		}
-		comp_list = tmp_list;
-
-		if ((comp_list[comp_count - 1] = malloc(strlen(sym_list[j]) + 1)) == NULL) {
-			free(comp_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during comp_list", comp_count - 1, "malloc()");
-		}
-		memset(comp_list[comp_count - 1], 0, strlen(sym_list[j]) + 1);
-		memcpy(comp_list[comp_count - 1], sym_list[j], strlen(sym_list[j]) + 1);
-	}
-	if ((tmp_list = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
-		free(comp_list);
-		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter comp_list", comp_count - 1, "malloc()");
-	}
-	comp_list = tmp_list;
-	comp_list[comp_count - 1] = NULL;
-}
-
 static inline void init_list(char ***list_ptr, int *count, char *initial_str)
 {
 	if ((*list_ptr = malloc((sizeof **list_ptr) * ++*count)) == NULL)
@@ -220,8 +164,10 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	}
 
 	/* append warning flags */
-	if (warn_flag)
-		append_warnings();
+	if (warn_flag) {
+		for (int i = 0; warn_list[i]; i++)
+			append_str(&cc_list, &arg_count, warn_list[i], 0);
+	}
 
 	/* default to gcc as a compiler */
 	if (!cc_list[0][0])
@@ -244,7 +190,11 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 			free_argv(comp_list);
 		comp_list = malloc(sizeof *comp_list);
 		sym_list = parse_libs(lib_list);
-		append_symbols();
+		for (int i = 0; comps[i]; i++)
+			append_str(&comp_list, &comp_count, comps[i], 0);
+		for (int i = 0; sym_list[i]; i++)
+			append_str(&comp_list, &comp_count, sym_list[i], 0);
+		append_null(&comp_list, &comp_count);
 		free(sym_list);
 	}
 
