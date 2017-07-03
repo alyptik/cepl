@@ -34,7 +34,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 				continue;
 			} else {
 				warn("%s", "error reading from input fd");
-				return;
+				break;
 			}
 		}
 		/* break on EOF */
@@ -45,7 +45,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 				continue;
 			} else {
 				warn("%s", "error writing to output fd");
-				return;
+				break;
 			}
 		}
 	}
