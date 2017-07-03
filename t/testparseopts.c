@@ -17,7 +17,7 @@ int main (void)
 		"-o/tmp/test", NULL
 	};
 	char *const optstring = "hvwpc:l:I:o:";
-	char *libs[] = {"cepl", "ssl", "readline", NULL};
+	char *libs[] = {"ssl", "readline", NULL};
 	char *const *result;
 
 	for (; argv[argc]; argc++);
@@ -28,7 +28,6 @@ int main (void)
 
 	plan(2);
 
-	/* is(result[3], "-O2", "test cc_argv[3] matches \"-O2\""); */
 	like(result[0], "^(gcc|icc|clang)$", "test option parsing.");
 	ok(parse_libs(libs) != NULL, "test library parsing.");
 
