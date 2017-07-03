@@ -18,9 +18,11 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 bool warn_flag = false, parse_flag = false;
 
 static struct option long_opts[] = {
-	{"compiler", required_argument, 0, 'c'},
-	{"version", no_argument, 0, 'v'},
 	{"help", no_argument, 0, 'h'},
+	{"parse", no_argument, 0, 'p'},
+	{"version", no_argument, 0, 'v'},
+	{"warnings", no_argument, 0, 'w'},
+	{"compiler", required_argument, 0, 'c'},
 	{0, 0, 0, 0}
 };
 static char *const cc_arg_list[] = {
