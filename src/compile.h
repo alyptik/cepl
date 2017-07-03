@@ -15,12 +15,7 @@
 
 #define COUNT sysconf(_SC_PAGESIZE)
 
-extern char **environ;
 int compile(char *const src, char *const cc_args[], char *const exec_args[]);
-
-/* silence linter */
-long syscall(long number, ...);
-int fexecve(int mem_fd, char *const argv[], char *const envp[]);
 
 static inline void set_cloexec(int set_fd)
 {

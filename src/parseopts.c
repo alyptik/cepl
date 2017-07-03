@@ -16,7 +16,6 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 /* global toggle flag for warnings and completions */
 bool warn_flag = false, perl_flag = false;
 
-static char *tmp_arg, *line_ptr = NULL;
 static char *const cc_arg_list[] = {
 	"-O2", "-pipe", "-std=c11", "-S", "-xc",
 	"/proc/self/fd/0", "-o/proc/self/fd/1", NULL
@@ -28,7 +27,8 @@ static char *const ld_arg_list[] = {
 static char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
 };
-static char **tmp = NULL, **cc_list = NULL, **lib_list = NULL, **sym_list = NULL;
+static char *tmp_arg, *line_ptr = NULL;
+static char **tmp_list = NULL, **cc_list = NULL, **lib_list = NULL, **sym_list = NULL;
 static int lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
 
 /* global completion list */
@@ -42,11 +42,11 @@ extern int optind, opterr, optopt;
 static inline void append_warnings(void)
 {
 	for (int i = 0; warn_list[i]; i++) {
-		if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
+		if ((tmp_list = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
 			free(cc_list);
 			err(EXIT_FAILURE, "%s[%d] %s", "error during warning cc_list", arg_count - 1, "malloc()");
 		}
-		cc_list = tmp;
+		cc_list = tmp_list;
 		if ((cc_list[arg_count - 1] = malloc(strlen(warn_list[i]) + 1)) == NULL) {
 			free(cc_list);
 			err(EXIT_FAILURE, "%s[%d] %s", "error during warning cc_list", arg_count - 1, "malloc()");
@@ -59,11 +59,11 @@ static inline void append_warnings(void)
 static inline void append_symbols(void)
 {
 	for (int i = 0; comps[i]; i++) {
-		if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
+		if ((tmp_list = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
 			free(comp_list);
 			err(EXIT_FAILURE, "%s[%d] %s", "error during comp_list", comp_count - 1, "malloc()");
 		}
-		comp_list = tmp;
+		comp_list = tmp_list;
 
 		if ((comp_list[comp_count - 1] = malloc(strlen(comps[i]) + 1)) == NULL) {
 			free(comp_list);
@@ -74,11 +74,11 @@ static inline void append_symbols(void)
 	}
 
 	for (int j = 0; sym_list[j]; j++) {
-		if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
+		if ((tmp_list = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
 			free(comp_list);
 			err(EXIT_FAILURE, "%s[%d] %s", "error during library comp_list", arg_count - 1, "malloc()");
 		}
-		comp_list = tmp;
+		comp_list = tmp_list;
 
 		if ((comp_list[comp_count - 1] = malloc(strlen(sym_list[j]) + 1)) == NULL) {
 			free(comp_list);
@@ -87,11 +87,11 @@ static inline void append_symbols(void)
 		memset(comp_list[comp_count - 1], 0, strlen(sym_list[j]) + 1);
 		memcpy(comp_list[comp_count - 1], sym_list[j], strlen(sym_list[j]) + 1);
 	}
-	if ((tmp = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
+	if ((tmp_list = realloc(comp_list, (sizeof *comp_list) * ++comp_count)) == NULL) {
 		free(comp_list);
 		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter comp_list", comp_count - 1, "malloc()");
 	}
-	comp_list = tmp;
+	comp_list = tmp_list;
 	comp_list[comp_count - 1] = NULL;
 }
 
@@ -140,7 +140,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	/* zero variables */
 	*ofile = NULL;
 	lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
-	tmp = NULL, cc_list = NULL, lib_list = NULL, sym_list = NULL;
+	tmp_list = NULL, cc_list = NULL, lib_list = NULL, sym_list = NULL;
 
 	/* don't print an error if option not found */
 	opterr = 0;

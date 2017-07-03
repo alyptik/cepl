@@ -24,6 +24,12 @@ static char *const ld_alt_list[] = {
 	"-o/proc/self/fd/1", NULL
 };
 
+extern char **environ;
+
+/* silence linter */
+long syscall(long number, ...);
+int fexecve(int mem_fd, char *const argv[], char *const envp[]);
+
 int compile(char *const src, char *const cc_args[], char *const exec_args[])
 {
 	int mem_fd, status;
