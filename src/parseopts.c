@@ -97,6 +97,8 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	/* re-zero cc_list[0] so -c argument can be added */
 	memset(cc_list[0], 0, strlen(cc_list[0]) + 1);
 
+	/* TODO: fix seek errors when not using gcc as ld */
+
 	while ((opt = getopt(argc, argv, optstring)) != -1) {
 		switch (opt) {
 
@@ -109,7 +111,6 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 				cc_list[0] = tmp_arg;
 				memset(cc_list[0], 0, strlen(optarg) + 1);
 				memcpy(cc_list[0], optarg, strlen(optarg) + 1);
-				/* TODO: fix seek errors when not using gcc as ld */
 			}
 			break;
 
@@ -203,8 +204,9 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 }
 
 char **parse_libs(char *libs[]) {
-	int status, i = 0;
+	int status;
 	int pipe_nm[2];
+	int token_count = 0;
 	char **tokens, **tmp;
 	FILE *nm_input;
 	size_t line_size = 0;
@@ -237,28 +239,28 @@ char **parse_libs(char *libs[]) {
 	/* parent */
 	default:
 		close(pipe_nm[1]);
-		nm_input = fdopen(pipe_nm[0], "r");
 		wait(&status);
 		if (status != 0) {
 			warnx("%s", "nm non-zero exit code");
 			return NULL;
 		}
 
+		nm_input = fdopen(pipe_nm[0], "r");
 		getline(&line_ptr, &line_size, nm_input);
 		fclose(nm_input);
 		close(pipe_nm[0]);
 
-		if ((tokens = malloc(sizeof *tokens)) == NULL)
+		if ((tokens = malloc((sizeof *tokens) * ++token_count)) == NULL)
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tokens malloc()");
-		tokens[i++] = strtok(line_ptr, " \t\n");
-		if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
+		tokens[token_count - 1] = strtok(line_ptr, " \t\n");
+		if ((tmp = realloc(tokens, (sizeof *tokens) * ++token_count)) == NULL) {
 			free(tokens);
 			err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
 		}
 		tokens = tmp;
 
-		while ((tokens[i - 1] = strtok(NULL, " \t\n")) != NULL) {
-			if ((tmp = realloc(tokens, (sizeof *tokens) * ++i)) == NULL) {
+		while ((tokens[token_count - 1] = strtok(NULL, " \t\n")) != NULL) {
+			if ((tmp = realloc(tokens, (sizeof *tokens) * ++token_count)) == NULL) {
 				free(tokens);
 				err(EXIT_FAILURE, "%s", "error during parse_libs() tmp malloc()");
 			}
