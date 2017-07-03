@@ -99,7 +99,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 {
 	int opt;
 	char *const *arg_list;
-	char *const gcc = "gcc";
+	char const *const gcc = "gcc";
 	char *out_file = NULL;
 
 	/* don't print an error if option not found */
@@ -109,19 +109,21 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
 	tmp = NULL, cc_list = NULL, lib_list = NULL, sym_list = NULL;
 
+	/* initilize cc argument list */
+	if ((cc_list = malloc((sizeof *cc_list) * ++arg_count)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", arg_count - 1, "malloc()");
+	if ((cc_list[arg_count - 1] = malloc(strlen(gcc) + 1)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", arg_count - 1, "malloc()");
+	/* leave cc_list[0] full of \0 for now */
+	memset(cc_list[arg_count - 1], 0, strlen(gcc) + 1);
+
+	/* initilize library list */
 	if ((lib_list = malloc(sizeof *lib_list)) == NULL)
 		err(EXIT_FAILURE, "%s", "error duing lib_list malloc()");
 	if ((lib_list[lib_count++] = malloc(strlen("cepl") + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "error duing lib_list malloc()");
 	memset(lib_list[lib_count - 1], 0, strlen("cepl") + 1);
 	memcpy(lib_list[lib_count - 1], "cepl", strlen("cepl") + 1);
-
-	/* initilize cc argument list */
-	if ((cc_list = malloc((sizeof *cc_list) * ++arg_count)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", arg_count - 1, "malloc()");
-	if ((cc_list[arg_count - 1] = malloc(strlen(gcc) + 1)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", arg_count - 1, "malloc()");
-	memset(cc_list[arg_count - 1], 0, strlen(gcc) + 1);
 
 	/* initilize ld argument list */
 	if (ld_list)
