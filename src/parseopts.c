@@ -5,17 +5,24 @@
  * See LICENSE file for copyright and license details.
  */
 
+#include <getopt.h>
 #include "parseopts.h"
 #include "readline.h"
 
 /* silence linter */
-int getopt(int argc, char *const argv[], const char *optstring);
+int getopt_long(int argc, char *const argv[], char const *optstring, struct option const *longopts, int *longindex);
 FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
 bool warn_flag = false, perl_flag = false;
 
+static struct option long_opts[] = {
+	{"compiler", required_argument, 0, 'c'},
+	{"version", no_argument, 0, 'v'},
+	{"help", no_argument, 0, 'h'},
+	{0, 0, 0, 0}
+};
 static char *const cc_arg_list[] = {
 	"-O2", "-pipe", "-std=c11", "-S", "-xc",
 	"/proc/self/fd/0", "-o/proc/self/fd/1", NULL
@@ -29,7 +36,7 @@ static char *const warn_list[] = {
 };
 static char *tmp_arg, *line_ptr = NULL;
 static char **tmp_list = NULL, **cc_list = NULL, **lib_list = NULL, **sym_list = NULL;
-static int lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0;
+static int lib_count = 0, arg_count = 0, comp_count = 0, ld_count = 0, option_index = 0;
 
 /* global completion list */
 extern char **comp_list, *comps[];
@@ -99,7 +106,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 
 	/* TODO: fix seek errors when not using gcc as ld */
 
-	while ((opt = getopt(argc, argv, optstring)) != -1) {
+	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
 
 		/* switch compiler */
