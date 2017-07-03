@@ -95,6 +95,18 @@ static inline void append_symbols(void)
 	comp_list[comp_count - 1] = NULL;
 }
 
+static inline void append_str(char ***list_ptr, int *count, char *str, size_t offset)
+{
+	char **temp;
+	if ((temp = realloc(*list_ptr, (sizeof **list_ptr) * ++*count)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during library ld_list", *count - 1, "malloc()");
+	*list_ptr = temp;
+	if ((*(*list_ptr + *count - 1) = malloc(strlen(str) + offset + 1)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during library ld_list", *count - 1, "malloc()");
+	memset(*(*list_ptr + *count - 1), 0, strlen(str) + offset + 1);
+	memcpy(*(*list_ptr + *count - 1) + offset, str, strlen(str) + 1);
+}
+
 char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile)
 {
 	int opt;
@@ -142,26 +154,17 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 		/* switch compiler */
 		case 'c':
 			if (!cc_list[0][0]) {
-				/* copy compiler to ld_list[0] */
-				if ((tmp_arg = realloc(cc_list[0], strlen(optarg) + 1)) == NULL) {
-					free(cc_list);
-					free(ld_list);
-					free(lib_list);
+				/* copy compiler to cc_list[0] */
+				if ((tmp_arg = realloc(cc_list[0], strlen(optarg) + 1)) == NULL)
 					err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list", 0, "malloc()");
-				}
 				cc_list[0] = tmp_arg;
 				memset(cc_list[0], 0, strlen(optarg) + 1);
 				memcpy(cc_list[0], optarg, strlen(optarg) + 1);
 			}
-			/* TODO: fix linking errors */
-			/* copy compiler to ld_list[0] */
+			/* TODO: fix linking errors when not using gcc */
 			/*
-			 * if ((tmp_arg = realloc(ld_list[0], strlen(optarg) + 1)) == NULL) {
-			 *         free(cc_list);
-			 *         free(ld_list);
-			 *         free(lib_list);
+			 * if ((tmp_arg = realloc(ld_list[0], strlen(optarg) + 1)) == NULL)
 			 *         err(EXIT_FAILURE, "%s[%d] %s", "error during initial ld_list", 0, "malloc()");
-			 * }
 			 * ld_list[0] = tmp_arg;
 			 * memset(ld_list[0], 0, strlen(optarg) + 1);
 			 * memcpy(ld_list[0], optarg, strlen(optarg) + 1);
@@ -170,58 +173,16 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 
 		/* header directory flag */
 		case 'I':
-			if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
-				free(cc_list);
-				free(ld_list);
-				free(lib_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during header cc_list", arg_count - 1, "malloc()");
-			}
-			cc_list = tmp;
-			if ((cc_list[arg_count - 1] = malloc(strlen(optarg) + 3)) == NULL) {
-				free(cc_list);
-				free(ld_list);
-				free(lib_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during header cc_list", arg_count - 1, "malloc()");
-			}
-			memset(cc_list[arg_count - 1], 0, strlen(optarg) + 3);
+			append_str(&cc_list, &arg_count, optarg, 2);
 			memcpy(cc_list[arg_count - 1], "-I", 2);
-			memcpy(cc_list[arg_count - 1] + 2, optarg, strlen(optarg) + 1);
 			break;
 
 		/* dynamic library flag */
 		case 'l':
-			if ((tmp = realloc(ld_list, (sizeof *ld_list) * ++ld_count)) == NULL) {
-				free(cc_list);
-				free(ld_list);
-				free(lib_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during library ld_list", ld_count - 1, "malloc()");
-			}
-			ld_list = tmp;
-			if ((ld_list[ld_count - 1] = malloc(strlen(optarg) + 3)) == NULL) {
-				free(cc_list);
-				free(ld_list);
-				free(lib_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during library ld_list", ld_count - 1, "malloc()");
-			}
-			memset(ld_list[ld_count - 1], 0, strlen(optarg) + 3);
+			append_str(&ld_list, &ld_count, optarg, 2);
 			memcpy(ld_list[ld_count - 1], "-l", 2);
-			memcpy(ld_list[ld_count - 1] + 2, optarg, strlen(optarg) + 1);
 
-			if ((tmp = realloc(lib_list, (sizeof *lib_list) * ++lib_count)) == NULL) {
-				free(cc_list);
-				free(ld_list);
-				free(lib_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during library lib_list", lib_count - 1, "malloc()");
-			}
-			lib_list = tmp;
-			if ((lib_list[lib_count - 1] = malloc(strlen(optarg) + 1)) == NULL) {
-				free(cc_list);
-				free(ld_list);
-				free(lib_list);
-				err(EXIT_FAILURE, "%s[%d] %s", "error during library lib_list", lib_count - 1, "malloc()");
-			}
-			memset(lib_list[lib_count - 1], 0, strlen(optarg) + 1);
-			memcpy(lib_list[lib_count - 1], optarg, strlen(optarg) + 1);
+			append_str(&lib_list, &lib_count, optarg, 0);
 			break;
 
 		/* output file flag */
@@ -263,18 +224,10 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	}
 
 	/* append NULL to lib_list */
-	if ((tmp = realloc(lib_list, (sizeof *lib_list) * ++lib_count)) == NULL) {
-		free(cc_list);
-		free(ld_list);
-		free(lib_list);
+	if ((tmp = realloc(lib_list, (sizeof *lib_list) * ++lib_count)) == NULL)
 		err(EXIT_FAILURE, "%s[%d] %s", "error during library lib_list", lib_count - 1, "malloc()");
-	}
 	lib_list = tmp;
 	lib_list[lib_count - 1] = NULL;
-
-	/* default to gcc as a compiler */
-	if (!cc_list[0][0])
-		memcpy(cc_list[0], gcc, strlen(gcc) + 1);
 
 	/* append warning flags */
 	if (warn_flag)
@@ -291,67 +244,38 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 			free(sym_list);
 	}
 
+	/* default to gcc as a compiler */
+	if (!cc_list[0][0])
+		memcpy(cc_list[0], gcc, strlen(gcc) + 1);
+
 	/* finalize cc argument list */
-	for (int i = 0; cc_arg_list[i]; i++) {
-		if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
-			free(cc_list);
-			free(ld_list);
-			free(lib_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during final cc_list", arg_count - 1, "malloc()");
-		}
-		cc_list = tmp;
-		if ((cc_list[arg_count - 1] = malloc(strlen(cc_arg_list[i]) + 1)) == NULL) {
-			free(cc_list);
-			free(ld_list);
-			free(lib_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during final cc_list", arg_count - 1, "malloc()");
-		}
-		memset(cc_list[arg_count - 1], 0, strlen(cc_arg_list[i]) + 1);
-		memcpy(cc_list[arg_count - 1], cc_arg_list[i], strlen(cc_arg_list[i]) + 1);
-	}
+	for (int i = 0; cc_arg_list[i]; i++)
+		append_str(&cc_list, &arg_count, cc_arg_list[i], 0);
+
+	/* finalize ld argument list */
+	for (int i = 0; ld_arg_list[i]; i++)
+		append_str(&ld_list, &ld_count, ld_arg_list[i], 0);
+
 	/* append NULL to cc_list */
-	if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL) {
-		free(cc_list);
+	if ((tmp = realloc(cc_list, (sizeof *cc_list) * ++arg_count)) == NULL)
 		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter cc_list", arg_count - 1, "malloc()");
-	}
 	cc_list = tmp;
 	cc_list[arg_count - 1] = NULL;
 
-	/* finalize ld argument list */
-	for (int i = 0; ld_arg_list[i]; i++) {
-		if ((tmp = realloc(ld_list, (sizeof *ld_list) * ++ld_count)) == NULL) {
-			free(cc_list);
-			free(ld_list);
-			free(lib_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during final ld_list", ld_count - 1, "malloc()");
-		}
-		ld_list = tmp;
-		if ((ld_list[ld_count - 1] = malloc(strlen(ld_arg_list[i]) + 1)) == NULL) {
-			free(cc_list);
-			free(ld_list);
-			free(lib_list);
-			err(EXIT_FAILURE, "%s[%d] %s", "error during final ld_list", ld_count - 1, "malloc()");
-		}
-		memset(ld_list[ld_count - 1], 0, strlen(ld_arg_list[i]) + 1);
-		memcpy(ld_list[ld_count - 1], ld_arg_list[i], strlen(ld_arg_list[i]) + 1);
-	}
 	/* append NULL to ld_list */
-	if ((tmp = realloc(ld_list, (sizeof *ld_list) * ++ld_count)) == NULL) {
-		free(cc_list);
-		free(ld_list);
-		free(lib_list);
+	if ((tmp = realloc(ld_list, (sizeof *ld_list) * ++ld_count)) == NULL)
 		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter ld_list", ld_count - 1, "malloc()");
-	}
 	ld_list = tmp;
 	ld_list[ld_count - 1] = NULL;
-
 	if (line_ptr) {
 		free(line_ptr);
 		line_ptr = NULL;
 	}
-	if (free_argv(lib_list) == -1)
-		warn("%s", "error freeing lib_list");
-	lib_list = NULL;
+	if (lib_list) {
+		if (free_argv(lib_list) == -1)
+			warn("%s", "error freeing lib_list");
+		lib_list = NULL;
+	}
 
 	arg_list = cc_list;
 	return arg_list;
