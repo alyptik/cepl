@@ -37,7 +37,7 @@ static char *const *cc_argv;
 /* completion list of generated symbols */
 extern char **comp_list;
 /* toggle flag for warnings and completions */
-extern bool warn_flag, perl_flag;
+extern bool warn_flag, parse_flag;
 
 static inline void free_buffers(void)
 {
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 
 			/* toggle parsing libraries for completions */
 			case 'p':
-				perl_flag ^= true;
+				parse_flag ^= true;
 				free_buffers();
 				init_buffers();
 				free_argv((char **)cc_argv);

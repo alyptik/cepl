@@ -15,7 +15,7 @@ FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
-bool warn_flag = false, perl_flag = false;
+bool warn_flag = false, parse_flag = false;
 
 static struct option long_opts[] = {
 	{"compiler", required_argument, 0, 'c'},
@@ -143,9 +143,9 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 				err(EXIT_FAILURE, "%s", "failed to create output file");
 			break;
 
-		/* perl flag */
+		/* parse flag */
 		case 'p':
-			perl_flag ^= true;
+			parse_flag ^= true;
 			break;
 
 		/* warning flag */
@@ -188,7 +188,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	append_null(&lib_list, &lib_count);
 
 	/* parse ELF shared libraries for completions */
-	if (perl_flag) {
+	if (parse_flag) {
 		if (comp_list)
 			free_argv(comp_list);
 		comp_list = malloc(sizeof *comp_list);
