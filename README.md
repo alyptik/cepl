@@ -35,18 +35,18 @@ Input lines prefixed with a `;` are used to control internal state.
 	;p[arse]:		Toggle -p (shared library parsing) flag
 	;q[uit]:		Exit CEPL
 	;r[eset]:		Reset CEPL to its initial program state
-	:w[arnings]:	Toggle -w (warnings) flag
+	:w[arnings]:		Toggle -w (warnings) flag
 
 #### CEPL understands the following options:
 
 	-h,--help:		Show help/usage information.
 	-p,--parse:		Add symbols from dynamic libraries to readline completion.
-	-v,--version:	Show version information.
-	-w,--warnings:	Compile with “-pedantic-errors -Wall -Wextra” flags.
-	-c,--compiler:	Specify alternate compiler.
-	-l:				Link against specified library (flag can be repeated).
-	-I:				Search directory for header files (flag can be repeated).
-	-o:				Name of the file to output source to.
+	-v,--version:		Show version information.
+	-w,--warnings:		Compile with “-pedantic-errors -Wall -Wextra” flags.
+	-c,--compiler:		Specify alternate compiler.
+	-l:			Link against specified library (flag can be repeated).
+	-I:			Search directory for header files (flag can be repeated).
+	-o:			Name of the file to output source to.
 
 ## Libraries used:
 
