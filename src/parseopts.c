@@ -26,12 +26,13 @@ static struct option long_opts[] = {
 	{0, 0, 0, 0}
 };
 static char *const cc_arg_list[] = {
-	"-O2", "-pipe", "-std=c11", "-S", "-xc",
-	"/proc/self/fd/0", "-o/proc/self/fd/1", NULL
+	"-O2", "-pipe", "-std=c11",
+	"-S", "-xc", "/proc/self/fd/0",
+	"-o", "/proc/self/fd/1", NULL
 };
 static char *const ld_arg_list[] = {
 	"-xassembler", "/proc/self/fd/0",
-	"-o/proc/self/fd/1", NULL
+	"-o", "/proc/self/fd/1", NULL
 };
 static char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
