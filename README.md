@@ -40,9 +40,9 @@ Input lines prefixed with a `;` are used to control internal state.
 #### CEPL understands the following options:
 
 	-h,--help:		Show help/usage information.
-	-p:				Add symbols from dynamic libraries to readline completion.
+	-p,--parse:		Add symbols from dynamic libraries to readline completion.
 	-v,--version:	Show version information.
-	-w:				Compile with “-pedantic-errors -Wall -Wextra” flags.
+	-w,--warnings:	Compile with “-pedantic-errors -Wall -Wextra” flags.
 	-c,--compiler:	Specify alternate compiler.
 	-l:				Link against specified library (flag can be repeated).
 	-I:				Search directory for header files (flag can be repeated).
