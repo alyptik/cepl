@@ -81,7 +81,6 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	/* error */
 	case -1:
 		close(pipe_ld[0]);
-		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
 		err(EXIT_FAILURE, "%s", "error forking linker");
