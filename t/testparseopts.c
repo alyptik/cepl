@@ -14,7 +14,7 @@ int main (void)
 	int argc = 0;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
-		"-o/tmp/test", NULL
+		"-cclang", "-o/tmp/test", NULL
 	};
 	char *const optstring = "hvwpc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
