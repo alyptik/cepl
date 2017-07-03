@@ -26,9 +26,10 @@ int main (void)
 	for (int i = 0; result[i]; (printf("%s ", result[i]), i++));
 	putchar('\n');
 
-	plan(2);
+	plan(3);
 
-	like(result[0], "^(gcc|icc|clang)$", "test option parsing.");
+	ok(result != NULL, "test option parsing.");
+	like(result[0], "^(gcc|clang)$", "test generation of compiler string.");
 	ok(parse_libs(libs) != NULL, "test library parsing.");
 
 	done_testing();
