@@ -110,11 +110,6 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 				memset(cc_list[0], 0, strlen(optarg) + 1);
 				memcpy(cc_list[0], optarg, strlen(optarg) + 1);
 				/* TODO: fix seek errors when not using gcc as ld */
-				/* if ((tmp_arg = realloc(ld_list[0], strlen(optarg) + 1)) == NULL) */
-				/*         err(EXIT_FAILURE, "%s[%d] %s", "error during initial ld_list", 0, "malloc()"); */
-				/* ld_list[0] = tmp_arg; */
-				/* memset(ld_list[0], 0, strlen(optarg) + 1); */
-				/* memcpy(ld_list[0], optarg, strlen(optarg) + 1); */
 			}
 			break;
 
@@ -184,7 +179,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	append_null(&ld_list, &ld_count);
 	append_null(&lib_list, &lib_count);
 
-	/* parse ELF library for completions */
+	/* parse ELF shared libraries for completions */
 	if (perl_flag) {
 		if (comp_list)
 			free_argv(comp_list);
