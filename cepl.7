@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v0.6.1" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v0.6.2" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -16,10 +16,10 @@ general algorithm exploration.
 
 .SH "USAGE"
 .sp
-CEPL currently supports multiple compilers, readline key-bindings/tab-completion, and the ability to specify additional shared libraries or headers with the “\fB-l\fR” or “\fB-I\fR” switches respectively.
+CEPL currently supports multiple compilers, readline key-bindings/tab-completion, and the ability to specify additional shared libraries to link against.
 
 .sp
-A list of completions can also be generated on-demand for each “\fB-l\fR” library using “\fBnm\fR” and “\fBperl\fR” by passing the “\fB-p\fR” switch.
+A list of completions can also be optionally generated for each shared library if “\fBnm\fR” and “\fBperl\fR” are present.
 
 .SS "COMMANDS"
 .sp
