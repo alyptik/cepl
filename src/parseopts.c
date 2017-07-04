@@ -37,49 +37,49 @@ static char *const ld_arg_list[] = {
 static char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
 };
-static int comp_count = 0, option_index = 0;
+static int option_index = 0;
 static char *tmp_arg, *line_ptr = NULL;
 static char **tmp_list = NULL, **sym_list = NULL;
 /* compiler arguments and library list structs */
 static struct str_list cc_list = { 0, NULL }, lib_list = { 0, NULL };
 
-/* global linker flags struct */
-extern struct str_list ld_list;
-/* global completion list */
-extern char **comp_list, *comps[];
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
+/* global completion list */
+extern char *comp_arg_list[];
+/* global linker flags and completions structs */
+extern struct str_list ld_list, comp_list;
 
-static inline void init_list(char ***list_ptr, int *count, char *initial_str)
+static inline void init_list(struct str_list *argv, char *initial_str)
 {
-	if ((*list_ptr = malloc((sizeof **list_ptr) * ++*count)) == NULL)
+	if ((argv->list = malloc((sizeof *argv->list) * ++argv->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");
-	if ((*(*list_ptr + *count - 1) = malloc(strlen(initial_str) + 1)) == NULL)
+	if ((*(argv->list + argv->cnt - 1) = malloc(strlen(initial_str) + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr[0] malloc()");
-	memset(*(*list_ptr + *count - 1), 0, strlen(initial_str) + 1);
-	memcpy(*(*list_ptr + *count - 1), initial_str, strlen(initial_str) + 1);
+	memset(*(argv->list + argv->cnt - 1), 0, strlen(initial_str) + 1);
+	memcpy(*(argv->list + argv->cnt - 1), initial_str, strlen(initial_str) + 1);
 }
 
-static inline void append_str(char ***list_ptr, int *count, char *str, size_t offset)
+static inline void append_str(struct str_list *argv, char *str, size_t offset)
 {
 	char **temp;
-	if ((temp = realloc(*list_ptr, (sizeof **list_ptr) * ++*count)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during list_ptr", *count - 1, "malloc()");
-	*list_ptr = temp;
-	if ((*(*list_ptr + *count - 1) = malloc(strlen(str) + offset + 1)) == NULL)
-		err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", *count - 1);
-	memset(*(*list_ptr + *count - 1), 0, strlen(str) + offset + 1);
-	memcpy(*(*list_ptr + *count - 1) + offset, str, strlen(str) + 1);
+	if ((temp = realloc(argv->list, (sizeof *argv->list) * ++argv->cnt)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during list_ptr", argv->cnt - 1, "malloc()");
+	argv->list = temp;
+	if ((*(argv->list + argv->cnt - 1) = malloc(strlen(str) + offset + 1)) == NULL)
+		err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", argv->cnt - 1);
+	memset(*(argv->list + argv->cnt - 1), 0, strlen(str) + offset + 1);
+	memcpy(*(argv->list + argv->cnt - 1) + offset, str, strlen(str) + 1);
 }
 
-static inline void append_null(char ***list_ptr, int *count)
+static inline void append_null(struct str_list *argv)
 {
 	char **temp;
-	if ((temp = realloc(*list_ptr, (sizeof **list_ptr) * ++*count)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter to list_ptr", *count - 1, "malloc()");
-	*list_ptr = temp;
-	*(*list_ptr + *count - 1) = NULL;
+	if ((temp = realloc(argv->list, (sizeof *argv->list) * ++argv->cnt)) == NULL)
+		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter to list_ptr", argv->cnt - 1, "malloc()");
+	argv->list = temp;
+	*(argv->list + argv->cnt - 1) = NULL;
 }
 
 char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile)
@@ -93,18 +93,17 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	if (ld_list.list)
 		free_argv(ld_list.list);
 
-	/* clear variables */
 	*ofile = NULL;
-	lib_list.cnt = 0, cc_list.cnt = 0, comp_count = 0, ld_list.cnt = 0;
+	lib_list.cnt = 0, cc_list.cnt = 0, comp_list.cnt = 0, ld_list.cnt = 0;
 	tmp_list = NULL, sym_list = NULL;
 	cc_list.list = NULL, lib_list.list = NULL;
 	/* don't print an error if option not found */
 	opterr = 0;
 
 	/* initilize argument lists */
-	init_list(&cc_list.list, &cc_list.cnt, "gcc");
-	init_list(&ld_list.list, &ld_list.cnt, "gcc");
-	init_list(&lib_list.list, &lib_list.cnt, "./elfsyms");
+	init_list(&cc_list, "gcc");
+	init_list(&ld_list, "gcc");
+	init_list(&lib_list, "./elfsyms");
 	/* re-zero cc_list.list[0] so -c argument can be added */
 	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
 
@@ -127,14 +126,14 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 
 		/* header directory flag */
 		case 'I':
-			append_str(&cc_list.list, &cc_list.cnt, optarg, 2);
+			append_str(&cc_list, optarg, 2);
 			memcpy(cc_list.list[cc_list.cnt - 1], "-I", 2);
 			break;
 
 		/* dynamic library flag */
 		case 'l':
-			append_str(&lib_list.list, &lib_list.cnt, optarg, 0);
-			append_str(&ld_list.list, &ld_list.cnt, optarg, 2);
+			append_str(&lib_list, optarg, 0);
+			append_str(&ld_list, optarg, 2);
 			memcpy(ld_list.list[ld_list.cnt - 1], "-l", 2);
 			break;
 
@@ -173,7 +172,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 	/* append warning flags */
 	if (warn_flag) {
 		for (int i = 0; warn_list[i]; i++)
-			append_str(&cc_list.list, &cc_list.cnt, warn_list[i], 0);
+			append_str(&cc_list, warn_list[i], 0);
 	}
 
 	/* default to gcc as a compiler */
@@ -182,26 +181,26 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 
 	/* finalize argument lists */
 	for (int i = 0; cc_arg_list[i]; i++)
-		append_str(&cc_list.list, &cc_list.cnt, cc_arg_list[i], 0);
+		append_str(&cc_list, cc_arg_list[i], 0);
 	for (int i = 0; ld_arg_list[i]; i++)
-		append_str(&ld_list.list, &ld_list.cnt, ld_arg_list[i], 0);
+		append_str(&ld_list, ld_arg_list[i], 0);
 
 	/* append NULL to generated lists */
-	append_null(&cc_list.list, &cc_list.cnt);
-	append_null(&ld_list.list, &ld_list.cnt);
-	append_null(&lib_list.list, &lib_list.cnt);
+	append_null(&cc_list);
+	append_null(&ld_list);
+	append_null(&lib_list);
 
 	/* parse ELF shared libraries for completions */
 	if (parse_flag) {
-		if (comp_list)
-			free_argv(comp_list);
-		comp_list = malloc(sizeof *comp_list);
+		if (comp_list.list)
+			free_argv(comp_list.list);
+		comp_list.list = malloc(sizeof *comp_list.list);
 		sym_list = parse_libs(lib_list.list);
-		for (int i = 0; comps[i]; i++)
-			append_str(&comp_list, &comp_count, comps[i], 0);
+		for (int i = 0; comp_arg_list[i]; i++)
+			append_str(&comp_list, comp_arg_list[i], 0);
 		for (int i = 0; sym_list[i]; i++)
-			append_str(&comp_list, &comp_count, sym_list[i], 0);
-		append_null(&comp_list, &comp_count);
+			append_str(&comp_list, sym_list[i], 0);
+		append_null(&comp_list);
 		free(sym_list);
 	}
 

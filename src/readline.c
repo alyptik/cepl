@@ -9,8 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "readline.h"
+#include "parseopts.h"
 
-char *comps[] = {
+char *comp_arg_list[] = {
 	"auto", "break", "case", "char", "const", "continue", "default",
 	"do", "double", "else", "enum", "extern", "float", "for", "goto",
 	"if", "inline", "int", "long", "register", "restrict", "return",
@@ -25,17 +26,18 @@ char *comps[] = {
 	"strcat(", "strtok(", "puts(", "putc(", "getc", "putchar(", "getchar(",
 	";reset", NULL
 };
-char **comp_list = NULL;
+/* global completion list struct */
+struct str_list comp_list = { 0, NULL };
 
 char *generator(const char *text, int state)
 {
 	static size_t list_index, len;
 	char *name, *buf;
 	char **completions = NULL;
-	if (comp_list)
-		completions = comp_list;
+	if (comp_list.list)
+		completions = comp_list.list;
 	else
-		completions = comps;
+		completions = comp_arg_list;
 
 	if (!state) {
 		list_index = 0;

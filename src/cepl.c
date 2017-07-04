@@ -35,7 +35,7 @@ static char *prog_end = NULL;
 static char *const *cc_argv;
 
 /* completion list of generated symbols */
-extern char **comp_list;
+extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag;
 
@@ -66,8 +66,8 @@ static inline void init_buffers(void)
 		free_buffers();
 		if (cc_argv)
 			free_argv((char **)cc_argv);
-		if (comp_list)
-			free_argv(comp_list);
+		if (comp_list.list)
+			free_argv(comp_list.list);
 		err(EXIT_FAILURE, "%s", "error allocating initial pointers");
 	}
 	memset(prog_main_start, 0, MAIN_START_SIZE);
@@ -86,8 +86,8 @@ static inline void resize_buffers(char **buffer, size_t offset)
 		free_buffers();
 		if (cc_argv)
 			free_argv((char **)cc_argv);
-		if (comp_list)
-			free_argv(comp_list);
+		if (comp_list.list)
+			free_argv(comp_list.list);
 		err(EXIT_FAILURE, "error during resize_buffers(%s, %lu)", *buffer, offset);
 	}
 	*buffer = tmp;
@@ -224,8 +224,8 @@ QUIT:
 	free_buffers();
 	if (cc_argv)
 		free_argv((char **)cc_argv);
-	if (comp_list)
-		free_argv(comp_list);
+	if (comp_list.list)
+		free_argv(comp_list.list);
 	if (line)
 		free(line);
 	printf("\n%s\n\n", "Terminating program.");
