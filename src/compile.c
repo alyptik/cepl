@@ -15,11 +15,14 @@
 #include <linux/memfd.h>
 #include "compile.h"
 
-/* global linker arguments struct */
+/* NULL terminated string lists struct */
 struct str_list {
 	int cnt;
 	char **list;
-} ld_list = { 0, NULL };
+};
+
+/* global linker arguments struct */
+struct str_list ld_list = { 0, NULL };
 
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {

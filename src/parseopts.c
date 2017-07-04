@@ -9,6 +9,12 @@
 #include "parseopts.h"
 #include "readline.h"
 
+/* NULL terminated string lists struct */
+struct str_list {
+	int cnt;
+	char **list;
+};
+
 /* silence linter */
 int getopt_long(int argc, char *const argv[], char const *optstring, struct option const *longopts, int *longindex);
 FILE *fdopen(int fd, char const *mode);
@@ -41,10 +47,7 @@ static int comp_count = 0, option_index = 0;
 static char *tmp_arg, *line_ptr = NULL;
 static char **tmp_list = NULL, **sym_list = NULL;
 /* compiler arguments and library list structs */
-static struct str_list {
-	int cnt;
-	char **list;
-} cc_list = { 0, NULL }, lib_list = { 0, NULL };
+static struct str_list cc_list = { 0, NULL }, lib_list = { 0, NULL };
 
 /* global linker flags struct */
 extern struct str_list ld_list;
