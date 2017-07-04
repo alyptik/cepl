@@ -9,12 +9,6 @@
 #include "parseopts.h"
 #include "readline.h"
 
-/* NULL terminated string lists struct */
-struct str_list {
-	int cnt;
-	char **list;
-};
-
 /* silence linter */
 int getopt_long(int argc, char *const argv[], char const *optstring, struct option const *longopts, int *longindex);
 FILE *fdopen(int fd, char const *mode);

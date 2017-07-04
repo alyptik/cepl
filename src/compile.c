@@ -5,21 +5,12 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <sys/syscall.h>
 #include <linux/memfd.h>
 #include "compile.h"
-
-/* NULL terminated string lists struct */
-struct str_list {
-	int cnt;
-	char **list;
-};
+#include "parseopts.h"
 
 /* global linker arguments struct */
 struct str_list ld_list = { 0, NULL };

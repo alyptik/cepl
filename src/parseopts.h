@@ -32,6 +32,12 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile);
 char **parse_libs(char *libs[]);
 
+/* NULL terminated string lists struct */
+struct str_list {
+	int cnt;
+	char **list;
+};
+
 static inline int free_argv(char **argv)
 {
 	int count;
