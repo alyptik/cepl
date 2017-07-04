@@ -21,9 +21,13 @@ char *comp_arg_list[] = {
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
 	"bool", "true", "false", "free(", "malloc(", "realloc(", "calloc(",
-	"printf(", "open(", "close(", "read(", "write(", "fopen(", "fclose(",
+	"system(", "fork(", "pipe(", "execl(", "execlp(", "execle(",
+	"execv(", "execvp(", "execvpe(", "wait(", "kill(", "signal(",
+	"printf(", "fprintf(", "dprintf(", "sprintf(", "snprintf(",
+	"open(", "close(", "read(", "write(", "fopen(", "fclose(",
+	"scanf(", "fscanf(", "sscanf(", "mmap(", "munmap(", "syscall(",
 	"fread(", "fwrite(", "memcpy(", "memset(", "strcpy(", "strlen(",
-	"strcat(", "strtok(", "puts(", "putc(", "getc", "putchar(", "getchar(",
+	"strcat(", "strtok(", "puts(", "putchar(", "getchar(",
 	";reset", NULL
 };
 /* global completion list struct */
