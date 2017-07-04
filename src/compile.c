@@ -15,8 +15,11 @@
 #include <linux/memfd.h>
 #include "compile.h"
 
-/* global linker flag array */
-char **ld_list = NULL;
+/* global linker arguments struct */
+struct str_list {
+	int cnt;
+	char **list;
+} ld_list = { 0, NULL };
 
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {
@@ -96,8 +99,8 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	case 0:
 		dup2(pipe_ld[0], 0);
 		dup2(pipe_exec[1], 1);
-		if (ld_list)
-			execvp(ld_list[0], ld_list);
+		if (ld_list.list)
+			execvp(ld_list.list[0], ld_list.list);
 		/* fallback linker exec */
 		execvp(ld_alt_list[0], ld_alt_list);
 		/* execvp() should never return */
