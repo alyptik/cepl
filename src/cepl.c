@@ -199,9 +199,23 @@ int main(int argc, char *argv[])
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
 
-			/* break from readline loop */
+			/* clean up and exit program */
 			case 'q':
-				goto QUIT;
+				/* write out program to file if applicable */
+				if (ofile) {
+					fwrite(prog_end, strlen(prog_end), 1, ofile);
+					fputc('\n', ofile);
+					fclose(ofile);
+				}
+				free_buffers();
+				if (cc_argv)
+					free_argv((char **)cc_argv);
+				if (comp_list.list)
+					free_argv(comp_list.list);
+				if (line)
+					free(line);
+				printf("\n%s\n\n", "Terminating program.");
+				return 0;
 				/* unused */
 				break;
 
@@ -252,7 +266,6 @@ int main(int argc, char *argv[])
 			free(line);
 	}
 
-QUIT:
 	/* write out program to file if applicable */
 	if (ofile) {
 		fwrite(prog_end, strlen(prog_end), 1, ofile);
