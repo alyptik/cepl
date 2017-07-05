@@ -152,8 +152,8 @@ int main(int argc, char *argv[])
 			case 'f':
 				resize_buffers(&func_buf, strlen(prog_start) + 3);
 				/* ignore up to the first space after ; */
-				(void) strtok(line, " ");
-				tok_buf = strtok(NULL, "\0\n");
+				if (!strtok(line, " ") || !(tok_buf = strtok(NULL, "\0\n")))
+					break;
 				/* generate source buffer */
 				memset(func_buf, 0, strlen(prog_start) + 3);
 				memcpy(func_buf, PROG_INCLUDES, INCLUDES_SIZE);
