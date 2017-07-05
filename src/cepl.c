@@ -80,7 +80,7 @@ static inline void init_buffers(void)
 	memcpy(prog_start, PROG_START, START_SIZE);
 }
 
-static inline void resize_buffers(char **buffer, size_t offset)
+static inline void resize_buffer(char **buffer, size_t offset)
 {
 	char *tmp;
 	/* current length + line length + extra characters + \0 */
@@ -90,7 +90,7 @@ static inline void resize_buffers(char **buffer, size_t offset)
 			free_argv((char **)cc_argv);
 		if (comp_list.list)
 			free_argv(comp_list.list);
-		err(EXIT_FAILURE, "error during resize_buffers(%s, %lu)", *buffer, offset);
+		err(EXIT_FAILURE, "error during resize_buffer(%s, %lu)", *buffer, offset);
 	}
 	*buffer = tmp;
 }
@@ -138,10 +138,10 @@ int main(int argc, char *argv[])
 		/* add to readline history */
 		add_history(line);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		resize_buffers(&prog_main_start, 3);
-		resize_buffers(&prog_start, 3);
-		resize_buffers(&prog_main_end, 3);
-		resize_buffers(&prog_end, 3);
+		resize_buffer(&prog_main_start, 3);
+		resize_buffer(&prog_start, 3);
+		resize_buffer(&prog_main_end, 3);
+		resize_buffer(&prog_end, 3);
 
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 			/* define a function */
 			case 'f':
 				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
-				resize_buffers(&func_buf, strlen(prog_start) + 3);
+				resize_buffer(&func_buf, strlen(prog_start) + 3);
 				/* ignore up to the first space after ; */
 				if (!strtok(line, " ") || !(tok_buf = strtok(NULL, "\0\n")))
 					break;
