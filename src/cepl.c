@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		case ';':
 			/* TODO: more command handling */
 			switch(line[1]) {
-			/* start a function definition */
+			/* define a function */
 			case 'f':
 				resize_buffers(&func_buf, strlen(prog_start) + 3);
 				/* ignore up to the first space after ; */
@@ -160,13 +160,13 @@ int main(int argc, char *argv[])
 				strcat(func_buf, tok_buf);
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
-				strcpy(prog_start, func_buf);
+				memcpy(prog_start, func_buf, strlen(func_buf) + 1);
 				/* generate truncated buffer */
 				memset(func_buf, 0, strlen(prog_start) + 3);
-				strcpy(func_buf, tok_buf);
+				memcpy(func_buf, tok_buf, strlen(tok_buf) + 1);
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
-				strcpy(prog_main_start, func_buf);
+				memcpy(prog_main_start, func_buf, strlen(func_buf) + 1);
 				break;
 
 			/* reset state */
@@ -207,6 +207,8 @@ int main(int argc, char *argv[])
 			/* unknown command becomes a noop */
 			default:
 				build_src();
+				strcat(prog_main_start, "\n");
+				strcat(prog_start, "\n");
 			}
 			break;
 
@@ -214,6 +216,8 @@ int main(int argc, char *argv[])
 		case '#':
 			/* start building program source */
 			build_src();
+			strcat(prog_main_start, "\n");
+			strcat(prog_start, "\n");
 			break;
 
 		default:
@@ -222,11 +226,14 @@ int main(int argc, char *argv[])
 			case ';': /* fallthough */
 			case '\\':
 				build_src();
+				strcat(prog_main_start, "\n");
+				strcat(prog_start, "\n");
 				break;
 
 			default:
 				/* append ; if no trailing }, ;, or \ */
 				build_src();
+				strcat(prog_main_start, ";\n");
 				strcat(prog_start, ";\n");
 			}
 		}
