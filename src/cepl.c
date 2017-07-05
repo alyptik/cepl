@@ -13,11 +13,13 @@
 /* source file templates */
 #define PROG_MAIN_START	("int main(int argc, char *argv[])\n{\n")
 #define PROG_START	("#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#define _Atomic\n#define _Static_assert(a, b)\n#define UNUSED __attribute__ ((unused))\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <signal.h>\n#include <stdalign.h>\n#include <stdarg.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\nextern char **environ;\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n{\n")
+#define PROG_INCLUDES	("#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _XOPEN_SOURCE 9001\n#define __USE_XOPEN\n#define _Atomic\n#define _Static_assert(a, b)\n#define UNUSED __attribute__ ((unused))\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <signal.h>\n#include <stdalign.h>\n#include <stdarg.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <unistd.h>\n#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\nextern char **environ;\n\n")
 #define PROG_MAIN_END	("\n\treturn 0;\n}\n")
 #define PROG_END	("\n\treturn 0;\n}\n")
 /* character lengths of buffer components */
 #define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 2)
 #define START_SIZE	(strlen(PROG_START) + 2)
+#define INCLUDES_SIZE	(strlen(PROG_INCLUDES) + 2)
 #define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 2)
 #define END_SIZE	(START_SIZE + strlen(PROG_END) + 2)
 
@@ -93,13 +95,24 @@ static inline void resize_buffers(char **buffer, size_t offset)
 	*buffer = tmp;
 }
 
+static inline void build_src(void)
+{
+	strcat(prog_main_start, "\t");
+	strcat(prog_start, "\t");
+	strcat(prog_main_start, strtok(line, "\0\n"));
+	strcat(prog_start, strtok(line, "\0\n"));
+}
+
 int main(int argc, char *argv[])
 {
 	FILE *ofile = NULL;
 	char *const optstring = "hvwpc:l:I:o:";
+	char *func_buf = malloc(START_SIZE);
+	char *tok_buf;
 
 	/* initialize source buffers */
 	init_buffers();
+	memset(func_buf, 0, START_SIZE);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 
@@ -130,17 +143,32 @@ int main(int argc, char *argv[])
 		resize_buffers(&prog_main_end, 3);
 		resize_buffers(&prog_end, 3);
 
-		/* start building program source */
-		strcat(prog_main_start, "\t");
-		strcat(prog_start, "\t");
-		strcat(prog_main_start, strtok(line, "\0\n"));
-		strcat(prog_start, strtok(line, "\0\n"));
-
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
 		case ';':
 			/* TODO: more command handling */
 			switch(line[1]) {
+			/* start a function definition */
+			case 'f':
+				resize_buffers(&func_buf, strlen(prog_start) + 3);
+				/* ignore up to the first space after ; */
+				(void) strtok(line, " ");
+				tok_buf = strtok(NULL, "\0\n");
+				/* generate source buffer */
+				memset(func_buf, 0, strlen(prog_start) + 3);
+				memcpy(func_buf, PROG_INCLUDES, INCLUDES_SIZE);
+				strcat(func_buf, tok_buf);
+				strcat(func_buf, "\n\n");
+				strcat(func_buf, prog_main_start);
+				strcpy(prog_start, func_buf);
+				/* generate truncated buffer */
+				memset(func_buf, 0, strlen(prog_start) + 3);
+				strcpy(func_buf, tok_buf);
+				strcat(func_buf, "\n\n");
+				strcat(func_buf, prog_main_start);
+				strcpy(prog_main_start, func_buf);
+				break;
+
 			/* reset state */
 			case 'r':
 				free_buffers();
@@ -178,34 +206,36 @@ int main(int argc, char *argv[])
 
 			/* unknown command becomes a noop */
 			default:
-				strcat(prog_main_start, "\n");
-				strcat(prog_start, "\n");
+				build_src();
 			}
 			break;
 
 		/* dont append ; for preprocessor directives */
 		case '#':
-			strcat(prog_main_start, "\n");
-			strcat(prog_start, "\n");
+			/* start building program source */
+			build_src();
 			break;
 
 		default:
 			switch(line[strlen(line) - 1]) {
-			/* dont append ; if trailing }, ;, or \ */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
-			case '\\': break;
+			case '\\':
+				build_src();
+				break;
+
 			default:
-				strcat(prog_main_start, ";\n");
+				/* append ; if no trailing }, ;, or \ */
+				build_src();
 				strcat(prog_start, ";\n");
 			}
 		}
-
 		/* finish building current iteration of source code */
 		memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
 		strcat(prog_main_end, PROG_MAIN_END);
 		strcat(prog_end, PROG_END);
+
 		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
 		printf("\n%s: %d\n", "exit status", compile(prog_end, cc_argv, argv));
