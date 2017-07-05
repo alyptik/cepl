@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* define a function */
 			case 'f':
+				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
 				resize_buffers(&func_buf, strlen(prog_start) + 3);
 				/* ignore up to the first space after ; */
 				if (!strtok(line, " ") || !(tok_buf = strtok(NULL, "\0\n")))
