@@ -169,16 +169,16 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
-				resize_buffer(&func_buf, strlen(prog_start) + 2);
+				resize_buffer(&func_buf, strlen(prog_start) + 3);
 				/* generate source buffer */
-				memset(func_buf, 0, strlen(prog_start) + 2);
+				memset(func_buf, 0, strlen(prog_start) + 3);
 				memcpy(func_buf, PROG_INCLUDES, INCLUDES_SIZE);
 				strcat(func_buf, tok_buf);
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
 				memcpy(prog_start, func_buf, strlen(func_buf) + 1);
 				/* generate truncated buffer */
-				memset(func_buf, 0, strlen(prog_start) + 2);
+				memset(func_buf, 0, strlen(prog_start) + 3);
 				memcpy(func_buf, tok_buf, strlen(tok_buf) + 1);
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
