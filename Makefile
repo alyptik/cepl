@@ -4,6 +4,7 @@
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE file for copyright and license details.
 
+PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
@@ -11,7 +12,6 @@ CFLAGS = -O2 -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -W
 DEBUG = -Og -ggdb -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
 LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
 LDLIBS = -lreadline
-PREFIX ?= $(DESTDIR)/usr/local
 
 TARGET = cepl
 ELF_SCRIPT = elfsyms
@@ -53,16 +53,16 @@ tests: $(TESTS)
 
 install: $(TARGET)
 	@printf "%s\n" "installing"
-	@mkdir -pv $(PREFIX)/bin
-	@mkdir -pv $(PREFIX)/share/man/man7
-	install -c $(TARGET) $(PREFIX)/bin
-	install -c $(ELF_SCRIPT) $(PREFIX)/bin
-	install -c $(MANPAGE) $(PREFIX)/share/man/man7
+	@mkdir -pv $(DESTDIR)$(PREFIX)/bin
+	@mkdir -pv $(DESTDIR)$(PREFIX)/share/man/man7
+	install -c $(TARGET) $(DESTDIR)$(PREFIX)/bin
+	install -c $(ELF_SCRIPT) $(DESTDIR)$(PREFIX)/bin
+	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/share/man/man7
 
 uninstall:
-	@rm -fv $(PREFIX)/bin/$(TARGET)
-	@rm -fv $(PREFIX)/bin/$(ELF_SCRIPT)
-	@rm -fv $(PREFIX)/share/man/man7/$(MANPAGE)
+	@rm -fv $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+	@rm -fv $(DESTDIR)$(PREFIX)/bin/$(ELF_SCRIPT)
+	@rm -fv $(DESTDIR)$(PREFIX)/share/man/man7/$(MANPAGE)
 
 dist: clean
 	@printf "%s\n" "creating dist tarball"
