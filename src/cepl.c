@@ -260,11 +260,6 @@ int main(int argc, char *argv[])
 				build_src();
 				strcat(prog_main_start, ";");
 				strcat(prog_start, ";");
-				/* remove extra trailing ';' */
-				for (int i = strlen(prog_main_start) - 2; prog_main_start[i - 1] == ';'; i--)
-					prog_main_start[i] = '\0';
-				for (int i = strlen(prog_start) - 2; prog_start[i - 1] == ';'; i--)
-					prog_start[i] = '\0';
 				strcat(prog_main_start, "\n");
 				strcat(prog_start, "\n");
 			}
