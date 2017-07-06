@@ -33,6 +33,8 @@ static char *prog_start = NULL;
 static char *prog_main_end = NULL;
 /* actual source buffer end block */
 static char *prog_end = NULL;
+/* function definition buffer */
+static char *func_buf = NULL;
 /* compiler arg array */
 static char *const *cc_argv;
 
@@ -51,6 +53,8 @@ static inline void free_buffers(void)
 		free(prog_main_end);
 	if (prog_end)
 		free(prog_end);
+	if (func_buf)
+		free(func_buf);
 	prog_main_start = NULL;
 	prog_start = NULL;
 	prog_main_end = NULL;
@@ -63,8 +67,9 @@ static inline void init_buffers(void)
 	prog_start = malloc(START_SIZE);
 	prog_main_end = malloc(MAIN_END_SIZE);
 	prog_end = malloc(END_SIZE);
+	func_buf = malloc(START_SIZE);
 	/* sanity check */
-	if (!prog_main_start || !prog_start || !prog_main_end || !prog_end) {
+	if (!prog_main_start || !prog_start || !prog_main_end || !prog_end || !func_buf) {
 		free_buffers();
 		if (cc_argv)
 			free_argv((char **)cc_argv);
@@ -103,16 +108,28 @@ static inline void build_src(void)
 	strcat(prog_start, strtok(line, "\0\n"));
 }
 
+static inline void finish_src(void)
+{
+	/* remove trailing ; accounting for the "\t\n" at the end of the string */
+	for (int i = strlen(prog_main_start) - 3; prog_main_start[i - 1] == ';'; i--)
+		prog_main_start[i] = '\0';
+	for (int i = strlen(prog_start) - 3; prog_start[i - 1] == ';'; i--)
+		prog_start[i] = '\0';
+	/* finish building current iteration of source code */
+	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
+	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
+	strcat(prog_main_end, PROG_MAIN_END);
+	strcat(prog_end, PROG_END);
+}
+
 int main(int argc, char *argv[])
 {
 	FILE *ofile = NULL;
 	char *const optstring = "hvwpc:l:I:o:";
-	char *func_buf = malloc(START_SIZE);
 	char *tok_buf;
 
 	/* initialize source buffers */
 	init_buffers();
-	memset(func_buf, 0, START_SIZE);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 
@@ -127,7 +144,7 @@ int main(int argc, char *argv[])
 	/* enable completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
-	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{(";
+	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{([";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
 
@@ -252,11 +269,7 @@ int main(int argc, char *argv[])
 				strcat(prog_start, ";\n");
 			}
 		}
-		/* finish building current iteration of source code */
-		memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
-		memcpy(prog_end, prog_start, strlen(prog_start) + 1);
-		strcat(prog_main_end, PROG_MAIN_END);
-		strcat(prog_end, PROG_END);
+		finish_src();
 
 		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], prog_main_end);
