@@ -16,8 +16,6 @@ using `nm` and `perl` by passing the `-p` switch.
 * gcc (GNU C Compiler)
 * readline library
 > **Optional:**
-> * clang
-> * icc
 > * perl
 > * nm
 
