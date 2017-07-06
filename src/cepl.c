@@ -168,20 +168,22 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* define a function */
 			case 'f':
-				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
-				resize_buffer(&func_buf, strlen(prog_start) + 3);
-				/* ignore up to the first space after ; */
-				if (!strtok(line, " ") || !(tok_buf = strtok(NULL, "\0\n")))
+				/* break if function definition empty */
+				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
+				/* increment pointer to start of definition */
+				tok_buf += strspn(tok_buf, " \t");
+				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
+				resize_buffer(&func_buf, strlen(prog_start) + 2);
 				/* generate source buffer */
-				memset(func_buf, 0, strlen(prog_start) + 3);
+				memset(func_buf, 0, strlen(prog_start) + 2);
 				memcpy(func_buf, PROG_INCLUDES, INCLUDES_SIZE);
 				strcat(func_buf, tok_buf);
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
 				memcpy(prog_start, func_buf, strlen(func_buf) + 1);
 				/* generate truncated buffer */
-				memset(func_buf, 0, strlen(prog_start) + 3);
+				memset(func_buf, 0, strlen(prog_start) + 2);
 				memcpy(func_buf, tok_buf, strlen(tok_buf) + 1);
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
