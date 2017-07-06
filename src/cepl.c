@@ -83,21 +83,22 @@ static inline void init_buffers(void)
 	memset(prog_end, 0, END_SIZE);
 	memcpy(prog_main_start, PROG_MAIN_START, MAIN_START_SIZE);
 	memcpy(prog_start, PROG_START, START_SIZE);
+	memset(func_buf, 0, START_SIZE);
 }
 
-static inline void resize_buffer(char **buffer, size_t offset)
+static inline void resize_buffer(char **buf, size_t offset)
 {
 	char *tmp;
 	/* current length + line length + extra characters + \0 */
-	if ((tmp = realloc(*buffer, strlen(*buffer) + strlen(line) + offset + 1)) == NULL) {
+	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
 		free_buffers();
 		if (cc_argv)
 			free_argv((char **)cc_argv);
 		if (comp_list.list)
 			free_argv(comp_list.list);
-		err(EXIT_FAILURE, "error during resize_buffer(%s, %lu)", *buffer, offset);
+		err(EXIT_FAILURE, "error during resize_buffer(%s, %lu)", *buf, offset);
 	}
-	*buffer = tmp;
+	*buf = tmp;
 }
 
 static inline void build_src(void)
