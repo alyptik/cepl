@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 	/* enable completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
-	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{([";
+	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{}()[]";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
 
@@ -228,10 +228,8 @@ int main(int argc, char *argv[])
 
 		/* dont append ';' for preprocessor directives */
 		case '#':
-			/* remove trailing " " and \t */
-			for (int i = strlen(line) - 1; line[i - 1] == ' '; i--)
-				line[i] = '\0';
-			for (int i = strlen(line) - 1; line[i - 1] == '\t'; i--)
+			/* remove trailing ' ' and '\t' */
+			for (int i = strlen(line) - 1; (line[i] == ' ') || (line[i] == '\t'); i--)
 				line[i] = '\0';
 			/* start building program source */
 			build_src();
@@ -248,7 +246,7 @@ int main(int argc, char *argv[])
 			case ';': /* fallthough */
 			case '\\':
 				build_src();
-				/* remove trailing ';' */
+				/* remove extra trailing ';' */
 				for (int i = strlen(prog_main_start) - 1; prog_main_start[i - 1] == ';'; i--)
 					prog_main_start[i] = '\0';
 				for (int i = strlen(prog_start) - 1; prog_start[i - 1] == ';'; i--)
@@ -262,7 +260,7 @@ int main(int argc, char *argv[])
 				build_src();
 				strcat(prog_main_start, ";");
 				strcat(prog_start, ";");
-				/* remove trailing ';' */
+				/* remove extra trailing ';' */
 				for (int i = strlen(prog_main_start) - 2; prog_main_start[i - 1] == ';'; i--)
 					prog_main_start[i] = '\0';
 				for (int i = strlen(prog_start) - 2; prog_start[i - 1] == ';'; i--)
