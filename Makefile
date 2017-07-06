@@ -8,25 +8,25 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS = -O2 -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-DEBUG = -Og -ggdb -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-LDFLAGS = -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
-LDLIBS = -lreadline
+CFLAGS := -O2 -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+DEBUG := -Og -ggdb -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+LDFLAGS := -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+LDLIBS := -lreadline
 
-TARGET = cepl
-ELF_SCRIPT = elfsyms
-MANPAGE = cepl.7
-TAP = t/tap
-SRC = $(wildcard src/*.c)
-TSRC = $(wildcard t/*.c)
-OBJ = $(patsubst %.c, %.o, $(SRC))
-TOBJ = $(patsubst %.c, %.o, $(TSRC))
-HDR = $(wildcard src/*.h) $(wildcard t/*.h)
-TESTS = $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
+TARGET := cepl
+ELF_SCRIPT := elfsyms
+MANPAGE := cepl.7
+TAP := t/tap
+SRC := $(wildcard src/*.c)
+TSRC := $(wildcard t/*.c)
+OBJ := $(patsubst %.c, %.o, $(SRC))
+TOBJ := $(patsubst %.c, %.o, $(TSRC))
+HDR := $(wildcard src/*.h) $(wildcard t/*.h)
+TESTS := $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
 
 all: $(TARGET) check
 
-debug: CFLAGS = $(DEBUG)
+debug: CFLAGS := $(DEBUG)
 debug: $(OBJ) $(TOBJ)
 	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o, $^) -o $(TARGET)
 
