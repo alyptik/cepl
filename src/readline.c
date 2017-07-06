@@ -21,32 +21,34 @@ char *comp_arg_list[] = {
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
 	"bool", "true", "false", "free(", "malloc(", "realloc(", "calloc(",
-	"system(", "fork(", "pipe(", "execl(", "execlp(", "execle(",
-	"execv(", "execvp(", "execvpe(", "wait(", "kill(", "signal(",
+	"system(", "fork(", "pipe(", "execl(", "execv(", "kill(", "signal(",
 	"printf(", "fprintf(", "dprintf(", "sprintf(", "snprintf(",
 	"open(", "close(", "read(", "write(", "fopen(", "fclose(",
 	"scanf(", "fscanf(", "sscanf(", "mmap(", "munmap(", "syscall(",
-	"fread(", "fwrite(", "memcpy(", "memset(", "strcpy(", "strlen(",
-	"strcat(", "strtok(", "puts(", "putchar(", "getchar(",
-	";reset", NULL
+	"fread(", "fwrite(", "memcpy(", "memset(", "memcmp(", "getline(",
+	"puts(", "strspn(", "strlen(", "strcat(", "strtok(", "stpcpy(",
+	";function", ";parse", ";quit", ";reset", ";warnings", NULL
 };
 /* global completion list struct */
 struct str_list comp_list = { 0, NULL };
 
-char *generator(const char *text, int state)
+char *generator(char const *text, int state)
 {
 	static size_t list_index, len;
 	char *name, *buf;
 	char **completions = NULL;
-	if (comp_list.list)
+
+	if (comp_list.list) {
 		completions = comp_list.list;
-	else
+	} else {
 		completions = comp_arg_list;
+	}
 
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);
 	}
+
 	while ((name = completions[list_index++])) {
 		if (memcmp(name, text, len) == 0) {
 			if ((buf = malloc(strlen(name) + 1)) == NULL) {
