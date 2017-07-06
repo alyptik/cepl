@@ -17,11 +17,11 @@
 #define PROG_MAIN_END	("\n\treturn 0;\n}\n")
 #define PROG_END	("\n\treturn 0;\n}\n")
 /* character lengths of buffer components */
-#define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 2)
-#define START_SIZE	(strlen(PROG_START) + 2)
-#define INCLUDES_SIZE	(strlen(PROG_INCLUDES) + 2)
-#define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 2)
-#define END_SIZE	(START_SIZE + strlen(PROG_END) + 2)
+#define MAIN_START_SIZE	(strlen(PROG_MAIN_START) + 1)
+#define START_SIZE	(strlen(PROG_START) + 1)
+#define INCLUDES_SIZE	(strlen(PROG_INCLUDES) + 1)
+#define MAIN_END_SIZE	(MAIN_START_SIZE + strlen(PROG_MAIN_END) + 1)
+#define END_SIZE	(START_SIZE + strlen(PROG_END) + 1)
 
 /* readline buffer */
 static char *line = NULL;
