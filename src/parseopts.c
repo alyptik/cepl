@@ -171,7 +171,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 
 	/* append warning flags */
 	if (warn_flag) {
-		for (int i = 0; warn_list[i]; i++)
+		for (register int i = 0; warn_list[i]; i++)
 			append_str(&cc_list, warn_list[i], 0);
 	}
 
@@ -180,9 +180,9 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 		memcpy(cc_list.list[0], "gcc", strlen("gcc") + 1);
 
 	/* finalize argument lists */
-	for (int i = 0; cc_arg_list[i]; i++)
+	for (register int i = 0; cc_arg_list[i]; i++)
 		append_str(&cc_list, cc_arg_list[i], 0);
-	for (int i = 0; ld_arg_list[i]; i++)
+	for (register int i = 0; ld_arg_list[i]; i++)
 		append_str(&ld_list, ld_arg_list[i], 0);
 
 	/* append NULL to generated lists */
@@ -196,9 +196,9 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 			free_argv(comp_list.list);
 		comp_list.list = malloc(sizeof *comp_list.list);
 		sym_list = parse_libs(lib_list.list);
-		for (int i = 0; comp_arg_list[i]; i++)
+		for (register int i = 0; comp_arg_list[i]; i++)
 			append_str(&comp_list, comp_arg_list[i], 0);
-		for (int i = 0; sym_list[i]; i++)
+		for (register int i = 0; sym_list[i]; i++)
 			append_str(&comp_list, sym_list[i], 0);
 		append_null(&comp_list);
 		free(sym_list);
@@ -216,10 +216,10 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 char **parse_libs(char *libs[]) {
 	int status;
 	int pipe_nm[2];
-	int token_count = 0;
 	char **tokens, **tmp;
 	FILE *nm_input;
 	size_t line_size = 0;
+	register int token_count = 0;
 
 	pipe(pipe_nm);
 

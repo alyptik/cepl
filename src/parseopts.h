@@ -40,7 +40,7 @@ struct str_list {
 
 static inline int free_argv(char **argv)
 {
-	int count;
+	register int count;
 	if (!argv || !argv[0])
 		return -1;
 	for (count = 0; argv[count]; count++)

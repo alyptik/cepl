@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (int i = strlen(line) - 1; (line[i] == ' ') || (line[i] == '\t'); i--)
+			for (register int i = strlen(line) - 1; (line[i] == ' ') || (line[i] == '\t'); i--)
 				line[i] = '\0';
 			/* start building program source */
 			build_src();
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (int i = strlen(line) - 1; (line[i] == ' ') || (line[i] == '\t'); i--)
+			for (register int i = strlen(line) - 1; (line[i] == ' ') || (line[i] == '\t'); i--)
 				line[i] = '\0';
 			switch(line[strlen(line) - 1]) {
 			case '}': /* fallthough */
@@ -247,9 +247,9 @@ int main(int argc, char *argv[])
 			case '\\':
 				build_src();
 				/* remove extra trailing ';' */
-				for (int i = strlen(prog_main_start) - 1; prog_main_start[i - 1] == ';'; i--)
+				for (register int i = strlen(prog_main_start) - 1; prog_main_start[i - 1] == ';'; i--)
 					prog_main_start[i] = '\0';
-				for (int i = strlen(prog_start) - 1; prog_start[i - 1] == ';'; i--)
+				for (register int i = strlen(prog_start) - 1; prog_start[i - 1] == ';'; i--)
 					prog_start[i] = '\0';
 				strcat(prog_main_start, "\n");
 				strcat(prog_start, "\n");
