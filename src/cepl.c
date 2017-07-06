@@ -111,11 +111,6 @@ static inline void build_src(void)
 
 static inline void finish_src(void)
 {
-	/* remove trailing ; accounting for the "\t\n" at the end of the string */
-	for (int i = strlen(prog_main_start) - 3; prog_main_start[i - 1] == ';'; i--)
-		prog_main_start[i] = '\0';
-	for (int i = strlen(prog_start) - 3; prog_start[i - 1] == ';'; i--)
-		prog_start[i] = '\0';
 	/* finish building current iteration of source code */
 	memcpy(prog_main_end, prog_main_start, strlen(prog_main_start) + 1);
 	memcpy(prog_end, prog_start, strlen(prog_start) + 1);
@@ -221,21 +216,7 @@ int main(int argc, char *argv[])
 
 			/* clean up and exit program */
 			case 'q':
-				/* write out program to file if applicable */
-				if (ofile) {
-					fwrite(prog_end, strlen(prog_end), 1, ofile);
-					fputc('\n', ofile);
-					fclose(ofile);
-				}
-				free_buffers();
-				if (cc_argv)
-					free_argv((char **)cc_argv);
-				if (comp_list.list)
-					free_argv(comp_list.list);
-				if (line)
-					free(line);
-				printf("\n%s\n\n", "Terminating program.");
-				return 0;
+				goto EXIT;
 				/* unused */
 				break;
 
@@ -247,8 +228,13 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-		/* dont append ; for preprocessor directives */
+		/* dont append ';' for preprocessor directives */
 		case '#':
+			/* remove trailing " " and \t */
+			for (int i = strlen(line) - 1; line[i - 1] == ' '; i--)
+				line[i] = '\0';
+			for (int i = strlen(line) - 1; line[i - 1] == '\t'; i--)
+				line[i] = '\0';
 			/* start building program source */
 			build_src();
 			strcat(prog_main_start, "\n");
@@ -256,20 +242,35 @@ int main(int argc, char *argv[])
 			break;
 
 		default:
+			/* remove trailing ' ' and '\t' */
+			for (int i = strlen(line) - 1; (line[i] == ' ') || (line[i] == '\t'); i--)
+				line[i] = '\0';
 			switch(line[strlen(line) - 1]) {
 			case '}': /* fallthough */
 			case ';': /* fallthough */
 			case '\\':
 				build_src();
+				/* remove trailing ';' */
+				for (int i = strlen(prog_main_start) - 1; prog_main_start[i - 1] == ';'; i--)
+					prog_main_start[i] = '\0';
+				for (int i = strlen(prog_start) - 1; prog_start[i - 1] == ';'; i--)
+					prog_start[i] = '\0';
 				strcat(prog_main_start, "\n");
 				strcat(prog_start, "\n");
 				break;
 
 			default:
-				/* append ; if no trailing }, ;, or \ */
+				/* append ';' if no trailing '}', ';', or '\' */
 				build_src();
-				strcat(prog_main_start, ";\n");
-				strcat(prog_start, ";\n");
+				strcat(prog_main_start, ";");
+				strcat(prog_start, ";");
+				/* remove trailing ';' */
+				for (int i = strlen(prog_main_start) - 2; prog_main_start[i - 1] == ';'; i--)
+					prog_main_start[i] = '\0';
+				for (int i = strlen(prog_start) - 2; prog_start[i - 1] == ';'; i--)
+					prog_start[i] = '\0';
+				strcat(prog_main_start, "\n");
+				strcat(prog_start, "\n");
 			}
 		}
 		finish_src();
@@ -282,6 +283,7 @@ int main(int argc, char *argv[])
 			free(line);
 	}
 
+EXIT:
 	/* write out program to file if applicable */
 	if (ofile) {
 		fwrite(prog_end, strlen(prog_end), 1, ofile);
