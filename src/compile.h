@@ -17,9 +17,11 @@
 
 int compile(char *const src, char *const cc_args[], char *const exec_args[]);
 
-static inline void set_cloexec(int set_fd)
+static inline void set_cloexec(int set_fd[static 2])
 {
-	if (fcntl(set_fd, F_SETFD, FD_CLOEXEC) == -1)
+	if (fcntl(set_fd[0], F_SETFD, FD_CLOEXEC) == -1)
+		warn("%s", "error during fnctl");
+	if (fcntl(set_fd[1], F_SETFD, FD_CLOEXEC) == -1)
 		warn("%s", "error during fnctl");
 }
 

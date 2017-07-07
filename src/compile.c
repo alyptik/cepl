@@ -26,23 +26,26 @@ extern char **environ;
 /* silence linter */
 long syscall(long number, ...);
 int fexecve(int mem_fd, char *const argv[], char *const envp[]);
+size_t strnlen(const char *s, size_t maxlen);
 
 int compile(char *const src, char *const cc_args[], char *const exec_args[])
 {
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
+	char src_buffer[strnlen(src, COUNT) + 2];
 
+	/* add trailing '\n' */
+	memcpy(src_buffer, src, strnlen(src, COUNT));
+	src_buffer[strlen(src)] = '\n';
+	src_buffer[strlen(src) + 1] = '\0';
 	/* create pipes */
 	pipe(pipe_cc);
 	pipe(pipe_ld);
 	pipe(pipe_exec);
 	/* set close-on-exec for pipe fds */
-	set_cloexec(pipe_cc[0]);
-	set_cloexec(pipe_cc[1]);
-	set_cloexec(pipe_ld[0]);
-	set_cloexec(pipe_ld[1]);
-	set_cloexec(pipe_exec[0]);
-	set_cloexec(pipe_exec[1]);
+	set_cloexec(pipe_cc);
+	set_cloexec(pipe_ld);
+	set_cloexec(pipe_exec);
 
 	/* fork compiler */
 	switch (fork()) {
@@ -70,7 +73,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	default:
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
-		write(pipe_cc[1], src, strlen(src));
+		write(pipe_cc[1], src_buffer, strlen(src_buffer));
 		close(pipe_cc[1]);
 		wait(&status);
 		if (status != 0) {

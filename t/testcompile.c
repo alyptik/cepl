@@ -5,13 +5,13 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include "tap.h"
 #include <limits.h>
+#include "tap.h"
 #include "../src/compile.h"
 
 int main(void)
 {
-	char *const src = "int main(void) { return 0; }\n";
+	char *const src = "int main(void) { return 0; }";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
 		"clang", "-O2", "-pipe", "-Wall", "-Wextra",
