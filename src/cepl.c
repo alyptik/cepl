@@ -161,6 +161,43 @@ int main(int argc, char *argv[])
 		case ';':
 			/* TODO: more command handling */
 			switch(line[1]) {
+			/* clean up and exit program */
+			case 'q':
+				goto EXIT;
+				/* unused break */
+				break;
+
+			/* toggle library parsing */
+			case 'p':
+				free_buffers();
+				init_buffers();
+				free_argv((char **)cc_argv);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				/* toggle global parse flag */
+				parse_flag ^= true;
+				break;
+
+			/* toggle warnings */
+			case 'w':
+				free_buffers();
+				init_buffers();
+				free_argv((char **)cc_argv);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				/* toggle global warning flag */
+				warn_flag ^= true;
+				break;
+
+			/* reset state */
+			case 'r':
+				free_buffers();
+				init_buffers();
+				free_argv((char **)cc_argv);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				break;
+
 			/* define a function */
 			case 'f':
 				/* break if function definition empty */
@@ -181,41 +218,6 @@ int main(int argc, char *argv[])
 				strcat(func_buf, "\n\n");
 				strcat(func_buf, prog_main_start);
 				memcpy(prog_main_start, func_buf, strlen(func_buf) + 1);
-				break;
-
-			/* reset state */
-			case 'r':
-				free_buffers();
-				init_buffers();
-				free_argv((char **)cc_argv);
-				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
-				break;
-
-			/* toggle warnings */
-			case 'w':
-				warn_flag ^= true;
-				free_buffers();
-				init_buffers();
-				free_argv((char **)cc_argv);
-				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
-				break;
-
-			/* toggle parsing libraries for completions */
-			case 'p':
-				parse_flag ^= true;
-				free_buffers();
-				init_buffers();
-				free_argv((char **)cc_argv);
-				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
-				break;
-
-			/* clean up and exit program */
-			case 'q':
-				goto EXIT;
-				/* unused break */
 				break;
 
 			/* unknown command becomes a noop */
@@ -254,14 +256,11 @@ int main(int argc, char *argv[])
 				strcat(prog_main_start, "\n");
 				strcat(prog_start, "\n");
 				break;
-
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
 				build_src();
-				strcat(prog_main_start, ";");
-				strcat(prog_start, ";");
-				strcat(prog_main_start, "\n");
-				strcat(prog_start, "\n");
+				strcat(prog_main_start, ";\n");
+				strcat(prog_start, ";\n");
 			}
 		}
 		finish_src();
