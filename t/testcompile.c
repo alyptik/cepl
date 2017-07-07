@@ -5,7 +5,6 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include <limits.h>
 #include "tap.h"
 #include "../src/compile.h"
 
@@ -19,10 +18,11 @@ int main(void)
 		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
 	};
 
-	plan(2);
+	plan(3);
 
-	ok(compile(src, cc_args, argv) == 0, "fail compiling program.");
-	lives_ok({pipe_fd(INT_MAX, INT_MAX);}, "test pipe_fd() with invalid fds.");
+	lives_ok({pipe_fd(-1, -1);}, "test living through pipe_fd() call with invalid fds.");
+	dies_ok({compile(NULL, cc_args, argv);}, "die passing a NULL pointer to compile().");
+	ok(compile(src, cc_args, argv) == 0, "succeed compiling program.");
 
 	done_testing();
 }

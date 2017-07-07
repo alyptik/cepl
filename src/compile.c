@@ -30,9 +30,15 @@ size_t strnlen(const char *s, size_t maxlen);
 
 int compile(char *const src, char *const cc_args[], char *const exec_args[])
 {
+	if (!src || !cc_args || !exec_args)
+		errx(EXIT_FAILURE, "%s", "NULL pointer passed to compile()");
+
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strnlen(src, COUNT) + 1];
+
+	if (sizeof src_buffer < 2)
+		errx(EXIT_FAILURE, "%s", "empty source string passed to compile()");
 
 	/* add trailing '\n' */
 	memcpy(src_buffer, src, sizeof src_buffer);
