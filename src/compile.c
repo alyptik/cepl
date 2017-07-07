@@ -32,12 +32,11 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 {
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	char src_buffer[strnlen(src, COUNT) + 2];
+	char src_buffer[strnlen(src, COUNT) + 1];
 
 	/* add trailing '\n' */
-	memcpy(src_buffer, src, strnlen(src, COUNT));
-	src_buffer[strlen(src)] = '\n';
-	src_buffer[strlen(src) + 1] = '\0';
+	memcpy(src_buffer, src, sizeof src_buffer);
+	src_buffer[sizeof src_buffer - 1] = '\n';
 	/* create pipes */
 	pipe(pipe_cc);
 	pipe(pipe_ld);
@@ -73,7 +72,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	default:
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
-		write(pipe_cc[1], src_buffer, strlen(src_buffer));
+		write(pipe_cc[1], src_buffer, sizeof src_buffer);
 		close(pipe_cc[1]);
 		wait(&status);
 		if (status != 0) {
