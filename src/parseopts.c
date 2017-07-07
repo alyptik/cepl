@@ -67,19 +67,14 @@ static inline void append_str(struct str_list *argv, char *str, size_t offset)
 	if ((temp = realloc(argv->list, (sizeof *argv->list) * ++argv->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s[%d] %s", "error during list_ptr", argv->cnt - 1, "malloc()");
 	argv->list = temp;
-	if ((*(argv->list + argv->cnt - 1) = malloc(strlen(str) + offset + 1)) == NULL)
-		err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", argv->cnt - 1);
-	memset(*(argv->list + argv->cnt - 1), 0, strlen(str) + offset + 1);
-	memcpy(*(argv->list + argv->cnt - 1) + offset, str, strlen(str) + 1);
-}
-
-static inline void append_null(struct str_list *argv)
-{
-	char **temp;
-	if ((temp = realloc(argv->list, (sizeof *argv->list) * ++argv->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during NULL delimiter to list_ptr", argv->cnt - 1, "malloc()");
-	argv->list = temp;
-	*(argv->list + argv->cnt - 1) = NULL;
+	if (!str) {
+		*(argv->list + argv->cnt - 1) = NULL;
+	} else {
+		if ((*(argv->list + argv->cnt - 1) = malloc(strlen(str) + offset + 1)) == NULL)
+			err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", argv->cnt - 1);
+		memset(*(argv->list + argv->cnt - 1), 0, strlen(str) + offset + 1);
+		memcpy(*(argv->list + argv->cnt - 1) + offset, str, strlen(str) + 1);
+	}
 }
 
 char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile)
@@ -186,9 +181,9 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 		append_str(&ld_list, ld_arg_list[i], 0);
 
 	/* append NULL to generated lists */
-	append_null(&cc_list);
-	append_null(&ld_list);
-	append_null(&lib_list);
+	append_str(&cc_list, NULL, 0);
+	append_str(&ld_list, NULL, 0);
+	append_str(&lib_list, NULL, 0);
 
 	/* parse ELF shared libraries for completions */
 	if (parse_flag) {
@@ -200,7 +195,7 @@ char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **of
 			append_str(&comp_list, comp_arg_list[i], 0);
 		for (register int i = 0; sym_list[i]; i++)
 			append_str(&comp_list, sym_list[i], 0);
-		append_null(&comp_list);
+		append_str(&comp_list, NULL, 0);
 		free(sym_list);
 	}
 
