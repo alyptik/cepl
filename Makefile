@@ -8,8 +8,8 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -O2 -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
-DEBUG := -Og -ggdb -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE
+CFLAGS := -O2 -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+DEBUG := -Og -ggdb -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 LDFLAGS := -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
 LDLIBS := -lreadline
 
