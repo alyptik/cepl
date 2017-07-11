@@ -8,9 +8,9 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -O2 -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-DEBUG := -Og -ggdb -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-LDFLAGS := -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+CFLAGS := -O2 -pipe -MMD -flto -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+DEBUG := -ggdb -Og -pipe -MMD -flto -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+LDFLAGS := -fuse-linker-plugin -fuse-ld=gold -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
 LDLIBS := -lreadline
 
 TARGET := cepl
@@ -34,7 +34,7 @@ debug: $(OBJ) $(TOBJ)
 	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
 
 %.o:
-	$(CC) $(CFLAGS) $(LDLIBS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@
+	$(CC) $(LDLIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@
 
 $(TARGET): $(OBJ)
 
