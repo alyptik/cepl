@@ -8,9 +8,9 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -O2 -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-DEBUG := -ggdb -Og -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-LDFLAGS := -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,-pie,--export-dynamic,--sort-common,--as-needed
+CFLAGS := -O2 -pipe -MMD -flto -fno-plt -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+DEBUG := $(patsubst -O2,-Og -ggdb,$(CFLAGS))
+LDFLAGS := -flto -fno-plt -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,-pie,--export-dynamic,--sort-common,--as-needed
 LDLIBS := -lreadline
 TARGET := cepl
 ELF_SCRIPT := elfsyms
@@ -19,26 +19,26 @@ TAP := t/tap
 
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
-OBJ := $(patsubst %.c, %.o, $(SRC))
-TOBJ := $(patsubst %.c, %.o, $(TSRC))
+OBJ := $(patsubst %.c,%.o,$(SRC))
+TOBJ := $(patsubst %.c,%.o,$(TSRC))
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-TESTS := $(filter-out $(TAP), $(patsubst %.c, %, $(TSRC)))
+TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 
 all: $(TARGET) check
 
 debug: CFLAGS := $(DEBUG)
 debug: $(OBJ) $(TOBJ)
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o, $^) -o $(TARGET)
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
 
 %:
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o, $^) -o $@
+	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
 
 %.o:
-	$(CC) $(LDLIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c, $^) -o $@
+	$(CC) $(LDLIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
 
 $(TARGET): $(OBJ)
 
-$(TESTS): %: %.o $(TAP).o $(filter $(subst t/test, src/, %), $(filter-out src/$(TARGET).o, $(OBJ)))
+$(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
 
 $(OBJ): %.o: %.c $(HDR)
 
