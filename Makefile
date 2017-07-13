@@ -8,15 +8,16 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -O2 -pipe -MMD -flto -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-DEBUG := -ggdb -Og -pipe -MMD -flto -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-LDFLAGS := -fuse-linker-plugin -fuse-ld=gold -Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now
+CFLAGS := -O2 -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+DEBUG := -ggdb -Og -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+LDFLAGS := -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,--sort-common,--as-needed,-z,relro,-z,now,-pie
 LDLIBS := -lreadline
 
 TARGET := cepl
 ELF_SCRIPT := elfsyms
 MANPAGE := cepl.7
 TAP := t/tap
+
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 OBJ := $(patsubst %.c, %.o, $(SRC))
