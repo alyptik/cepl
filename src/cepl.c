@@ -198,7 +198,9 @@ int main(int argc, char *argv[])
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
 
-			/* define a function */
+			/* define an include/macro/function */
+			case 'i': /* fallthrough */
+			case 'm': /* fallthrough */
 			case 'f':
 				/* break if function definition empty */
 				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
