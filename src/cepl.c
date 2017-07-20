@@ -246,6 +246,7 @@ int main(int argc, char *argv[])
 			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
 				line[i] = '\0';
 			switch(line[strlen(line) - 1]) {
+			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
 			case '\\':
