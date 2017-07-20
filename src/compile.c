@@ -81,9 +81,9 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		write(pipe_cc[1], src_buffer, sizeof src_buffer);
 		close(pipe_cc[1]);
 		wait(&status);
-		if (status != 0) {
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			warnx("%s", "compiler returned non-zero exit code");
-			return status;
+			return WEXITSTATUS(status);
 		}
 	}
 
@@ -114,9 +114,9 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_ld[0]);
 		close(pipe_exec[1]);
 		wait(&status);
-		if (status != 0) {
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			warnx("%s", "linker returned non-zero exit code");
-			return status;
+			return WEXITSTATUS(status);
 		}
 	}
 
@@ -143,9 +143,9 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_exec[0]);
 		wait(&status);
 		/* don't overwrite non-zero exit status from compiler */
-		if (status != 0) {
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			warnx("%s", "executable returned non-zero exit code");
-			return status;
+			return WEXITSTATUS(status);
 		}
 	}
 
