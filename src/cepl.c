@@ -217,6 +217,11 @@ int main(int argc, char *argv[])
 				strcat(actual.funcs, tok_buf);
 				break;
 
+			/* show usage information */
+			case 'h':
+				printf("\nUsage: %s %s\n", argv[0], USAGE);
+				break;
+
 			/* unknown command becomes a noop */
 			default:
 				build_body();
