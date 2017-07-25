@@ -42,7 +42,7 @@ static int option_index = 0;
 static char *tmp_arg, *line_ptr = NULL;
 static char **tmp_list = NULL, **sym_list = NULL;
 /* compiler arguments and library list structs */
-static struct str_list cc_list = { .cnt = 0, .list = NULL }, lib_list = { .cnt = 0, .list = NULL };
+static struct str_list cc_list = {.cnt = 0, .list = NULL}, lib_list = {.cnt = 0, .list = NULL};
 
 /* getopts variables */
 extern char *optarg;
@@ -78,7 +78,7 @@ static inline void append_str(struct str_list *argv, char *str, size_t offset)
 	}
 }
 
-char *const *parse_opts(int argc, char *argv[], char *const optstring, FILE **ofile)
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 {
 	int opt;
 	char *const *arg_list;
