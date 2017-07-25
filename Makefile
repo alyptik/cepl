@@ -2,7 +2,7 @@
 # cepl - C Read-Eval-Print Loop
 #
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
-# See LICENSE file for copyright and license details.
+# See LICENSE.md file for copyright and license details.
 
 DESTDIR ?=
 PREFIX ?= /usr/local

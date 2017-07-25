@@ -2,7 +2,7 @@
  * cepl.c - REPL translation unit
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
- * See LICENSE file for copyright and license details.
+ * See LICENSE.md file for copyright and license details.
  */
 
 #include <sys/types.h>

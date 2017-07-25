@@ -2,7 +2,7 @@
  * t/testcompile.c - unit-test for compile.c
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
- * See LICENSE file for copyright and license details.
+ * See LICENSE.md file for copyright and license details.
  */
 
 #include "tap.h"

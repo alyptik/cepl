@@ -2,7 +2,7 @@
  * compile.h - compile the generated source code
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
- * See LICENSE file for copyright and license details.
+ * See LICENSE.md file for copyright and license details.
  */
 
 #ifndef COMPILE_H

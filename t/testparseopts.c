@@ -2,7 +2,7 @@
  * t/testparseopts.c - unit-test for parseopts.c
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
- * See LICENSE file for copyright and license details.
+ * See LICENSE.md file for copyright and license details.
  */
 
 #include "tap.h"
