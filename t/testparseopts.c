@@ -16,7 +16,7 @@ int main (void)
 		"cepl", "-lssl", "-I.",
 		"-cgcc", "-o/tmp/test", NULL
 	};
-	char *const optstring = "hvwpc:l:I:o:";
+	char const optstring[] = "hvwpc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	char *const *result;
 
