@@ -30,7 +30,7 @@ char *comp_arg_list[] = {
 	";function", ";parse", ";quit", ";reset", ";warnings", NULL
 };
 /* global completion list struct */
-struct str_list comp_list = { 0, NULL };
+struct str_list comp_list = { .cnt = 0, .list = NULL };
 
 char *generator(char const *text, int state)
 {
