@@ -33,7 +33,7 @@ Input lines prefixed with a `;` are used to control internal state.
 	;f[unction]:		Define a function (e.g. “;f void foo(void) { … }”)
 	;h[elp]:		Show help
 	;i[nclude]:		Define an include (e.g. “;i #include <crypt.h>”)
-	;m[acro]:		Define a macro (e.g. “;m #define ZERO(x) (x & 0x0)”)
+	;m[acro]:		Define a macro (e.g. “;m #define ZERO(x) (x ^ x)”)
 	;p[arse]:		Toggle -p (shared library parsing) flag
 	;q[uit]:		Exit CEPL
 	;r[eset]:		Reset CEPL to its initial program state
