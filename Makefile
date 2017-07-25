@@ -4,13 +4,14 @@
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE file for copyright and license details.
 
+DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 LD ?= $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CFLAGS := -O2 -pipe -MMD -flto -fno-plt -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 DEBUG := $(patsubst -O2,-Og -ggdb,$(CFLAGS))
-LDFLAGS := -flto -fno-plt -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,-pie,--export-dynamic,--sort-common,--as-needed
+LDFLAGS := -flto -fno-plt -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,--sort-common,--as-needed
 LDLIBS := -lreadline
 TARGET := cepl
 ELF_SCRIPT := elfsyms
