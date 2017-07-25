@@ -96,7 +96,7 @@ static inline void resize_buffer(char **buf, size_t offset)
 			free_argv((char **)cc_argv);
 		if (comp_list.list)
 			free_argv(comp_list.list);
-		err(EXIT_FAILURE, "error during resize_buffer(%s, %lu)", *buf, offset);
+		err(EXIT_FAILURE, "error during resize_buffer() at line %d", __LINE__);
 	}
 	*buf = tmp;
 }
