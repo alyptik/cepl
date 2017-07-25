@@ -169,24 +169,24 @@ int main(int argc, char *argv[])
 
 			/* toggle library parsing */
 			case 'p':
+				/* toggle global parse flag */
+				parse_flag ^= true;
 				free_buffers();
 				init_buffers();
 				free_argv((char **)cc_argv);
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
-				/* toggle global parse flag */
-				parse_flag ^= true;
 				break;
 
 			/* toggle warnings */
 			case 'w':
+				/* toggle global warning flag */
+				warn_flag ^= true;
 				free_buffers();
 				init_buffers();
 				free_argv((char **)cc_argv);
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
-				/* toggle global warning flag */
-				warn_flag ^= true;
 				break;
 
 			/* reset state */
