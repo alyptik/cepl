@@ -28,7 +28,7 @@ TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 all: $(TARGET) check
 
 debug: CFLAGS := $(DEBUG)
-debug: $(OBJ) $(TOBJ)
+debug: $(OBJ)
 	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
 
 %:
