@@ -130,7 +130,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 
 	/* child */
 	case 0:
-		if ((mem_fd = syscall(SYS_memfd_create, "cepl", MFD_CLOEXEC)) == -1)
+		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
 			err(EXIT_FAILURE, "%s", "error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
 		fexecve(mem_fd, exec_args, environ);

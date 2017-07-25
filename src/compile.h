@@ -27,7 +27,7 @@ static inline void set_cloexec(int set_fd[static 2])
 
 static inline void pipe_fd(int in_fd, int out_fd)
 {
-	/* read output in a loop */
+	/* pipe data in a loop */
 	for (;;) {
 		ssize_t buf_len;
 		char buf[COUNT];
