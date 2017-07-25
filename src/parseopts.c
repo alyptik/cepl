@@ -81,7 +81,6 @@ static inline void append_str(struct str_list *argv, char *str, size_t offset)
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 {
 	int opt;
-	char *const *arg_list;
 	char *out_file = NULL;
 
 	if (lib_list.list)
@@ -205,8 +204,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		line_ptr = NULL;
 	}
 
-	arg_list = cc_list.list;
-	return arg_list;
+	return cc_list.list;
 }
 
 char **parse_libs(char *libs[]) {
