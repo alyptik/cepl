@@ -13,7 +13,7 @@ int main(void)
 	char *const src = "int main(void) { return 0; }";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
-		"clang", "-O2", "-pipe", "-Wall", "-Wextra",
+		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
 		"-pedantic-errors", "-std=c11", "-S", "-xc",
 		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
 	};
