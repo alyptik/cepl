@@ -6,13 +6,14 @@
 
 DESTDIR ?=
 PREFIX ?= /usr/local
-CC ?= gcc
-LD ?= $(CC)
+CC := gcc
+LD := $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -O2 -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-DEBUG := $(patsubst -O2,-Og -ggdb,$(CFLAGS))
-LDFLAGS := -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,--sort-common,--as-needed
+CFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+LDFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,--sort-common,--as-needed
 LDLIBS := -lreadline
+DEBUG := -Og -ggdb
+RELEASE := -O2
 TARGET := cepl
 ELF_SCRIPT := elfsyms
 MANPAGE := cepl.7
@@ -27,16 +28,17 @@ TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 
 all: $(TARGET) check
 
-debug: CFLAGS := $(DEBUG)
-debug: $(OBJ)
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
-
 %:
-	$(CC) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
+	$(LD) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
 
 %.o:
 	$(CC) $(LDLIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
 
+debug: CFLAGS := $(DEBUG) $(CFLAGS)
+debug: $(OBJ)
+	$(LD) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
+
+$(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): $(OBJ)
 
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
