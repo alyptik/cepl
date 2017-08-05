@@ -16,12 +16,27 @@ struct prog_src {
 	char *body;
 	char *final;
 	struct str_list history;
+	struct flag_list flags;
 };
 
 /* truncated source */
-static struct prog_src user = {.funcs = NULL, .body = NULL, .final = NULL, .history = {.cnt = 0, .list = NULL}};
+static struct prog_src user = {
+	.funcs = NULL,
+	.body = NULL,
+	.final = NULL,
+	.history = {.cnt = 0, .list = NULL},
+	.flags = {.cnt = 0, .list = NULL},
+};
+
 /* actual source */
-static struct prog_src actual = {.funcs = NULL, .body = NULL, .final = NULL, .history = {.cnt = 0, .list = NULL}};
+static struct prog_src actual = {
+	.funcs = NULL,
+	.body = NULL,
+	.final = NULL,
+	.history = {.cnt = 0, .list = NULL},
+	.flags = {.cnt = 0, .list = NULL},
+};
+
 /* source file templates */
 static char const prog_includes[] = "#define _BSD_SOURCE\n#define _DEFAULT_SOURCE\n#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _SVID_SOURCE\n#define _XOPEN_SOURCE 700\n\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <error.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <regex.h>\n#include <signal.h>\n#include <stdalign.h>\n#include <stdarg.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <wchar.h>\n#include <unistd.h>\n#include <linux/memfd.h>\n#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n\n#define _Atomic\n#define _Static_assert(a, b)\n#define UNUSED __attribute__ ((unused))\n\nextern char **environ;\n";
 static char const prog_start[] = "\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n{\n";
@@ -58,6 +73,11 @@ static inline void free_buffers(void)
 		free(user.final);
 	if (actual.final)
 		free(actual.final);
+	if (user.flags.list)
+		free(user.flags.list);
+	if (actual.flags.list)
+		free(actual.flags.list);
+	/* free vector pointers */
 	if (user.history.list)
 		free_argv(user.history.list);
 	if (actual.history.list)
@@ -68,6 +88,10 @@ static inline void free_buffers(void)
 	actual.body = NULL;
 	user.final = NULL;
 	actual.final = NULL;
+	user.history.list = NULL;
+	actual.history.list = NULL;
+	user.flags.list = NULL;
+	actual.flags.list = NULL;
 	cc_argv = NULL;
 }
 
@@ -99,9 +123,11 @@ static inline void init_buffers(void)
 	memcpy(actual.funcs, prog_includes, strlen(prog_includes) + 1);
 	memcpy(user.body, prog_start, strlen(prog_start) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
-	/* init source history lists */
+	/* init source history and flag lists */
 	init_list(&user.history, "\n");
 	init_list(&actual.history, "\n");
+	init_flag_list(&user.flags);
+	init_flag_list(&actual.flags);
 }
 
 static inline void resize_buffer(char **buf, size_t offset)
@@ -231,6 +257,10 @@ int main(int argc, char *argv[])
 
 			/* undo last statement */
 			case 'u':
+				/* break early if no history to undo */
+				if (user.history.cnt < 2 || actual.history.cnt < 2)
+					break;
+
 				break;
 
 			/* show usage information */
