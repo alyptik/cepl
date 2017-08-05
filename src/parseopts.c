@@ -52,32 +52,6 @@ extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
 
-static inline void init_list(struct str_list *argv, char *initial_str)
-{
-	if ((argv->list = malloc((sizeof *argv->list) * ++argv->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");
-	if ((*(argv->list + argv->cnt - 1) = malloc(strlen(initial_str) + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial list_ptr[0] malloc()");
-	memset(*(argv->list + argv->cnt - 1), 0, strlen(initial_str) + 1);
-	memcpy(*(argv->list + argv->cnt - 1), initial_str, strlen(initial_str) + 1);
-}
-
-static inline void append_str(struct str_list *argv, char *str, size_t offset)
-{
-	char **temp;
-	if ((temp = realloc(argv->list, (sizeof *argv->list) * ++argv->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during list_ptr", argv->cnt - 1, "malloc()");
-	argv->list = temp;
-	if (!str) {
-		*(argv->list + argv->cnt - 1) = NULL;
-	} else {
-		if ((*(argv->list + argv->cnt - 1) = malloc(strlen(str) + offset + 1)) == NULL)
-			err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", argv->cnt - 1);
-		memset(*(argv->list + argv->cnt - 1), 0, strlen(str) + offset + 1);
-		memcpy(*(argv->list + argv->cnt - 1) + offset, str, strlen(str) + 1);
-	}
-}
-
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 {
 	int opt;

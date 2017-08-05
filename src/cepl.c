@@ -15,6 +15,7 @@ struct prog_src {
 	char *funcs;
 	char *body;
 	char *final;
+	struct str_list history;
 };
 
 /* truncated source */
@@ -57,6 +58,10 @@ static inline void free_buffers(void)
 		free(user.final);
 	if (actual.final)
 		free(actual.final);
+	if (user.history.list)
+		free_argv(user.history.list);
+	if (actual.history.list)
+		free_argv(actual.history.list);
 	if (cc_argv)
 		free_argv(cc_argv);
 	user.body = NULL;
@@ -94,6 +99,9 @@ static inline void init_buffers(void)
 	memcpy(actual.funcs, prog_includes, strlen(prog_includes) + 1);
 	memcpy(user.body, prog_start, strlen(prog_start) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
+	/* init source history lists */
+	init_list(&user.history, "\n");
+	init_list(&actual.history, "\n");
 }
 
 static inline void resize_buffer(char **buf, size_t offset)
