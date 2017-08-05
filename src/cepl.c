@@ -209,12 +209,14 @@ int main(int argc, char *argv[])
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
-				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
-				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
+				/* re-allocate enough memory for line + '\n' + '\0' */
+				resize_buffer(&user.funcs, strlen(tok_buf) + 2);
+				resize_buffer(&actual.funcs, strlen(tok_buf) + 2);
 				/* generate function buffers */
 				strcat(user.funcs, tok_buf);
 				strcat(actual.funcs, tok_buf);
+				strcat(user.funcs, "\n");
+				strcat(actual.funcs, "\n");
 				break;
 
 			/* show usage information */
