@@ -15,7 +15,7 @@ FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
-bool warn_flag = false, parse_flag = false;
+bool warn_flag = false, parse_flag = false, out_flag = false;
 
 static struct option long_opts[] = {
 	{"help", no_argument, 0, 'h'},
@@ -111,8 +111,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 			if (out_file != NULL)
 				errx(EXIT_FAILURE, "%s", "too many output files specified");
 			out_file = optarg;
-			if ((*ofile = fopen(out_file, "w")) == NULL)
-				err(EXIT_FAILURE, "%s", "failed to create output file");
+			out_flag ^= true;
 			break;
 
 		/* parse flag */
@@ -136,6 +135,12 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		default:
 			errx(EXIT_FAILURE, "Usage: %s %s", argv[0], USAGE);
 		}
+	}
+
+	/* output file flag */
+	if (out_flag) {
+		if ((*ofile = fopen(out_file, "w")) == NULL)
+			err(EXIT_FAILURE, "%s", "failed to create output file");
 	}
 
 	/* append warning flags */

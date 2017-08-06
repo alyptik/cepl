@@ -56,7 +56,7 @@ static char **cc_argv;
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
-extern bool warn_flag, parse_flag;
+extern bool warn_flag, parse_flag, out_flag;
 
 static inline void free_buffers(void)
 {
@@ -65,6 +65,7 @@ static inline void free_buffers(void)
 		fwrite(actual.final, strlen(actual.final), 1, ofile);
 		fputc('\n', ofile);
 		fclose(ofile);
+		ofile = NULL;
 	}
 	if (user.funcs)
 		free(user.funcs);
@@ -250,12 +251,33 @@ int main(int argc, char *argv[])
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
 		case ';':
-			/* TODO: add toggling of -o flag */
 			switch(line[1]) {
 			/* clean up and exit program */
 			case 'q':
 				goto EXIT;
 				/* unused break */
+				break;
+
+			/* toggle output file writing */
+			case 'o':
+				/* if file is open, close it break early */
+				if (out_flag && ofile) {
+					fwrite(actual.final, strlen(actual.final), 1, ofile);
+					fputc('\n', ofile);
+					fclose(ofile);
+					ofile = NULL;
+					break;
+				}
+				/* toggle global warning flag */
+				out_flag ^= true;
+				/* break if file name empty */
+				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+					break;
+				/* increment pointer to start of definition */
+				tok_buf += strspn(tok_buf, " \t");
+				/* output file flag */
+				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL))
+					err(EXIT_FAILURE, "%s", "failed to create output file");
 				break;
 
 			/* toggle library parsing */
