@@ -23,6 +23,9 @@
 #define ELF_SCRIPT "./elfsyms"
 /* pipe buffer size */
 #define COUNT sysconf(_SC_PAGESIZE)
+#define EMPTY 0
+#define NOT_IN_MAIN 1
+#define IN_MAIN 2
 
 /* silence linter */
 int getopt(int argc, char * const argv[], const char *optstring);
@@ -32,23 +35,16 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile);
 char **parse_libs(char *libs[]);
 
-/* what kind of statement last line was */
-enum last_line {
-	EMPTY = 0,
-	NOT_IN_MAIN = 1,
-	IN_MAIN = 2,
-};
-
 /* struct definition for NULL terminated string array */
 struct str_list {
 	int cnt;
 	char **list;
 };
 
-/* struct definition for NULL terminated enum array */
+/* struct definition for enum array */
 struct flag_list {
 	int cnt;
-	enum last_line *list;
+	int *list;
 };
 
 static inline int free_argv(char **argv)
@@ -95,9 +91,9 @@ static inline void init_flag_list(struct flag_list *list_struct)
 	*(list_struct->list + list_struct->cnt - 1) = EMPTY;
 }
 
-static inline void append_flag(struct flag_list *list_struct, enum last_line flag)
+static inline void append_flag(struct flag_list *list_struct, int flag)
 {
-	enum last_line *temp;
+	int *temp;
 	if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s %d %s", "error during flag_list (cnt = ", list_struct->cnt, ") realloc()");
 	list_struct->list = temp;

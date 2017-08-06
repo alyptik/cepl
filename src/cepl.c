@@ -5,6 +5,10 @@
  * See LICENSE.md file for copyright and license details.
  */
 
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE
+#endif
+
 #include <sys/types.h>
 #include "compile.h"
 #include "readline.h"
@@ -41,8 +45,9 @@ static struct prog_src actual = {
 static char const prog_includes[] = "#define _BSD_SOURCE\n#define _DEFAULT_SOURCE\n#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _SVID_SOURCE\n#define _XOPEN_SOURCE 700\n\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <error.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <regex.h>\n#include <signal.h>\n#include <stdalign.h>\n#include <stdarg.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <wchar.h>\n#include <unistd.h>\n#include <linux/memfd.h>\n#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n\n#define _Atomic\n#define _Static_assert(a, b)\n#define UNUSED __attribute__ ((unused))\n\nextern char **environ;\n";
 static char const prog_start[] = "\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
-/* readline buffer */
+/* line and token buffers */
 static char *line;
+static char *tok_buf;
 /* output file */
 static FILE *ofile;
 /* compiler arg array */
@@ -73,15 +78,18 @@ static inline void free_buffers(void)
 		free(user.final);
 	if (actual.final)
 		free(actual.final);
+	if (user.history.list) {
+		append_str(&user.history, NULL, 0);
+		free_argv(user.history.list);
+	}
+	if (actual.history.list) {
+		append_str(&actual.history, NULL, 0);
+		free_argv(actual.history.list);
+	}
 	if (user.flags.list)
 		free(user.flags.list);
 	if (actual.flags.list)
 		free(actual.flags.list);
-	/* free vector pointers */
-	if (user.history.list)
-		free_argv(user.history.list);
-	if (actual.history.list)
-		free_argv(actual.history.list);
 	if (cc_argv)
 		free_argv(cc_argv);
 	user.body = NULL;
@@ -90,8 +98,12 @@ static inline void free_buffers(void)
 	actual.final = NULL;
 	user.history.list = NULL;
 	actual.history.list = NULL;
+	user.history.cnt = 0;
+	actual.history.cnt = 0;
 	user.flags.list = NULL;
 	actual.flags.list = NULL;
+	user.flags.cnt = 0;
+	actual.flags.cnt = 0;
 	cc_argv = NULL;
 }
 
@@ -145,8 +157,25 @@ static inline void resize_buffer(char **buf, size_t offset)
 	*buf = tmp;
 }
 
+static inline void build_funcs(void)
+{
+	append_str(&user.history, user.funcs, 0);
+	append_str(&actual.history, actual.funcs, 0);
+	append_flag(&user.flags, NOT_IN_MAIN);
+	append_flag(&actual.flags, NOT_IN_MAIN);
+	/* generate function buffers */
+	strcat(user.funcs, tok_buf);
+	strcat(actual.funcs, tok_buf);
+	strcat(user.funcs, "\n");
+	strcat(actual.funcs, "\n");
+}
+
 static inline void build_body(void)
 {
+	append_str(&user.history, user.body, 0);
+	append_str(&actual.history, actual.body, 0);
+	append_flag(&user.flags, IN_MAIN);
+	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
 	strcat(user.body, strtok(line, "\0\n"));
@@ -162,14 +191,33 @@ static inline void build_final(void)
 	strcat(actual.final, actual.body);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
-	append_str(&user.history, user.final, 0);
-	append_str(&actual.history, actual.final, 0);
 }
+
+static inline void undo(struct prog_src *prog)
+{
+	switch(*(prog->flags.list + prog->flags.cnt - 1)) {
+	case NOT_IN_MAIN:
+		prog->flags.cnt--;
+		prog->history.cnt--;
+		memcpy(prog->funcs, *(prog->history.list + prog->history.cnt), strlen(*(prog->history.list + prog->history.cnt)) + 1);
+		break;
+
+	case IN_MAIN:
+		prog->flags.cnt--;
+		prog->history.cnt--;
+		memcpy(prog->body, *(prog->history.list + prog->history.cnt), strlen(*(prog->history.list + prog->history.cnt)) + 1);
+		break;
+
+	default:
+		warnx("line %d: %d\n%s", __LINE__, *(prog->flags.list + prog->flags.cnt), prog->body);
+		break;
+	}
+}
+
 
 int main(int argc, char *argv[])
 {
 	char const optstring[] = "hvwpc:l:I:o:";
-	char *tok_buf;
 
 	/* initialize source buffers */
 	init_buffers();
@@ -245,27 +293,24 @@ int main(int argc, char *argv[])
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				/* re-allocate enough memory for line + '\n' + '\0' */
-				resize_buffer(&user.funcs, strlen(tok_buf) + 2);
-				resize_buffer(&actual.funcs, strlen(tok_buf) + 2);
-				/* generate function buffers */
-				strcat(user.funcs, tok_buf);
-				strcat(actual.funcs, tok_buf);
-				strcat(user.funcs, "\n");
-				strcat(actual.funcs, "\n");
-				break;
-
-			/* undo last statement */
-			case 'u':
-				/* break early if no history to undo */
-				if (user.history.cnt < 2 || actual.history.cnt < 2)
-					break;
-
+				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
+				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
+				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
+				build_funcs();
 				break;
 
 			/* show usage information */
 			case 'h':
 				printf("\nUsage: %s %s\n", argv[0], USAGE);
+				break;
+
+			/* undo last statement */
+			case 'u':
+				/* break early if no history to undo */
+				if (user.flags.cnt < 2 || actual.flags.cnt < 2)
+					break;
+				undo(&user);
+				undo(&actual);
 				break;
 
 			/* unknown command becomes a noop */
