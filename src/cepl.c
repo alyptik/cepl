@@ -212,8 +212,7 @@ static inline void undo(struct prog_src *prog)
 		break;
 	case EMPTY: /* fallthrough */
 	default:
-		warnx("line %d: %d\n%s", __LINE__, *(prog->flags.list + prog->flags.cnt), prog->body);
-		break;
+		warnx("\n\nline %d:\n%s\n\n", __LINE__, prog->body);
 	}
 }
 
