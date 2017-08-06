@@ -78,6 +78,11 @@ static inline void free_buffers(void)
 		free(user.final);
 	if (actual.final)
 		free(actual.final);
+	if (user.flags.list)
+		free(user.flags.list);
+	if (actual.flags.list)
+		free(actual.flags.list);
+	/* free char ** vectors */
 	if (user.history.list) {
 		append_str(&user.history, NULL, 0);
 		free_argv(user.history.list);
@@ -86,10 +91,6 @@ static inline void free_buffers(void)
 		append_str(&actual.history, NULL, 0);
 		free_argv(actual.history.list);
 	}
-	if (user.flags.list)
-		free(user.flags.list);
-	if (actual.flags.list)
-		free(actual.flags.list);
 	if (cc_argv)
 		free_argv(cc_argv);
 	user.body = NULL;
@@ -98,13 +99,13 @@ static inline void free_buffers(void)
 	actual.final = NULL;
 	user.history.list = NULL;
 	actual.history.list = NULL;
-	user.history.cnt = 0;
-	actual.history.cnt = 0;
 	user.flags.list = NULL;
 	actual.flags.list = NULL;
+	cc_argv = NULL;
+	user.history.cnt = 0;
+	actual.history.cnt = 0;
 	user.flags.cnt = 0;
 	actual.flags.cnt = 0;
-	cc_argv = NULL;
 }
 
 static inline void init_buffers(void)
@@ -249,7 +250,7 @@ int main(int argc, char *argv[])
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
 		case ';':
-			/* TODO: add additional commands */
+			/* TODO: add toggling of -o flag */
 			switch(line[1]) {
 			/* clean up and exit program */
 			case 'q':
