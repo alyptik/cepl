@@ -1,11 +1,6 @@
 # CEPL - *C Read-Eval-Print Loop*
 
-**CEPL** is a command-line, interactive C11 Read-Eval-Print Loop,
-useful for instantaneous prototyping, mathematical calculations, and
-general algorithm exploration.
-
-**CEPL** currently supports multiple compilers, readline
-key-bindings/tab-completion, and incremental undo.
+C11 (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently supporting multiple compilers, readline key-bindings/tab-completion, and incremental undo.
 
 A list of completions can also be generated on-demand for each `-l` library
 using `nm` and `perl` by passing the `-p` switch.
