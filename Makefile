@@ -36,7 +36,7 @@ all: $(TARGET) check
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: $(OBJ)
-	$(LD) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
+	$(LD) $(LDLIBS) $(DEBUG) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): $(OBJ)
