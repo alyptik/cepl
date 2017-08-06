@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define CEPL_VERSION "CEPL v1.5.1"
+#define CEPL_VERSION "CEPL v1.5.2"
 #define USAGE "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t-h,--help:\t\tShow help/usage information.\n\t-p,--parse:\t\tAdd symbols from dynamic libraries to readline completion.\n\t-v,--version:\t\tShow version information.\n\t-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t-c,--compiler:\t\tSpecify alternate compiler.\n\t-l:\t\t\tLink against specified library (flag can be repeated).\n\t-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t-o:\t\t\tName of the file to output source to.\n\nInput lines prefixed with a “;” are used to control internal state.\n\n\t;f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t;h[elp]:\t\tShow help\n\t;i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t;m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t;o[utput]:\t\tToggle -o (output file) flag\n\t;p[arse]:\t\tToggle -p (shared library parsing) flag\n\t;q[uit]:\t\tExit CEPL\n\t;r[eset]:\t\tReset CEPL to its initial program state\n\t;u[ndo]:\t\tIncremental undo (can be repeated)\n\t;w[arnings]:\t\tToggle -w (warnings) flag"
 /* perl script to parse symbols in shared libraries */
 #define ELF_SCRIPT "./elfsyms"
@@ -25,7 +25,7 @@
 #define COUNT sysconf(_SC_PAGESIZE)
 
 /* flag constants for type of source buffer */
-enum {
+enum src_flag {
 	EMPTY = 0,
 	NOT_IN_MAIN = 1,
 	IN_MAIN = 2,
@@ -45,10 +45,10 @@ struct str_list {
 	char **list;
 };
 
-/* struct definition for enum array */
+/* struct definition for flag array */
 struct flag_list {
 	int cnt;
-	int *list;
+	enum src_flag *list;
 };
 
 static inline int free_argv(char **argv)
@@ -95,9 +95,9 @@ static inline void init_flag_list(struct flag_list *list_struct)
 	*(list_struct->list + list_struct->cnt - 1) = EMPTY;
 }
 
-static inline void append_flag(struct flag_list *list_struct, int flag)
+static inline void append_flag(struct flag_list *list_struct, enum src_flag flag)
 {
-	int *temp;
+	enum src_flag *temp;
 	if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s %d %s", "error during flag_list (cnt = ", list_struct->cnt, ") realloc()");
 	list_struct->list = temp;
