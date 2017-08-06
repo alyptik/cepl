@@ -136,8 +136,8 @@ static inline void init_buffers(void)
 	memcpy(user.body, prog_start, strlen(prog_start) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
-	init_list(&user.history, "\n");
-	init_list(&actual.history, "\n");
+	init_list(&user.history, "cepl");
+	init_list(&actual.history, "cepl");
 	init_flag_list(&user.flags);
 	init_flag_list(&actual.flags);
 }
@@ -200,14 +200,15 @@ static inline void undo(struct prog_src *prog)
 		prog->flags.cnt--;
 		prog->history.cnt--;
 		memcpy(prog->funcs, *(prog->history.list + prog->history.cnt), strlen(*(prog->history.list + prog->history.cnt)) + 1);
+		free(*(prog->history.list + prog->history.cnt));
 		break;
-
 	case IN_MAIN:
 		prog->flags.cnt--;
 		prog->history.cnt--;
 		memcpy(prog->body, *(prog->history.list + prog->history.cnt), strlen(*(prog->history.list + prog->history.cnt)) + 1);
+		free(*(prog->history.list + prog->history.cnt));
 		break;
-
+	case EMPTY: /* fallthrough */
 	default:
 		warnx("line %d: %d\n%s", __LINE__, *(prog->flags.list + prog->flags.cnt), prog->body);
 		break;
