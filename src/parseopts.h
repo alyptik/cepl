@@ -23,9 +23,12 @@
 #define ELF_SCRIPT "./elfsyms"
 /* pipe buffer size */
 #define COUNT sysconf(_SC_PAGESIZE)
-#define EMPTY 0
-#define NOT_IN_MAIN 1
-#define IN_MAIN 2
+
+enum {
+	EMPTY,
+	NOT_IN_MAIN,
+	IN_MAIN,
+};
 
 /* silence linter */
 int getopt(int argc, char * const argv[], const char *optstring);
