@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v1.3.0" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v1.4.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -39,7 +39,9 @@ Input lines prefixed with a \fB;\fR are used to control internal state.
 .HP
 \fB;r[eset]\fR:		Reset CEPL to its initial program state
 .HP
-\fB:w[arnings]\fR:	Toggle -w (warnings) flag
+\fB;u[ndo]\fR:		Incremental undo (can be repeated).
+.HP
+\fB;w[arnings]\fR:	Toggle -w (warnings) flag
 
 .SS "OPTIONS"
 .sp
