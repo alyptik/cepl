@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v1.4.0" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v1.5.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -6,17 +6,17 @@ cepl \- a C11 Read-Eval-Print Loop
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hpvw] [\-c\fI<compiler>\fR] [\-l\fI<library name>\fR] [\-I\fI<additional header directory>\fR] [\-o\fI<output.c>\fR]
+\fIcepl\fR [\-hpvw] [\-c\fI<compiler>\fR] [\-l\fI<library name>\fR] [\-I\fI<include dir>\fR] [\-o\fI<output.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
 .sp
-CEPL is a command-line, interactive C11 Read-Eval-Print Loop, useful for instantaneous prototyping, mathematical calculations, and
-general algorithm exploration.
+CEPL is a command-line, interactive C11 Read-Eval-Print Loop, useful for instantaneous prototyping, mathematical calculations, and general algorithm exploration.
 
 .SH "USAGE"
 .sp
-CEPL currently supports multiple compilers, readline key-bindings/tab-completion, and the ability to specify additional shared libraries to link against.
+CEPL currently supports multiple compilers, readline key-bindings/tab-completion, and incremental undo.
+
 .sp
 A list of completions can also be optionally generated for each shared library if \fInm\fR and \fIperl\fR are present.
 
@@ -33,13 +33,15 @@ Input lines prefixed with a \fB;\fR are used to control internal state.
 .HP
 \fB;m[acro]\fR:		Define a macro (e.g. \fB;m #define ZERO(x) (x ^ x)\fR)
 .HP
+\fB;o[utput]\fR:	Toggle -o (output file) flag
+.HP
 \fB;p[arse]\fR:		Toggle -p (shared library parsing) flag
 .HP
 \fB;q[uit]\fR:		Exit CEPL
 .HP
 \fB;r[eset]\fR:		Reset CEPL to its initial program state
 .HP
-\fB;u[ndo]\fR:		Incremental undo (can be repeated).
+\fB;u[ndo]\fR:		Incremental undo (can be repeated)
 .HP
 \fB;w[arnings]\fR:	Toggle -w (warnings) flag
 

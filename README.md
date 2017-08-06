@@ -5,8 +5,7 @@ useful for instantaneous prototyping, mathematical calculations, and
 general algorithm exploration.
 
 **CEPL** currently supports multiple compilers, readline
-key-bindings/tab-completion, and the ability to specify additional
-shared libraries or headers with the `-l` or `-I` switches respectively.
+key-bindings/tab-completion, and incremental undo.
 
 A list of completions can also be generated on-demand for each `-l` library
 using `nm` and `perl` by passing the `-p` switch.
@@ -21,7 +20,7 @@ using `nm` and `perl` by passing the `-p` switch.
 
 ## Usage
 ```bash
-./cepl [-hpvw] [-c<compiler>] [-l<library name>] [-I<additional header directory>] [-o<output.c>]
+./cepl [-hpvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -34,6 +33,7 @@ Input lines prefixed with a `;` are used to control internal state.
 	;h[elp]:		Show help
 	;i[nclude]:		Define an include (e.g. “;i #include <crypt.h>”)
 	;m[acro]:		Define a macro (e.g. “;m #define ZERO(x) (x ^ x)”)
+	;o[utput]:		Toggle -o (output file) flag
 	;p[arse]:		Toggle -p (shared library parsing) flag
 	;q[uit]:		Exit CEPL
 	;r[eset]:		Reset CEPL to its initial program state
