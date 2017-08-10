@@ -52,6 +52,8 @@ static char *tok_buf;
 static FILE *ofile;
 /* compiler arg array */
 static char **cc_argv;
+/* readline history state */
+static HISTORY_STATE *line_hist;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -234,6 +236,9 @@ int main(int argc, char *argv[])
 	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{}()[]";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
+	/* initialize history sesssion */
+	using_history();
+	line_hist = history_get_history_state();
 
 	/* loop readline() until EOF is read */
 	while ((line = readline("\n>>> ")) && *line) {
@@ -397,6 +402,8 @@ EXIT:
 		free(line);
 	if (comp_list.list)
 		free_argv(comp_list.list);
+	if (line_hist)
+		free(line_hist);
 	printf("\n%s\n\n", "Terminating program.");
 
 	return 0;
