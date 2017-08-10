@@ -61,7 +61,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		free_argv(lib_list.list);
 	if (ld_list.list)
 		free_argv(ld_list.list);
-
 	*ofile = NULL;
 	lib_list.cnt = 0, cc_list.cnt = 0, comp_list.cnt = 0, ld_list.cnt = 0;
 	tmp_list = NULL, sym_list = NULL;
@@ -80,7 +79,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
-
 		/* switch compiler */
 		case 'c':
 			if (!cc_list.list[0][0]) {
