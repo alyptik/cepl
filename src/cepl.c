@@ -197,18 +197,18 @@ static inline void build_final(void)
 
 static inline void undo(struct prog_src *prog)
 {
-	switch(*(prog->flags.list + prog->flags.cnt - 1)) {
+	switch(prog->flags.list[prog->flags.cnt - 1]) {
 	case NOT_IN_MAIN:
 		prog->flags.cnt--;
 		prog->history.cnt--;
-		memcpy(prog->funcs, *(prog->history.list + prog->history.cnt), strlen(*(prog->history.list + prog->history.cnt)) + 1);
-		free(*(prog->history.list + prog->history.cnt));
+		memcpy(prog->funcs, prog->history.list[prog->history.cnt], strlen(prog->history.list[prog->history.cnt]) + 1);
+		free(prog->history.list[prog->history.cnt]);
 		break;
 	case IN_MAIN:
 		prog->flags.cnt--;
 		prog->history.cnt--;
-		memcpy(prog->body, *(prog->history.list + prog->history.cnt), strlen(*(prog->history.list + prog->history.cnt)) + 1);
-		free(*(prog->history.list + prog->history.cnt));
+		memcpy(prog->body, prog->history.list[prog->history.cnt], strlen(prog->history.list[prog->history.cnt]) + 1);
+		free(prog->history.list[prog->history.cnt]);
 		break;
 	case EMPTY: /* fallthrough */
 	default:
