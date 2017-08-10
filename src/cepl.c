@@ -5,10 +5,14 @@
  * See LICENSE.md file for copyright and license details.
  */
 
+/* silence linter */
 #ifndef _GNU_SOURCE
 #	define _GNU_SOURCE
 #endif
+/* TODO: change history filename to a non-hardcoded string */
+#define HIST_NAME ".cepl_history"
 
+#include <sys/stat.h>
 #include <sys/types.h>
 #include "compile.h"
 #include "readline.h"
@@ -222,6 +226,11 @@ static inline void undo(struct prog_src *prog)
 int main(int argc, char *argv[])
 {
 	char const optstring[] = "hvwpc:l:I:o:";
+	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
+	char *hist_file = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
+	int nlines = 0;
+	FILE *make_hist = NULL;
+	struct stat hist_stat;
 
 	/* initialize source buffers */
 	init_buffers();
@@ -236,16 +245,30 @@ int main(int argc, char *argv[])
 	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{}()[]";
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
+
 	/* initialize history sesssion */
 	using_history();
-	line_hist = history_get_history_state();
+	/* create history file if it doesn't exsit */
+	if (!(make_hist = fopen(hist_file, "a+b"))) {
+		warn("%s %d\n", "error creating history file with fopen() at ", __LINE__);
+	} else {
+		fclose(make_hist);
+	}
+	/* read hist_file if size is non-zero */
+	stat(hist_file, &hist_stat);
+	if (hist_stat.st_size > 0) {
+		if (read_history(hist_file))
+			warn("%s %s\n", "error reading history from ", hist_file);
+	}
 
 	/* loop readline() until EOF is read */
 	while ((line = readline("\n>>> ")) && *line) {
+		fflush (stdout);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* add to readline history */
 		add_history(line);
+		nlines++;
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&user.body, 3);
 		resize_buffer(&actual.body, 3);
@@ -402,6 +425,9 @@ EXIT:
 		free(line);
 	if (comp_list.list)
 		free_argv(comp_list.list);
+	/* append history to history file */
+	if (append_history(nlines, hist_file))
+		warn("%s %s\n", "error writing history to ", hist_file);
 	if (line_hist)
 		free(line_hist);
 	printf("\n%s\n\n", "Terminating program.");
