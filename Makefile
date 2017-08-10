@@ -11,7 +11,7 @@ LD := $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 LDFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
-LDLIBS := -lreadline
+LIBS := -lhistory -lreadline
 DEBUG := -Og -ggdb
 RELEASE := -O2
 TARGET := cepl
@@ -29,14 +29,14 @@ TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 all: $(TARGET) check
 
 %:
-	$(LD) $(LDLIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
+	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
 
 %.o:
-	$(CC) $(LDLIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
+	$(CC) $(LIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: $(OBJ)
-	$(LD) $(LDLIBS) $(DEBUG) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
+	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): $(OBJ)
