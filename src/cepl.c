@@ -239,10 +239,34 @@ static inline void cleanup(void)
 	printf("\n%s\n\n", "Terminating program.");
 }
 
-static inline void sigint_handler(int sig)
+static inline void sig_handler(int sig)
 {
 	cleanup();
 	exit(sig);
+}
+
+static inline void reg_handlers(void)
+{
+	if (signal(SIGHUP, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGHUP handler");
+	if (signal(SIGINT, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGINT handler");
+	if (signal(SIGQUIT, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGQUIT handler");
+	if (signal(SIGILL, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGILL handler");
+	if (signal(SIGABRT, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGABRT handler");
+	if (signal(SIGFPE, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGFPE handler");
+	if (signal(SIGSEGV, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGSEGV handler");
+	if (signal(SIGPIPE, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGPIPE handler");
+	if (signal(SIGALRM, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGALRM handler");
+	if (signal(SIGTERM, &sig_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGTERM handler");
 }
 
 int main(int argc, char *argv[])
@@ -281,8 +305,7 @@ int main(int argc, char *argv[])
 		if (read_history(hist_file))
 			warn("%s %s\n", "error reading history from ", hist_file);
 	}
-	if (signal(SIGINT, &sigint_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGINT handler");
+	reg_handlers();
 
 	/* loop readline() until EOF is read */
 	while ((line = readline("\n>>> ")) && *line) {
@@ -304,7 +327,8 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* clean up and exit program */
 			case 'q':
-				goto EXIT;
+				cleanup();
+				exit(EXIT_SUCCESS);
 				/* unused break */
 				break;
 
@@ -442,7 +466,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-EXIT:
 	cleanup();
 	return 0;
 }
