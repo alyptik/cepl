@@ -9,8 +9,8 @@ PREFIX ?= /usr/local
 CC := gcc
 LD := $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-LDFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-zrelro,-znow,--sort-common,--as-needed
+CFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+LDFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
 LDLIBS := -lreadline
 DEBUG := -Og -ggdb
 RELEASE := -O2
