@@ -385,8 +385,10 @@ int main(int argc, char *argv[])
 		/* print output and exit code */
 		printf("\n%s:\n\n%s\n", argv[0], user.final);
 		printf("\nexit status: %d\n", compile(actual.final, cc_argv, argv));
-		if (line)
+		if (line) {
 			free(line);
+			line = NULL;
+		}
 	}
 
 EXIT:
