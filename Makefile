@@ -35,10 +35,12 @@ all: $(TARGET) check
 	$(CC) $(LIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
+debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
 debug: $(OBJ)
 	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
+$(TARGET): LDFLAGS := $(DEBUG) $(LDFLAGS)
 $(TARGET): $(OBJ)
 
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
