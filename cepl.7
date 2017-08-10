@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v1.5.2" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v1.6.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -14,6 +14,12 @@ cepl \- a C11 Read-Eval-Print Loop
 C11 (\fBISO/IEC 9899:2011\fR) read–eval–print loop (\fBREPL\fR) currently supporting multiple compilers, readline key-bindings/tab-completion, and incremental undo.
 
 .SH "USAGE"
+.sp
+Command history is read from and saved to \fI~/.cepl_history\fR.
+
+.sp
+Completions for \fB-l\fR library functions can be generated on-demand with the \fB-p\fR switch.
+
 .SS "COMMANDS"
 .sp
 Input lines prefixed with a \fB;\fR are used to control internal state.

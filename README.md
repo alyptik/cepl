@@ -2,9 +2,6 @@
 
 C11 (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently supporting multiple compilers, readline key-bindings/tab-completion, and incremental undo.
 
-A list of completions can also be generated on-demand for each `-l` library
-using `nm` and `perl` by passing the `-p` switch.
-
 ## Dependencies
 
 * gcc (GNU C Compiler)
@@ -19,6 +16,10 @@ using `nm` and `perl` by passing the `-p` switch.
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
+
+Command history is read from and saved to `~/.cepl_history`.
+
+Completions for `-l` library functions can be generated on-demand with the `-p` switch.
 
 #### CEPL understands the following control sequences:
 
