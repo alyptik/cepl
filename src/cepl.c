@@ -56,7 +56,9 @@ static char *tok_buf;
 static FILE *ofile;
 /* compiler arg array */
 static char **cc_argv;
-/* readline history state */
+/* readline history variables */
+static char *hist_file;
+static int nlines = 0;
 static HISTORY_STATE *line_hist;
 
 /* completion list of generated symbols */
@@ -222,13 +224,32 @@ static inline void undo(struct prog_src *prog)
 	}
 }
 
+static inline void cleanup(void)
+{
+	free_buffers();
+	if (line)
+		free(line);
+	if (comp_list.list)
+		free_argv(comp_list.list);
+	/* append history to history file */
+	if (append_history(nlines, hist_file))
+		warn("%s %s\n", "error writing history to ", hist_file);
+	if (line_hist)
+		free(line_hist);
+	printf("\n%s\n\n", "Terminating program.");
+}
+
+static inline void sigint_handler(int sig)
+{
+	cleanup();
+	exit(sig);
+}
 
 int main(int argc, char *argv[])
 {
 	char const optstring[] = "hvwpc:l:I:o:";
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	char *hist_file = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
-	int nlines = 0;
+	hist_file = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
 	FILE *make_hist = NULL;
 	struct stat hist_stat;
 
@@ -260,6 +281,8 @@ int main(int argc, char *argv[])
 		if (read_history(hist_file))
 			warn("%s %s\n", "error reading history from ", hist_file);
 	}
+	if (signal(SIGINT, &sigint_handler) == SIG_ERR)
+		warn("%s", "unable to register SIGINT handler");
 
 	/* loop readline() until EOF is read */
 	while ((line = readline("\n>>> ")) && *line) {
@@ -420,17 +443,6 @@ int main(int argc, char *argv[])
 	}
 
 EXIT:
-	free_buffers();
-	if (line)
-		free(line);
-	if (comp_list.list)
-		free_argv(comp_list.list);
-	/* append history to history file */
-	if (append_history(nlines, hist_file))
-		warn("%s %s\n", "error writing history to ", hist_file);
-	if (line_hist)
-		free(line_hist);
-	printf("\n%s\n\n", "Terminating program.");
-
+	cleanup();
 	return 0;
 }
