@@ -193,8 +193,8 @@ static inline void build_body(void)
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
-	strcat(user.body, strtok(line, "\0\n"));
-	strcat(actual.body, strtok(line, "\0\n"));
+	strcat(user.body, strtok(line, "\f\r\n\0"));
+	strcat(actual.body, strtok(line, "\f\r\n\0"));
 }
 
 static inline void build_final(void)
