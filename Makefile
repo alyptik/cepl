@@ -11,7 +11,7 @@ LD := $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 LDFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
-LIBS := -lhistory -lreadline
+LIBS := -lelf -lhistory -lreadline
 DEBUG := -Og -ggdb
 RELEASE := -O2
 TARGET := cepl
