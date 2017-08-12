@@ -277,21 +277,21 @@ static inline void reg_handlers(void)
 
 static inline char *read_line(void) {
 	size_t cnt = 0;
-	char *tmp = NULL;
+	char *buf = NULL;
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		tmp = readline("\n>>> ");
+		buf = readline("\n>>> ");
 	} else {
 		/* turn off echo for piped stdin */
 		tcgetattr(0, &old);
 		new = old;
 		new.c_lflag &= ~(ICANON | ECHO);
 		tcsetattr(0, TCSANOW, &new);
-		getline(&tmp, &cnt, stdin);
+		getline(&buf, &cnt, stdin);
 		/* reset termios */
 		tcsetattr(0, TCSANOW, &old);
 	}
-	return tmp;
+	return buf;
 }
 
 int main(int argc, char *argv[])
