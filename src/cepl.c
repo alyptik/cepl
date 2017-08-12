@@ -224,8 +224,7 @@ static inline void undo(struct prog_src *prog)
 		free(prog->history.list[prog->history.cnt]);
 		break;
 	case EMPTY: /* fallthrough */
-	default:
-		warnx("\n\nline %d:\n%s\n\n", __LINE__, prog->body);
+	default:; /* noop */
 	}
 }
 
@@ -238,7 +237,7 @@ static inline void cleanup(void)
 		free_argv(comp_list.list);
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
-		warn("%s %s\n", "error writing history to ", hist_file);
+		warn("%s %s", "error writing history to ", hist_file);
 	if (line_hist)
 		free(line_hist);
 	if (isatty(STDIN_FILENO))
