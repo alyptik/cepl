@@ -124,14 +124,17 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 		/* version flag */
 		case 'v':
-			errx(EXIT_FAILURE, "%s", CEPL_VERSION);
+			fprintf(stderr, "%s\n", CEPL_VERSION);
+			exit(EXIT_FAILURE);
+			/* unused break */
 			break;
 
 		/* usage and unrecognized flags */
 		case 'h':
 		case '?':
 		default:
-			errx(EXIT_FAILURE, "Usage: %s %s", argv[0], USAGE);
+			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE);
+			exit(EXIT_FAILURE);
 		}
 	}
 

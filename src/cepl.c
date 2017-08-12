@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
 
 			/* show usage information */
 			case 'h':
-				printf("\nUsage: %s %s\n", argv[0], USAGE);
+				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE);
 				break;
 
 			/* undo last statement */
