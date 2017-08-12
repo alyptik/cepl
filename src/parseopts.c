@@ -187,7 +187,52 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	return cc_list.list;
 }
 
-char **parse_libs(char *libs[]) {
+char **read_syms(char const *elf_file)
+{
+	int elf_fd;
+	char **tokens;
+	register size_t count;
+	Elf *elf;
+	Elf_Data *data;
+	GElf_Shdr shdr;
+	Elf_Scn *scn = NULL;
+
+	/* coordinate API and lib versions */
+	elf_version(EV_CURRENT);
+	elf_fd = open(elf_file, O_RDONLY);
+	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
+
+	while ((scn = elf_nextscn(elf, scn)) != NULL) {
+		gelf_getshdr(scn, &shdr);
+		if (shdr.sh_type == SHT_SYMTAB) {
+			/* found a symbol table, go print it. */
+			break;
+		}
+	}
+
+	data = elf_getdata(scn, NULL);
+	count = (shdr.sh_size / shdr.sh_entsize);
+	if ((tokens = malloc(sizeof *tokens * count)) == NULL)
+		err(EXIT_FAILURE, "%s", "error during read_syms() tokens malloc()");
+
+	/* read the symbol names */
+	for (register size_t i = 0; i < count; ++i) {
+		GElf_Sym sym;
+		char *sym_str;
+		gelf_getsym(data, i, &sym);
+		sym_str = elf_strptr(elf, shdr.sh_link, sym.st_name);
+		if ((tokens[i] = malloc(strlen(sym_str) + 1)) == NULL)
+			err(EXIT_FAILURE, "%s[%lu] %s", "error during tokens", i, "malloc()");
+		memcpy(tokens[i], sym_str, strlen(sym_str) + 1);
+	}
+
+	elf_end(elf);
+	close(elf_fd);
+	return tokens;
+}
+
+char **parse_libs(char *libs[])
+{
 	int status;
 	int pipe_nm[2];
 	char **tokens, **tmp;
