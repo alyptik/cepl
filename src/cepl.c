@@ -63,8 +63,6 @@ static char **cc_argv;
 static char *hist_file;
 static int nlines = 0;
 static HISTORY_STATE *line_hist;
-/* termios state */
-static struct termios old, new;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -276,20 +274,23 @@ static inline void reg_handlers(void)
 }
 
 static inline char *read_line(void) {
-	size_t cnt = 0;
 	char *buf = NULL;
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
 		buf = readline("\n>>> ");
 	} else {
+		size_t cnt = 0;
+		/* termios state */
+		struct termios tty[2];
 		/* turn off echo for piped stdin */
-		tcgetattr(0, &old);
-		new = old;
-		new.c_lflag &= ~(ICANON | ECHO);
-		tcsetattr(0, TCSANOW, &new);
+		tcgetattr(0, &tty[0]);
+		tty[1] = tty[0];
+		tty[1].c_lflag &= ~(ICANON | ECHO);
+		tcsetattr(0, TCSANOW, &tty[1]);
+		/* read the line */
 		getline(&buf, &cnt, stdin);
 		/* reset termios */
-		tcsetattr(0, TCSANOW, &old);
+		tcsetattr(0, TCSANOW, &tty[0]);
 	}
 	return buf;
 }
