@@ -236,7 +236,8 @@ static inline void cleanup(void)
 		warn("%s %s\n", "error writing history to ", hist_file);
 	if (line_hist)
 		free(line_hist);
-	printf("\n%s\n\n", "Terminating program.");
+	if (isatty(STDIN_FILENO))
+		printf("\n%s\n\n", "Terminating program.");
 }
 
 static inline void sig_handler(int sig)
@@ -245,6 +246,7 @@ static inline void sig_handler(int sig)
 	exit(sig);
 }
 
+/* signal handlers to make sure that history is written and cleanup is done */
 static inline void reg_handlers(void)
 {
 	if (signal(SIGHUP, &sig_handler) == SIG_ERR)
@@ -295,7 +297,7 @@ int main(int argc, char *argv[])
 	using_history();
 	/* create history file if it doesn't exsit */
 	if (!(make_hist = fopen(hist_file, "a+b"))) {
-		warn("%s %d\n", "error creating history file with fopen() at ", __LINE__);
+		warn("%s %d", "error creating history file with fopen() at ", __LINE__);
 	} else {
 		fclose(make_hist);
 	}
@@ -457,9 +459,11 @@ int main(int argc, char *argv[])
 		}
 
 		build_final();
+		/* print generated source code unless stdin is a pipe */
+		if (isatty(STDIN_FILENO))
+			printf("\n%s:\n\n%s\n", argv[0], user.final);
 		/* print output and exit code */
-		printf("\n%s:\n\n%s\n", argv[0], user.final);
-		printf("\nexit status: %d\n", compile(actual.final, cc_argv, argv));
+		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
 		if (line) {
 			free(line);
 			line = NULL;
