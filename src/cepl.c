@@ -12,6 +12,9 @@
 /* TODO: change history filename to a non-hardcoded string */
 #define HIST_NAME ".cepl_history"
 
+
+
+#include <termios.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "compile.h"
@@ -60,6 +63,8 @@ static char **cc_argv;
 static char *hist_file;
 static int nlines = 0;
 static HISTORY_STATE *line_hist;
+/* termios state */
+static struct termios old, new;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -271,21 +276,40 @@ static inline void reg_handlers(void)
 		warn("%s", "unable to register SIGTERM handler");
 }
 
+static inline char *read_line(char **line) {
+	size_t cnt = 0;
+	/* use an empty prompt if stdin is a pipe */
+	if (isatty(STDIN_FILENO)) {
+		*line = readline("\n>>> ");
+	} else {
+		/* turn off echo for piped stdin */
+		tcgetattr(0, &old);
+		new = old;
+		new.c_lflag &= ~(ICANON | ECHO);
+		tcsetattr(0, TCSANOW, &new);
+		getline(line, &cnt, stdin);
+		/* reset termios */
+		tcsetattr(0, TCSANOW, &old);
+	}
+	return *line;
+}
+
 int main(int argc, char *argv[])
 {
 	char const optstring[] = "hvwpc:l:I:o:";
-	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	hist_file = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
 	FILE *make_hist = NULL;
 	struct stat hist_stat;
 
+	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
+	hist_file = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
 	/* initialize source buffers */
 	init_buffers();
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize user.final and actual.final then print version */
 	build_final();
-	printf("\n%s\n", CEPL_VERSION);
+	if (isatty(STDIN_FILENO))
+		printf("\n%s\n", CEPL_VERSION);
 	/* enable completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
@@ -305,13 +329,13 @@ int main(int argc, char *argv[])
 	stat(hist_file, &hist_stat);
 	if (hist_stat.st_size > 0) {
 		if (read_history(hist_file))
-			warn("%s %s\n", "error reading history from ", hist_file);
+			warn("%s %s", "error reading history from ", hist_file);
 	}
 	reg_handlers();
 
 	/* loop readline() until EOF is read */
-	while ((line = readline("\n>>> ")) && *line) {
-		fflush (stdout);
+	while ((read_line(&line)) && *line) {
+		fflush(stdout);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* add to readline history */
