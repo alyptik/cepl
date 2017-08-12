@@ -62,7 +62,6 @@ static char **cc_argv;
 /* readline history variables */
 static char *hist_file;
 static int nlines = 0;
-static HISTORY_STATE *line_hist;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -236,8 +235,6 @@ static inline void cleanup(void)
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
 		warn("%s %s", "error writing history to ", hist_file);
-	if (line_hist)
-		free(line_hist);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
 }
