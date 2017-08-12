@@ -10,6 +10,8 @@
 
 #include <err.h>
 #include <errno.h>
+#include <gelf.h>
+#include <libelf.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
