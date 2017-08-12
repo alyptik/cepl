@@ -99,7 +99,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 		/* dynamic library flag */
 		case 'l':
-			append_str(&lib_list, optarg, 0);
+			append_str(&lib_list, strcat(strcat("/lib/lib", optarg), ".so"), 0);
 			append_str(&ld_list, optarg, 2);
 			memcpy(ld_list.list[ld_list.cnt - 1], "-l", 2);
 			break;
