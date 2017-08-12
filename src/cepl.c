@@ -275,22 +275,23 @@ static inline void reg_handlers(void)
 		warn("%s", "unable to register SIGTERM handler");
 }
 
-static inline char *read_line(char **line) {
+static inline char *read_line(void) {
 	size_t cnt = 0;
+	char *tmp = NULL;
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		*line = readline("\n>>> ");
+		tmp = readline("\n>>> ");
 	} else {
 		/* turn off echo for piped stdin */
 		tcgetattr(0, &old);
 		new = old;
 		new.c_lflag &= ~(ICANON | ECHO);
 		tcsetattr(0, TCSANOW, &new);
-		getline(line, &cnt, stdin);
+		getline(&tmp, &cnt, stdin);
 		/* reset termios */
 		tcsetattr(0, TCSANOW, &old);
 	}
-	return *line;
+	return tmp;
 }
 
 int main(int argc, char *argv[])
@@ -333,13 +334,18 @@ int main(int argc, char *argv[])
 	reg_handlers();
 
 	/* loop readline() until EOF is read */
-	while ((read_line(&line)) && *line) {
+	while ((line = read_line()) && *line) {
 		fflush(stdout);
+		/* strip newlines */
+		line[strcspn(line, "\f\r\n\0")] = '\0';
+		/* dont add blank lines to history */
+		if (strlen(line) > 0) {
+			add_history(line);
+			/* increment history count */
+			nlines++;
+		}
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
-		/* add to readline history */
-		add_history(line);
-		nlines++;
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&user.body, 3);
 		resize_buffer(&actual.body, 3);
