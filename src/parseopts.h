@@ -66,8 +66,15 @@ static inline int free_argv(char **argv)
 
 static inline void init_list(struct str_list *list_struct, char *initial_str)
 {
-	if ((list_struct->list = malloc((sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
+	if (list_struct->list)
+		free(list_struct->list);
+	list_struct->cnt = 0;
+	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");
+	/* exit early if NULL */
+	if (!initial_str)
+		return;
+	list_struct->cnt++;
 	if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(initial_str) + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr[0] malloc()");
 	memset(list_struct->list[list_struct->cnt - 1], 0, strlen(initial_str) + 1);
