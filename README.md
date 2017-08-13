@@ -17,8 +17,6 @@ Run `make` then `./cepl` to start the interactive REPL.
 
 Command history is read from and saved to `~/.cepl_history`.
 
-Completions for `-l` library functions can be generated on-demand with the `-p` switch.
-
 #### CEPL understands the following control sequences:
 
 Input lines prefixed with a `;` are used to control internal state.
