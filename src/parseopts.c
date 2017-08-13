@@ -39,7 +39,7 @@ static char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
 };
 static int option_index = 0;
-static char *tmp_arg, *line_ptr = NULL;
+static char *tmp_arg;
 static char **tmp_list = NULL;
 /* compiler arguments and library list structs */
 static struct str_list cc_list = {.cnt = 0, .list = NULL};
@@ -185,11 +185,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 			append_str(&comp_list, sym_list.list[i], 0);
 		append_str(&comp_list, NULL, 0);
 		free_argv(sym_list.list);
-	}
-
-	if (line_ptr) {
-		free(line_ptr);
-		line_ptr = NULL;
 	}
 
 	return cc_list.list;
