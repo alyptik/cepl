@@ -29,11 +29,12 @@ int main (void)
 	putchar('\n');
 	init_list(&symbols, "cepl");
 
-	plan(3);
+	plan(4);
 
 	ok(result != NULL, "test option parsing.");
 	like(result[0], "^(gcc|clang)$", "test generation of compiler string.");
-	lives_ok({parse_libs(&symbols, libs);}, "test library parsing.");
+	lives_ok({read_syms(&symbols, NULL);}, "test passing read_syms() empty filename.");
+	lives_ok({parse_libs(&symbols, libs);}, "test shared library parsing.");
 
 	done_testing();
 
