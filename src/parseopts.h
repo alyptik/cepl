@@ -39,9 +39,6 @@ int getopt(int argc, char * const argv[], const char *optstring);
 FILE *fdopen(int fd, const char *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile);
-char **parse_libs(char *libs[]);
-
 /* struct definition for NULL terminated string array */
 struct str_list {
 	int cnt;
@@ -53,6 +50,9 @@ struct flag_list {
 	int cnt;
 	enum src_flag *list;
 };
+
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile);
+void parse_libs(struct str_list *symbols, char *libs[]);
 
 static inline int free_argv(char **argv)
 {
