@@ -84,7 +84,7 @@ static int nlines = 0;
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
-extern _Bool warn_flag, parse_flag, out_flag;
+extern bool warn_flag, parse_flag, out_flag;
 
 static inline void write_hist(void) {
 	/* write out program to file if applicable */
