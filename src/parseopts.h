@@ -20,10 +20,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-/* pipe buffer size */
-#define COUNT sysconf(_SC_PAGESIZE)
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v2.0.0"
+#define VERSION_STRING "CEPL v2.0.1"
 #define USAGE_STRING "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic libraries symbols to readline completion.\n\t" \
@@ -44,6 +42,8 @@
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]:\t\tToggle -w (warnings) flag"
+/* set pipe buffer byte count to page size */
+#define COUNT sysconf(_SC_PAGESIZE)
 
 /* flag constants for type of source buffer */
 enum src_flag {
