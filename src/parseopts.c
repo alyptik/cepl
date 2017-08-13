@@ -71,8 +71,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	/* initilize argument lists */
 	init_list(&cc_list, "gcc");
 	init_list(&ld_list, "gcc");
-	if ((lib_list.list = malloc(sizeof *lib_list.list)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial lib_list.list malloc()");
+	init_list(&lib_list, NULL);
 
 	/* re-zero cc_list.list[0] so -c argument can be added */
 	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
@@ -175,7 +174,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	if (parse_flag) {
 		if (comp_list.list)
 			free_argv(comp_list.list);
-		comp_list.list = malloc(sizeof *comp_list.list);
+		init_list(&comp_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
 		for (register size_t i = 0; comp_arg_list[i]; i++)
 			append_str(&comp_list, comp_arg_list[i], 0);
@@ -237,9 +236,8 @@ void parse_libs(struct str_list *symbols, char *libs[])
 		read_syms(&cur_syms, libs[i]);
 		for (register ssize_t j = 0; j < cur_syms.cnt; j++) {
 			append_str(symbols, cur_syms.list[j], 0);
-			free(cur_syms.list[j]);
 		}
-		free(cur_syms.list);
+		free_argv(cur_syms.list);
 	}
 	append_str(symbols, NULL, 0);
 }
