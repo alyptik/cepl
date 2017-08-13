@@ -6,11 +6,10 @@
 
 DESTDIR ?=
 PREFIX ?= /usr/local
-CC := gcc
+CC ?= gcc
 LD := $(CC)
-TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -std=c11 -Wall -Wextra -Wimplicit-fallthrough=1 -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-LDFLAGS := -pipe -MMD -flto -fPIC -fstack-protector-strong -fuse-linker-plugin -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
+CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+LDFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
 DEBUG := -Og -ggdb
 RELEASE := -O2
@@ -28,15 +27,15 @@ TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 all: $(TARGET) check
 
 %:
-	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
+	$(LD) $(LIBS) $(LDFLAGS) $(filter %.o,$^) -o $@
 
 %.o:
-	$(CC) $(LIBS) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
+	$(CC) $(CFLAGS) -c $(filter %.c,$^) -o $@
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
 debug: $(OBJ)
-	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
+	$(LD) $(LIBS) $(LDFLAGS) $(filter src/%.o,$^) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): LDFLAGS := $(DEBUG) $(LDFLAGS)
