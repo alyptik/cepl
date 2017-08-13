@@ -46,7 +46,7 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#include <signal.h>\n"
 	"#include <stdalign.h>\n"
 	"#include <stdarg.h>\n"
-	"#include <std_Bool.h>\n"
+	"#include <stdbool.h>\n"
 	"#include <stddef.h>\n"
 	"#include <stdint.h>\n"
 	"#include <stdio.h>\n"
@@ -303,7 +303,10 @@ static inline char *read_line(void) {
 		buf = readline("\n>>> ");
 	} else {
 		size_t cnt = 0;
-		getline(&buf, &cnt, stdin);
+		if (getline(&buf, &cnt, stdin) == -1) {
+			cleanup();
+			err(EXIT_FAILURE, "%s %d", "error during getline() at ", __LINE__);
+		}
 	}
 	return buf;
 }

@@ -44,9 +44,12 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	memcpy(src_buffer, src, sizeof src_buffer);
 	src_buffer[sizeof src_buffer - 1] = '\n';
 	/* create pipes */
-	pipe(pipe_cc);
-	pipe(pipe_ld);
-	pipe(pipe_exec);
+	if (pipe(pipe_cc) == -1)
+		err(EXIT_FAILURE, "%s", "error making pipe_cc pipe");
+	if (pipe(pipe_ld) == -1)
+		err(EXIT_FAILURE, "%s", "error making pipe_ld pipe");
+	if (pipe(pipe_exec) == -1)
+		err(EXIT_FAILURE, "%s", "error making pipe_exec pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 	set_cloexec(pipe_ld);
@@ -78,7 +81,8 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	default:
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
-		write(pipe_cc[1], src_buffer, sizeof src_buffer);
+		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
+			err(EXIT_FAILURE, "%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
