@@ -9,7 +9,8 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD := $(CC)
 TARGET_ARCH ?= -march=x86-64 -mtune=generic
-CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough -pedantic-errors -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
+CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough -pedantic-errors
 LDFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
 DEBUG := -Og -ggdb
@@ -31,7 +32,7 @@ all: $(TARGET) check
 	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
 
 %.o:
-	$(CC) $(CFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
@@ -39,9 +40,11 @@ debug: $(OBJ)
 	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
-$(TARGET): LDFLAGS := $(DEBUG) $(LDFLAGS)
+$(TARGET): LDFLAGS := $(RELEASE) $(LDFLAGS)
 $(TARGET): $(OBJ)
 
+$(TESTS): CFLAGS := $(DEBUG) $(CFLAGS)
+$(TESTS): LDFLAGS := $(DEBUG) $(LDFLAGS)
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
 
 $(OBJ): %.o: %.c $(HDR)
