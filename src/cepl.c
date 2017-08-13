@@ -63,10 +63,9 @@ static int nlines = 0;
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
-extern bool warn_flag, parse_flag, out_flag;
+extern _Bool warn_flag, parse_flag, out_flag;
 
-static inline void free_buffers(void)
-{
+static inline void write_hist(void) {
 	/* write out program to file if applicable */
 	if (ofile) {
 		fwrite(actual.final, strlen(actual.final), 1, ofile);
@@ -74,6 +73,11 @@ static inline void free_buffers(void)
 		fclose(ofile);
 		ofile = NULL;
 	}
+}
+
+static inline void free_buffers(void)
+{
+	write_hist();
 	if (user.funcs)
 		free(user.funcs);
 	if (actual.funcs)
@@ -204,7 +208,7 @@ static inline void build_final(void)
 	strcat(actual.final, prog_end);
 }
 
-static inline void undo(struct prog_src *prog)
+static inline void pop_history(struct prog_src *prog)
 {
 	switch(prog->flags.list[prog->flags.cnt - 1]) {
 	case NOT_IN_MAIN:
@@ -296,7 +300,7 @@ int main(int argc, char *argv[])
 	/* initialize user.final and actual.final then print version */
 	build_final();
 	if (isatty(STDIN_FILENO))
-		printf("\n%s\n", CEPL_VERSION);
+		printf("\n%s\n", VERSION_STRING);
 	/* enable completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
@@ -352,12 +356,9 @@ int main(int argc, char *argv[])
 
 			/* toggle output file writing */
 			case 'o':
-				/* if file is open, close it break early */
-				if (out_flag && ofile) {
-					fwrite(actual.final, strlen(actual.final), 1, ofile);
-					fputc('\n', ofile);
-					fclose(ofile);
-					ofile = NULL;
+				/* if file is open, close it and break early */
+				if (out_flag) {
+					write_hist();
 					break;
 				}
 				/* toggle global warning flag */
@@ -417,16 +418,16 @@ int main(int argc, char *argv[])
 
 			/* show usage information */
 			case 'h':
-				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE);
+				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 				break;
 
-			/* undo last statement */
+			/* pop_history last statement */
 			case 'u':
-				/* break early if no history to undo */
+				/* break early if no history to pop_history */
 				if (user.flags.cnt < 2 || actual.flags.cnt < 2)
 					break;
-				undo(&user);
-				undo(&actual);
+				pop_history(&user);
+				pop_history(&actual);
 				break;
 
 			/* unknown command becomes a noop */

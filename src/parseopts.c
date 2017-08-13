@@ -15,7 +15,7 @@ FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
-bool warn_flag = false, parse_flag = false, out_flag = false;
+_Bool warn_flag = false, parse_flag = false, out_flag = false;
 
 static struct option long_opts[] = {
 	{"help", no_argument, 0, 'h'},
@@ -69,7 +69,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	opterr = 0;
 
 	/* initilize argument lists */
-	init_list(&cc_list, "gcc");
+	init_list(&cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
 	init_list(&ld_list, "gcc");
 	init_list(&lib_list, NULL);
 
@@ -83,7 +84,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 			if (!cc_list.list[0][0]) {
 				/* copy argument to cc_list.list[0] */
 				if ((tmp_arg = realloc(cc_list.list[0], strlen(optarg) + 1)) == NULL)
-					err(EXIT_FAILURE, "%s[%d] %s", "error during initial cc_list.list", 0, "malloc()");
+					err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list.list", 0, "malloc()");
 				cc_list.list[0] = tmp_arg;
 				memset(cc_list.list[0], 0, strlen(optarg) + 1);
 				memcpy(cc_list.list[0], optarg, strlen(optarg) + 1);
@@ -129,7 +130,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 		/* version flag */
 		case 'v':
-			fprintf(stderr, "%s\n", CEPL_VERSION);
+			fprintf(stderr, "%s\n", VERSION_STRING);
 			exit(EXIT_FAILURE);
 			/* unused break */
 			break;
@@ -138,7 +139,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		case 'h':
 		case '?':
 		default:
-			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE);
+			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -164,14 +165,13 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		append_str(&cc_list, cc_arg_list[i], 0);
 	for (register size_t i = 0; ld_arg_list[i]; i++)
 		append_str(&ld_list, ld_arg_list[i], 0);
-
 	/* append NULL to generated lists */
 	append_str(&cc_list, NULL, 0);
 	append_str(&ld_list, NULL, 0);
 	append_str(&lib_list, NULL, 0);
 
-	/* parse ELF shared libraries for completions */
-	if (parse_flag) {
+	/* parse ELF shared libraries for completions if not disabled */
+	if (!parse_flag) {
 		if (comp_list.list)
 			free_argv(comp_list.list);
 		init_list(&comp_list, NULL);

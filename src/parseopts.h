@@ -20,10 +20,30 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define CEPL_VERSION "CEPL v1.7.2"
-#define USAGE "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t-h,--help:\t\tShow help/usage information.\n\t-p,--parse:\t\tAdd symbols from dynamic libraries to readline completion.\n\t-v,--version:\t\tShow version information.\n\t-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t-c,--compiler:\t\tSpecify alternate compiler.\n\t-l:\t\t\tLink against specified library (flag can be repeated).\n\t-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t-o:\t\t\tName of the file to output source to.\n\nInput lines prefixed with a “;” are used to control internal state.\n\n\t;f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t;h[elp]:\t\tShow help\n\t;i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t;m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t;o[utput]:\t\tToggle -o (output file) flag\n\t;p[arse]:\t\tToggle -p (shared library parsing) flag\n\t;q[uit]:\t\tExit CEPL\n\t;r[eset]:\t\tReset CEPL to its initial program state\n\t;u[ndo]:\t\tIncremental undo (can be repeated)\n\t;w[arnings]:\t\tToggle -w (warnings) flag"
 /* pipe buffer size */
 #define COUNT sysconf(_SC_PAGESIZE)
+/* global version and usage strings */
+#define VERSION_STRING "CEPL v2.0.0"
+#define USAGE_STRING "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
+	"-h,--help:\t\tShow help/usage information.\n\t" \
+	"-p,--parse:\t\tDisable addition of dynamic libraries symbols to readline completion.\n\t" \
+	"-v,--version:\t\tShow version information.\n\t" \
+	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
+	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
+	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
+	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t" \
+	"-o:\t\t\tName of the file to output source to.\n\n" \
+	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
+	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
+	";h[elp]:\t\tShow help\n\t" \
+	";i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t" \
+	";m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t" \
+	";o[utput]:\t\tToggle -o (output file) flag\n\t" \
+	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
+	";q[uit]:\t\tExit CEPL\n\t" \
+	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
+	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
+	";w[arnings]:\t\tToggle -w (warnings) flag"
 
 /* flag constants for type of source buffer */
 enum src_flag {
@@ -53,9 +73,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile);
 void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 
-static inline int free_argv(char **argv)
+static inline size_t free_argv(char **argv)
 {
-	int count;
+	register size_t count;
 	if (!argv || !argv[0])
 		return -1;
 	for (count = 0; argv[count]; count++)
@@ -64,7 +84,7 @@ static inline int free_argv(char **argv)
 	return count;
 }
 
-static inline void init_list(struct str_list *list_struct, char *initial_str)
+static inline void init_list(struct str_list *list_struct, char *init_str)
 {
 	if (list_struct->list)
 		free(list_struct->list);
@@ -72,16 +92,16 @@ static inline void init_list(struct str_list *list_struct, char *initial_str)
 	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");
 	/* exit early if NULL */
-	if (!initial_str)
+	if (!init_str)
 		return;
 	list_struct->cnt++;
-	if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(initial_str) + 1)) == NULL)
+	if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(init_str) + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr[0] malloc()");
-	memset(list_struct->list[list_struct->cnt - 1], 0, strlen(initial_str) + 1);
-	memcpy(list_struct->list[list_struct->cnt - 1], initial_str, strlen(initial_str) + 1);
+	memset(list_struct->list[list_struct->cnt - 1], 0, strlen(init_str) + 1);
+	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
 
-static inline void append_str(struct str_list *list_struct, char *str, size_t offset)
+static inline void append_str(struct str_list *list_struct, char *str, size_t padding)
 {
 	char **temp;
 	if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
@@ -90,10 +110,10 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t of
 	if (!str) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
-		if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(str) + offset + 1)) == NULL)
+		if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(str) + padding + 1)) == NULL)
 			err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", list_struct->cnt - 1);
-		memset(list_struct->list[list_struct->cnt - 1], 0, strlen(str) + offset + 1);
-		memcpy(list_struct->list[list_struct->cnt - 1] + offset, str, strlen(str) + 1);
+		memset(list_struct->list[list_struct->cnt - 1], 0, strlen(str) + padding + 1);
+		memcpy(list_struct->list[list_struct->cnt - 1] + padding, str, strlen(str) + 1);
 	}
 }
 
