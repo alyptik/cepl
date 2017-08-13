@@ -73,7 +73,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	/* initilize argument lists */
 	init_list(&cc_list, "gcc");
 	init_list(&ld_list, "gcc");
-	init_list(&lib_list, "./elfsyms");
+	if ((lib_list.list = malloc(sizeof *lib_list.list)) == NULL)
+		err(EXIT_FAILURE, "%s", "error during initial lib_list.list malloc()");
+
 	/* re-zero cc_list.list[0] so -c argument can be added */
 	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
 

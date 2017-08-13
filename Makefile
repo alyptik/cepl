@@ -15,7 +15,6 @@ LIBS := -lelf -lhistory -lreadline
 DEBUG := -Og -ggdb
 RELEASE := -O2
 TARGET := cepl
-ELF_SCRIPT := elfsyms
 MANPAGE := cepl.7
 TAP := t/tap
 
@@ -61,18 +60,16 @@ install: $(TARGET)
 	@mkdir -pv $(DESTDIR)$(PREFIX)/bin
 	@mkdir -pv $(DESTDIR)$(PREFIX)/share/man/man7
 	install -c $(TARGET) $(DESTDIR)$(PREFIX)/bin
-	install -c $(ELF_SCRIPT) $(DESTDIR)$(PREFIX)/bin
 	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/share/man/man7
 
 uninstall:
 	@rm -fv $(DESTDIR)$(PREFIX)/bin/$(TARGET)
-	@rm -fv $(DESTDIR)$(PREFIX)/bin/$(ELF_SCRIPT)
 	@rm -fv $(DESTDIR)$(PREFIX)/share/man/man7/$(MANPAGE)
 
 dist: clean
 	@printf "%s\n" "creating dist tarball"
 	@mkdir -pv $(TARGET)/
-	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(ELF_SCRIPT) $(MANPAGE) $(TARGET)/
+	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
 	@rm -rfv $(TARGET)/
 
