@@ -6,9 +6,7 @@ C11 (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently supporting mul
 
 * gcc (GNU C Compiler)
 * readline library
-> **Optional:**
-> * perl
-> * nm
+* libelf ELF access library
 
 ## Usage
 ```bash
@@ -49,5 +47,6 @@ Input lines prefixed with a `;` are used to control internal state.
 
 ## Libraries used:
 
-* readline
+* libreadline
+* libelf
 * libtap ([zorgnax/libtap](https://github.com/zorgnax/libtap))
