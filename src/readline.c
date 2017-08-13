@@ -11,8 +11,9 @@
 #include "readline.h"
 #include "parseopts.h"
 
+/* default completion list */
 char *comp_arg_list[] = {
-	"auto", "break", "case", "char", "const", "continue", "default",
+	"asm", "auto", "break", "case", "char", "const", "continue", "default",
 	"do", "double", "else", "enum", "extern", "float", "for", "goto",
 	"if", "inline", "int", "long", "register", "restrict", "return",
 	"short", "signed", "sizeof", "static", "struct", "switch",
@@ -24,7 +25,7 @@ char *comp_arg_list[] = {
 	"system(", "fork(", "pipe(", "execl(", "execv(", "kill(", "signal(",
 	"printf(", "fprintf(", "dprintf(", "sprintf(", "snprintf(",
 	"open(", "close(", "read(", "write(", "fopen(", "fclose(",
-	"scanf(", "fscanf(", "sscanf(", "mmap(", "munmap(", "syscall(",
+	"scanf(", "fscanf(", "mmap(", "munmap(", "syscall(",
 	"fread(", "fwrite(", "memcpy(", "memset(", "memcmp(", "getline(",
 	"puts(", "strspn(", "strlen(", "strcat(", "strtok(", "stpcpy(",
 	";function", ";parse", ";quit", ";reset", ";warnings", NULL
@@ -36,19 +37,11 @@ char *generator(char const *text, int state)
 {
 	static size_t list_index, len;
 	char *name, *buf;
-	char **completions = NULL;
-
-	if (comp_list.list) {
-		completions = comp_list.list;
-	} else {
-		completions = comp_arg_list;
-	}
-
+	char **completions = comp_list.list ? comp_list.list : comp_arg_list;
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);
 	}
-
 	while ((name = completions[list_index++])) {
 		if (memcmp(name, text, len) == 0) {
 			if ((buf = malloc(strlen(name) + 1)) == NULL) {
