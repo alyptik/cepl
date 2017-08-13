@@ -40,7 +40,6 @@ static char *const warn_list[] = {
 };
 static int option_index = 0;
 static char *tmp_arg;
-static char **tmp_list = NULL;
 /* compiler arguments and library list structs */
 static struct str_list cc_list = {.cnt = 0, .list = NULL};
 static struct str_list lib_list = {.cnt = 0, .list = NULL};
@@ -64,7 +63,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	if (ld_list.list)
 		free_argv(ld_list.list);
 	*ofile = NULL;
-	tmp_list = NULL;
 	lib_list.cnt = 0, cc_list.cnt = 0, comp_list.cnt = 0, ld_list.cnt = 0;
 	cc_list.list = NULL, lib_list.list = NULL, sym_list.list = NULL;
 	/* don't print an error if option not found */
