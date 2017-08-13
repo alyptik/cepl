@@ -212,8 +212,8 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 
 	while ((scn = elf_nextscn(elf, scn))) {
 		gelf_getshdr(scn, &shdr);
-		/* found a symbol table, go print it. */
-		if (shdr.sh_type == SHT_SYMTAB) {
+		if (shdr.sh_type == SHT_DYNSYM) {
+			/* found a symbol table, go print it. */
 			break;
 		}
 	}
