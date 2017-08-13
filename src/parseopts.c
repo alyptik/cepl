@@ -79,8 +79,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	/* re-zero cc_list.list[0] so -c argument can be added */
 	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
 
-	/* TODO: fix seek errors when not using gcc as ld */
-
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
 		/* switch compiler */
