@@ -102,10 +102,10 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		/* dynamic library flag */
 		case 'l':
 			{
-				char buf[strlen(optarg) + 7];
-				memcpy(buf, "/lib/lib", 6);
-				memcpy(buf + 6, optarg, strlen(optarg));
-				memcpy(buf + 6 + strlen(optarg), ".so", 4);
+				char buf[strlen(optarg) + 12];
+				memcpy(buf, "/lib/lib", 8);
+				memcpy(buf + 8, optarg, strlen(optarg));
+				memcpy(buf + 8 + strlen(optarg), ".so", 4);
 				append_str(&lib_list, buf, 0);
 				append_str(&ld_list, optarg, 2);
 				memcpy(ld_list.list[ld_list.cnt - 1], "-l", 2);
@@ -154,7 +154,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 	/* append warning flags */
 	if (warn_flag) {
-		for (register int i = 0; warn_list[i]; i++)
+		for (register size_t i = 0; warn_list[i]; i++)
 			append_str(&cc_list, warn_list[i], 0);
 	}
 
@@ -163,9 +163,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		memcpy(cc_list.list[0], "gcc", strlen("gcc") + 1);
 
 	/* finalize argument lists */
-	for (register int i = 0; cc_arg_list[i]; i++)
+	for (register size_t i = 0; cc_arg_list[i]; i++)
 		append_str(&cc_list, cc_arg_list[i], 0);
-	for (register int i = 0; ld_arg_list[i]; i++)
+	for (register size_t i = 0; ld_arg_list[i]; i++)
 		append_str(&ld_list, ld_arg_list[i], 0);
 
 	/* append NULL to generated lists */
@@ -179,9 +179,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 			free_argv(comp_list.list);
 		comp_list.list = malloc(sizeof *comp_list.list);
 		parse_libs(&sym_list, lib_list.list);
-		for (register int i = 0; comp_arg_list[i]; i++)
+		for (register size_t i = 0; comp_arg_list[i]; i++)
 			append_str(&comp_list, comp_arg_list[i], 0);
-		for (register int i = 0; sym_list.list[i]; i++)
+		for (register size_t i = 0; sym_list.list[i]; i++)
 			append_str(&comp_list, sym_list.list[i], 0);
 		append_str(&comp_list, NULL, 0);
 		free_argv(sym_list.list);
@@ -195,60 +195,58 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	return cc_list.list;
 }
 
-char **read_syms(char const *elf_file)
+void read_syms(struct str_list *tokens, char const *elf_file)
 {
 	int elf_fd;
-	char **tokens;
-	register size_t count;
 	Elf *elf;
-	Elf_Data *data;
 	GElf_Shdr shdr;
 	Elf_Scn *scn = NULL;
 
+	/* sanity check filename */
+	if (!elf_file)
+		return;
 	/* coordinate API and lib versions */
 	elf_version(EV_CURRENT);
 	elf_fd = open(elf_file, O_RDONLY);
 	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
 
-	while ((scn = elf_nextscn(elf, scn)) != NULL) {
+	while ((scn = elf_nextscn(elf, scn))) {
 		gelf_getshdr(scn, &shdr);
+		/* found a symbol table, go print it. */
 		if (shdr.sh_type == SHT_SYMTAB) {
-			/* found a symbol table, go print it. */
 			break;
 		}
 	}
 
-	data = elf_getdata(scn, NULL);
-	count = (shdr.sh_size / shdr.sh_entsize) + 1;
-	if ((tokens = malloc(sizeof *tokens * count)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during read_syms() tokens malloc()");
-
-	/* read the symbol names */
-	for (register size_t i = 0; i < count - 1; i++) {
-		GElf_Sym sym;
-		char *sym_str;
-		gelf_getsym(data, i, &sym);
-		sym_str = elf_strptr(elf, shdr.sh_link, sym.st_name);
-		if ((tokens[i] = malloc(strlen(sym_str) + 1)) == NULL)
-			err(EXIT_FAILURE, "%s[%lu] %s", "error during tokens", i, "malloc()");
-		memcpy(tokens[i], sym_str, strlen(sym_str) + 1);
+	/* don't try to parse if NULL section descriptor */
+	if (scn) {
+		Elf_Data *data = elf_getdata(scn, NULL);
+		size_t count = shdr.sh_size / shdr.sh_entsize;
+		/* read the symbol names */
+		for (register size_t i = 0; i < count; i++) {
+			GElf_Sym sym;
+			char *sym_str;
+			gelf_getsym(data, i, &sym);
+			sym_str = elf_strptr(elf, shdr.sh_link, sym.st_name);
+			append_str(tokens, sym_str, 0);
+		}
+		append_str(tokens, NULL, 0);
 	}
-	tokens[count - 1] = NULL;
 
 	elf_end(elf);
 	close(elf_fd);
-	return tokens;
 }
 
 void parse_libs(struct str_list *symbols, char *libs[])
 {
-	if ((symbols->list = malloc(sizeof *symbols->list)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during parse_libs() symbols.list malloc()");
 	for (register size_t i = 0; libs[i]; i++) {
-		char **cur_syms = read_syms(libs[i]);
-		for (register size_t j = 0; cur_syms[j]; j++)
-			append_str(symbols, cur_syms[j], 0);
-		free_argv(cur_syms);
+		struct str_list cur_syms = {.cnt = 0, .list = NULL};
+		read_syms(&cur_syms, libs[i]);
+		for (register ssize_t j = 0; j < cur_syms.cnt; j++) {
+			append_str(symbols, cur_syms.list[j], 0);
+			free(cur_syms.list[j]);
+		}
+		free(cur_syms.list);
 	}
 	append_str(symbols, NULL, 0);
 }

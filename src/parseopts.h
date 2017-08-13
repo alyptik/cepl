@@ -52,6 +52,7 @@ struct flag_list {
 };
 
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile);
+void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 
 static inline int free_argv(char **argv)
