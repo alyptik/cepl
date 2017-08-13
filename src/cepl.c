@@ -19,36 +19,57 @@
 #include "parseopts.h"
 
 /* struct definition for generated program sources */
-struct prog_src {
+static struct prog_src {
 	char *funcs;
 	char *body;
 	char *final;
 	struct str_list history;
 	struct flag_list flags;
-};
-
-/* truncated source */
-static struct prog_src user = {
-	.funcs = NULL,
-	.body = NULL,
-	.final = NULL,
-	.history = {.cnt = 0, .list = NULL},
-	.flags = {.cnt = 0, .list = NULL},
-};
-
-/* actual source */
-static struct prog_src actual = {
-	.funcs = NULL,
-	.body = NULL,
-	.final = NULL,
-	.history = {.cnt = 0, .list = NULL},
-	.flags = {.cnt = 0, .list = NULL},
-};
+} user, actual;
 
 /* source file templates */
-static char const prog_includes[] = "#define _BSD_SOURCE\n#define _DEFAULT_SOURCE\n#define _GNU_SOURCE\n#define _POSIX_C_SOURCE 200809L\n#define _SVID_SOURCE\n#define _XOPEN_SOURCE 700\n\n#include <assert.h>\n#include <ctype.h>\n#include <err.h>\n#include <errno.h>\n#include <error.h>\n#include <fcntl.h>\n#include <limits.h>\n#include <math.h>\n#include <regex.h>\n#include <signal.h>\n#include <stdalign.h>\n#include <stdarg.h>\n#include <stdbool.h>\n#include <stddef.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdnoreturn.h>\n#include <string.h>\n#include <strings.h>\n#include <time.h>\n#include <uchar.h>\n#include <wchar.h>\n#include <unistd.h>\n#include <linux/memfd.h>\n#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/syscall.h>\n#include <sys/wait.h>\n\n#define _Atomic\n#define _Static_assert(a, b)\n#define UNUSED __attribute__ ((unused))\n\nextern char **environ;\n";
-static char const prog_start[] = "\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n{\n";
+static char const prog_includes[] = "#define _BSD_SOURCE\n"
+	"#define _DEFAULT_SOURCE\n"
+	"#define _GNU_SOURCE\n"
+	"#define _POSIX_C_SOURCE 200809L\n"
+	"#define _SVID_SOURCE\n"
+	"#define _XOPEN_SOURCE 700\n\n"
+	"#include <assert.h>\n"
+	"#include <ctype.h>\n"
+	"#include <err.h>\n"
+	"#include <errno.h>\n"
+	"#include <error.h>\n"
+	"#include <fcntl.h>\n"
+	"#include <limits.h>\n"
+	"#include <math.h>\n"
+	"#include <regex.h>\n"
+	"#include <signal.h>\n"
+	"#include <stdalign.h>\n"
+	"#include <stdarg.h>\n"
+	"#include <std_Bool.h>\n"
+	"#include <stddef.h>\n"
+	"#include <stdint.h>\n"
+	"#include <stdio.h>\n"
+	"#include <stdlib.h>\n"
+	"#include <stdnoreturn.h>\n"
+	"#include <string.h>\n"
+	"#include <strings.h>\n"
+	"#include <time.h>\n"
+	"#include <uchar.h>\n"
+	"#include <wchar.h>\n"
+	"#include <unistd.h>\n"
+	"#include <linux/memfd.h>\n"
+	"#include <sys/mman.h>\n"
+	"#include <sys/types.h>\n"
+	"#include <sys/syscall.h>\n"
+	"#include <sys/wait.h>\n\n"
+	"#define _Atomic\n"
+	"#define _Static_assert(a, b)\n"
+	"#define UNUSED __attribute__ ((unused))\n\n"
+	"extern char **environ;\n";
+static char const prog_start[] = "\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n""{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
+
 /* line and token buffers */
 static char *line;
 static char *tok_buf;
@@ -124,7 +145,9 @@ static inline void free_buffers(void)
 
 static inline void init_buffers(void)
 {
+	/* user is truncated source for display */
 	user.funcs = malloc(1);
+	/* actual is source passed to compiler */
 	actual.funcs = malloc(strlen(prog_includes) + 1);
 	user.body = malloc(strlen(prog_start) + 1);
 	actual.body = malloc(strlen(prog_start) + 1);
