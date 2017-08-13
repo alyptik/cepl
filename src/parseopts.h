@@ -21,10 +21,10 @@
 #include <sys/wait.h>
 
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v2.0.1"
+#define VERSION_STRING "CEPL v2.0.2"
 #define USAGE_STRING "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
-	"-p,--parse:\t\tDisable addition of dynamic libraries symbols to readline completion.\n\t" \
+	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
 	"-v,--version:\t\tShow version information.\n\t" \
 	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
 	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
