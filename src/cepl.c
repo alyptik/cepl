@@ -92,11 +92,13 @@ static inline void free_buffers(void)
 		free(actual.flags.list);
 	/* free char ** vectors */
 	if (user.history.list) {
-		append_str(&user.history, NULL, 0);
+		if (user.history.list[user.history.cnt - 1])
+			append_str(&user.history, NULL, 0);
 		free_argv(user.history.list);
 	}
 	if (actual.history.list) {
-		append_str(&actual.history, NULL, 0);
+		if (actual.history.list[actual.history.cnt - 1])
+			append_str(&actual.history, NULL, 0);
 		free_argv(actual.history.list);
 	}
 	if (cc_argv)
@@ -145,8 +147,8 @@ static inline void init_buffers(void)
 	memcpy(user.body, prog_start, strlen(prog_start) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
-	init_list(&user.history, "cepl");
-	init_list(&actual.history, "cepl");
+	init_list(&user.history, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&actual.history, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_flag_list(&user.flags);
 	init_flag_list(&actual.flags);
 }
