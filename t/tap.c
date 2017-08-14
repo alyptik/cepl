@@ -19,8 +19,8 @@ static int failed_tests;
 static int current_test;
 static char *todo_mesg;
 
-static char *
-vstrdupf (const char *fmt, va_list args) {
+static char *vstrdupf (char const *fmt, va_list args)
+{
     char *str;
     int size;
     va_list args2;
@@ -38,8 +38,8 @@ vstrdupf (const char *fmt, va_list args) {
     return str;
 }
 
-void
-tap_plan (int tests, const char *fmt, ...) {
+void tap_plan (int tests, char const *fmt, ...)
+{
     expected_tests = tests;
     if (tests == SKIP_ALL) {
         char *why;
@@ -56,9 +56,7 @@ tap_plan (int tests, const char *fmt, ...) {
     }
 }
 
-int
-vok_at_loc (const char *file, int line, int test, const char *fmt,
-            va_list args)
+int vok_at_loc (char const *file, int line, int test, char const *fmt, va_list args)
 {
     char *name = vstrdupf(fmt, args);
     if (!test) {
@@ -88,8 +86,8 @@ vok_at_loc (const char *file, int line, int test, const char *fmt,
     return test;
 }
 
-int
-ok_at_loc (const char *file, int line, int test, const char *fmt, ...) {
+int ok_at_loc (char const *file, int line, int test, char const *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
     vok_at_loc(file, line, test, fmt, args);
@@ -97,17 +95,15 @@ ok_at_loc (const char *file, int line, int test, const char *fmt, ...) {
     return test;
 }
 
-static int
-mystrcmp (const char *a, const char *b) {
+static int mystrcmp (char const *a, char const *b)
+{
     return a == b ? 0 : !a ? -1 : !b ? 1 : strcmp(a, b);
 }
 
 #define eq(a, b) (!mystrcmp(a, b))
 #define ne(a, b) (mystrcmp(a, b))
 
-int
-is_at_loc (const char *file, int line, const char *got, const char *expected,
-           const char *fmt, ...)
+int is_at_loc (char const *file, int line, char const *got, char const *expected, char const *fmt, ...)
 {
     int test = eq(got, expected);
     va_list args;
@@ -121,9 +117,7 @@ is_at_loc (const char *file, int line, const char *got, const char *expected,
     return test;
 }
 
-int
-isnt_at_loc (const char *file, int line, const char *got, const char *expected,
-             const char *fmt, ...)
+int isnt_at_loc (char const *file, int line, char const *got, char const *expected, char const *fmt, ...)
 {
     int test = ne(got, expected);
     va_list args;
@@ -137,9 +131,7 @@ isnt_at_loc (const char *file, int line, const char *got, const char *expected,
     return test;
 }
 
-int
-cmp_ok_at_loc (const char *file, int line, int a, const char *op, int b,
-               const char *fmt, ...)
+int cmp_ok_at_loc (char const *file, int line, int a, char const *op, int b, char const *fmt, ...)
 {
     int test = eq(op, "||") ? a || b
              : eq(op, "&&") ? a && b
@@ -172,8 +164,8 @@ cmp_ok_at_loc (const char *file, int line, int a, const char *op, int b,
     return test;
 }
 
-static int
-find_mem_diff (const char *a, const char *b, size_t n, size_t *offset) {
+static int find_mem_diff (char const *a, char const *b, size_t n, size_t *offset)
+{
     size_t i;
     if (a == b)
         return 0;
@@ -188,9 +180,7 @@ find_mem_diff (const char *a, const char *b, size_t n, size_t *offset) {
     return 0;
 }
 
-int
-cmp_mem_at_loc (const char *file, int line, const void *got,
-                const void *expected, size_t n, const char *fmt, ...)
+int cmp_mem_at_loc (char const *file, int line, void const *got, void const *expected, size_t n, char const *fmt, ...)
 {
     size_t offset;
     int diff = find_mem_diff(got, expected, n, &offset);
@@ -210,8 +200,8 @@ cmp_mem_at_loc (const char *file, int line, const void *got,
     return !diff;
 }
 
-int
-diag (const char *fmt, ...) {
+int diag (char const *fmt, ...)
+{
     va_list args;
     char *mesg, *line;
     int i;
@@ -238,8 +228,8 @@ diag (const char *fmt, ...) {
     return 0;
 }
 
-int
-exit_status () {
+int exit_status(void)
+{
     int retval = 0;
     if (expected_tests == NO_PLAN) {
         printf("1..%d\n", current_test);
@@ -257,8 +247,8 @@ exit_status () {
     return retval;
 }
 
-int
-bail_out (int ignore UNUSED, const char *fmt, ...) {
+int bail_out (int ignore UNUSED, char const *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
     printf("Bail out!  ");
@@ -269,8 +259,8 @@ bail_out (int ignore UNUSED, const char *fmt, ...) {
     return 0;
 }
 
-void
-tap_skip (int n, const char *fmt, ...) {
+void tap_skip (int n, char const *fmt, ...)
+{
     char *why;
     va_list args;
     va_start(args, fmt);
@@ -283,16 +273,16 @@ tap_skip (int n, const char *fmt, ...) {
     free(why);
 }
 
-void
-tap_todo (int ignore UNUSED, const char *fmt, ...) {
+void tap_todo (int ignore UNUSED, char const *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
     todo_mesg = vstrdupf(fmt, args);
     va_end(args);
 }
 
-void
-tap_end_todo () {
+void tap_end_todo ()
+{
     free(todo_mesg);
     todo_mesg = NULL;
 }
@@ -308,8 +298,8 @@ tap_end_todo () {
 
 /* Create a shared memory int to keep track of whether a piece of code executed
 dies. to be used in the dies_ok and lives_ok macros.  */
-int
-tap_test_died (int status) {
+int tap_test_died (int status)
+{
     static int *test_died = NULL;
     int prev;
     if (!test_died) {
@@ -322,9 +312,7 @@ tap_test_died (int status) {
     return prev;
 }
 
-int
-like_at_loc (int for_match, const char *file, int line, const char *got,
-             const char *expected, const char *fmt, ...)
+int like_at_loc (int for_match, char const *file, int line, char const *got, char const *expected, char const *fmt, ...)
 {
     int test;
     regex_t re;
