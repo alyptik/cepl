@@ -41,9 +41,7 @@ static char *const warn_list[] = {
 static int option_index = 0;
 static char *tmp_arg;
 /* compiler arguments and library list structs */
-static struct str_list cc_list = {.cnt = 0, .list = NULL};
-static struct str_list lib_list = {.cnt = 0, .list = NULL};
-static struct str_list sym_list = {.cnt = 0, .list = NULL};
+static struct str_list cc_list, lib_list, sym_list;
 
 /* getopts variables */
 extern char *optarg;
@@ -58,10 +56,14 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	int opt;
 	char *out_file = NULL;
 
-	if (lib_list.list)
-		free_argv(lib_list.list);
+	/* cleanup previous allocations */
+	if (cc_list.list)
+		free_argv(cc_list.list);
 	if (ld_list.list)
 		free_argv(ld_list.list);
+	if (lib_list.list)
+		free_argv(lib_list.list);
+
 	*ofile = NULL;
 	lib_list.cnt = 0, cc_list.cnt = 0, comp_list.cnt = 0, ld_list.cnt = 0;
 	cc_list.list = NULL, lib_list.list = NULL, sym_list.list = NULL;
@@ -99,7 +101,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 		/* dynamic library flag */
 		case 'l':
-			{
+			do {
 				char buf[strlen(optarg) + 12];
 				memcpy(buf, "/lib/lib", 8);
 				memcpy(buf + 8, optarg, strlen(optarg));
@@ -107,7 +109,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 				append_str(&lib_list, buf, 0);
 				append_str(&ld_list, optarg, 2);
 				memcpy(ld_list.list[ld_list.cnt - 1], "-l", 2);
-			}
+			} while (0);
 			break;
 
 		/* output file flag */
@@ -130,8 +132,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 		/* version flag */
 		case 'v':
-			fprintf(stderr, "%s\n", VERSION_STRING);
-			exit(EXIT_FAILURE);
+			err(EXIT_SUCCESS, "%s\n", VERSION_STRING);
 			/* unused break */
 			break;
 
@@ -139,8 +140,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		case 'h':
 		case '?':
 		default:
-			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
-			exit(EXIT_FAILURE);
+			err(EXIT_SUCCESS, "%s %s %s", "Usage:", argv[0], USAGE_STRING);
 		}
 	}
 
@@ -170,11 +170,12 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	append_str(&ld_list, NULL, 0);
 	append_str(&lib_list, NULL, 0);
 
-	/* parse ELF shared libraries for completions if not disabled */
+	/* parse ELF shared libraries for completions */
 	if (!parse_flag) {
 		if (comp_list.list)
 			free_argv(comp_list.list);
 		init_list(&comp_list, NULL);
+		init_list(&sym_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
 		for (register size_t i = 0; comp_arg_list[i]; i++)
 			append_str(&comp_list, comp_arg_list[i], 0);
@@ -189,10 +190,10 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 
 void read_syms(struct str_list *tokens, char const *elf_file)
 {
-	int elf_fd;
-	Elf *elf;
 	GElf_Shdr shdr;
+	Elf *elf;
 	Elf_Scn *scn = NULL;
+	int elf_fd;
 
 	/* sanity check filename */
 	if (!elf_file)
@@ -204,10 +205,9 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 
 	while ((scn = elf_nextscn(elf, scn))) {
 		gelf_getshdr(scn, &shdr);
-		if (shdr.sh_type == SHT_DYNSYM) {
-			/* found a symbol table, go print it. */
+		/* found a symbol table, go print it. */
+		if (shdr.sh_type == SHT_DYNSYM)
 			break;
-		}
 	}
 
 	/* don't try to parse if NULL section descriptor */
@@ -233,10 +233,12 @@ void parse_libs(struct str_list *symbols, char *libs[])
 {
 	for (register size_t i = 0; libs[i]; i++) {
 		struct str_list cur_syms = {.cnt = 0, .list = NULL};
+		init_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
 		for (register ssize_t j = 0; j < cur_syms.cnt; j++) {
 			append_str(symbols, cur_syms.list[j], 0);
 		}
+		append_str(&cur_syms, NULL, 0);
 		free_argv(cur_syms.list);
 	}
 	append_str(symbols, NULL, 0);
