@@ -21,7 +21,7 @@
 #include <sys/wait.h>
 
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v2.1.1"
+#define VERSION_STRING "CEPL v2.2.0"
 #define USAGE_STRING "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \

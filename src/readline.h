@@ -12,11 +12,9 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-#define UNUSED __attribute__ ((unused))
-
 char *generator(char const *text, int state);
 
-static inline char **completer(char const *text, int start UNUSED, int end UNUSED)
+static inline char **completer(char const *text, int start, int end)
 {
 	/* always list completions */
 	rl_bind_key('\t', &rl_complete);

@@ -56,20 +56,18 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#include <sys/wait.h>\n\n"
 	"#define _Atomic\n"
 	"#define _Static_assert(a, b)\n"
-	"#define UNUSED __attribute__ ((unused))\n\n"
 	"extern char **environ;\n";
-static char const prog_start[] = "\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n""{\n";
+static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n""{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
-static char *line;
-static char *tok_buf;
+static char *line = NULL, *tok_buf = NULL;
 /* output file */
-static FILE *ofile;
+static FILE *ofile = NULL;
 /* compiler arg array */
-static char **cc_argv;
+static char **cc_argv = NULL;
 /* readline history variables */
-static char *hist_file;
-static int nlines;
+static char *hist_file = NULL;
+static int nlines = 0;
 /* struct definition for generated program sources */
 static struct prog_src {
 	char *funcs;
@@ -77,7 +75,7 @@ static struct prog_src {
 	char *final;
 	struct str_list hist;
 	struct flag_list flags;
-} user, actual;
+} user = {NULL, NULL, NULL, {0, NULL}, {0, NULL}}, actual = {NULL, NULL, NULL, {0, NULL}, {0, NULL}};
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -297,18 +295,19 @@ static inline void reg_handlers(void)
 }
 
 static inline char *read_line(void) {
-	char *buf = NULL;
+	if (line)
+		free(line);
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		buf = readline("\n>>> ");
+		line = readline("\n>>> ");
 	} else {
 		size_t cnt = 0;
-		if (getline(&buf, &cnt, stdin) == -1) {
+		if (getline(&line, &cnt, stdin) == -1) {
 			cleanup();
 			err(EXIT_FAILURE, "%s %d", "error during getline() at ", __LINE__);
 		}
 	}
-	return buf;
+	return line;
 }
 
 int main(int argc, char *argv[])
@@ -509,8 +508,10 @@ int main(int argc, char *argv[])
 			printf("\n%s:\n\n%s\n", argv[0], user.final);
 		/* print output and exit code */
 		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
-		if (line)
+		if (line) {
 			free(line);
+			line = NULL;
+		}
 	}
 
 	cleanup();
