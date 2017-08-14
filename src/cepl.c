@@ -18,15 +18,6 @@
 #include "readline.h"
 #include "parseopts.h"
 
-/* struct definition for generated program sources */
-static struct prog_src {
-	char *funcs;
-	char *body;
-	char *final;
-	struct str_list hist;
-	struct flag_list flags;
-} user, actual;
-
 /* source file templates */
 static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#define _DEFAULT_SOURCE\n"
@@ -69,7 +60,6 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"extern char **environ;\n";
 static char const prog_start[] = "\n\nint main(int argc UNUSED, char *argv[] UNUSED)\n""{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
-
 /* line and token buffers */
 static char *line;
 static char *tok_buf;
@@ -79,7 +69,15 @@ static FILE *ofile;
 static char **cc_argv;
 /* readline history variables */
 static char *hist_file;
-static int nlines = 0;
+static int nlines;
+/* struct definition for generated program sources */
+static struct prog_src {
+	char *funcs;
+	char *body;
+	char *final;
+	struct str_list hist;
+	struct flag_list flags;
+} user, actual;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -87,13 +85,15 @@ extern struct str_list comp_list;
 extern bool warn_flag, parse_flag, out_flag;
 
 static inline void write_hist(void) {
-	/* write out program to file if applicable */
-	if (ofile) {
-		fwrite(actual.final, strlen(actual.final), 1, ofile);
-		fputc('\n', ofile);
-		fclose(ofile);
-		ofile = NULL;
-	}
+	/* return early if no file open */
+	if (!ofile)
+		return;
+	/* write out program to file */
+	fwrite(actual.final, strlen(actual.final), 1, ofile);
+	fputc('\n', ofile);
+	fflush(ofile);
+	fclose(ofile);
+	ofile = NULL;
 }
 
 static inline void free_buffers(void)
