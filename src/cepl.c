@@ -23,7 +23,7 @@ static struct prog_src {
 	char *funcs;
 	char *body;
 	char *final;
-	struct str_list history;
+	struct str_list hist;
 	struct flag_list flags;
 } user, actual;
 
@@ -116,15 +116,15 @@ static inline void free_buffers(void)
 	if (actual.flags.list)
 		free(actual.flags.list);
 	/* free char ** vectors */
-	if (user.history.list) {
-		if (user.history.list[user.history.cnt - 1])
-			append_str(&user.history, NULL, 0);
-		free_argv(user.history.list);
+	if (user.hist.list) {
+		if (user.hist.list[user.hist.cnt - 1])
+			append_str(&user.hist, NULL, 0);
+		free_argv(user.hist.list);
 	}
-	if (actual.history.list) {
-		if (actual.history.list[actual.history.cnt - 1])
-			append_str(&actual.history, NULL, 0);
-		free_argv(actual.history.list);
+	if (actual.hist.list) {
+		if (actual.hist.list[actual.hist.cnt - 1])
+			append_str(&actual.hist, NULL, 0);
+		free_argv(actual.hist.list);
 	}
 	if (cc_argv)
 		free_argv(cc_argv);
@@ -132,13 +132,13 @@ static inline void free_buffers(void)
 	actual.body = NULL;
 	user.final = NULL;
 	actual.final = NULL;
-	user.history.list = NULL;
-	actual.history.list = NULL;
+	user.hist.list = NULL;
+	actual.hist.list = NULL;
 	user.flags.list = NULL;
 	actual.flags.list = NULL;
 	cc_argv = NULL;
-	user.history.cnt = 0;
-	actual.history.cnt = 0;
+	user.hist.cnt = 0;
+	actual.hist.cnt = 0;
 	user.flags.cnt = 0;
 	actual.flags.cnt = 0;
 }
@@ -174,8 +174,8 @@ static inline void init_buffers(void)
 	memcpy(user.body, prog_start, strlen(prog_start) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
-	init_list(&user.history, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&actual.history, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&user.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&actual.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_flag_list(&user.flags);
 	init_flag_list(&actual.flags);
 }
@@ -197,8 +197,8 @@ static inline void resize_buffer(char **buf, size_t offset)
 
 static inline void build_funcs(void)
 {
-	append_str(&user.history, user.funcs, 0);
-	append_str(&actual.history, actual.funcs, 0);
+	append_str(&user.hist, user.funcs, 0);
+	append_str(&actual.hist, actual.funcs, 0);
 	append_flag(&user.flags, NOT_IN_MAIN);
 	append_flag(&actual.flags, NOT_IN_MAIN);
 	/* generate function buffers */
@@ -210,8 +210,8 @@ static inline void build_funcs(void)
 
 static inline void build_body(void)
 {
-	append_str(&user.history, user.body, 0);
-	append_str(&actual.history, actual.body, 0);
+	append_str(&user.hist, user.body, 0);
+	append_str(&actual.hist, actual.body, 0);
 	append_flag(&user.flags, IN_MAIN);
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
@@ -236,15 +236,15 @@ static inline void pop_history(struct prog_src *prog)
 	switch(prog->flags.list[prog->flags.cnt - 1]) {
 	case NOT_IN_MAIN:
 		prog->flags.cnt--;
-		prog->history.cnt--;
-		memcpy(prog->funcs, prog->history.list[prog->history.cnt], strlen(prog->history.list[prog->history.cnt]) + 1);
-		free(prog->history.list[prog->history.cnt]);
+		prog->hist.cnt--;
+		memcpy(prog->funcs, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
+		free(prog->hist.list[prog->hist.cnt]);
 		break;
 	case IN_MAIN:
 		prog->flags.cnt--;
-		prog->history.cnt--;
-		memcpy(prog->body, prog->history.list[prog->history.cnt], strlen(prog->history.list[prog->history.cnt]) + 1);
-		free(prog->history.list[prog->history.cnt]);
+		prog->hist.cnt--;
+		memcpy(prog->body, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
+		free(prog->hist.list[prog->hist.cnt]);
 		break;
 	case EMPTY: /* fallthrough */
 	default:; /* noop */
@@ -395,8 +395,10 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
-				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL))
+				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL)) {
+					cleanup();
 					err(EXIT_FAILURE, "%s", "failed to create output file");
+				}
 				break;
 
 			/* toggle library parsing */
@@ -507,10 +509,8 @@ int main(int argc, char *argv[])
 			printf("\n%s:\n\n%s\n", argv[0], user.final);
 		/* print output and exit code */
 		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
-		if (line) {
+		if (line)
 			free(line);
-			line = NULL;
-		}
 	}
 
 	cleanup();
