@@ -23,6 +23,16 @@ matrix:
             - clang-4.0
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-4.0 CXX=clang++-4.0"
+    # works on Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-snapshot
+          packages:
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
 
 before_install:
     - eval "${MATRIX_EVAL}"
