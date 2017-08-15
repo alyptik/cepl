@@ -8,12 +8,11 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 LD := $(CC)
-TARGET_ARCH ?= -march=x86-64 -mtune=generic
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough -Wno-unused-parameter -pedantic-errors
-LDFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -Wl,-O1,-zrelro,-znow,--sort-common,--as-needed
+LDFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -Wl,-O1,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
-DEBUG := -Og -ggdb
+DEBUG := -O1 -ggdb
 RELEASE := -O2
 TARGET := cepl
 MANPAGE := cepl.7
@@ -29,15 +28,15 @@ TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 all: $(TARGET) check
 
 %:
-	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter %.o,$^) -o $@
+	$(LD) $(LDFLAGS) $(filter %.o,$^) $(LIBS) -o $@
 
 %.o:
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $(filter %.c,$^) -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(filter %.c,$^) -o $@
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
 debug: $(OBJ)
-	$(LD) $(LIBS) $(LDFLAGS) $(TARGET_ARCH) $(filter src/%.o,$^) -o $(TARGET)
+	$(LD) $(LDFLAGS) $(filter src/%.o,$^) $(LIBS) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): LDFLAGS := $(RELEASE) $(LDFLAGS)
@@ -52,7 +51,7 @@ $(OBJ): %.o: %.c $(HDR)
 $(TOBJ): %.o: %.c $(HDR)
 
 check test: tests
-	./t/testreadline <<<"test string."
+	printf "test string\n" | ./t/testreadline
 	./t/testcompile
 	./t/testparseopts
 
@@ -72,7 +71,7 @@ uninstall:
 dist: clean
 	@printf "%s\n" "creating dist tarball"
 	@mkdir -pv $(TARGET)/
-	@cp -Rv LICENSE Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
+	@cp -Rv LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
 	@rm -rfv $(TARGET)/
 

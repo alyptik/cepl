@@ -12,7 +12,7 @@ matrix:
             - gcc-7
             - g++-7
       env:
-        - MATRIX_EVAL="PREFIX=~/.local && CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-7 CXX=g++-7"
     # works on Trusty
     - os: linux
       addons:
@@ -22,12 +22,12 @@ matrix:
           packages:
             - clang-4.0
       env:
-        - MATRIX_EVAL="PREFIX=~/.local && CC=clang-4.0 && CXX=clang++-4.0"
+        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-4.0 CXX=clang++-4.0"
 
 before_install:
     - eval "${MATRIX_EVAL}"
     - sudo apt-get update -qq
-    - sudo apt-get install -qq elfutils libelf-dev linux-headers-generic linux-libc-dev
+    - sudo apt-get install -qq elfutils libelf-dev libreadline-dev linux-headers-generic linux-libc-dev
     # Generate the header since one is missing on the Travis instance
     - sudo mkdir -p /usr/include/linux
     - printf "%s\n" \
