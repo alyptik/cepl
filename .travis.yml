@@ -28,7 +28,8 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-snapshot
+            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
+            - keyurl: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-5.0
       env:
