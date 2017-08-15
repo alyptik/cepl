@@ -10,7 +10,7 @@
 
 int main (void)
 {
-	FILE *ofile = NULL;
+	FILE volatile *ofile = NULL;
 	int argc = 0;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",

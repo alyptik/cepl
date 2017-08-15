@@ -62,7 +62,7 @@ static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
 static char *line = NULL, *tok_buf = NULL;
 /* output file */
-static FILE *ofile = NULL;
+static FILE volatile *ofile = NULL;
 /* compiler arg array */
 static char **cc_argv = NULL;
 /* readline history variables */
@@ -87,10 +87,11 @@ static inline void write_hist(void) {
 	if (!ofile)
 		return;
 	/* write out program to file */
-	fwrite(actual.final, strlen(actual.final), 1, ofile);
-	fputc('\n', ofile);
-	fflush(ofile);
-	fclose(ofile);
+	FILE *output = (FILE *)ofile;
+	fwrite(actual.final, strlen(actual.final), 1, output);
+	fputc('\n', output);
+	fflush(output);
+	fclose(output);
 	ofile = NULL;
 }
 
@@ -114,18 +115,16 @@ static inline void free_buffers(void)
 	if (actual.flags.list)
 		free(actual.flags.list);
 	/* free char ** vectors */
+	if (cc_argv)
+		free_argv(cc_argv);
 	if (user.hist.list) {
-		if (user.hist.list[user.hist.cnt - 1])
-			append_str(&user.hist, NULL, 0);
+		append_str(&user.hist, NULL, 0);
 		free_argv(user.hist.list);
 	}
 	if (actual.hist.list) {
-		if (actual.hist.list[actual.hist.cnt - 1])
-			append_str(&actual.hist, NULL, 0);
+		append_str(&actual.hist, NULL, 0);
 		free_argv(actual.hist.list);
 	}
-	if (cc_argv)
-		free_argv(cc_argv);
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;

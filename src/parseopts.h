@@ -69,14 +69,14 @@ struct flag_list {
 	enum src_flag *list;
 };
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile);
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);
 void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 
 static inline size_t free_argv(char **argv)
 {
-	register size_t count;
-	if (!argv || !argv[0])
+	size_t count;
+	if (!argv && !(argv[0]))
 		return -1;
 	for (count = 0; argv[count]; count++)
 		free(argv[count]);
@@ -86,8 +86,6 @@ static inline size_t free_argv(char **argv)
 
 static inline void init_list(struct str_list *list_struct, char *init_str)
 {
-	if (list_struct->list)
-		free(list_struct->list);
 	list_struct->cnt = 0;
 	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");

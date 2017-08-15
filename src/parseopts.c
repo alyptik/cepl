@@ -43,8 +43,9 @@ static char *const warn_list[] = {
 static int option_index = 0;
 static char *tmp_arg;
 /* compiler arguments and library list structs */
-static struct str_list cc_list, lib_list, sym_list;
-
+static struct str_list cc_list = {.cnt = 0, .list = NULL};
+static struct str_list lib_list = {.cnt = 0, .list = NULL};
+static struct str_list sym_list = {.cnt = 0, .list = NULL};
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -53,11 +54,10 @@ extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile)
 {
 	int opt;
 	char *out_file = NULL;
-
 	/* cleanup previous allocations */
 	if (cc_list.list)
 		free_argv(cc_list.list);
@@ -65,8 +65,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 		free_argv(ld_list.list);
 	if (lib_list.list)
 		free_argv(lib_list.list);
-
-	*ofile = NULL;
 	lib_list.cnt = 0, cc_list.cnt = 0, comp_list.cnt = 0, ld_list.cnt = 0;
 	cc_list.list = NULL, lib_list.list = NULL, sym_list.list = NULL;
 	/* don't print an error if option not found */
@@ -147,8 +145,10 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **ofile)
 	}
 
 	/* output file flag */
-	if (out_flag) {
-		if ((*ofile = fopen(out_file, "w")) == NULL)
+	if (out_flag && out_file) {
+		if (*ofile)
+			fclose((FILE *)*ofile);
+		if (!(*ofile = fopen(out_file, "w")))
 			err(EXIT_FAILURE, "%s", "failed to create output file");
 	}
 
