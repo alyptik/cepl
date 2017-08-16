@@ -8,6 +8,6 @@
 #ifndef VARS_H
 #define VARS_H 1
 
-
+int print_vars(char *const src, char *const cc_args[], char *const exec_args[]);
 
 #endif
