@@ -26,13 +26,13 @@ size_t extract_id(char *const line, char **id, size_t *offset)
 		return 0;
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s", "failed to compile regex");
-	/* non-zero return means no match */
+	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1)
 		return 0;
 	if ((*id= malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "failed to allocate space for captured string");
 
-	/* set the output paramaters and return the offset */
+	/* set the output parameter and return the offset */
 	memset(*id, 0, match[1].rm_eo - match[1].rm_so + 1);
 	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
 	*offset = match[1].rm_so;
