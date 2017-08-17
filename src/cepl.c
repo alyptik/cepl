@@ -352,7 +352,8 @@ int main(int argc, char *argv[])
 	while ((line = read_line()) && *line) {
 		fflush(stdout);
 		/* strip newlines */
-		line[strcspn(line, "\f\r\n\0")] = '\0';
+		if ((tok_buf = strpbrk(line, "\f\r\n\0")) != NULL)
+			tok_buf[0] = '\0';
 		/* dont add blank lines to history */
 		if (strlen(line) > 0) {
 			add_history(line);
