@@ -16,6 +16,8 @@ char *generator(char const *text, int state);
 
 static inline char **completer(char const *text, int start, int end)
 {
+	/* silence -Wunused-parameter warning */
+	(void)start, (void)end;
 	/* always list completions */
 	rl_bind_key('\t', &rl_complete);
 	/* don't append space after completions */
