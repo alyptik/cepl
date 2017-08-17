@@ -24,16 +24,19 @@ matrix:
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-4.0 CXX=clang++-4.0"
     # works on Trusty
-    # - os: linux
-    #   addons:
-    #     apt:
-    #       sources:
-    #         - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
-    #         - keyurl: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-    #       packages:
-    #         - clang-5.0
-    #   env:
-    #     - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main"
+            - keyurl: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          packages:
+            - gcc-7
+            - g++-7
+            - clang-6.0
+      env:
+        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-6.0 CXX=clang++-6.0"
 
 before_install:
     - eval "${MATRIX_EVAL}"
