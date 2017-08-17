@@ -11,15 +11,11 @@
 #include <err.h>
 #include <errno.h>
 #include <regex.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-
-/* silence linter */
-int regcomp(regex_t *preg, char const *regex, int cflags);
-int regexec(regex_t const *preg, char const *string, size_t nmatch, regmatch_t pmatch[], int eflags);
-size_t regerror(int errcode, regex_t const *preg, char *errbuf, size_t errbuf_size);
-void regfree(regex_t *preg);
+#include <sys/mman.h>
 
 enum var_type {
 	T_CHR,
@@ -27,7 +23,7 @@ enum var_type {
 	T_INT,
 	T_UINT,
 	T_DBL,
-	T_UDBL,
+	T_LDBL,
 	T_PTR,
 	T_OTHER,
 };
@@ -35,23 +31,36 @@ enum var_type {
 struct var_list {
 	int cnt;
 	struct {
-		size_t sz;
+		bool is_arr;
+		size_t size;
 		size_t nmemb;
 		char const *key;
 		enum var_type type;
-		/* hack to allow flexible array member to be part of a union */
 		union {
-			long long int_val[1];
-			unsigned long long uint_val[1];
-			long double flt_val[1];
-			void *ptr_val[1];
+			long long int_val;
+			unsigned long long uint_val;
+			double dbl_val;
+			long double ldbl_val;
+			void *ptr_val;
 		};
 	} *list;
 };
 
-enum var_type extract_type(char const *line, char const *id);
-size_t extract_id(char const *line, char **id, size_t *offset);
-int append_var(struct var_list *list, enum var_type type, char const *key);
+/* silence linter */
+int regcomp(regex_t *preg, char const *regex, int cflags);
+int regexec(regex_t const *preg, char const *string, size_t nmatch, regmatch_t pmatch[], int eflags);
+size_t regerror(int errcode, regex_t const *preg, char *errbuf, size_t errbuf_size);
+void regfree(regex_t *preg);
+void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+
+/* prototypes */
 int find_vars(struct var_list *list, char const *src, char *const cc_args[], char *const exec_args[]);
+
+static inline void init_var_list(struct var_list *list_struct)
+{
+	if ((list_struct->list = malloc((sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
+		err(EXIT_FAILURE, "%s", "error during initial var_list malloc()");
+	list_struct->list = NULL;
+}
 
 #endif
