@@ -54,19 +54,14 @@ extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile)
+char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE **ofile)
 {
 	int opt;
 	char *out_file = NULL;
 	/* cleanup previous allocations */
-	if (cc_list.list)
-		free_argv(cc_list.list);
-	if (ld_list.list)
-		free_argv(ld_list.list);
-	if (lib_list.list)
-		free_argv(lib_list.list);
-	lib_list.cnt = 0, cc_list.cnt = 0, comp_list.cnt = 0, ld_list.cnt = 0;
-	cc_list.list = NULL, lib_list.list = NULL, sym_list.list = NULL;
+	free_str_list(&ld_list);
+	free_str_list(&lib_list);
+	free_str_list(&comp_list);
 	/* don't print an error if option not found */
 	opterr = 0;
 
@@ -75,6 +70,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
 	init_list(&ld_list, "gcc");
 	init_list(&lib_list, NULL);
+	init_list(&comp_list, NULL);
 
 	/* re-zero cc_list.list[0] so -c argument can be added */
 	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
@@ -174,12 +170,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 
 	/* parse ELF shared libraries for completions */
 	if (!parse_flag) {
-		if (comp_list.list) {
-			free_argv(comp_list.list);
-			comp_list.cnt = 0;
-			comp_list.list = NULL;
-		}
-		init_list(&comp_list, NULL);
 		init_list(&sym_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
 		for (register size_t i = 0; comp_arg_list[i]; i++)
@@ -187,9 +177,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 		for (register size_t i = 0; sym_list.list[i]; i++)
 			append_str(&comp_list, sym_list.list[i], 0);
 		append_str(&comp_list, NULL, 0);
-		free_argv(sym_list.list);
-		sym_list.cnt = 0;
-		sym_list.list = NULL;
+		append_str(&sym_list, NULL, 0);
+		free_str_list(&sym_list);
 	}
 
 	return cc_list.list;

@@ -70,19 +70,40 @@ FILE *fdopen(int fd, const char *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* prototypes */
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);
+char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE **ofile);
 void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 
 static inline size_t free_argv(char **argv)
 {
 	size_t count;
-	if (!argv && !(argv[0]))
+	if (!argv || !(argv[0]))
 		return -1;
 	for (count = 0; argv[count]; count++)
 		free(argv[count]);
 	free(argv);
 	return count;
+}
+
+static inline ssize_t free_str_list(struct str_list *plist)
+{
+	ssize_t null_cnt = 0;
+	/* return -1 if passed NULL pointers */
+	if (!plist || !plist->list)
+		return -1;
+	for (ssize_t i = 0; i < plist->cnt; i++) {
+		if (!plist->list[i]) {
+			/* if NULL pointer increment counter */
+			null_cnt++;
+			continue;
+		}
+		free(plist->list[i]);
+		plist->list[i] = NULL;
+	}
+	free(plist->list);
+	plist->list = NULL;
+	plist->cnt = 0;
+	return null_cnt;
 }
 
 static inline void init_list(struct str_list *list_struct, char *init_str)
@@ -106,7 +127,7 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 	if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s[%d] %s", "error during list_ptr", list_struct->cnt - 1, "malloc()");
 	list_struct->list = temp;
-	if (!str) {
+	if (str == NULL) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
 		if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(str) + padding + 1)) == NULL)

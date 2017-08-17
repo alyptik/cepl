@@ -64,8 +64,6 @@ static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n"
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
 static char *line = NULL, *tok_buf = NULL;
-/* output file */
-static FILE volatile *ofile = NULL;
 /* compiler arg array */
 static char **cc_argv = NULL;
 /* readline history variables */
@@ -79,6 +77,8 @@ static struct prog_src {
 	struct str_list hist;
 	struct flag_list flags;
 } user, actual;
+/* output file */
+static volatile FILE *ofile = NULL;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -101,6 +101,7 @@ static inline void write_hist(void) {
 static inline void free_buffers(void)
 {
 	write_hist();
+
 	if (line)
 		free(line);
 	if (user.funcs)
@@ -119,38 +120,25 @@ static inline void free_buffers(void)
 		free(user.flags.list);
 	if (actual.flags.list)
 		free(actual.flags.list);
-	/* free char ** vectors */
+
+	/* free vectors */
 	if (cc_argv)
 		free_argv(cc_argv);
-	if (user.hist.list) {
-		append_str(&user.hist, NULL, 0);
-		free_argv(user.hist.list);
-	}
-	if (actual.hist.list) {
-		append_str(&actual.hist, NULL, 0);
-		free_argv(actual.hist.list);
-	}
+	free_str_list(&user.hist);
+	free_str_list(&actual.hist);
+
 	/* set pointers to NULL */
 	line = NULL;
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;
 	actual.final = NULL;
-	user.hist.list = NULL;
-	actual.hist.list = NULL;
-	user.flags.list = NULL;
-	actual.flags.list = NULL;
 	cc_argv = NULL;
-	user.hist.cnt = 0;
-	actual.hist.cnt = 0;
-	user.flags.cnt = 0;
-	actual.flags.cnt = 0;
 }
 
 static inline void cleanup(void)
 {
-	if (comp_list.list)
-		free_argv(comp_list.list);
+	free_str_list(&comp_list);
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
 		warn("%s %s", "error writing history to ", hist_file);
@@ -509,6 +497,7 @@ int main(int argc, char *argv[])
 		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
 	}
 
+	free_buffers();
 	cleanup();
 	return 0;
 }
