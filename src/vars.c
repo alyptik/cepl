@@ -17,7 +17,7 @@ enum var_type extract_type(char const *line, char const *id)
 		return 0;
 	/* first/fourth captures are ignored */
 	char *regex, *type;
-	char beg[] = "^(|.*[\(\{;[:blank:]]+)"
+	char beg[] = "^(|.*[\\(\\{;[:blank:]]+)"
 		"(struct|union|char|double|float|int|long|short|unsigned|void)"
 		"(.*|[[:blank:]]+)(";
 
@@ -25,7 +25,7 @@ enum var_type extract_type(char const *line, char const *id)
 	if ((regex = malloc(strlen(id) + sizeof beg + 5)) == NULL)
 		err(EXIT_FAILURE, "%s", "failed to allocate space for regex");
 	regex = strcat(regex, beg);
-	regex = strcat(regex, ")(\[)");
+	regex = strcat(regex, ")(\\[)");
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 
