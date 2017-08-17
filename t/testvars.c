@@ -19,9 +19,10 @@ int main(void)
 	};
 	struct var_list vars = { 0, NULL };
 
-	plan(1);
+	plan(2);
 
 	ok(find_vars(&vars, src, cc_args, argv), "succeed finding variable values.");
+	ok(extract_type("int foo = 5", "foo") == T_INT, "succeed finding variable values.");
 
 	done_testing();
 }
