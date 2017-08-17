@@ -30,6 +30,7 @@ enum var_type {
 	T_UDBL,
 	T_PTR,
 	T_ARR,
+	T_OTHER,
 };
 
 struct var_list {

@@ -11,7 +11,7 @@
 enum var_type extract_type(char const *line, char const *id)
 {
 
-	return T_INT;
+	return T_OTHER;
 }
 
 size_t extract_id(char const *line, char **id, size_t *offset)
