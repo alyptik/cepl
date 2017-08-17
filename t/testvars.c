@@ -22,6 +22,7 @@ int main(void)
 	plan(2);
 
 	ok(find_vars(&vars, src, cc_args, argv), "succeed finding variable values.");
+	printf("%d\n", extract_type("int foo = 5", "foo"));
 	ok(extract_type("int foo = 5", "foo") == T_INT, "succeed finding variable values.");
 
 	done_testing();

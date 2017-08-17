@@ -14,7 +14,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regmatch_t match[6];
 	/* return early if passed NULL pointers */
 	if (!line || !id)
-		return 0;
+		return T_OTHER;
 	/* first/fourth captures are ignored */
 	char *regex, *type;
 	char beg[] = "^(|.*[\\(\\{;[:blank:]]+)"
@@ -24,15 +24,18 @@ enum var_type extract_type(char const *line, char const *id)
 	/* append identifier to regex */
 	if ((regex = malloc(strlen(id) + sizeof beg + 5)) == NULL)
 		err(EXIT_FAILURE, "%s", "failed to allocate space for regex");
-	regex = strcat(regex, beg);
-	regex = strcat(regex, ")(\\[)");
+	memset(regex, 0, strlen(id) + sizeof beg + 5);
+	memcpy(regex, beg, sizeof beg - 1);
+	memcpy(regex + sizeof beg - 1, id, strlen(id));
+	memcpy(regex + sizeof beg - 1 + strlen(id), ")(\\[)", strlen(")(\\[)") + 1);
+	printf("%s\n", regex);
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 2, match, 0) || match[3].rm_so == -1) {
+	if (regexec(&reg, line, 6, match, 0) || match[5].rm_so == -1) {
 		free(regex);
-		return 0;
+		return T_OTHER;
 	}
 	if ((type = malloc(match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "failed to allocate space for captured type");
@@ -52,7 +55,7 @@ enum var_type extract_type(char const *line, char const *id)
 	}
 
 	/* pointer */
-	if (regcomp(&reg, "(\\*|\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 	if (regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
