@@ -17,8 +17,8 @@ struct str_list ld_list = { 0, NULL };
 
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {
-	"gcc", "-xassembler", "/proc/self/fd/0",
-	"-o/proc/self/fd/1", NULL
+	"gcc", "-xassembler", "/dev/stdin",
+	"-o/dev/stdout", NULL
 };
 
 extern char **environ;

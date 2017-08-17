@@ -28,14 +28,14 @@ static struct option long_opts[] = {
 static char *const cc_arg_list[] = {
 	"-O0", "-pipe", "-fPIC", "-std=c11",
 	"-Wno-unused-parameter",
-	"-S", "-xc", "/proc/self/fd/0",
-	"-o", "/proc/self/fd/1", NULL
+	"-S", "-xc", "/dev/stdin",
+	"-o", "/dev/stdout", NULL
 };
 static char *const ld_arg_list[] = {
 	"-O0", "-pipe", "-fPIC", "-std=c11",
 	"-Wno-unused-parameter",
-	"-xassembler", "/proc/self/fd/0",
-	"-o", "/proc/self/fd/1", NULL
+	"-xassembler", "/dev/stdin",
+	"-o", "/dev/stdout", NULL
 };
 static char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
@@ -174,8 +174,11 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 
 	/* parse ELF shared libraries for completions */
 	if (!parse_flag) {
-		if (comp_list.list)
+		if (comp_list.list) {
 			free_argv(comp_list.list);
+			comp_list.cnt = 0;
+			comp_list.list = NULL;
+		}
 		init_list(&comp_list, NULL);
 		init_list(&sym_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
@@ -185,6 +188,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 			append_str(&comp_list, sym_list.list[i], 0);
 		append_str(&comp_list, NULL, 0);
 		free_argv(sym_list.list);
+		sym_list.cnt = 0;
+		sym_list.list = NULL;
 	}
 
 	return cc_list.list;
