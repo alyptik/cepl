@@ -12,6 +12,7 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
+/* prototypes */
 char *generator(char const *text, int state);
 
 static inline char **completer(char const *text, int start, int end)

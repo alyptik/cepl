@@ -52,11 +52,6 @@ enum src_flag {
 	IN_MAIN = 2,
 };
 
-/* silence linter */
-int getopt(int argc, char * const argv[], const char *optstring);
-FILE *fdopen(int fd, const char *mode);
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
-
 /* struct definition for NULL terminated string array */
 struct str_list {
 	int cnt;
@@ -69,6 +64,12 @@ struct flag_list {
 	enum src_flag *list;
 };
 
+/* silence linter */
+int getopt(int argc, char * const argv[], const char *optstring);
+FILE *fdopen(int fd, const char *mode);
+ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+
+/* prototypes */
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);
 void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
