@@ -27,8 +27,7 @@ enum var_type extract_type(char const *line, char const *id)
 	memset(regex, 0, strlen(id) + sizeof beg + 5);
 	memcpy(regex, beg, sizeof beg - 1);
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
-	memcpy(regex + sizeof beg - 1 + strlen(id), ")(\\[)", strlen(")(\\[)") + 1);
-	printf("%s\n", regex);
+	memcpy(regex + sizeof beg - 1 + strlen(id), ")(\\[*)", strlen(")(\\[*)") + 1);
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 
@@ -48,7 +47,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* string */
 	if (regcomp(&reg, "char \\*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_STR;
@@ -57,7 +56,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* pointer */
 	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_PTR;
@@ -66,7 +65,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* char */
 	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_CHR;
@@ -75,7 +74,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* long double */
 	if (regcomp(&reg, "long double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_LDBL;
@@ -84,7 +83,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* double */
 	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_DBL;
@@ -93,7 +92,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* unsigned integral */
 	if (regcomp(&reg, "unsigned", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_UINT;
@@ -102,7 +101,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* signed integral */
 	if (regcomp(&reg, "(short|int|long)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
-	if (regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		return T_INT;
