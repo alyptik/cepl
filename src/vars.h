@@ -29,20 +29,22 @@ enum var_type {
 	T_DBL,
 	T_UDBL,
 	T_PTR,
-	T_ARR,
 	T_OTHER,
 };
 
 struct var_list {
 	int cnt;
 	struct {
-		enum var_type type;
+		size_t sz;
+		size_t nmemb;
 		char const *key;
+		enum var_type type;
+		/* hack to allow the flexible array member be part of a union */
 		union {
-			long long int_val;
-			unsigned long long uint_val;
-			long double flt_val;
-			void *ptr_val;
+			long long int_val[1];
+			unsigned long long uint_val[1];
+			long double flt_val[1];
+			void *ptr_val[1];
 		};
 	} *list;
 };
