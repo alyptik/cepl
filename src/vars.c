@@ -17,12 +17,20 @@ enum var_type extract_type(char *const line)
 char *extract_id(char *const line)
 {
 	regex_t reg;
-	/* regex_t *reg; */
-	if (regcomp(&reg, "[[:blank::]]+[[:alpha:]_][[:alnum:]_]*[[:blank::]]+=", REG_EXTENDED|REG_ICASE|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s", "failed to compile regex");
+	regmatch_t match[2];
+	char *capture;
+	char regex[] = ".*[^[:alnum:]]+([[:alpha:]_][[:alnum:]_]*)([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*)[^=]*";
 
-	/* regfree(reg); */
-	return NULL;
+	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s", "failed to compile regex");
+	/* non-zero means no match */
+	if (regexec(&reg, line, 2, match, 0))
+		return NULL;
+	if ((capture = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
+		err(EXIT_FAILURE, "%s", "failed to allocate captured string");
+	memset(capture, 0, match[1].rm_eo - match[1].rm_so + 1);
+	memcpy(capture, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
+	return capture;
 }
 
 int append_var(struct var_list *list, enum var_type type, char const *key)
