@@ -9,7 +9,7 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD := $(CC)
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -Wimplicit-fallthrough -Wno-unused-parameter -pedantic-errors
+CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -std=c11 -Wall -Wextra -pedantic-errors
 LDFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -Wl,-O1,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
 DEBUG := -Og -ggdb
