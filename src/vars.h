@@ -14,8 +14,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <linux/memfd.h>
+#include "compile.h"
 
 enum var_type {
 	T_CHR,
