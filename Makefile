@@ -54,6 +54,7 @@ check test: tests
 	printf "test string\n" | ./t/testreadline
 	./t/testcompile
 	./t/testparseopts
+	./t/testvars
 
 tests: $(TESTS)
 
