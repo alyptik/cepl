@@ -14,9 +14,14 @@ enum var_type extract_type(char *const line)
 	return T_INT;
 }
 
-char *extract_str(char *const line)
+char *extract_id(char *const line)
 {
+	regex_t reg;
+	/* regex_t *reg; */
+	if (regcomp(&reg, "[[:space::]]+[[:alpha:]_][[:alnum:]_]*[[:space::]]+=", REG_EXTENDED|REG_ICASE|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s", "failed to compile regex");
 
+	/* regfree(reg); */
 	return NULL;
 }
 
