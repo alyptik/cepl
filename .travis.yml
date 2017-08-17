@@ -9,10 +9,23 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - gcc-6
+            - g++-6
+      env:
+        - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-6 CXX=g++-6"
+
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
             - gcc-7
             - g++-7
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-7 CXX=g++-7"
+
     # works on Trusty
     - os: linux
       addons:
@@ -23,6 +36,7 @@ matrix:
             - clang-4.0
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-4.0 CXX=clang++-4.0"
+
     # works on Trusty
     - os: linux
       addons:
@@ -32,8 +46,6 @@ matrix:
             - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main"
             - keyurl: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
-            - gcc-7
-            - g++-7
             - clang-6.0
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-6.0 CXX=clang++-6.0"
