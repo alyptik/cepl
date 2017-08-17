@@ -47,7 +47,7 @@ struct var_list {
 };
 
 enum var_type extract_type(char *const line);
-char *extract_id(char *const line);
+size_t extract_id(char *const line, char **id, size_t *offset);
 int append_var(struct var_list *list, enum var_type type, char const *key);
 int find_vars(struct var_list *list, char const *src, char *const cc_args[], char *const exec_args[]);
 
