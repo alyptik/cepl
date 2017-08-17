@@ -43,9 +43,9 @@ static char *const warn_list[] = {
 static int option_index = 0;
 static char *tmp_arg;
 /* compiler arguments and library list structs */
-static struct str_list cc_list = {.cnt = 0, .list = NULL};
-static struct str_list lib_list = {.cnt = 0, .list = NULL};
-static struct str_list sym_list = {.cnt = 0, .list = NULL};
+static struct str_list cc_list;
+static struct str_list lib_list;
+static struct str_list sym_list;
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;

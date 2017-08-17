@@ -78,7 +78,7 @@ static struct prog_src {
 	char *final;
 	struct str_list hist;
 	struct flag_list flags;
-} user = {NULL, NULL, NULL, {0, NULL}, {0, NULL}}, actual = {NULL, NULL, NULL, {0, NULL}, {0, NULL}};
+} user, actual;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -101,6 +101,8 @@ static inline void write_hist(void) {
 static inline void free_buffers(void)
 {
 	write_hist();
+	if (line)
+		free(line);
 	if (user.funcs)
 		free(user.funcs);
 	if (actual.funcs)
@@ -128,6 +130,8 @@ static inline void free_buffers(void)
 		append_str(&actual.hist, NULL, 0);
 		free_argv(actual.hist.list);
 	}
+	/* set pointers to NULL */
+	line = NULL;
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;
@@ -143,6 +147,17 @@ static inline void free_buffers(void)
 	actual.flags.cnt = 0;
 }
 
+static inline void cleanup(void)
+{
+	if (comp_list.list)
+		free_argv(comp_list.list);
+	/* append history to history file */
+	if (append_history(nlines, hist_file))
+		warn("%s %s", "error writing history to ", hist_file);
+	if (isatty(STDIN_FILENO))
+		printf("\n%s\n\n", "Terminating program.");
+}
+
 static inline void init_buffers(void)
 {
 	/* user is truncated source for display */
@@ -155,11 +170,7 @@ static inline void init_buffers(void)
 	actual.final = malloc(strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
 	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
-		free_buffers();
-		if (line)
-			free(line);
-		if (comp_list.list)
-			free_argv(comp_list.list);
+		cleanup();
 		err(EXIT_FAILURE, "error allocating initial pointers at %d", __LINE__);
 	}
 	/* zero source buffers */
@@ -185,11 +196,7 @@ static inline void resize_buffer(char **buf, size_t offset)
 	char *tmp;
 	/* current length + line length + extra characters + \0 */
 	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
-		free_buffers();
-		if (line)
-			free(line);
-		if (comp_list.list)
-			free_argv(comp_list.list);
+		cleanup();
 		err(EXIT_FAILURE, "error during resize_buffer() at line %d", __LINE__);
 	}
 	*buf = tmp;
@@ -251,20 +258,6 @@ static inline void pop_history(struct prog_src *prog)
 	}
 }
 
-static inline void cleanup(void)
-{
-	free_buffers();
-	if (line)
-		free(line);
-	if (comp_list.list)
-		free_argv(comp_list.list);
-	/* append history to history file */
-	if (append_history(nlines, hist_file))
-		warn("%s %s", "error writing history to ", hist_file);
-	if (isatty(STDIN_FILENO))
-		printf("\n%s\n\n", "Terminating program.");
-}
-
 static inline void sig_handler(int sig)
 {
 	cleanup();
@@ -296,9 +289,12 @@ static inline void reg_handlers(void)
 		warn("%s", "unable to register SIGTERM handler");
 }
 
-static inline char *read_line(void) {
-	if (line)
+static inline char *read_line(void)
+{
+	if (line) {
 		free(line);
+		line = NULL;
+	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
 		line = readline("\n>>> ");
@@ -511,10 +507,6 @@ int main(int argc, char *argv[])
 			printf("\n%s:\n\n%s\n", argv[0], user.final);
 		/* print output and exit code */
 		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
-		if (line) {
-			free(line);
-			line = NULL;
-		}
 	}
 
 	cleanup();
