@@ -18,27 +18,15 @@ size_t regerror(int errcode, regex_t const *preg, char *errbuf, size_t errbuf_si
 void regfree(regex_t *preg);
 
 enum var_type {
-	T_CHAR,
+	T_CHR,
 	T_STR,
 	T_INT,
+	T_UINT,
 	T_DBL,
+	T_UDBL,
 	T_PTR,
 	T_ARR,
-	T_STRUCT,
 };
-
-/*
- * struct var_meta {
- *         enum var_type type;
- *         char const *key;
- *         void *val;
- *         union {
- *                 long long int_val;
- *                 long double flt_val;
- *                 void *ptr_val;
- *         };
- * };
- */
 
 struct var_list {
 	int cnt;
@@ -47,6 +35,7 @@ struct var_list {
 		char const *key;
 		union {
 			long long int_val;
+			unsigned long long uint_val;
 			long double flt_val;
 			void *ptr_val;
 		};
