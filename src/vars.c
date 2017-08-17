@@ -8,7 +8,7 @@
 #include "compile.h"
 #include "vars.h"
 
-static inline enum var_type extract_type(char const *line, char const *id)
+enum var_type extract_type(char const *line, char const *id)
 {
 	regex_t reg;
 	regmatch_t match[6];
@@ -111,7 +111,7 @@ static inline enum var_type extract_type(char const *line, char const *id)
 	return T_OTHER;
 }
 
-static inline size_t extract_id(char const *line, char **id, size_t *offset)
+size_t extract_id(char const *line, char **id, size_t *offset)
 {
 	regex_t reg;
 	regmatch_t match[2];

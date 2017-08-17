@@ -57,6 +57,8 @@ void regfree(regex_t *preg);
 void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
 
 /* prototypes */
+enum var_type extract_type(char const *line, char const *id);
+size_t extract_id(char const *line, char **id, size_t *offset);
 int find_vars(struct var_list *list, char const *src, char *const cc_args[], char *const exec_args[]);
 
 static inline void init_var_list(struct var_list *list_struct)
