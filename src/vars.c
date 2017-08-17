@@ -20,14 +20,13 @@ char *extract_id(char *const line)
 	regmatch_t match[2];
 	char *capture;
 	char regex[] = ".*[^[:alnum:]]+([[:alpha:]_][[:alnum:]_]*)([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*)[^=]*";
-
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s", "failed to compile regex");
 	/* non-zero means no match */
-	if (regexec(&reg, line, 2, match, 0))
+	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1)
 		return NULL;
 	if ((capture = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "failed to allocate captured string");
+		err(EXIT_FAILURE, "%s", "failed to allocate space for captured string");
 	memset(capture, 0, match[1].rm_eo - match[1].rm_so + 1);
 	memcpy(capture, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
 	return capture;
