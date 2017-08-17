@@ -12,9 +12,9 @@
 #include <sys/types.h>
 
 /* silence linter */
-int regcomp(regex_t *preg, const char *regex, int cflags);
-int regexec(const regex_t *preg, const char *string, size_t nmatch, regmatch_t pmatch[], int eflags);
-size_t regerror(int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size);
+int regcomp(regex_t *preg, char const *regex, int cflags);
+int regexec(regex_t const *preg, char const *string, size_t nmatch, regmatch_t pmatch[], int eflags);
+size_t regerror(int errcode, regex_t const *preg, char *errbuf, size_t errbuf_size);
 void regfree(regex_t *preg);
 
 enum var_type {
