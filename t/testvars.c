@@ -17,10 +17,11 @@ int main(void)
 		"-pedantic-errors", "-std=c11", "-S", "-xc",
 		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
 	};
+	struct var_list vars = { 0, NULL };
 
 	plan(1);
 
-	ok(print_vars(src, cc_args, argv), "succeed printing variable's value.");
+	ok(find_vars(&vars, src, cc_args, argv), "succeed finding variable values.");
 
 	done_testing();
 }

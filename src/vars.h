@@ -42,6 +42,9 @@ struct var_list {
 	} *list;
 };
 
-int print_vars(char *const src, char *const cc_args[], char *const exec_args[]);
+enum var_type extract_type(char *const line);
+char *extract_str(char *const line);
+int append_var(struct var_list *list, enum var_type type, char const *key);
+int find_vars(struct var_list *list, char const *src, char *const cc_args[], char *const exec_args[]);
 
 #endif

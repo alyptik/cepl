@@ -26,9 +26,9 @@ extern char **environ;
 /* silence linter */
 long syscall(long number, ...);
 int fexecve(int mem_fd, char *const argv[], char *const envp[]);
-size_t strnlen(const char *s, size_t maxlen);
+size_t strnlen(char const *s, size_t maxlen);
 
-int compile(char *const src, char *const cc_args[], char *const exec_args[])
+int compile(char const *src, char *const cc_args[], char *const exec_args[])
 {
 	if (!src || !cc_args || !exec_args)
 		ERRX("NULL pointer passed to compile()");
