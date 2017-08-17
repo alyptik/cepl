@@ -10,7 +10,104 @@
 
 static inline enum var_type extract_type(char const *line, char const *id)
 {
+	regex_t reg;
+	regmatch_t match[6];
+	/* return early if passed NULL pointers */
+	if (!line || !id)
+		return 0;
+	/* first/fourth captures are ignored */
+	char *regex, *type;
+	char beg[] = "^(|.*[\(\{;[:blank:]]+)"
+		"(struct|union|char|double|float|int|long|short|unsigned|void)"
+		"(.*|[[:blank:]]+)(";
 
+	/* append identifier to regex */
+	if ((regex = malloc(strlen(id) + sizeof beg + 5)) == NULL)
+		err(EXIT_FAILURE, "%s", "failed to allocate space for regex");
+	regex = strcat(regex, beg);
+	regex = strcat(regex, ")(\[)");
+	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+
+	/* non-zero return or -1 value in rm_so means no captures */
+	if (regexec(&reg, line, 2, match, 0) || match[3].rm_so == -1) {
+		free(regex);
+		return 0;
+	}
+	if ((type = malloc(match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
+		err(EXIT_FAILURE, "%s", "failed to allocate space for captured type");
+
+	/* copy matched string */
+	memset(type, 0, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1);
+	memcpy(type, line + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
+	memcpy(type + match[3].rm_eo - match[2].rm_so , line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
+
+	/* string */
+	if (regcomp(&reg, "char \\*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_STR;
+	}
+
+	/* pointer */
+	if (regcomp(&reg, "(\\*|\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_PTR;
+	}
+
+	/* char */
+	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_CHR;
+	}
+
+	/* long double */
+	if (regcomp(&reg, "long double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_LDBL;
+	}
+
+	/* double */
+	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_DBL;
+	}
+
+	/* unsigned integral */
+	if (regcomp(&reg, "unsigned", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_UINT;
+	}
+
+	/* signed integral */
+	if (regcomp(&reg, "(short|int|long)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+	if (regexec(&reg, type, 1, 0, 0)) {
+		free(regex);
+		free(type);
+		return T_INT;
+	}
+
+	/* return fallback type */
+	free(regex);
+	free(type);
 	return T_OTHER;
 }
 
@@ -19,10 +116,13 @@ static inline size_t extract_id(char const *line, char **id, size_t *offset)
 	regex_t reg;
 	regmatch_t match[2];
 	/* second capture is ignored */
-	char regex[] = ".*[^[:alnum:]]+([[:alpha:]_][[:alnum:]_]*)([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*)[^=]*";
+	char regex[] = ".*[^[:alnum:]]+"
+		"([[:alpha:]_][[:alnum:]_]*)"
+		"([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*)"
+		"[^=]*";
 
 	/* return early if passed NULL pointers */
-	if (!id || !offset)
+	if (!line || !id || !offset)
 		return 0;
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s", "failed to compile regex");
@@ -30,7 +130,7 @@ static inline size_t extract_id(char const *line, char **id, size_t *offset)
 	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1)
 		return 0;
 	if ((*id= malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "failed to allocate space for captured string");
+		err(EXIT_FAILURE, "%s", "failed to allocate space for captured id");
 
 	/* set the output parameter and return the offset */
 	memset(*id, 0, match[1].rm_eo - match[1].rm_so + 1);
@@ -39,7 +139,7 @@ static inline size_t extract_id(char const *line, char **id, size_t *offset)
 	return match[1].rm_so;
 }
 
-static inline void append_var(struct var_list *list_struct, bool is_arr, size_t size, size_t nmemb, char const *key, enum var_type type, void **val)
+static inline void append_var(struct var_list *list_struct, size_t size, size_t nmemb, char const *key, enum var_type type, void **val)
 {
 	void *tmp;
 	if (!list_struct || size < 1 || nmemb < 1 || !key || !val)
@@ -47,7 +147,6 @@ static inline void append_var(struct var_list *list_struct, bool is_arr, size_t 
 	if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s %d %s", "error during var_list (cnt = ", list_struct->cnt, ") realloc()");
 	list_struct->list = tmp;
-	list_struct->list[list_struct->cnt - 1].is_arr = is_arr;
 	list_struct->list[list_struct->cnt - 1].size = size;
 	list_struct->list[list_struct->cnt - 1].nmemb = nmemb;
 	list_struct->list[list_struct->cnt - 1].key = key;

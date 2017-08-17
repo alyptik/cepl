@@ -35,7 +35,6 @@ enum var_type {
 struct var_list {
 	int cnt;
 	struct {
-		bool is_arr;
 		size_t size;
 		size_t nmemb;
 		char const *key;
