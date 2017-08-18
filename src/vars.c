@@ -18,7 +18,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* first/fourth captures are ignored */
 	char *regex, *type;
 	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]+)"
-		"(struct|union|char|double|float|int|long|short|unsigned|void)"
+		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
 		"(.*)[[:blank:]](";
 	char end[] = ")(\\[*)";
 
@@ -30,7 +30,7 @@ enum var_type extract_type(char const *line, char const *id)
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
 	memcpy(regex + sizeof beg - 1 + strlen(id), end, sizeof end);
 
-	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
+	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 
 	/* non-zero return or -1 value in rm_so means no captures */
@@ -101,7 +101,7 @@ enum var_type extract_type(char const *line, char const *id)
 	}
 
 	/* signed integral */
-	if (regcomp(&reg, "(short|int|long)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(bool|_Bool|short|int|long)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
