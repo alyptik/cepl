@@ -183,9 +183,9 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	return id_list->cnt;
 }
 
-int print_vars(char const *src, char *const cc_args[], char *const exec_args[])
+int print_vars(char const *src, char *const cc_args[], char *const exec_args[], struct var_list *list)
 {
-	if (!src || !cc_args || !exec_args)
+	if (!src || !cc_args || !exec_args || !list)
 		errx(EXIT_FAILURE, "%s", "NULL pointer passed to find_vars()");
 
 	int mem_fd, status;
@@ -196,12 +196,11 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[])
 	char print_end[] = ");";
 	char *final = NULL, *src_tmp = NULL, *id_tmp = NULL;
 	size_t off = 0;
-	struct var_list list = {0, NULL};
 
 	if (sizeof src_buffer < 2)
 		errx(EXIT_FAILURE, "%s", "empty source string passed to find_vars()");
 
-	init_var_list(&list);
+	init_var_list(list);
 	/* add trailing '\n' */
 	memcpy(src_buffer, src, sizeof src_buffer);
 	src_buffer[sizeof src_buffer - 1] = '\n';
@@ -209,10 +208,10 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[])
 
 	while (extract_id(src_tmp, &id_tmp, &off) != 0) {
 		src_tmp += off;
-		append_var(&list, 16, 1, id_tmp, extract_type(src_tmp, id_tmp));
+		append_var(list, 16, 1, id_tmp, extract_type(src_tmp, id_tmp));
 	}
 
-	if ((final = malloc(sizeof src_buffer + sizeof prog_end + (list.cnt * 16))) == NULL)
+	if ((final = malloc(sizeof src_buffer + sizeof prog_end + (list->cnt * 16))) == NULL)
 		errx(EXIT_FAILURE, "%s", "empty allocating source buffer in find_vars()");
 
 	/* create pipes */
@@ -260,12 +259,12 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[])
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			warnx("%s", "compiler returned non-zero exit code");
 			free(final);
-			free(list.list);
+			free(list->list);
 			return WEXITSTATUS(status);
 		}
 	}
 
 	free(final);
-	free(list.list);
+	free(list->list);
 	return 1;
 }

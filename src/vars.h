@@ -58,7 +58,7 @@ struct var_list {
 enum var_type extract_type(char const *line, char const *id);
 size_t extract_id(char const *line, char **id, size_t *offset);
 int find_vars(char const *line, struct str_list *id_list, enum var_type **type_list);
-int print_vars(char const *src, char *const cc_args[], char *const exec_args[]);
+int print_vars(char const *src, char *const cc_args[], char *const exec_args[], struct var_list *list);
 
 static inline void init_var_list(struct var_list *list_struct)
 {
