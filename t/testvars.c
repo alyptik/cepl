@@ -19,10 +19,11 @@ int main(void)
 	};
 	struct var_list vars = { 0, NULL };
 
-	plan(2);
+	plan(3);
 
 	ok(find_vars(&vars, src, cc_args, argv), "succeed finding variable values.");
-	ok(extract_type("int foo = 5", "foo") == T_INT, "succeed finding variable values.");
+	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting type.");
+	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
 	done_testing();
 }
