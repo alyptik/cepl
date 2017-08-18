@@ -14,7 +14,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regmatch_t match[6];
 	/* return early if passed NULL pointers */
 	if (!line || !id)
-		return T_OTHER;
+		return T_ERR;
 	/* first/fourth captures are ignored */
 	char *regex, *type;
 	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]+)"
@@ -34,9 +34,9 @@ enum var_type extract_type(char const *line, char const *id)
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 6, match, 0) || match[5].rm_so == -1) {
+	if (regexec(&reg, line, 6, match, 0) || match[3].rm_so == -1) {
 		free(regex);
-		return T_OTHER;
+		return T_ERR;
 	}
 	if ((type = malloc(match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
 		err(EXIT_FAILURE, "%s", "failed to allocate space for captured type");
