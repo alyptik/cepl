@@ -17,9 +17,10 @@ enum var_type extract_type(char const *line, char const *id)
 		return T_OTHER;
 	/* first/fourth captures are ignored */
 	char *regex, *type;
-	char beg[] = "^(|.*[\\(\\{;[:blank:]]+)"
+	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]+)"
 		"(struct|union|char|double|float|int|long|short|unsigned|void)"
-		"(.*|[[:blank:]]+)(";
+		"(.*)[[:blank:]](";
+	char end[] = ")(\\[*)";
 
 	/* append identifier to regex */
 	if ((regex = malloc(strlen(id) + sizeof beg + 5)) == NULL)
@@ -27,7 +28,8 @@ enum var_type extract_type(char const *line, char const *id)
 	memset(regex, 0, strlen(id) + sizeof beg + 5);
 	memcpy(regex, beg, sizeof beg - 1);
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
-	memcpy(regex + sizeof beg - 1 + strlen(id), ")(\\[*)", strlen(")(\\[*)") + 1);
+	memcpy(regex + sizeof beg - 1 + strlen(id), end, sizeof end);
+
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
 
@@ -42,7 +44,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* copy matched string */
 	memset(type, 0, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1);
 	memcpy(type, line + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
-	memcpy(type + match[3].rm_eo - match[2].rm_so , line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
+	memcpy(type + match[3].rm_eo - match[2].rm_so, line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 
 	/* string */
 	if (regcomp(&reg, "char \\*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
