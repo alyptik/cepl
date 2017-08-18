@@ -81,7 +81,8 @@ static inline void append_var(struct var_list *list_struct, size_t size, size_t 
 	list_struct->list[list_struct->cnt - 1].data = NULL;
 
 	/* switch (type) { */
-	/* case T_CHR: [> fallthrough <] */
+	/* case T_CHR: */
+		/* fallthrough */
 	/* case T_INT: */
 	/*         list_struct->list[list_struct->cnt - 1].int_val = *((long long *)*val); */
 	/*         break; */
@@ -94,12 +95,14 @@ static inline void append_var(struct var_list *list_struct, size_t size, size_t 
 	/* case T_LDBL: */
 	/*         list_struct->list[list_struct->cnt - 1].ldbl_val = *((long double *)*val); */
 	/*         break; */
-	/* case T_STR: [> fallthrough <] */
+	/* case T_STR: */
+		/* fallthrough */
 	/* case T_PTR: */
 	/*         list_struct->list[list_struct->cnt - 1].ptr_val = (void *)*val; */
 	/*         break; */
-	/* case T_OTHER: [> fallthrough <] */
-	/* [> for the default case only track the address of the object <] */
+	/* case T_OTHER: */
+		/* fallthrough */
+	/* for the default case only track the address of the object */
 	/* default: */
 	/*         list_struct->list[list_struct->cnt - 1].ptr_val = val; */
 	/* } */
