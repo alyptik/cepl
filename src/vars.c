@@ -23,7 +23,7 @@ enum var_type extract_type(char const *line, char const *id)
 	char end[] = ")(\\[*)";
 
 	/* append identifier to regex */
-	if ((regex = malloc(strlen(id) + sizeof beg + 5)) == NULL)
+	if ((regex = malloc(strlen(id) + sizeof beg + sizeof end)) == NULL)
 		err(EXIT_FAILURE, "%s", "failed to allocate space for regex");
 	memset(regex, 0, strlen(id) + sizeof beg + 5);
 	memcpy(regex, beg, sizeof beg - 1);
