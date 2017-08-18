@@ -198,6 +198,11 @@ int find_vars(char const *src, char *const cc_args[], char *const exec_args[])
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strnlen(src, COUNT) + 1];
+	char prog_end[] = "\n\treturn 0;\n}\n";
+	char print_beg[] = "printf(\"%s = %p\\n\",";
+	char print_end[] = ");";
+	char *final = NULL, *src_tmp = NULL, *id_tmp = NULL;
+	size_t off = 0;
 	struct var_list list = {0, NULL};
 
 	if (sizeof src_buffer < 2)
@@ -207,6 +212,16 @@ int find_vars(char const *src, char *const cc_args[], char *const exec_args[])
 	/* add trailing '\n' */
 	memcpy(src_buffer, src, sizeof src_buffer);
 	src_buffer[sizeof src_buffer - 1] = '\n';
+	src_tmp = src_buffer;
+
+	while (extract_id(src_tmp, &id_tmp, &off) != 0) {
+		src_tmp += off;
+		append_var(&list, 16, 1, id_tmp, extract_type(src_tmp, id_tmp), &id_tmp);
+	}
+
+	if ((final = malloc(sizeof src_buffer + sizeof prog_end + (list.cnt * 16))) == NULL)
+		errx(EXIT_FAILURE, "%s", "empty allocating source buffer in find_vars()");
+
 	/* create pipes */
 	if (pipe(pipe_cc) == -1)
 		err(EXIT_FAILURE, "%s", "error making pipe_cc pipe");
@@ -251,9 +266,13 @@ int find_vars(char const *src, char *const cc_args[], char *const exec_args[])
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			warnx("%s", "compiler returned non-zero exit code");
+			free(final);
+			free(list.list);
 			return WEXITSTATUS(status);
 		}
 	}
 
+	free(final);
+	free(list.list);
 	return 1;
 }
