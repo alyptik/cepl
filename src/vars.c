@@ -8,6 +8,16 @@
 #include "compile.h"
 #include "vars.h"
 
+/* silence linter */
+long syscall(long number, ...);
+int fexecve(int mem_fd, char *const argv[], char *const envp[]);
+size_t strnlen(char const *s, size_t maxlen);
+int regcomp(regex_t *preg, char const *regex, int cflags);
+int regexec(regex_t const *preg, char const *string, size_t nmatch, regmatch_t pmatch[], int eflags);
+size_t regerror(int errcode, regex_t const *preg, char *errbuf, size_t errbuf_size);
+void regfree(regex_t *preg);
+void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+
 enum var_type extract_type(char const *line, char const *id)
 {
 	regex_t reg;
@@ -180,8 +190,70 @@ static inline void append_var(struct var_list *list_struct, size_t size, size_t 
 	}
 }
 
-int find_vars(struct var_list *list, char const *src, char *const cc_args[], char *const exec_args[])
+int find_vars(char const *src, char *const cc_args[], char *const exec_args[])
 {
+	if (!src || !cc_args || !exec_args)
+		errx(EXIT_FAILURE, "%s", "NULL pointer passed to find_vars()");
+
+	int mem_fd, status;
+	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
+	char src_buffer[strnlen(src, COUNT) + 1];
+	struct var_list list = {0, NULL};
+
+	if (sizeof src_buffer < 2)
+		errx(EXIT_FAILURE, "%s", "empty source string passed to find_vars()");
+
+	init_var_list(&list);
+	/* add trailing '\n' */
+	memcpy(src_buffer, src, sizeof src_buffer);
+	src_buffer[sizeof src_buffer - 1] = '\n';
+	/* create pipes */
+	if (pipe(pipe_cc) == -1)
+		err(EXIT_FAILURE, "%s", "error making pipe_cc pipe");
+	if (pipe(pipe_ld) == -1)
+		err(EXIT_FAILURE, "%s", "error making pipe_ld pipe");
+	if (pipe(pipe_exec) == -1)
+		err(EXIT_FAILURE, "%s", "error making pipe_exec pipe");
+	/* set close-on-exec for pipe fds */
+	set_cloexec(pipe_cc);
+	set_cloexec(pipe_ld);
+	set_cloexec(pipe_exec);
+
+	/* fork compiler */
+	switch (fork()) {
+	/* error */
+	case -1:
+		close(pipe_cc[0]);
+		close(pipe_cc[1]);
+		close(pipe_ld[0]);
+		close(pipe_ld[1]);
+		close(pipe_exec[0]);
+		close(pipe_exec[1]);
+		err(EXIT_FAILURE, "%s", "error forking compiler");
+		break;
+
+	/* child */
+	case 0:
+		dup2(pipe_cc[0], 0);
+		dup2(pipe_ld[1], 1);
+		execvp(cc_args[0], cc_args);
+		/* execvp() should never return */
+		err(EXIT_FAILURE, "%s", "error forking compiler");
+		break;
+
+	/* parent */
+	default:
+		close(pipe_cc[0]);
+		close(pipe_ld[1]);
+		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
+			err(EXIT_FAILURE, "%s", "error writing to pipe_cc[1]");
+		close(pipe_cc[1]);
+		wait(&status);
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
+			warnx("%s", "compiler returned non-zero exit code");
+			return WEXITSTATUS(status);
+		}
+	}
 
 	return 1;
 }

@@ -18,6 +18,7 @@
 #include "errors.h"
 #include "parseopts.h"
 #include "readline.h"
+#include "vars.h"
 
 /* source file templates */
 static char const prog_includes[] = "#define _BSD_SOURCE\n"
@@ -218,13 +219,14 @@ static inline void build_body(void)
 	strcat(actual.body, strtok(line, "\f\r\n\0"));
 }
 
-static inline void build_final(void)
+static inline void build_final(char *argv[])
 {
 	/* finish building current iteration of source code */
 	memcpy(user.final, user.funcs, strlen(user.funcs) + 1);
 	memcpy(actual.final, actual.funcs, strlen(actual.funcs) + 1);
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
+	find_vars(actual.final, cc_argv, argv);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
 }
@@ -313,7 +315,7 @@ int main(int argc, char *argv[])
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize user.final and actual.final then print version */
-	build_final();
+	build_final(argv);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n", VERSION_STRING);
 	/* enable completion */
@@ -506,7 +508,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		build_final();
+		build_final(argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
 			printf("\n%s:\n\n%s\n", argv[0], user.final);
