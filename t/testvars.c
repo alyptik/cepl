@@ -10,7 +10,7 @@
 
 int main(void)
 {
-	char *const src = "int main(void) { int i = 1; return 0; }";
+	char *const src = "int main(void) { int i = 0; return i; }";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
 		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
@@ -21,7 +21,7 @@ int main(void)
 
 	plan(3);
 
-	ok(find_vars(&vars, src, cc_args, argv), "succeed finding variable values.");
+	ok(find_vars(src, cc_args, argv), "succeed finding variable values.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 

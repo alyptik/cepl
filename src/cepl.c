@@ -226,7 +226,7 @@ static inline void build_final(char *argv[])
 	memcpy(actual.final, actual.funcs, strlen(actual.funcs) + 1);
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
-	find_vars(actual.final, cc_argv, argv);
+	/* find_vars(actual.final, cc_argv, argv); */
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
 }

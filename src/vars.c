@@ -216,7 +216,7 @@ int find_vars(char const *src, char *const cc_args[], char *const exec_args[])
 
 	while (extract_id(src_tmp, &id_tmp, &off) != 0) {
 		src_tmp += off;
-		append_var(&list, 16, 1, id_tmp, extract_type(src_tmp, id_tmp), &id_tmp);
+		append_var(&list, 16, 1, id_tmp, extract_type(src_tmp, id_tmp), (void **)&id_tmp);
 	}
 
 	if ((final = malloc(sizeof src_buffer + sizeof prog_end + (list.cnt * 16))) == NULL)
