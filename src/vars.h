@@ -23,15 +23,15 @@
 #include "compile.h"
 
 enum var_type {
-	T_CHR,
-	T_STR,
-	T_INT,
-	T_UINT,
-	T_DBL,
-	T_LDBL,
-	T_PTR,
-	T_OTHER,
-	T_ERR,
+	T_ERR = 0,
+	T_CHR = 1,
+	T_STR = 2,
+	T_INT = 3,
+	T_UINT = 4,
+	T_DBL = 5,
+	T_LDBL = 6,
+	T_PTR = 7,
+	T_OTHER = 8,
 };
 
 struct var_list {
