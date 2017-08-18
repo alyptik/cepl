@@ -176,9 +176,9 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 			err(EXIT_FAILURE, "%s %s", "failed to extract type at for", id_list->list[i]);
 	}
 
-	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
-		err(EXIT_FAILURE, "%s %s", "failed to allocate memory for type_list");
 	/* copy it into the output parameter */
+	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
+		err(EXIT_FAILURE, "%s", "failed to allocate memory for type_list");
 	memcpy(type_list, type_tmp, sizeof type_tmp);
 	return id_list->cnt;
 }
