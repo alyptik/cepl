@@ -17,13 +17,17 @@ int main(void)
 		"-pedantic-errors", "-std=c11", "-S", "-xc",
 		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
 	};
-	struct var_list vars = { 0, NULL };
+	struct str_list strs = {0, NULL};
+	struct var_list vars = {0, NULL};
+	enum var_type *types = NULL;
 
 	plan(3);
 
-	ok(find_vars(src, cc_args, argv), "succeed finding variable values.");
+	ok(find_vars(src, &strs, &types), "succeed finding variable values.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
 	done_testing();
+
+	free(types);
 }

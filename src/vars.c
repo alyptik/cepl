@@ -153,7 +153,37 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	return match[1].rm_so;
 }
 
-int find_vars(char const *src, char *const cc_args[], char *const exec_args[])
+int find_vars(char const *line, struct str_list *id_list, enum var_type **type_list)
+{
+	size_t off;
+	char *line_tmp, *id_tmp;
+
+	if (!line || !id_list || !type_list)
+		return 0;
+	line_tmp = (char *)line;
+
+	/* extract all identifiers from the line */
+	while (extract_id(line_tmp, &id_tmp, &off) != 0) {
+		append_str(id_list, id_tmp, 0);
+		line_tmp += off;
+	}
+	line_tmp = (char *)line;
+
+	/* get the type of each identifier */
+	enum var_type type_tmp[id_list->cnt];
+	for (size_t i = 0; i < id_list->cnt; i++) {
+		if ((type_tmp[i] = extract_type(line_tmp, id_list->list[i])) == T_ERR)
+			err(EXIT_FAILURE, "%s %s", "failed to extract type at for", id_list->list[i]);
+	}
+
+	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
+		err(EXIT_FAILURE, "%s %s", "failed to allocate memory for type_list");
+	/* copy it into the output parameter */
+	memcpy(type_list, type_tmp, sizeof type_tmp);
+	return id_list->cnt;
+}
+
+int print_vars(char const *src, char *const cc_args[], char *const exec_args[])
 {
 	if (!src || !cc_args || !exec_args)
 		errx(EXIT_FAILURE, "%s", "NULL pointer passed to find_vars()");
