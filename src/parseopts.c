@@ -6,6 +6,7 @@
  */
 
 #include <getopt.h>
+#include "errors.h"
 #include "parseopts.h"
 #include "readline.h"
 
@@ -82,7 +83,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 			if (!cc_list.list[0][0]) {
 				/* copy argument to cc_list.list[0] */
 				if ((tmp_arg = realloc(cc_list.list[0], strlen(optarg) + 1)) == NULL)
-					err(EXIT_FAILURE, "%s[%d] %s", "error during cc_list.list", 0, "malloc()");
+					ERRARR("cc_list.list", 0);
 				cc_list.list[0] = tmp_arg;
 				memset(cc_list.list[0], 0, strlen(optarg) + 1);
 				memcpy(cc_list.list[0], optarg, strlen(optarg) + 1);
@@ -111,7 +112,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 		/* output file flag */
 		case 'o':
 			if (out_file != NULL)
-				errx(EXIT_FAILURE, "%s", "too many output files specified");
+				ERRX("too many output files specified");
 			out_file = optarg;
 			out_flag ^= true;
 			break;
@@ -128,7 +129,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 
 		/* version flag */
 		case 'v':
-			err(EXIT_SUCCESS, "%s\n", VERSION_STRING);
+			fprintf(stderr, "%s\n", VERSION_STRING);
+			exit(0);
 			/* unused break */
 			break;
 
@@ -136,7 +138,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 		case 'h':
 		case '?':
 		default:
-			err(EXIT_SUCCESS, "%s %s %s", "Usage:", argv[0], USAGE_STRING);
+			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
+			exit(0);
 		}
 	}
 
@@ -145,7 +148,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 		if (*ofile)
 			fclose((FILE *)*ofile);
 		if (!(*ofile = fopen(out_file, "w")))
-			err(EXIT_FAILURE, "%s", "failed to create output file");
+			ERR("failed to create output file");
 	}
 
 	/* append warning flags */

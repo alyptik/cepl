@@ -15,8 +15,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "compile.h"
-#include "readline.h"
+#include "errors.h"
 #include "parseopts.h"
+#include "readline.h"
 
 /* source file templates */
 static char const prog_includes[] = "#define _BSD_SOURCE\n"
@@ -141,7 +142,7 @@ static inline void cleanup(void)
 	free_str_list(&comp_list);
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
-		warn("%s %s", "error writing history to ", hist_file);
+		WARN(strcat("error writing history to ", hist_file));
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
 }
@@ -159,7 +160,7 @@ static inline void init_buffers(void)
 	/* sanity check */
 	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
 		cleanup();
-		err(EXIT_FAILURE, "error allocating initial pointers at %d", __LINE__);
+		ERRGEN("initial pointer allocation");
 	}
 	/* zero source buffers */
 	memset(user.funcs, 0, 1);
@@ -185,7 +186,7 @@ static inline void resize_buffer(char **buf, size_t offset)
 	/* current length + line length + extra characters + \0 */
 	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
 		cleanup();
-		err(EXIT_FAILURE, "error during resize_buffer() at line %d", __LINE__);
+		ERRGEN("resize_buffer()");
 	}
 	*buf = tmp;
 }
@@ -256,25 +257,25 @@ static inline void sig_handler(int sig)
 static inline void reg_handlers(void)
 {
 	if (signal(SIGHUP, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGHUP handler");
+		WARN("unable to register SIGHUP handler");
 	if (signal(SIGINT, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGINT handler");
+		WARN("unable to register SIGINT handler");
 	if (signal(SIGQUIT, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGQUIT handler");
+		WARN("unable to register SIGQUIT handler");
 	if (signal(SIGILL, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGILL handler");
+		WARN("unable to register SIGILL handler");
 	if (signal(SIGABRT, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGABRT handler");
+		WARN("unable to register SIGABRT handler");
 	if (signal(SIGFPE, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGFPE handler");
+		WARN("unable to register SIGFPE handler");
 	if (signal(SIGSEGV, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGSEGV handler");
+		WARN("unable to register SIGSEGV handler");
 	if (signal(SIGPIPE, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGPIPE handler");
+		WARN("unable to register SIGPIPE handler");
 	if (signal(SIGALRM, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGALRM handler");
+		WARN("unable to register SIGALRM handler");
 	if (signal(SIGTERM, &sig_handler) == SIG_ERR)
-		warn("%s", "unable to register SIGTERM handler");
+		WARN("unable to register SIGTERM handler");
 }
 
 static inline char *read_line(void)
@@ -290,7 +291,7 @@ static inline char *read_line(void)
 		size_t cnt = 0;
 		if (getline(&line, &cnt, stdin) == -1) {
 			cleanup();
-			err(EXIT_FAILURE, "%s %d", "error during getline() at ", __LINE__);
+			ERRGEN("getline()");
 		}
 	}
 	return line;
@@ -323,7 +324,7 @@ int main(int argc, char *argv[])
 	using_history();
 	/* create history file if it doesn't exsit */
 	if (!(make_hist = fopen(hist_file, "a+b"))) {
-		warn("%s %d", "error creating history file with fopen() at ", __LINE__);
+		WARN("error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
 	}
@@ -331,7 +332,7 @@ int main(int argc, char *argv[])
 	stat(hist_file, &hist_stat);
 	if (hist_stat.st_size > 0) {
 		if (read_history(hist_file))
-			warn("%s %s", "error reading history from ", hist_file);
+			WARN(strcat("error reading history from ", hist_file));
 	}
 	reg_handlers();
 
@@ -383,7 +384,7 @@ int main(int argc, char *argv[])
 				/* output file flag */
 				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL)) {
 					cleanup();
-					err(EXIT_FAILURE, "%s", "failed to create output file");
+					ERR("failed to create output file");
 				}
 				break;
 

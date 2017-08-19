@@ -8,8 +8,9 @@
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
-#include "readline.h"
+#include "errors.h"
 #include "parseopts.h"
+#include "readline.h"
 
 /* default completion list */
 char *comp_arg_list[] = {
@@ -46,7 +47,7 @@ char *generator(char const *text, int state)
 	while ((name = completions[list_index++])) {
 		if (memcmp(name, text, len) == 0) {
 			if ((buf = malloc(strlen(name) + 1)) == NULL) {
-				warn("%s", "error allocating generator string");
+				WARN("error allocating generator string");
 				return NULL;
 			}
 			memcpy(buf, name, strlen(name) + 1);

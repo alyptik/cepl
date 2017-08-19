@@ -31,25 +31,25 @@ size_t strnlen(const char *s, size_t maxlen);
 int compile(char *const src, char *const cc_args[], char *const exec_args[])
 {
 	if (!src || !cc_args || !exec_args)
-		errx(EXIT_FAILURE, "%s", "NULL pointer passed to compile()");
+		ERRX("NULL pointer passed to compile()");
 
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strnlen(src, COUNT) + 1];
 
 	if (sizeof src_buffer < 2)
-		errx(EXIT_FAILURE, "%s", "empty source string passed to compile()");
+		ERRX("empty source string passed to compile()");
 
 	/* add trailing '\n' */
 	memcpy(src_buffer, src, sizeof src_buffer);
 	src_buffer[sizeof src_buffer - 1] = '\n';
 	/* create pipes */
 	if (pipe(pipe_cc) == -1)
-		err(EXIT_FAILURE, "%s", "error making pipe_cc pipe");
+		ERR("error making pipe_cc pipe");
 	if (pipe(pipe_ld) == -1)
-		err(EXIT_FAILURE, "%s", "error making pipe_ld pipe");
+		ERR("error making pipe_ld pipe");
 	if (pipe(pipe_exec) == -1)
-		err(EXIT_FAILURE, "%s", "error making pipe_exec pipe");
+		ERR("error making pipe_exec pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 	set_cloexec(pipe_ld);
@@ -65,7 +65,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		err(EXIT_FAILURE, "%s", "error forking compiler");
+		ERR("error forking compiler");
 		break;
 
 	/* child */
@@ -74,7 +74,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		dup2(pipe_ld[1], 1);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
-		err(EXIT_FAILURE, "%s", "error forking compiler");
+		ERR("error forking compiler");
 		break;
 
 	/* parent */
@@ -82,11 +82,11 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
 		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
-			err(EXIT_FAILURE, "%s", "error writing to pipe_cc[1]");
+			ERR("error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			warnx("%s", "compiler returned non-zero exit code");
+			WARNX("compiler returned non-zero exit code");
 			return WEXITSTATUS(status);
 		}
 	}
@@ -98,7 +98,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_ld[0]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		err(EXIT_FAILURE, "%s", "error forking linker");
+		ERR("error forking linker");
 		break;
 
 	/* child */
@@ -110,7 +110,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		/* fallback linker exec */
 		execvp(ld_alt_list[0], ld_alt_list);
 		/* execvp() should never return */
-		err(EXIT_FAILURE, "%s", "error forking linker");
+		ERR("error forking linker");
 		break;
 
 	/* parent */
@@ -119,7 +119,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		close(pipe_exec[1]);
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			warnx("%s", "linker returned non-zero exit code");
+			WARNX("linker returned non-zero exit code");
 			return WEXITSTATUS(status);
 		}
 	}
@@ -129,17 +129,17 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 	/* error */
 	case -1:
 		close(pipe_exec[0]);
-		err(EXIT_FAILURE, "%s", "error forking executable");
+		ERR("error forking executable");
 		break;
 
 	/* child */
 	case 0:
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
-			err(EXIT_FAILURE, "%s", "error creating mem_fd");
+			ERR("error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
-		err(EXIT_FAILURE, "%s", "error forking executable");
+		ERR("error forking executable");
 		break;
 
 	/* parent */
@@ -148,7 +148,7 @@ int compile(char *const src, char *const cc_args[], char *const exec_args[])
 		wait(&status);
 		/* don't overwrite non-zero exit status from compiler */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			warnx("%s", "executable returned non-zero exit code");
+			WARNX("executable returned non-zero exit code");
 			return WEXITSTATUS(status);
 		}
 	}
