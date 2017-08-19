@@ -30,14 +30,14 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* append identifier to regex */
 	if ((regex = malloc(strlen(id) + sizeof beg + sizeof end - 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "failed to allocate space for regex");
+		ERR("failed to allocate space for regex");
 	memset(regex, 0, strlen(id) + sizeof beg + 5);
 	memcpy(regex, beg, sizeof beg - 1);
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
 	memcpy(regex + sizeof beg - 1 + strlen(id), end, sizeof end);
 
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 6, match, 0) || match[3].rm_so == -1) {
@@ -45,7 +45,7 @@ enum var_type extract_type(char const *line, char const *id)
 		return T_ERR;
 	}
 	if ((type = malloc(match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "failed to allocate space for captured type");
+		ERR("failed to allocate space for captured type");
 
 	/* copy matched string */
 	memset(type, 0, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1);
@@ -54,7 +54,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* string */
 	if (regcomp(&reg, "char \\*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -63,7 +63,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* pointer */
 	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -72,7 +72,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* char */
 	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -81,7 +81,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* long double */
 	if (regcomp(&reg, "long double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -90,7 +90,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* double */
 	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -99,7 +99,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* unsigned integral */
 	if (regcomp(&reg, "unsigned", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -108,7 +108,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* signed integral */
 	if (regcomp(&reg, "(bool|_Bool|short|int|long)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s %d", "failed to compile regex at", __LINE__);
+		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
@@ -135,12 +135,12 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (!line || !id || !offset)
 		return 0;
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
-		err(EXIT_FAILURE, "%s", "failed to compile regex");
+		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1)
 		return 0;
 	if ((*id= malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "failed to allocate space for captured id");
+		ERR("failed to allocate space for captured id");
 
 	/* set the output parameter and return the offset */
 	memset(*id, 0, match[1].rm_eo - match[1].rm_so + 1);
@@ -169,32 +169,33 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	enum var_type type_tmp[id_list->cnt];
 	for (size_t i = 0; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp, id_list->list[i])) == T_ERR)
-			err(EXIT_FAILURE, "%s %s", "failed to extract type at for", id_list->list[i]);
+			ERR(strcat("failed to extract type for", id_list->list[i]));
 	}
 
 	/* copy it into the output parameter */
 	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
-		err(EXIT_FAILURE, "%s", "failed to allocate memory for type_list");
+		ERR("failed to allocate memory for type_list");
 	memcpy(type_list, type_tmp, sizeof type_tmp);
 	return id_list->cnt;
 }
 
 int print_vars(char const *src, char *const cc_args[], char *const exec_args[], struct var_list *list)
 {
-	if (!src || !cc_args || !exec_args || !list)
-		errx(EXIT_FAILURE, "%s", "NULL pointer passed to find_vars()");
-
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strnlen(src, COUNT) + 1];
-	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "printf(\"%s = %p\\n\",";
-	char print_end[] = ");";
+	char prog_end[] = "\\n\\treturn 0;\\n}\\n";
+	char print_beg[] = "\\n\\tprintf(\"%s = %s, \",";
+	char println_beg[] = "\\n\\tprintf(\"%s = %s\\n \",";
+	char func_end[] = ");";
 	char *final = NULL, *src_tmp = NULL, *id_tmp = NULL;
 	size_t off = 0;
 
+	/* sanity checks */
+	if (!src || !cc_args || !exec_args || !list)
+		ERRX("NULL pointer passed to print_vars()");
 	if (sizeof src_buffer < 2)
-		errx(EXIT_FAILURE, "%s", "empty source string passed to find_vars()");
+		ERRX("empty source string passed to print_vars()");
 
 	init_var_list(list);
 	/* add trailing '\n' */
@@ -208,15 +209,15 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 	}
 
 	if ((final = malloc(sizeof src_buffer + sizeof prog_end + (list->cnt * 16))) == NULL)
-		errx(EXIT_FAILURE, "%s", "empty allocating source buffer in find_vars()");
+		ERR("empty allocating source buffer in print_vars()");
 
 	/* create pipes */
 	if (pipe(pipe_cc) == -1)
-		err(EXIT_FAILURE, "%s", "error making pipe_cc pipe");
+		ERR("error making pipe_cc pipe");
 	if (pipe(pipe_ld) == -1)
-		err(EXIT_FAILURE, "%s", "error making pipe_ld pipe");
+		ERR("error making pipe_ld pipe");
 	if (pipe(pipe_exec) == -1)
-		err(EXIT_FAILURE, "%s", "error making pipe_exec pipe");
+		ERR("error making pipe_exec pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 	set_cloexec(pipe_ld);
@@ -232,7 +233,7 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		err(EXIT_FAILURE, "%s", "error forking compiler");
+		ERR("error forking compiler");
 		break;
 
 	/* child */
@@ -241,7 +242,7 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 		dup2(pipe_ld[1], 1);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
-		err(EXIT_FAILURE, "%s", "error forking compiler");
+		ERR("error forking compiler");
 		break;
 
 	/* parent */
@@ -249,11 +250,11 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
 		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
-			err(EXIT_FAILURE, "%s", "error writing to pipe_cc[1]");
+			ERR("error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			warnx("%s", "compiler returned non-zero exit code");
+			WARNX("compiler returned non-zero exit code");
 			free(final);
 			free(list->list);
 			return WEXITSTATUS(status);

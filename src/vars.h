@@ -61,7 +61,7 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 static inline void init_var_list(struct var_list *list_struct)
 {
 	if ((list_struct->list = malloc((sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial var_list malloc()");
+		ERR("error during initial var_list malloc()");
 	list_struct->list = NULL;
 }
 
@@ -70,9 +70,9 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 	void *tmp;
 	/* if (!list_struct || size < 1 || nmemb < 1 || !key || !val) */
 	if (!list_struct || !key)
-		err(EXIT_FAILURE, "%s %d", "invalid arguments passed to append_var() at", __LINE__);
+		ERRX("invalid arguments passed to append_var()");
 	if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s %d %s", "error during var_list (cnt = ", list_struct->cnt, ") realloc()");
+		ERRARR("var_list", list_struct->cnt);
 	list_struct->list = tmp;
 	list_struct->list[list_struct->cnt - 1].key = key;
 	list_struct->list[list_struct->cnt - 1].type = type;
