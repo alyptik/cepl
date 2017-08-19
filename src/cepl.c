@@ -71,6 +71,8 @@ static char **cc_argv = NULL;
 /* readline history variables */
 static char *hist_file = NULL;
 static int nlines = 0;
+/* output file */
+static volatile FILE *ofile = NULL;
 /* struct definition for generated program sources */
 static struct prog_src {
 	char *funcs;
@@ -79,8 +81,10 @@ static struct prog_src {
 	struct str_list hist;
 	struct flag_list flags;
 } user, actual;
-/* output file */
-static volatile FILE *ofile = NULL;
+/* var list */
+static struct var_list vars;
+static struct str_list ids;
+static enum var_type *types;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -122,12 +126,15 @@ static inline void free_buffers(void)
 		free(user.flags.list);
 	if (actual.flags.list)
 		free(actual.flags.list);
+	if (vars.list)
+		free(vars.list);
 
 	/* free vectors */
 	if (cc_argv)
 		free_argv(cc_argv);
 	free_str_list(&user.hist);
 	free_str_list(&actual.hist);
+	free_str_list(&ids);
 
 	/* set pointers to NULL */
 	line = NULL;
@@ -181,6 +188,8 @@ static inline void init_buffers(void)
 	init_list(&actual.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_flag_list(&user.flags);
 	init_flag_list(&actual.flags);
+	init_var_list(&vars);
+	init_list(&ids, NULL);
 }
 
 static inline void resize_buffer(char **buf, size_t offset)
@@ -226,7 +235,7 @@ static inline void build_final(char *argv[])
 	memcpy(actual.final, actual.funcs, strlen(actual.funcs) + 1);
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
-	/* find_vars(actual.final, cc_argv, argv); */
+	print_vars(actual.final, cc_argv, argv, &vars);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
 }
@@ -507,6 +516,10 @@ int main(int argc, char *argv[])
 				strcat(actual.body, ";\n");
 			}
 		}
+
+		/* extract identifiers and types */
+		find_vars(line, &ids, &types);
+		gen_var_list(&vars, &ids, &types);
 
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */
