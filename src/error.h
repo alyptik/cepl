@@ -6,15 +6,7 @@
  */
 
 #ifndef ERROR_H
-#define ERROR_H 1
-
-#include <err.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#define ERROR_H
 
 /* general */
 #define ERR(X) err(EXIT_FAILURE, "%s %s %s %d", "error during", X, "at line", __LINE__)

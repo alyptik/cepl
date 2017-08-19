@@ -6,7 +6,7 @@
  */
 
 #ifndef READLINE_H
-#define READLINE_H 1
+#define READLINE_H
 
 #include <stdio.h>
 #include <readline/history.h>
