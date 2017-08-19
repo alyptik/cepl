@@ -1,12 +1,12 @@
 /*
- * error.h - error-checking wrappers
+ * errors.h - error-handling wrappers
  *
  * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef ERRORS_H
+#define ERRORS_H
 
 /* general */
 #define ERR(X) err(EXIT_FAILURE, "%s %s %s %d", "error during", X, "at line", __LINE__)
