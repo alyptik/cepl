@@ -39,8 +39,6 @@ enum var_type {
 struct var_list {
 	int cnt;
 	struct {
-		size_t size;
-		size_t nmemb;
 		char const *key;
 		enum var_type type;
 		void *data;
@@ -67,17 +65,15 @@ static inline void init_var_list(struct var_list *list_struct)
 	list_struct->list = NULL;
 }
 
-static inline void append_var(struct var_list *list_struct, size_t size, size_t nmemb, char const *key, enum var_type type)
+static inline void append_var(struct var_list *list_struct, char const *key, enum var_type type)
 {
 	void *tmp;
 	/* if (!list_struct || size < 1 || nmemb < 1 || !key || !val) */
-	if (!list_struct || size < 1 || nmemb < 1 || !key)
+	if (!list_struct || !key)
 		err(EXIT_FAILURE, "%s %d", "invalid arguments passed to append_var() at", __LINE__);
 	if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
 		err(EXIT_FAILURE, "%s %d %s", "error during var_list (cnt = ", list_struct->cnt, ") realloc()");
 	list_struct->list = tmp;
-	list_struct->list[list_struct->cnt - 1].size = size;
-	list_struct->list[list_struct->cnt - 1].nmemb = nmemb;
 	list_struct->list[list_struct->cnt - 1].key = key;
 	list_struct->list[list_struct->cnt - 1].type = type;
 	list_struct->list[list_struct->cnt - 1].data = NULL;
