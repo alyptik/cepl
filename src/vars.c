@@ -132,7 +132,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* second capture is ignored */
 	char regex[] = ".*[^[:alnum:]]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
-		"([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*)"
+		"([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*|)"
 		"[^=]*";
 
 	/* return early if passed NULL pointers */
@@ -208,7 +208,7 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 
 	while (extract_id(src_tmp, &id_tmp, &off) != 0) {
 		src_tmp += off;
-		append_var(list, 16, 1, id_tmp, extract_type(src_tmp, id_tmp));
+		append_var(list, id_tmp, extract_type(src_tmp, id_tmp));
 	}
 
 	if ((final = malloc(sizeof src_buffer + sizeof prog_end + (list->cnt * 16))) == NULL)
