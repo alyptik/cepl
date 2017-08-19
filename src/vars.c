@@ -20,7 +20,8 @@ enum var_type extract_type(char const *line, char const *id)
 	regmatch_t match[6];
 	/* return early if passed NULL pointers */
 	if (!line || !id)
-		return T_ERR;
+		ERRX("NULL pointer passed to extract_type()");
+
 	/* first/fourth captures are ignored */
 	char *regex, *type;
 	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]+)"
@@ -133,7 +134,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 
 	/* return early if passed NULL pointers */
 	if (!line || !id || !offset)
-		return 0;
+		ERRX("NULL pointer passed to extract_id()");
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
