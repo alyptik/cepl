@@ -12,10 +12,6 @@
 long syscall(long number, ...);
 int fexecve(int mem_fd, char *const argv[], char *const envp[]);
 size_t strnlen(char const *s, size_t maxlen);
-int regcomp(regex_t *preg, char const *regex, int cflags);
-int regexec(regex_t const *preg, char const *string, size_t nmatch, regmatch_t pmatch[], int eflags);
-size_t regerror(int errcode, regex_t const *preg, char *errbuf, size_t errbuf_size);
-void regfree(regex_t *preg);
 void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
 
 enum var_type extract_type(char const *line, char const *id)
