@@ -64,7 +64,7 @@ static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n"
 	"\t(void)argc, (void)argv;\n\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
-static char *line = NULL, *tok_buf = NULL;
+static char *line = NULL, *last = NULL, *tok_buf = NULL;
 /* compiler arg array */
 static char **cc_argv = NULL;
 /* readline history variables */
@@ -105,6 +105,8 @@ static inline void free_buffers(void)
 
 	if (line)
 		free(line);
+	if (last)
+		free(last);
 	if (user.funcs)
 		free(user.funcs);
 	if (actual.funcs)
@@ -130,6 +132,7 @@ static inline void free_buffers(void)
 
 	/* set pointers to NULL */
 	line = NULL;
+	last = NULL;
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;
@@ -343,10 +346,16 @@ int main(int argc, char *argv[])
 		if ((tok_buf = strpbrk(line, "\f\r\n\0")) != NULL)
 			tok_buf[0] = '\0';
 		/* dont add blank lines to history */
-		if (strlen(line) > 0) {
+		if (strlen(line) > 0 && (!last || strcmp(line, last) != 0)) {
 			add_history(line);
 			/* increment history count */
 			nlines++;
+			/* copy line to last buffer */
+			if (last)
+				free(last);
+			if ((last = malloc(strlen(line) + 1)) == NULL)
+				ERRGEN("allocation of last");
+			memcpy(last, line, strlen(line) + 1);
 		}
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
