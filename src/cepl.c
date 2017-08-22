@@ -63,8 +63,8 @@ static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n"
 	"\t/* silence -Wunused-parameter warning */\n"
 	"\t(void)argc, (void)argv;\n\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
-/* last line, current line, and token buffers */
-static char *line[2] = {NULL, NULL}, *tok_buf = NULL;
+/* line and token buffers */
+static char *line = NULL, *tok_buf = NULL;
 /* compiler arg array */
 static char **cc_argv = NULL;
 /* readline history variables */
@@ -103,10 +103,8 @@ static inline void free_buffers(void)
 {
 	write_hist();
 
-	if (line[0])
-		free(line[0]);
-	if (line[1])
-		free(line[1]);
+	if (line)
+		free(line);
 	if (user.funcs)
 		free(user.funcs);
 	if (actual.funcs)
@@ -131,8 +129,7 @@ static inline void free_buffers(void)
 	free_str_list(&actual.hist);
 
 	/* set pointers to NULL */
-	line[1] = NULL;
-	line[0] = NULL;
+	line = NULL;
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;
@@ -148,6 +145,8 @@ static inline void cleanup(void)
 		WARN(strcat("error writing history to ", hist_file));
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
+	if (hist_file)
+		free(hist_file);
 }
 
 static inline void init_buffers(void)
@@ -186,8 +185,8 @@ static inline void init_buffers(void)
 static inline void resize_buffer(char **buf, size_t offset)
 {
 	char *tmp;
-	/* current length + line[1] length + extra characters + \0 */
-	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line[1]) + offset + 1)) == NULL) {
+	/* current length + line length + extra characters + \0 */
+	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
 		cleanup();
 		ERRGEN("resize_buffer()");
 	}
@@ -215,8 +214,8 @@ static inline void build_body(void)
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
-	strcat(user.body, strtok(line[1], "\f\r\n\0"));
-	strcat(actual.body, strtok(line[1], "\f\r\n\0"));
+	strcat(user.body, strtok(line, "\f\r\n\0"));
+	strcat(actual.body, strtok(line, "\f\r\n\0"));
 }
 
 static inline void build_final(void)
@@ -283,21 +282,21 @@ static inline void reg_handlers(void)
 
 static inline char *read_line(void)
 {
-	if (line[1]) {
-		free(line[1]);
-		line[1] = NULL;
+	if (line) {
+		free(line);
+		line = NULL;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		line[1] = readline("\n>>> ");
+		line = readline("\n>>> ");
 	} else {
 		size_t cnt = 0;
-		if (getline(&line[1], &cnt, stdin) == -1) {
+		if (getline(&line, &cnt, stdin) == -1) {
 			cleanup();
 			ERRGEN("getline()");
 		}
 	}
-	return line[1];
+	return line;
 }
 
 int main(int argc, char *argv[])
@@ -305,9 +304,12 @@ int main(int argc, char *argv[])
 	char const optstring[] = "hvwpc:l:I:o:";
 	FILE *make_hist = NULL;
 	struct stat hist_stat;
-
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	hist_file = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
+	char *tmp_str = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
+	if ((hist_file = malloc(strlen(tmp_str) + 1)) == NULL)
+		ERRGEN("hist_file malloc()");
+	memcpy(hist_file, tmp_str, strlen(tmp_str) + 1);
+
 	/* initialize source buffers */
 	init_buffers();
 	/* initiatalize compiler arg array */
@@ -340,35 +342,42 @@ int main(int argc, char *argv[])
 	reg_handlers();
 
 	/* loop readline() until EOF is read */
-	while ((line[1] = read_line()) && *line[1]) {
+	while ((line = read_line()) && *line) {
 		fflush(stdout);
 		/* strip newlines */
-		if ((tok_buf = strpbrk(line[1], "\f\r\n\0")) != NULL)
+		if ((tok_buf = strpbrk(line, "\f\r\n\0")) != NULL)
 			tok_buf[0] = '\0';
-		/* dont add blank line[1]s to history */
-		if (strlen(line[1]) > 0 && (!line[0] || strcmp(line[1], line[0]) != 0)) {
-			add_history(line[1]);
-			/* increment history count */
+
+		/* add and dedup history */
+		if (line[0]) {
+			int found;
+			/* search backward */
+			while ((found = history_search(line, -1)) != -1) {
+				/* this line is already in the history, remove the earlier entry */
+				HIST_ENTRY *removed = remove_history(where_history());
+				/* according to history docs we are supposed to free the stuff */
+				if (removed->line)
+					free(removed->line);
+				if (removed->data)
+					free(removed->data);
+				free(removed);
+			}
+			add_history(line);
 			nlines++;
-			/* copy line[1] to line[0] buffer */
-			if (line[0])
-				free(line[0]);
-			if ((line[0] = malloc(strlen(line[1]) + 1)) == NULL)
-				ERRGEN("allocation of line[0]");
-			memcpy(line[0], line[1], strlen(line[1]) + 1);
 		}
+
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
-		/* re-allocate enough memory for line[1] + '\t' + ';' + '\n' + '\0' */
+		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&user.body, 3);
 		resize_buffer(&actual.body, 3);
 		resize_buffer(&user.final, 3);
 		resize_buffer(&actual.final, 3);
 
 		/* control sequence and preprocessor directive parsing */
-		switch (line[1][0]) {
+		switch (line[0]) {
 		case ';':
-			switch(line[1][1]) {
+			switch(line[1]) {
 			/* clean up and exit program */
 			case 'q':
 				cleanup();
@@ -386,7 +395,7 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				out_flag ^= true;
 				/* break if file name empty */
-				if (!(tok_buf = strpbrk(line[1], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
@@ -430,11 +439,11 @@ int main(int argc, char *argv[])
 			case 'm': /* fallthrough */
 			case 'f':
 				/* break if function definition empty */
-				if (!(tok_buf = strpbrk(line[1], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				/* re-allocate enough memory for line[1] + '\n' + '\n' + '\0' */
+				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
@@ -465,8 +474,8 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line[1]) - 1; line[1][i] == ' ' || line[1][i] == '\t'; i--)
-				line[1][i] = '\0';
+			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
+				line[i] = '\0';
 			/* start building program source */
 			build_body();
 			strcat(user.body, "\n");
@@ -475,9 +484,9 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line[1]) - 1; line[1][i] == ' ' || line[1][i] == '\t'; i--)
-				line[1][i] = '\0';
-			switch(line[1][strlen(line[1]) - 1]) {
+			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
+				line[i] = '\0';
+			switch(line[strlen(line) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
