@@ -6,15 +6,29 @@
  */
 
 #include "tap.h"
+#include "../src/errors.h"
 #include "../src/parseopts.h"
+
+/* silence linter */
+int mkstemp(char *template);
 
 int main (void)
 {
+	char tempfile[] = "/tmp/ceplXXXXXX";
+	int tmp_fd;
+	if ((tmp_fd = mkstemp(tempfile)) == -1) {
+		WARNGEN("mkstemp()");
+		memset(tempfile, 0, sizeof tempfile);
+		memcpy(tempfile, "./ceplXXXXXX", strlen("./ceplXXXXXX") + 1);
+		WARNX("attempting to create a tmpfile in ./ instead");
+		if ((tmp_fd = mkstemp(tempfile)) == -1)
+			ERRGEN("mkstemp()");
+	}
 	volatile FILE *ofile = NULL;
-	int argc = 0;
+	int argc;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
-		"-cgcc", "-o/tmp/test", NULL
+		"-c", "gcc", "-o", tempfile, NULL
 	};
 	char const optstring[] = "hvwpc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
@@ -22,11 +36,16 @@ int main (void)
 	ssize_t ret;
 	struct str_list symbols = {.cnt = 0, .list = NULL};
 
-	for (; argv[argc]; argc++);
+	/* print argument strings */
+	for (argc = 0; argv[argc]; argc++);
 	result = parse_opts(argc, argv, optstring, &ofile);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
 	for (int i = 0; result[i]; i++)
 		printf("%s ", result[i]);
+	putchar('\n');
+	printf("%s\n%s", "# using argv string: ", "# ");
+	for (int i = 0; i < argc; i++)
+		printf("%s ", argv[i]);
 	putchar('\n');
 	init_list(&symbols, "cepl");
 
@@ -39,7 +58,11 @@ int main (void)
 	ok((ret = free_str_list(&symbols)) != -1, "test free_str_list() doesn't return -1.");
 	ok(ret == 1, "test free_str_list() return is exactly 1.");
 
-	done_testing();
-
+	/* cleanup */
 	free_argv(result);
+	close(tmp_fd);
+	if (remove(tempfile) == -1)
+		WARNGEN("remove()");
+
+	done_testing();
 }
