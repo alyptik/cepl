@@ -63,7 +63,7 @@ static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n"
 	"\t/* silence -Wunused-parameter warning */\n"
 	"\t(void)argc, (void)argv;\n\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
-/* line[0] and token buffers */
+/* last line, current line, and token buffers */
 static char *line[2] = {NULL, NULL}, *tok_buf = NULL;
 /* compiler arg array */
 static char **cc_argv = NULL;
@@ -131,8 +131,8 @@ static inline void free_buffers(void)
 	free_str_list(&actual.hist);
 
 	/* set pointers to NULL */
-	line[0] = NULL;
 	line[1] = NULL;
+	line[0] = NULL;
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;
@@ -186,8 +186,8 @@ static inline void init_buffers(void)
 static inline void resize_buffer(char **buf, size_t offset)
 {
 	char *tmp;
-	/* current length + line[0] length + extra characters + \0 */
-	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line[0]) + offset + 1)) == NULL) {
+	/* current length + line[1] length + extra characters + \0 */
+	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line[1]) + offset + 1)) == NULL) {
 		cleanup();
 		ERRGEN("resize_buffer()");
 	}
@@ -215,8 +215,8 @@ static inline void build_body(void)
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
-	strcat(user.body, strtok(line[0], "\f\r\n\0"));
-	strcat(actual.body, strtok(line[0], "\f\r\n\0"));
+	strcat(user.body, strtok(line[1], "\f\r\n\0"));
+	strcat(actual.body, strtok(line[1], "\f\r\n\0"));
 }
 
 static inline void build_final(void)
@@ -283,21 +283,21 @@ static inline void reg_handlers(void)
 
 static inline char *read_line(void)
 {
-	if (line[0]) {
-		free(line[0]);
-		line[0] = NULL;
+	if (line[1]) {
+		free(line[1]);
+		line[1] = NULL;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		line[0] = readline("\n>>> ");
+		line[1] = readline("\n>>> ");
 	} else {
 		size_t cnt = 0;
-		if (getline(&line[0], &cnt, stdin) == -1) {
+		if (getline(&line[1], &cnt, stdin) == -1) {
 			cleanup();
 			ERRGEN("getline()");
 		}
 	}
-	return line[0];
+	return line[1];
 }
 
 int main(int argc, char *argv[])
@@ -340,35 +340,35 @@ int main(int argc, char *argv[])
 	reg_handlers();
 
 	/* loop readline() until EOF is read */
-	while ((line[0] = read_line()) && *line[0]) {
+	while ((line[1] = read_line()) && *line[1]) {
 		fflush(stdout);
 		/* strip newlines */
-		if ((tok_buf = strpbrk(line[0], "\f\r\n\0")) != NULL)
+		if ((tok_buf = strpbrk(line[1], "\f\r\n\0")) != NULL)
 			tok_buf[0] = '\0';
-		/* dont add blank line[0]s to history */
-		if (strlen(line[0]) > 0 && (!line[1] || strcmp(line[0], line[1]) != 0)) {
-			add_history(line[0]);
+		/* dont add blank line[1]s to history */
+		if (strlen(line[1]) > 0 && (!line[0] || strcmp(line[1], line[0]) != 0)) {
+			add_history(line[1]);
 			/* increment history count */
 			nlines++;
-			/* copy line[0] to line[1] buffer */
-			if (line[1])
-				free(line[1]);
-			if ((line[1] = malloc(strlen(line[0]) + 1)) == NULL)
-				ERRGEN("allocation of line[1]");
-			memcpy(line[1], line[0], strlen(line[0]) + 1);
+			/* copy line[1] to line[0] buffer */
+			if (line[0])
+				free(line[0]);
+			if ((line[0] = malloc(strlen(line[1]) + 1)) == NULL)
+				ERRGEN("allocation of line[0]");
+			memcpy(line[0], line[1], strlen(line[1]) + 1);
 		}
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
-		/* re-allocate enough memory for line[0] + '\t' + ';' + '\n' + '\0' */
+		/* re-allocate enough memory for line[1] + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&user.body, 3);
 		resize_buffer(&actual.body, 3);
 		resize_buffer(&user.final, 3);
 		resize_buffer(&actual.final, 3);
 
 		/* control sequence and preprocessor directive parsing */
-		switch (line[0][0]) {
+		switch (line[1][0]) {
 		case ';':
-			switch(line[0][1]) {
+			switch(line[1][1]) {
 			/* clean up and exit program */
 			case 'q':
 				cleanup();
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				out_flag ^= true;
 				/* break if file name empty */
-				if (!(tok_buf = strpbrk(line[0], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line[1], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
@@ -430,11 +430,11 @@ int main(int argc, char *argv[])
 			case 'm': /* fallthrough */
 			case 'f':
 				/* break if function definition empty */
-				if (!(tok_buf = strpbrk(line[0], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line[1], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				/* re-allocate enough memory for line[0] + '\n' + '\n' + '\0' */
+				/* re-allocate enough memory for line[1] + '\n' + '\n' + '\0' */
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
@@ -465,8 +465,8 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line[0]) - 1; line[0][i] == ' ' || line[0][i] == '\t'; i--)
-				line[0][i] = '\0';
+			for (register int i = strlen(line[1]) - 1; line[1][i] == ' ' || line[1][i] == '\t'; i--)
+				line[1][i] = '\0';
 			/* start building program source */
 			build_body();
 			strcat(user.body, "\n");
@@ -475,9 +475,9 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line[0]) - 1; line[0][i] == ' ' || line[0][i] == '\t'; i--)
-				line[0][i] = '\0';
-			switch(line[0][strlen(line[0]) - 1]) {
+			for (register int i = strlen(line[1]) - 1; line[1][i] == ' ' || line[1][i] == '\t'; i--)
+				line[1][i] = '\0';
+			switch(line[1][strlen(line[1]) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
