@@ -63,8 +63,8 @@ static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n"
 	"\t/* silence -Wunused-parameter warning */\n"
 	"\t(void)argc, (void)argv;\n\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
-/* line and token buffers */
-static char *line = NULL, *last = NULL, *tok_buf = NULL;
+/* line[0] and token buffers */
+static char *line[2] = {NULL, NULL}, *tok_buf = NULL;
 /* compiler arg array */
 static char **cc_argv = NULL;
 /* readline history variables */
@@ -103,10 +103,10 @@ static inline void free_buffers(void)
 {
 	write_hist();
 
-	if (line)
-		free(line);
-	if (last)
-		free(last);
+	if (line[0])
+		free(line[0]);
+	if (line[1])
+		free(line[1]);
 	if (user.funcs)
 		free(user.funcs);
 	if (actual.funcs)
@@ -131,8 +131,8 @@ static inline void free_buffers(void)
 	free_str_list(&actual.hist);
 
 	/* set pointers to NULL */
-	line = NULL;
-	last = NULL;
+	line[0] = NULL;
+	line[1] = NULL;
 	user.body = NULL;
 	actual.body = NULL;
 	user.final = NULL;
@@ -186,8 +186,8 @@ static inline void init_buffers(void)
 static inline void resize_buffer(char **buf, size_t offset)
 {
 	char *tmp;
-	/* current length + line length + extra characters + \0 */
-	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
+	/* current length + line[0] length + extra characters + \0 */
+	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line[0]) + offset + 1)) == NULL) {
 		cleanup();
 		ERRGEN("resize_buffer()");
 	}
@@ -215,8 +215,8 @@ static inline void build_body(void)
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
-	strcat(user.body, strtok(line, "\f\r\n\0"));
-	strcat(actual.body, strtok(line, "\f\r\n\0"));
+	strcat(user.body, strtok(line[0], "\f\r\n\0"));
+	strcat(actual.body, strtok(line[0], "\f\r\n\0"));
 }
 
 static inline void build_final(void)
@@ -283,21 +283,21 @@ static inline void reg_handlers(void)
 
 static inline char *read_line(void)
 {
-	if (line) {
-		free(line);
-		line = NULL;
+	if (line[0]) {
+		free(line[0]);
+		line[0] = NULL;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		line = readline("\n>>> ");
+		line[0] = readline("\n>>> ");
 	} else {
 		size_t cnt = 0;
-		if (getline(&line, &cnt, stdin) == -1) {
+		if (getline(&line[0], &cnt, stdin) == -1) {
 			cleanup();
 			ERRGEN("getline()");
 		}
 	}
-	return line;
+	return line[0];
 }
 
 int main(int argc, char *argv[])
@@ -340,35 +340,35 @@ int main(int argc, char *argv[])
 	reg_handlers();
 
 	/* loop readline() until EOF is read */
-	while ((line = read_line()) && *line) {
+	while ((line[0] = read_line()) && *line[0]) {
 		fflush(stdout);
 		/* strip newlines */
-		if ((tok_buf = strpbrk(line, "\f\r\n\0")) != NULL)
+		if ((tok_buf = strpbrk(line[0], "\f\r\n\0")) != NULL)
 			tok_buf[0] = '\0';
-		/* dont add blank lines to history */
-		if (strlen(line) > 0 && (!last || strcmp(line, last) != 0)) {
-			add_history(line);
+		/* dont add blank line[0]s to history */
+		if (strlen(line[0]) > 0 && (!line[1] || strcmp(line[0], line[1]) != 0)) {
+			add_history(line[0]);
 			/* increment history count */
 			nlines++;
-			/* copy line to last buffer */
-			if (last)
-				free(last);
-			if ((last = malloc(strlen(line) + 1)) == NULL)
-				ERRGEN("allocation of last");
-			memcpy(last, line, strlen(line) + 1);
+			/* copy line[0] to line[1] buffer */
+			if (line[1])
+				free(line[1]);
+			if ((line[1] = malloc(strlen(line[0]) + 1)) == NULL)
+				ERRGEN("allocation of line[1]");
+			memcpy(line[1], line[0], strlen(line[0]) + 1);
 		}
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
-		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
+		/* re-allocate enough memory for line[0] + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&user.body, 3);
 		resize_buffer(&actual.body, 3);
 		resize_buffer(&user.final, 3);
 		resize_buffer(&actual.final, 3);
 
 		/* control sequence and preprocessor directive parsing */
-		switch (line[0]) {
+		switch (line[0][0]) {
 		case ';':
-			switch(line[1]) {
+			switch(line[0][1]) {
 			/* clean up and exit program */
 			case 'q':
 				cleanup();
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				out_flag ^= true;
 				/* break if file name empty */
-				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line[0], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
@@ -430,11 +430,11 @@ int main(int argc, char *argv[])
 			case 'm': /* fallthrough */
 			case 'f':
 				/* break if function definition empty */
-				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line[0], " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
+				/* re-allocate enough memory for line[0] + '\n' + '\n' + '\0' */
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 				break;
 
-			/* pop_history last statement */
+			/* pop last history statement */
 			case 'u':
 				/* break early if no history to pop_history */
 				if (user.flags.cnt < 2 || actual.flags.cnt < 2)
@@ -465,8 +465,8 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
-				line[i] = '\0';
+			for (register int i = strlen(line[0]) - 1; line[0][i] == ' ' || line[0][i] == '\t'; i--)
+				line[0][i] = '\0';
 			/* start building program source */
 			build_body();
 			strcat(user.body, "\n");
@@ -475,9 +475,9 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
-				line[i] = '\0';
-			switch(line[strlen(line) - 1]) {
+			for (register int i = strlen(line[0]) - 1; line[0][i] == ' ' || line[0][i] == '\t'; i--)
+				line[0][i] = '\0';
+			switch(line[0][strlen(line[0]) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
