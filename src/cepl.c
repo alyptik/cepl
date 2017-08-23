@@ -291,10 +291,8 @@ static inline char *read_line(void)
 		line = readline("\n>>> ");
 	} else {
 		size_t cnt = 0;
-		if (getline(&line, &cnt, stdin) == -1) {
-			cleanup();
-			ERRGEN("getline()");
-		}
+		if (getline(&line, &cnt, stdin) == -1)
+			line = NULL;
 	}
 	return line;
 }
