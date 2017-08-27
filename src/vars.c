@@ -34,7 +34,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* first/fourth captures are ignored */
 	char *regex, *type;
-	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]+)"
+	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]*)"
 		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
 		"(.*)(";
 	char end[] = ")(\\[*)";
@@ -51,7 +51,7 @@ enum var_type extract_type(char const *line, char const *id)
 		ERR("failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 6, match, 0) || match[3].rm_so == -1) {
+	if (regexec(&reg, line, 6, match, 0) || match[2].rm_so == -1) {
 		free(regex);
 		regfree(&reg);
 		return T_ERR;
@@ -170,7 +170,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 
 		/* first capture is ignored */
 		char fallback_regex[] =
-			"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
+			"(,|bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
 			"[^,;&|]*[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)";
 
@@ -236,15 +236,14 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	}
 
 	/* get the type of each identifier */
-	line_tmp[0] = line_tmp[1];
 	enum var_type type_tmp[id_list->cnt];
-	for (ssize_t i = count - 1; i < id_list->cnt; i++) {
-		if ((type_tmp[i] = extract_type(line_tmp[0], id_list->list[i])) == T_ERR)
+	for (register ssize_t i = 0; i < id_list->cnt; i++) {
+		if ((type_tmp[i] = extract_type(line_tmp[1], id_list->list[i])) == T_ERR)
 			WARNXGEN(id_list->list[i]);
 	}
 
 	/* copy it into the output parameter */
-	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
+	if ((*type_list = malloc(sizeof **type_list * id_list->cnt)) == NULL)
 		ERR("failed to allocate memory for type_list");
 	memcpy(*type_list, type_tmp, sizeof type_tmp);
 	free(line_tmp[1]);
@@ -329,7 +328,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			break;
 		case T_PTR: /* fallthrough */
 		case T_OTHER: /* fallthrough */
-		case T_ERR:
+		case T_ERR: /* fallthrough */
+		default:
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'p';
