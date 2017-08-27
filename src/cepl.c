@@ -126,8 +126,13 @@ static inline void free_buffers(void)
 		free(user.flags.list);
 	if (actual.flags.list)
 		free(actual.flags.list);
-	if (vars.list)
+	if (vars.list) {
+		for (int i = 0; i< vars.cnt; i++) {
+			if (vars.list[i].key)
+				free(vars.list[i].key);
+		}
 		free(vars.list);
+	}
 
 	/* free vectors */
 	if (cc_argv)
@@ -523,10 +528,10 @@ int main(int argc, char *argv[])
 		/* extract identifiers and types */
 		find_vars(line, &ids, &types);
 		gen_var_list(&vars, &ids, &types);
-		for (register int i = 0; i < ids.cnt; i++)
-			printf("%s = %d\n", ids.list[i], types[i]);
-		/* for (register int i = 0; i < vars.cnt; i++) */
-		/*         printf("%s = %d\n", vars.list[i].key, vars.list[i].type); */
+		/* for (register int i = 0; i < ids.cnt; i++) */
+		/*         printf("%s = %d\n", ids.list[i], types[i]); */
+		for (register int i = 0; i < vars.cnt; i++)
+			printf("%s = %d\n", vars.list[i].key, vars.list[i].type);
 
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */

@@ -39,7 +39,7 @@ enum var_type {
 struct var_list {
 	int cnt;
 	struct {
-		char const *key;
+		char *key;
 		enum var_type type;
 		void *data;
 		union {
@@ -62,6 +62,7 @@ static inline void init_var_list(struct var_list *list_struct)
 {
 	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		ERR("error during initial var_list malloc()");
+	list_struct->cnt = 0;
 }
 
 static inline void append_var(struct var_list *list_struct, char const *key, enum var_type type)
@@ -73,7 +74,10 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 	if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
 		ERRARR("var_list", list_struct->cnt);
 	list_struct->list = tmp;
-	list_struct->list[list_struct->cnt - 1].key = key;
+	if ((list_struct->list[list_struct->cnt - 1].key = malloc(strlen(key) + 1)) == NULL)
+		ERRGEN("append_var()");
+	memset(list_struct->list[list_struct->cnt - 1].key, 0, strlen(key) + 1);
+	memcpy(list_struct->list[list_struct->cnt - 1].key, key, strlen(key) + 1);
 	list_struct->list[list_struct->cnt - 1].type = type;
 	list_struct->list[list_struct->cnt - 1].data = NULL;
 
