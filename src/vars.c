@@ -171,7 +171,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		/* first capture is ignored */
 		char fallback_regex[] =
 			"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
-			".*[[:blank:]]*\\**[[:blank:]]*"
+			"[^;&|]*[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)";
 
 		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
