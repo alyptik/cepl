@@ -230,7 +230,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	}
 
 	/* return early if nothing to do */
-	if (count - 1 == -1) {
+	if (count == 0) {
 		free(line_tmp[1]);
 		return 0;
 	}
