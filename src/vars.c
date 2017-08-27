@@ -66,7 +66,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char[[:blank:]]+(const[[:blank:]]+|)\\*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*(const[[:blank:]]*|)\\*[[:blank:]]*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -99,7 +99,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* long double */
-	if (regcomp(&reg, "long[[:blank:]]+double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "long[[:blank:]]*double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -171,7 +171,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		/* first capture is ignored */
 		char fallback_regex[] =
 			"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
-			".*[[:blank:]]\\**"
+			".*[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)";
 
 		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
