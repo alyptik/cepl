@@ -29,6 +29,7 @@ Input lines prefixed with a `;` are used to control internal state.
 	;p[arse]:		Toggle -p (shared library parsing) flag
 	;q[uit]:		Exit CEPL
 	;r[eset]:		Reset CEPL to its initial program state
+	;t[racking]:		Toggle variable tracking.
 	;u[ndo]:		Incremental undo (can be repeated).
 	;w[arnings]:		Toggle -w (warnings) flag
 
@@ -36,6 +37,7 @@ Input lines prefixed with a `;` are used to control internal state.
 
 	-h,--help:		Show help/usage information.
 	-p,--parse:		Disable addition of dynamic library symbols to readline completion.
+	-t,--tracking:		Toggle variable tracking.
 	-v,--version:		Show version information.
 	-w,--warnings:		Compile with “-pedantic-errors -Wall -Wextra” flags.
 	-c,--compiler:		Specify alternate compiler.
