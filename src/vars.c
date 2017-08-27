@@ -8,6 +8,16 @@
 #include "compile.h"
 #include "vars.h"
 
+/* fallback linker arg array */
+static char *const ld_alt_list[] = {
+	"gcc", "-xassembler", "/dev/stdin",
+	"-o/dev/stdout", NULL
+};
+
+/* global linker arguments struct */
+extern struct str_list ld_list;
+extern char **environ;
+
 /* silence linter */
 long syscall(long number, ...);
 int fexecve(int mem_fd, char *const argv[], char *const envp[]);
@@ -224,17 +234,19 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	return id_list->cnt;
 }
 
-int print_vars(char const *src, char *const cc_args[], char *const exec_args[], struct var_list *list)
+int print_vars(struct var_list *vars, char const *src, char *const cc_args[], char *const exec_args[], struct var_list *list)
 {
-	int mem_fd, status;
+	int mem_fd, status, null;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strnlen(src, COUNT) + 1];
 	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "\n\tprintf(\"%s = %s, \",";
-	char println_beg[] = "\n\tprintf(\"%s = %s\n \",";
-	char func_end[] = ");";
+	char print_beg[] = "\n\tfprintf(stderr, \"%s = %s, \", ";
+	char println_beg[] = "\n\tfprintf(stderr, \"%s = %s\\n \", ";
+	char print_end[] = ");";
 	char *src_tmp = NULL, *id_tmp = NULL;
 	size_t off = 0;
+	size_t p_sz = sizeof print_beg + sizeof print_end;
+	size_t pln_sz = sizeof println_beg + sizeof print_end;
 
 	/* sanity checks */
 	if (!src || !cc_args || !exec_args || !list)
@@ -242,63 +254,162 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 	if (sizeof src_buffer < 2)
 		ERRX("empty source string passed to print_vars()");
 
-	/* add trailing '\n' */
-	memcpy(src_buffer, src, sizeof src_buffer);
-	src_tmp = src_buffer;
+	/* return early if nothing to do */
+	if (vars->cnt == 0)
+		return -1;
 
-	char final[sizeof src_buffer + sizeof prog_end];
+	/* copy source buffer */
+	memcpy(src_buffer, src, sizeof src_buffer);
+	if ((src_tmp = malloc(sizeof src_buffer)) == NULL)
+		ERRGEN("src_tmp malloc()");
+	memset(src_tmp, 0, sizeof src_buffer);
+	memcpy(src_tmp, src_buffer, sizeof src_buffer);
+	off = sizeof src_buffer - 1;
+
+	/* build var-tracking source */
+	for (register int i = 0; i < vars->cnt - 1; i++) {
+		if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + strlen(vars->list[i].key) + p_sz)) == NULL)
+			ERRGEN("src_tmp malloc()");
+		memcpy(src_tmp + off, print_beg, sizeof print_beg - 1);
+		off += sizeof print_beg - 1;
+		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
+		off += strlen(vars->list[i].key);
+		memcpy(src_tmp + off, print_end, sizeof print_end);
+		off += sizeof print_end - 1;
+	}
+
+	/* finish source */
+	if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + strlen(vars->list[vars->cnt - 1].key) + pln_sz)) == NULL)
+		ERRGEN("src_tmp malloc()");
+	memcpy(src_tmp + off, println_beg, sizeof println_beg - 1);
+	off += sizeof println_beg - 1;
+	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
+	off += strlen(vars->list[vars->cnt - 1].key);
+	memcpy(src_tmp + off, print_end, sizeof print_end);
+	off += sizeof print_end - 1;
+
+	/* add trailing '\n' */
+	char final[strlen(src_tmp) + sizeof prog_end + 1];
 	memset(final, 0, sizeof final);
-	memcpy(final, src_buffer, sizeof src_buffer - 1);
-	memcpy(final + sizeof src_buffer - 1, prog_end, sizeof prog_end);
-	final[sizeof src_buffer + sizeof prog_end - 1] = '\n';
+	memcpy(final, src_tmp, strlen(src_tmp));
+	memcpy(final + strlen(src_tmp), prog_end, sizeof prog_end);
+	final[strlen(src_tmp) + sizeof prog_end - 1] = '\n';
+	/* printf("%s\n%lu %lu\n", final, strlen(src_tmp), off); */
+	free(src_tmp);
 
 	/* create pipes */
-	/* if (pipe(pipe_cc) == -1) */
-	/*         ERR("error making pipe_cc pipe"); */
-	/* if (pipe(pipe_ld) == -1) */
-	/*         ERR("error making pipe_ld pipe"); */
-	/* if (pipe(pipe_exec) == -1) */
-	/*         ERR("error making pipe_exec pipe"); */
+	if (pipe(pipe_cc) == -1)
+		ERR("error making pipe_cc pipe");
+	if (pipe(pipe_ld) == -1)
+		ERR("error making pipe_ld pipe");
+	if (pipe(pipe_exec) == -1)
+		ERR("error making pipe_exec pipe");
 	/* set close-on-exec for pipe fds */
-	/* set_cloexec(pipe_cc); */
-	/* set_cloexec(pipe_ld); */
-	/* set_cloexec(pipe_exec); */
+	set_cloexec(pipe_cc);
+	set_cloexec(pipe_ld);
+	set_cloexec(pipe_exec);
 
 	/* fork compiler */
-	/* switch (fork()) { */
+	switch (fork()) {
 	/* error */
-	/* case -1: */
-	/*         close(pipe_cc[0]); */
-	/*         close(pipe_cc[1]); */
-	/*         close(pipe_ld[0]); */
-	/*         close(pipe_ld[1]); */
-	/*         close(pipe_exec[0]); */
-	/*         close(pipe_exec[1]); */
-	/*         ERR("error forking compiler"); */
-	/*         break; */
+	case -1:
+		close(pipe_cc[0]);
+		close(pipe_cc[1]);
+		close(pipe_ld[0]);
+		close(pipe_ld[1]);
+		close(pipe_exec[0]);
+		close(pipe_exec[1]);
+		ERR("error forking compiler");
+		break;
 
 	/* child */
-	/* case 0: */
-	/*         dup2(pipe_cc[0], 0); */
-	/*         dup2(pipe_ld[1], 1); */
-	/*         execvp(cc_args[0], cc_args); */
-	/*         [> execvp() should never return <] */
-	/*         ERR("error forking compiler"); */
-	/*         break; */
+	case 0:
+		dup2(pipe_cc[0], 0);
+		dup2(pipe_ld[1], 1);
+		execvp(cc_args[0], cc_args);
+		/* execvp() should never return */
+		ERR("error forking compiler");
+		break;
 
 	/* parent */
-	/* default: */
-	/*         close(pipe_cc[0]); */
-	/*         close(pipe_ld[1]); */
-	/*         if (write(pipe_cc[1], final, sizeof final) == -1) */
-	/*                 ERR("error writing to pipe_cc[1]"); */
-	/*         close(pipe_cc[1]); */
-	/*         wait(&status); */
-	/*         if (WIFEXITED(status) && WEXITSTATUS(status)) { */
-	/*                 WARNX("compiler returned non-zero exit code"); */
-	/*                 return WEXITSTATUS(status); */
-		/* } */
-	/* } */
+	default:
+		close(pipe_cc[0]);
+		close(pipe_ld[1]);
+		if (write(pipe_cc[1], final, sizeof final) == -1)
+			ERR("error writing to pipe_cc[1]");
+		close(pipe_cc[1]);
+		wait(&status);
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
+			WARNX("compiler returned non-zero exit code");
+			return WEXITSTATUS(status);
+		}
+	}
+
+	/* fork linker */
+	switch (fork()) {
+	/* error */
+	case -1:
+		close(pipe_ld[0]);
+		close(pipe_exec[0]);
+		close(pipe_exec[1]);
+		ERR("error forking linker");
+		break;
+
+	/* child */
+	case 0:
+		dup2(pipe_ld[0], 0);
+		dup2(pipe_exec[1], 1);
+		if (ld_list.list)
+			execvp(ld_list.list[0], ld_list.list);
+		/* fallback linker exec */
+		execvp(ld_alt_list[0], ld_alt_list);
+		/* execvp() should never return */
+		ERR("error forking linker");
+		break;
+
+	/* parent */
+	default:
+		close(pipe_ld[0]);
+		close(pipe_exec[1]);
+		wait(&status);
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
+			WARNX("linker returned non-zero exit code");
+			return WEXITSTATUS(status);
+		}
+	}
+
+	/* fork executable */
+	switch (fork()) {
+	/* error */
+	case -1:
+		close(pipe_exec[0]);
+		ERR("error forking executable");
+		break;
+
+	/* child */
+	case 0:
+		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
+			ERR("error creating mem_fd");
+		pipe_fd(pipe_exec[0], mem_fd);
+		/* redirect stdout to /dev/null */
+		if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
+		err(EXIT_FAILURE, "%s", "open() error!");
+		dup2(null, 1);
+		fexecve(mem_fd, exec_args, environ);
+		/* fexecve() should never return */
+		ERR("error forking executable");
+		break;
+
+	/* parent */
+	default:
+		close(pipe_exec[0]);
+		wait(&status);
+		/* don't overwrite non-zero exit status from compiler */
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
+			WARNX("executable returned non-zero exit code");
+			return WEXITSTATUS(status);
+		}
+	}
 
 	return 1;
 }
