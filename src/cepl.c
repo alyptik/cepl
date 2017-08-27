@@ -126,6 +126,8 @@ static inline void free_buffers(void)
 		free(user.flags.list);
 	if (actual.flags.list)
 		free(actual.flags.list);
+	if (types)
+		free(types);
 
 	/* free vectors */
 	if (cc_argv)
@@ -149,12 +151,12 @@ static inline void free_buffers(void)
 	actual.final = NULL;
 	vars.list = NULL;
 	cc_argv = NULL;
+	types = NULL;
 }
 
 static inline void cleanup(void)
 {
 	free_str_list(&comp_list);
-	free_str_list(&ids);
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
 		WARN(strcat("error writing history to ", hist_file));
@@ -162,8 +164,6 @@ static inline void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 	if (hist_file)
 		free(hist_file);
-	if (types)
-		free(types);
 }
 
 static inline void init_buffers(void)
@@ -516,18 +516,20 @@ int main(int argc, char *argv[])
 					actual.body[i] = '\0';
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
+				/* extract identifiers and types */
+				find_vars(line, &ids, &types);
+				gen_var_list(&vars, &ids, &types);
 				break;
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
 				build_body();
 				strcat(user.body, ";\n");
 				strcat(actual.body, ";\n");
+				/* extract identifiers and types */
+				find_vars(line, &ids, &types);
+				gen_var_list(&vars, &ids, &types);
 			}
 		}
-
-		/* extract identifiers and types */
-		find_vars(line, &ids, &types);
-		gen_var_list(&vars, &ids, &types);
 		build_final(argv);
 
 		/* print generated source code unless stdin is a pipe */
