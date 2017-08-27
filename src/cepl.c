@@ -142,6 +142,7 @@ static inline void free_buffers(void)
 	actual.body = NULL;
 	user.final = NULL;
 	actual.final = NULL;
+	vars.list = NULL;
 	cc_argv = NULL;
 }
 
@@ -158,8 +159,6 @@ static inline void cleanup(void)
 		free(hist_file);
 	if (types)
 		free(types);
-	if (vars.list)
-		free(vars.list);
 }
 
 static inline void init_buffers(void)
@@ -194,7 +193,6 @@ static inline void init_buffers(void)
 	init_flag_list(&user.flags);
 	init_flag_list(&actual.flags);
 	init_var_list(&vars);
-	init_list(&ids, NULL);
 }
 
 static inline void resize_buffer(char **buf, size_t offset)
@@ -326,7 +324,6 @@ int main(int argc, char *argv[])
 
 	/* initialize source buffers */
 	init_buffers();
-	init_var_list(&vars);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize user.final and actual.final then print version */
@@ -527,7 +524,9 @@ int main(int argc, char *argv[])
 		find_vars(line, &ids, &types);
 		gen_var_list(&vars, &ids, &types);
 		for (register int i = 0; i < ids.cnt; i++)
-			printf("%s = %u\n", ids.list[i], types[i]);
+			printf("%s = %d\n", ids.list[i], types[i]);
+		/* for (register int i = 0; i < vars.cnt; i++) */
+		/*         printf("%s = %d\n", vars.list[i].key, vars.list[i].type); */
 
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */

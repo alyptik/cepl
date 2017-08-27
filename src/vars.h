@@ -60,9 +60,8 @@ int print_vars(char const *src, char *const cc_args[], char *const exec_args[], 
 
 static inline void init_var_list(struct var_list *list_struct)
 {
-	if ((list_struct->list = malloc((sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
+	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		ERR("error during initial var_list malloc()");
-	list_struct->list = NULL;
 }
 
 static inline void append_var(struct var_list *list_struct, char const *key, enum var_type type)
@@ -110,8 +109,7 @@ static inline void gen_var_list(struct var_list *list_struct, struct str_list *i
 {
 	/* sanity checks */
 	if (!list_struct || !list_struct->list || !id_list || !id_list->list || !type_list)
-		return;
-		/* ERRX("NULL pointer passed to gen_var_list()"); */
+		WARNX("NULL pointer passed to gen_var_list()");
 	for (ssize_t i = 0; i < id_list->cnt; i++)
 		append_var(list_struct, id_list->list[i], *type_list[i]);
 }

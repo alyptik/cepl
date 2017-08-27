@@ -26,7 +26,7 @@ enum var_type extract_type(char const *line, char const *id)
 	char *regex, *type;
 	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]+)"
 		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
-		"(.*)[[:blank:]](";
+		"(.*)(";
 	char end[] = ")(\\[*)";
 
 	/* append identifier to regex */
@@ -43,6 +43,7 @@ enum var_type extract_type(char const *line, char const *id)
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 6, match, 0) || match[3].rm_so == -1) {
 		free(regex);
+		regfree(&reg);
 		return T_ERR;
 	}
 	if ((type = malloc(match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
@@ -52,6 +53,7 @@ enum var_type extract_type(char const *line, char const *id)
 	memset(type, 0, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1);
 	memcpy(type, line + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
 	memcpy(type + match[3].rm_eo - match[2].rm_so, line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
+	regfree(&reg);
 
 	/* string */
 	if (regcomp(&reg, "char \\*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -59,8 +61,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_STR;
 	}
+	regfree(&reg);
 
 	/* pointer */
 	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -68,8 +72,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_PTR;
 	}
+	regfree(&reg);
 
 	/* char */
 	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -77,8 +83,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_CHR;
 	}
+	regfree(&reg);
 
 	/* long double */
 	if (regcomp(&reg, "long double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -86,8 +94,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_LDBL;
 	}
+	regfree(&reg);
 
 	/* double */
 	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -95,8 +105,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_DBL;
 	}
+	regfree(&reg);
 
 	/* unsigned integral */
 	if (regcomp(&reg, "unsigned", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -104,8 +116,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_UINT;
 	}
+	regfree(&reg);
 
 	/* signed integral */
 	if (regcomp(&reg, "(bool|_Bool|short|int|long)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
@@ -113,8 +127,10 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
+		regfree(&reg);
 		return T_INT;
 	}
+	regfree(&reg);
 
 	/* return fallback type */
 	free(regex);
@@ -138,14 +154,17 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1)
+	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1) {
+		regfree(&reg);
 		return 0;
+	}
 	if ((*id= malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured id");
 
 	/* set the output parameter and return the offset */
 	memset(*id, 0, match[1].rm_eo - match[1].rm_so + 1);
 	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
+	regfree(&reg);
 	*offset = match[1].rm_so;
 	return match[1].rm_so;
 }
@@ -160,20 +179,39 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	if ((line_tmp[0] = malloc(strlen(line) + 1)) == NULL)
 		ERR("error allocating line_tmp");
 
-	size_t count = id_list->cnt;
+	/* initialize lists */
+	if (id_list->list)
+		free_str_list(id_list);
+	if (*type_list)
+		free(*type_list);
+	init_list(id_list, NULL);
+
+	ssize_t count = id_list->cnt;
 	memcpy(line_tmp[0], line, strlen(line) + 1);
 	line_tmp[1] = line_tmp[0];
 	/* extract all identifiers from the line */
 	while (extract_id(line_tmp[0], &id_tmp, &off) != 0) {
 		append_str(id_list, id_tmp, 0);
 		free(id_tmp);
+		id_tmp = NULL;
 		line_tmp[0] += off;
 		count++;
 	}
-	line_tmp[0] = line_tmp[1];
+	if (id_tmp) {
+		free(id_tmp);
+		id_tmp = NULL;
+	}
+
+	/* return early if nothing to do */
+	if (count - 1 == -1) {
+		free(line_tmp[1]);
+		return 0;
+	}
+
 	/* get the type of each identifier */
+	line_tmp[0] = line_tmp[1];
 	enum var_type type_tmp[id_list->cnt];
-	for (size_t i = count; i < id_list->cnt; i++) {
+	for (ssize_t i = count - 1; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp[0], id_list->list[i])) == T_ERR)
 			WARNXGEN(id_list->list[i]);
 	}
