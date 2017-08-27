@@ -245,7 +245,7 @@ static inline void build_final(char *argv[])
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
 	/* print variable values */
-	if (!track_flag)
+	if (track_flag)
 		print_vars(&vars, actual.final, cc_argv, argv);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
@@ -530,7 +530,7 @@ int main(int argc, char *argv[])
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
-				if (!track_flag) {
+				if (track_flag) {
 					find_vars(line, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}
@@ -541,7 +541,7 @@ int main(int argc, char *argv[])
 				strcat(user.body, ";\n");
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
-				if (!track_flag) {
+				if (track_flag) {
 					find_vars(line, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}
