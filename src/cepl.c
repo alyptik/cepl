@@ -148,6 +148,7 @@ static inline void free_buffers(void)
 static inline void cleanup(void)
 {
 	free_str_list(&comp_list);
+	free_str_list(&ids);
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
 		WARN(strcat("error writing history to ", hist_file));
@@ -155,6 +156,10 @@ static inline void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 	if (hist_file)
 		free(hist_file);
+	if (types)
+		free(types);
+	if (vars.list)
+		free(vars.list);
 }
 
 static inline void init_buffers(void)
@@ -321,6 +326,7 @@ int main(int argc, char *argv[])
 
 	/* initialize source buffers */
 	init_buffers();
+	init_var_list(&vars);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize user.final and actual.final then print version */
@@ -520,6 +526,8 @@ int main(int argc, char *argv[])
 		/* extract identifiers and types */
 		find_vars(line, &ids, &types);
 		gen_var_list(&vars, &ids, &types);
+		for (register int i = 0; i < ids.cnt; i++)
+			printf("%s = %u\n", ids.list[i], types[i]);
 
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */

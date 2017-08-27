@@ -160,6 +160,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	if ((line_tmp[0] = malloc(strlen(line) + 1)) == NULL)
 		ERR("error allocating line_tmp");
 
+	size_t count = id_list->cnt;
 	memcpy(line_tmp[0], line, strlen(line) + 1);
 	line_tmp[1] = line_tmp[0];
 	/* extract all identifiers from the line */
@@ -167,13 +168,14 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 		append_str(id_list, id_tmp, 0);
 		free(id_tmp);
 		line_tmp[0] += off;
+		count++;
 	}
 	line_tmp[0] = line_tmp[1];
 	/* get the type of each identifier */
 	enum var_type type_tmp[id_list->cnt];
-	for (size_t i = 0; i < id_list->cnt; i++) {
+	for (size_t i = count; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp[0], id_list->list[i])) == T_ERR)
-			ERR(strcat("failed to extract type for", id_list->list[i]));
+			WARNXGEN(id_list->list[i]);
 	}
 
 	/* copy it into the output parameter */
