@@ -318,6 +318,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			strchr(print_tmp, '_')[0] = 'p';
 		}
 
+		/* copy format string */
 		memcpy(src_tmp + off, print_tmp, sizeof print_tmp - 1);
 		off += sizeof print_tmp - 1;
 		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
@@ -335,6 +336,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			off += strlen("\", ");
 		}
 
+		/* copy final part of printf */
 		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
 		off += strlen(vars->list[i].key);
 		memcpy(src_tmp + off, print_end, sizeof print_end);
@@ -387,6 +389,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		strchr(print_tmp, '_')[0] = 'p';
 	}
 
+	/* copy format string */
 	memcpy(src_tmp + off, print_tmp, sizeof print_tmp - 1);
 	off += sizeof print_tmp - 1;
 	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
@@ -404,6 +407,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		off += strlen("\", ");
 	}
 
+	/* copy final part of printf */
 	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
 	off += strlen(vars->list[vars->cnt - 1].key);
 	memcpy(src_tmp + off, print_end, sizeof print_end);
