@@ -152,7 +152,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 {
 	regex_t reg;
 	regmatch_t match[2];
-	/* second/third capture is ignored */
+	/* second capture is ignored */
 	char regex[] = ".*[^[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
 		"([^[:alnum:]_=!<>]*[=;]|[^[:alnum:]_=!<>]*[<>]{2}[=;])";
