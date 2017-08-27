@@ -243,7 +243,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	}
 
 	/* copy it into the output parameter */
-	if ((*type_list = malloc(sizeof **type_list * id_list->cnt)) == NULL)
+	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
 		ERR("failed to allocate memory for type_list");
 	memcpy(*type_list, type_tmp, sizeof type_tmp);
 	free(line_tmp[1]);
