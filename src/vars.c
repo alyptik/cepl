@@ -152,11 +152,10 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 {
 	regex_t reg;
 	regmatch_t match[2];
-	/* second capture is ignored */
-	char regex[] = ".*[^[:alnum:]]+"
+	/* second/third capture is ignored */
+	char regex[] = ".*[^[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
-		"([^[:alnum:]=!<>]*[=;]*|[^[:alnum:]=!<>]*[<>]{2}[=;]*|)"
-		"[^=]*";
+		"([^[:alnum:]_=!<>]*[=;]|[^[:alnum:]_=!<>]*[<>]{2}[=;])";
 
 	/* return early if passed NULL pointers */
 	if (!line || !id || !offset)
@@ -192,8 +191,6 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	/* initialize lists */
 	if (id_list->list)
 		free_str_list(id_list);
-	if (*type_list)
-		free(*type_list);
 	init_list(id_list, NULL);
 
 	ssize_t count = id_list->cnt;
@@ -410,10 +407,11 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	off += sizeof print_end - 1;
 
 	/* copy final source into buffer */
-	char final[strlen(src_tmp) + sizeof prog_end + 1];
+	char final[off + sizeof prog_end + 1];
 	memset(final, 0, sizeof final);
-	memcpy(final, src_tmp, strlen(src_tmp));
-	memcpy(final + strlen(src_tmp), prog_end, sizeof prog_end);
+	memcpy(final, src_tmp, off);
+	memcpy(final + off, prog_end, sizeof prog_end);
+	puts(final);
 	/* remove NULL bytes */
 	while (memchr(final, 0, sizeof final) != NULL)
 		((char *)memchr(final, 0, sizeof final))[0] = '\n';
