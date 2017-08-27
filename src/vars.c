@@ -155,7 +155,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* second capture is ignored */
 	char regex[] = ".*[^[:alnum:]]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
-		"([^[:alnum:]=!<>]*=|[^[:alnum:]=!<>]*[<>]{2}=*|)"
+		"([^[:alnum:]=!<>]*[=;]|[^[:alnum:]=!<>]*[<>]{2}=*|[^[:alpha:]_]*[=;])"
 		"[^=]*";
 
 	/* return early if passed NULL pointers */
@@ -168,7 +168,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		regfree(&reg);
 		return 0;
 	}
-	if ((*id= malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
+	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured id");
 
 	/* set the output parameter and return the offset */
@@ -234,26 +234,26 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	return id_list->cnt;
 }
 
-int print_vars(struct var_list *vars, char const *src, char *const cc_args[], char *const exec_args[], struct var_list *list)
+int print_vars(struct var_list *vars, char const *src, char *const cc_args[], char *const exec_args[])
 {
 	int mem_fd, status, null;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strnlen(src, COUNT) + 1];
 	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "\n\tfprintf(stderr, \"%s = %s, \", ";
-	char println_beg[] = "\n\tfprintf(stderr, \"%s = %s\\n \", ";
+	char print_beg[] = "\n\tfprintf(stderr, \"%s = %s, \", \"";
+	char println_beg[] = "\n\tfprintf(stderr, \"%s = %s\\n \", \"";
 	char print_end[] = ");";
-	char *src_tmp = NULL, *id_tmp = NULL;
+	char *src_tmp = NULL;
 	size_t off = 0;
-	size_t p_sz = sizeof print_beg + sizeof print_end;
-	size_t pln_sz = sizeof println_beg + sizeof print_end;
+	/* space for <name>, <name> */
+	size_t psz = sizeof print_beg + sizeof print_end + 4;
+	size_t plnsz = sizeof println_beg + sizeof print_end + 4;
 
 	/* sanity checks */
-	if (!src || !cc_args || !exec_args || !list)
+	if (!vars || !src || !cc_args || !exec_args)
 		ERRX("NULL pointer passed to print_vars()");
 	if (sizeof src_buffer < 2)
 		ERRX("empty source string passed to print_vars()");
-
 	/* return early if nothing to do */
 	if (vars->cnt == 0)
 		return -1;
@@ -268,10 +268,14 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 	/* build var-tracking source */
 	for (register int i = 0; i < vars->cnt - 1; i++) {
-		if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + strlen(vars->list[i].key) + p_sz)) == NULL)
+		if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + (strlen(vars->list[i].key) * 2) + psz)) == NULL)
 			ERRGEN("src_tmp malloc()");
 		memcpy(src_tmp + off, print_beg, sizeof print_beg - 1);
 		off += sizeof print_beg - 1;
+		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
+		off += strlen(vars->list[i].key);
+		memcpy(src_tmp + off, "\", ", strlen("\", "));
+		off += strlen("\", ");
 		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
 		off += strlen(vars->list[i].key);
 		memcpy(src_tmp + off, print_end, sizeof print_end);
@@ -279,10 +283,14 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	}
 
 	/* finish source */
-	if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + strlen(vars->list[vars->cnt - 1].key) + pln_sz)) == NULL)
+	if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + (strlen(vars->list[vars->cnt - 1].key) * 2) + plnsz)) == NULL)
 		ERRGEN("src_tmp malloc()");
 	memcpy(src_tmp + off, println_beg, sizeof println_beg - 1);
 	off += sizeof println_beg - 1;
+	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
+	off += strlen(vars->list[vars->cnt - 1].key);
+	memcpy(src_tmp + off, "\", ", strlen("\", "));
+	off += strlen("\", ");
 	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
 	off += strlen(vars->list[vars->cnt - 1].key);
 	memcpy(src_tmp + off, print_end, sizeof print_end);
@@ -293,8 +301,9 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	memset(final, 0, sizeof final);
 	memcpy(final, src_tmp, strlen(src_tmp));
 	memcpy(final + strlen(src_tmp), prog_end, sizeof prog_end);
-	final[strlen(src_tmp) + sizeof prog_end - 1] = '\n';
-	/* printf("%s\n%lu %lu\n", final, strlen(src_tmp), off); */
+	/* remove NULL bytes */
+	while (memchr(final, 0, sizeof final) != NULL)
+		((char *)memchr(final, 0, sizeof final))[0] = '\n';
 	free(src_tmp);
 
 	/* create pipes */

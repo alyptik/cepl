@@ -243,7 +243,7 @@ static inline void build_final(char *argv[])
 	memcpy(actual.final, actual.funcs, strlen(actual.funcs) + 1);
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
-	print_vars(&vars, actual.final, cc_argv, argv, &vars);
+	print_vars(&vars, actual.final, cc_argv, argv);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
 }
@@ -528,13 +528,10 @@ int main(int argc, char *argv[])
 		/* extract identifiers and types */
 		find_vars(line, &ids, &types);
 		gen_var_list(&vars, &ids, &types);
-		puts("ids:");
-		for (register int i = 0; i < ids.cnt; i++)
-			printf("%s = %d\n", ids.list[i], types[i]);
-		puts("vars:");
+		printf("%s", "vars: ");
 		for (register int i = 0; i < vars.cnt; i++)
-			printf("%s = %d\n", vars.list[i].key, vars.list[i].type);
-
+			printf("%s = %d ", vars.list[i].key, vars.list[i].type);
+		putchar('\n');
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))

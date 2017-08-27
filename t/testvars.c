@@ -10,20 +10,15 @@
 
 int main(void)
 {
-	char *const src = "int main(void) { int i = 0; return i; }";
-	char *argv[] = {"cepl", NULL};
-	char *const cc_args[] = {
-		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
-		"-pedantic-errors", "-std=c11", "-S", "-xc",
-		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
-	};
-	struct str_list strs = {0, NULL};
-	struct var_list vars = {0, NULL};
+	char *const src = "int main(void)"
+		"\n{"
+		"\nint i = 0;\n";
+	struct str_list ids = {0, NULL};
 	enum var_type *types = NULL;
 
 	plan(4);
 
-	ok(find_vars(src, &strs, &types), "succeed finding variable values.");
+	ok(find_vars(src, &ids, &types), "succeed finding variable values.");
 	ok(extract_type(src, "i") == T_INT, "succeed extracting int type.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned int type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
