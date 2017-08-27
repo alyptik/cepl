@@ -155,7 +155,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* second capture is ignored */
 	char regex[] = ".*[^[:alnum:]]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
-		"([^[:alnum:]=!<>]*[=;]|[^[:alnum:]=!<>]*[<>]{2}=*|[^[:alpha:]_]*[=;])"
+		"([^[:alnum:]=!<>]*[=;]*|[^[:alnum:]=!<>]*[<>]{2}[=;]*|)"
 		"[^=]*";
 
 	/* return early if passed NULL pointers */
@@ -206,10 +206,6 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 		id_tmp = NULL;
 		line_tmp[0] += off;
 		count++;
-	}
-	if (id_tmp) {
-		free(id_tmp);
-		id_tmp = NULL;
 	}
 
 	/* return early if nothing to do */
