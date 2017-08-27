@@ -21,10 +21,11 @@
 #include <sys/wait.h>
 
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v2.6.1"
-#define USAGE_STRING "[-hpvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
+#define VERSION_STRING "CEPL v3.0.0"
+#define USAGE_STRING "[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
+	"-t,--tracking:\t\tToggle variable tracking.\n\t" \
 	"-v,--version:\t\tShow version information.\n\t" \
 	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
 	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
@@ -40,6 +41,7 @@
 	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]:\t\tExit CEPL\n\t" \
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
+	";t[racking]:\t\tToggle variable tracking.\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]:\t\tToggle -w (warnings) flag"
 /* set pipe buffer byte count to page size */

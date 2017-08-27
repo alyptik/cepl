@@ -30,7 +30,7 @@ int main (void)
 		"cepl", "-lssl", "-I.",
 		"-c", "gcc", "-o", tempfile, NULL
 	};
-	char const optstring[] = "hvwpc:l:I:o:";
+	char const optstring[] = "hptvwc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	char **result;
 	ssize_t ret;

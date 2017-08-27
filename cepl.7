@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v2.6.1" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v3.0.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -41,6 +41,8 @@ Input lines prefixed with a \fB;\fR are used to control internal state.
 .HP
 \fB;r[eset]\fR:		Reset CEPL to its initial program state
 .HP
+\fB;t[racking]\fR:	Toggle variable tracking.
+.HP
 \fB;u[ndo]\fR:		Incremental undo (can be repeated)
 .HP
 \fB;w[arnings]\fR:	Toggle -w (warnings) flag
@@ -53,6 +55,8 @@ Command line options:
 \fB\-h\fR,\fB\-\-help\fR:	Show help/usage information.
 .HP
 \fB\-p\fR,\fB\-\-parse\fR:	Disable addition of dynamic library symbols to readline completion.
+.HP
+\fB\-t\fR,\fB\-\-tracking\fR:	Toggle variable tracking.
 .HP
 \fB\-v\fR,\fB\-\-version\fR:	Show version information.
 .HP

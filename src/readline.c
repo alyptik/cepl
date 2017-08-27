@@ -23,13 +23,13 @@ char *comp_arg_list[] = {
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local", "__asm__",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
 	"bool", "true", "false", "free(", "malloc(", "realloc(", "calloc(",
-	"system(", "fork(", "pipe(", "execl(", "execv(", "kill(", "signal(",
-	"printf(", "fprintf(", "dprintf(", "sprintf(", "snprintf(",
+	"system(", "fork(", "pipe(", "execl(", "execv(", "kill(",
+	"signal(", "printf(", "fprintf(", "dprintf(", "sprintf(",
 	"open(", "close(", "read(", "write(", "fopen(", "fclose(",
 	"scanf(", "fscanf(", "mmap(", "munmap(", "syscall(",
 	"fread(", "fwrite(", "memcpy(", "memset(", "memcmp(", "getline(",
 	"puts(", "strspn(", "strlen(", "strcat(", "strtok(", "stpcpy(",
-	";function", ";parse", ";quit", ";reset", ";warnings", NULL
+	";function", ";parse", ";quit", ";reset", ";tracking", ";warnings", NULL
 };
 /* global completion list struct */
 struct str_list comp_list = { .cnt = 0, .list = NULL };

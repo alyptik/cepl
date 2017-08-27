@@ -89,7 +89,7 @@ static enum var_type *types;
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
-extern bool warn_flag, parse_flag, out_flag;
+extern bool warn_flag, parse_flag, track_flag, out_flag;
 
 static inline void write_hist(void) {
 	/* return early if no file open */
@@ -156,6 +156,7 @@ static inline void free_buffers(void)
 
 static inline void cleanup(void)
 {
+	/* free generated completions */
 	free_str_list(&comp_list);
 	/* append history to history file */
 	if (append_history(nlines, hist_file))
@@ -243,7 +244,9 @@ static inline void build_final(char *argv[])
 	memcpy(actual.final, actual.funcs, strlen(actual.funcs) + 1);
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
-	print_vars(&vars, actual.final, cc_argv, argv);
+	/* print variable values */
+	if (!track_flag)
+		print_vars(&vars, actual.final, cc_argv, argv);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
 }
@@ -318,7 +321,7 @@ static inline char *read_line(void)
 
 int main(int argc, char *argv[])
 {
-	char const optstring[] = "hvwpc:l:I:o:";
+	char const optstring[] = "hptvwc:l:I:o:";
 	FILE *make_hist = NULL;
 	struct stat hist_stat;
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
@@ -433,6 +436,16 @@ int main(int argc, char *argv[])
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
 
+			/* toggle variable tracking */
+			case 't':
+				free_buffers();
+				init_buffers();
+				/* toggle global parse flag */
+				track_flag ^= true;
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				break;
+
 			/* toggle warnings */
 			case 'w':
 				free_buffers();
@@ -517,8 +530,10 @@ int main(int argc, char *argv[])
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
-				find_vars(line, &ids, &types);
-				gen_var_list(&vars, &ids, &types);
+				if (!track_flag) {
+					find_vars(line, &ids, &types);
+					gen_var_list(&vars, &ids, &types);
+				}
 				break;
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
@@ -526,8 +541,10 @@ int main(int argc, char *argv[])
 				strcat(user.body, ";\n");
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
-				find_vars(line, &ids, &types);
-				gen_var_list(&vars, &ids, &types);
+				if (!track_flag) {
+					find_vars(line, &ids, &types);
+					gen_var_list(&vars, &ids, &types);
+				}
 			}
 		}
 		build_final(argv);
