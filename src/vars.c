@@ -413,7 +413,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	memcpy(src_tmp + off, print_end, sizeof print_end);
 	off += sizeof print_end - 1;
 
-	/* add trailing '\n' */
+	/* copy final source into buffer */
 	char final[strlen(src_tmp) + sizeof prog_end + 1];
 	memset(final, 0, sizeof final);
 	memcpy(final, src_tmp, strlen(src_tmp));
