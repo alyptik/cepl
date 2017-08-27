@@ -16,11 +16,12 @@ FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
-bool warn_flag = false, parse_flag = false, out_flag = false;
+bool warn_flag = false, parse_flag = false, track_flag = false, out_flag = false;
 
 static struct option long_opts[] = {
 	{"help", no_argument, 0, 'h'},
 	{"parse", no_argument, 0, 'p'},
+	{"tracking", no_argument, 0, 't'},
 	{"version", no_argument, 0, 'v'},
 	{"warnings", no_argument, 0, 'w'},
 	{"compiler", required_argument, 0, 'c'},
@@ -71,7 +72,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
 	init_list(&ld_list, "gcc");
 	init_list(&lib_list, NULL);
-	init_list(&comp_list, NULL);
 
 	/* re-zero cc_list.list[0] so -c argument can be added */
 	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
@@ -120,6 +120,11 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 		/* parse flag */
 		case 'p':
 			parse_flag ^= true;
+			break;
+
+		/* track flag */
+		case 't':
+			track_flag ^= true;
 			break;
 
 		/* warning flag */
@@ -173,6 +178,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 
 	/* parse ELF shared libraries for completions */
 	if (!parse_flag) {
+		init_list(&comp_list, NULL);
 		init_list(&sym_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
 		for (register size_t i = 0; comp_arg_list[i]; i++)
