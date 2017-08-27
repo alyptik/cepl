@@ -126,6 +126,10 @@ static inline void free_buffers(void)
 		free(user.flags.list);
 	if (actual.flags.list)
 		free(actual.flags.list);
+
+	/* free vectors */
+	if (cc_argv)
+		free_argv(cc_argv);
 	if (vars.list) {
 		for (int i = 0; i< vars.cnt; i++) {
 			if (vars.list[i].key)
@@ -133,10 +137,6 @@ static inline void free_buffers(void)
 		}
 		free(vars.list);
 	}
-
-	/* free vectors */
-	if (cc_argv)
-		free_argv(cc_argv);
 	free_str_list(&user.hist);
 	free_str_list(&actual.hist);
 	free_str_list(&ids);
