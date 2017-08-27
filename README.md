@@ -10,7 +10,7 @@ C11 (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently supporting mul
 
 ## Usage
 ```bash
-./cepl [-hpvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>]
+./cepl [-hptvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
