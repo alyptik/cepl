@@ -66,7 +66,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char (const|) \\*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]+(const[[:blank:]]+|)\\*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -99,7 +99,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* long double */
-	if (regcomp(&reg, "long double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "long[[:blank:]]+double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -151,7 +151,7 @@ enum var_type extract_type(char const *line, char const *id)
 size_t extract_id(char const *line, char **id, size_t *offset)
 {
 	regex_t reg;
-	regmatch_t match[2];
+	regmatch_t match[3];
 	/* second capture is ignored */
 	char regex[] = ".*[^[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
@@ -162,11 +162,35 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		ERRX("NULL pointer passed to extract_id()");
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 		ERR("failed to compile regex");
+
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 2, match, 0) || match[1].rm_so == -1) {
+	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
+		/* fallback branch */
 		regfree(&reg);
-		return 0;
+
+		/* first capture is ignored */
+		char fallback_regex[] =
+			"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
+			".*[[:blank:]]\\**"
+			"([[:alpha:]_][[:alnum:]_]*)";
+
+		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
+			ERR("failed to compile regex");
+		if (regexec(&reg, line, 3, match, 0) || match[2].rm_so == -1) {
+			regfree(&reg);
+			return 0;
+		}
+		if ((*id = malloc(match[2].rm_eo - match[2].rm_so + 1)) == NULL)
+			ERR("failed to allocate space for captured id");
+		/* set the output parameter and return the offset */
+		memset(*id, 0, match[2].rm_eo - match[2].rm_so + 1);
+		memcpy(*id, line + match[2].rm_so, match[2].rm_eo - match[2].rm_so);
+		regfree(&reg);
+		*offset = match[2].rm_so;
+		return match[2].rm_so;
 	}
+
+	/* normal branch */
 	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured id");
 
@@ -411,7 +435,6 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	memset(final, 0, sizeof final);
 	memcpy(final, src_tmp, off);
 	memcpy(final + off, prog_end, sizeof prog_end);
-	puts(final);
 	/* remove NULL bytes */
 	while (memchr(final, 0, sizeof final) != NULL)
 		((char *)memchr(final, 0, sizeof final))[0] = '\n';
