@@ -5,7 +5,6 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#include "compile.h"
 #include "vars.h"
 
 /* fallback linker arg array */

@@ -19,6 +19,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include "defs.h"
 
 /* global version and usage strings */
 #define VERSION_STRING "CEPL v3.0.1"
@@ -46,25 +47,6 @@
 	";w[arnings]:\t\tToggle -w (warnings) flag"
 /* set pipe buffer byte count to page size */
 #define COUNT sysconf(_SC_PAGESIZE)
-
-/* flag constants for type of source buffer */
-enum src_flag {
-	EMPTY = 0,
-	NOT_IN_MAIN = 1,
-	IN_MAIN = 2,
-};
-
-/* struct definition for NULL terminated string array */
-struct str_list {
-	int cnt;
-	char **list;
-};
-
-/* struct definition for flag array */
-struct flag_list {
-	int cnt;
-	enum src_flag *list;
-};
 
 /* silence linter */
 int getopt(int argc, char * const argv[], const char *optstring);

@@ -24,26 +24,6 @@
 #include "compile.h"
 #include "parseopts.h"
 
-enum var_type {
-	T_ERR = 0,
-	T_CHR = 1,
-	T_STR = 2,
-	T_INT = 3,
-	T_UINT = 4,
-	T_DBL = 5,
-	T_LDBL = 6,
-	T_PTR = 7,
-	T_OTHER = 8,
-};
-
-struct var_list {
-	int cnt;
-	struct {
-		char *key;
-		enum var_type type;
-	} *list;
-};
-
 /* prototypes */
 enum var_type extract_type(char const *line, char const *id);
 size_t extract_id(char const *line, char **id, size_t *offset);
