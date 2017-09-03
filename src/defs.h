@@ -17,15 +17,15 @@ enum src_flag {
 	IN_MAIN = 2,
 };
 
-/* struct definition for NULL terminated string array */
+/* struct definition for NULL-terminated string dynamic array */
 struct str_list {
-	size_t cnt;
+	size_t cnt, max;
 	char **list;
 };
 
-/* struct definition for flag array */
+/* struct definition for flag dynamic array */
 struct flag_list {
-	size_t cnt;
+	size_t cnt, max;
 	enum src_flag *list;
 };
 
@@ -42,8 +42,9 @@ enum var_type {
 	T_OTHER = 8,
 };
 
+/* struct definition for var-tracking dynamic array */
 struct var_list {
-	size_t cnt;
+	size_t cnt, max;
 	struct {
 		char *key;
 		enum var_type type;
