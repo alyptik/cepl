@@ -8,6 +8,8 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <stdlib.h>
+
 /* flag constants for type of source buffer */
 enum src_flag {
 	EMPTY = 0,
@@ -17,13 +19,13 @@ enum src_flag {
 
 /* struct definition for NULL terminated string array */
 struct str_list {
-	int cnt;
+	size_t cnt;
 	char **list;
 };
 
 /* struct definition for flag array */
 struct flag_list {
-	int cnt;
+	size_t cnt;
 	enum src_flag *list;
 };
 
@@ -41,7 +43,7 @@ enum var_type {
 };
 
 struct var_list {
-	int cnt;
+	size_t cnt;
 	struct {
 		char *key;
 		enum var_type type;
