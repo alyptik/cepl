@@ -34,23 +34,19 @@ static inline void pipe_fd(int in_fd, int out_fd)
 		ssize_t buf_len;
 		char buf[COUNT];
 		if ((buf_len = read(in_fd, buf, COUNT)) == -1) {
-			if (errno == EINTR || errno == EAGAIN) {
+			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			} else {
-				WARN("error reading from input fd");
-				break;
-			}
+			WARN("error reading from input fd");
+			break;
 		}
 		/* break on EOF */
 		if (buf_len == 0)
 			break;
 		if (write(out_fd, buf, buf_len) == -1) {
-			if (errno == EINTR || errno == EAGAIN) {
+			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			} else {
-				WARN("error writing to output fd");
-				break;
-			}
+			WARN("error writing to output fd");
+			break;
 		}
 	}
 }
