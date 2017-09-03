@@ -13,7 +13,7 @@ int main(void)
 	char *const src = "int main(void)"
 		"\n{"
 		"\nint i = 0;\n";
-	struct str_list ids = {0, NULL};
+	struct str_list ids = {0, 0, NULL};
 	enum var_type *types = NULL;
 
 	plan(4);

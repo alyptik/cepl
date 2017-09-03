@@ -108,14 +108,18 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 static inline void append_str(struct str_list *list_struct, char *str, size_t padding)
 {
 	char **temp;
-	if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s[%d] %s", "error during list_ptr", list_struct->cnt - 1, "malloc()");
-	list_struct->list = temp;
+	/* realloc if cnt reaches current size */
+	if (list_struct->cnt >= list_struct->max) {
+		list_struct->max = ++list_struct->cnt * 2;
+		if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+			err(EXIT_FAILURE, "%s[%zu] %s", "error during list_ptr", list_struct->cnt - 1, "malloc()");
+		list_struct->list = temp;
+	}
 	if (str == NULL) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
 		if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(str) + padding + 1)) == NULL)
-			err(EXIT_FAILURE, "%s[%d]", "error appending string to list_ptr", list_struct->cnt - 1);
+			err(EXIT_FAILURE, "%s[%zu]", "error appending string to list_ptr", list_struct->cnt - 1);
 		memset(list_struct->list[list_struct->cnt - 1], 0, strlen(str) + padding + 1);
 		memcpy(list_struct->list[list_struct->cnt - 1] + padding, str, strlen(str) + 1);
 	}

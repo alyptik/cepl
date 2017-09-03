@@ -13,7 +13,7 @@
 #include "parseopts.h"
 
 /* global linker arguments struct */
-struct str_list ld_list = { 0, NULL };
+struct str_list ld_list;
 
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {

@@ -21,9 +21,9 @@
 #define WARNXGEN(X) warnx("%s %s %s %d", "error during", (X), "at line", __LINE__)
 
 /* array case */
-#define ERRARR(X, Y) err(EXIT_FAILURE, "%s %s[%d] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define ERRXARR(X, Y) err(EXIT_FAILURE, "%s %s[%d] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define WARNARR(X, Y) err("%s %s[%d] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define WARNXARR(X, Y) err("%s %s[%d] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define ERRARR(X, Y) err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define ERRXARR(X, Y) err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define WARNARR(X, Y) err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define WARNXARR(X, Y) err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
 
 #endif
