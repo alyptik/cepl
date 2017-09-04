@@ -142,7 +142,7 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
 		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
-			err(EXIT_FAILURE, "%s %zu %s", "error during flag_list ", list_struct->cnt, ") realloc()");
+			err(EXIT_FAILURE, "%s %zu %s", "error during flag_list ", list_struct->cnt, " realloc()");
 		list_struct->list = tmp;
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
