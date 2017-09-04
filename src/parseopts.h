@@ -75,7 +75,7 @@ static inline ssize_t free_str_list(struct str_list *plist)
 	/* return -1 if passed NULL pointers */
 	if (!plist || !plist->list)
 		return -1;
-	for (ssize_t i = 0; i < plist->cnt; i++) {
+	for (register size_t i = 0; i < plist->cnt; i++) {
 		if (!plist->list[i]) {
 			/* if NULL pointer increment counter */
 			null_cnt++;
@@ -87,6 +87,7 @@ static inline ssize_t free_str_list(struct str_list *plist)
 	free(plist->list);
 	plist->list = NULL;
 	plist->cnt = 0;
+	plist->max = 0;
 	return null_cnt;
 }
 
@@ -107,13 +108,14 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 
 static inline void append_str(struct str_list *list_struct, char *str, size_t padding)
 {
-	char **temp;
+	char **tmp;
+	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
-		list_struct->max = ++list_struct->cnt * 2;
-		if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+		list_struct->max = list_struct->cnt * 2;
+		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
 			err(EXIT_FAILURE, "%s[%zu] %s", "error during list_ptr", list_struct->cnt - 1, "malloc()");
-		list_struct->list = temp;
+		list_struct->list = tmp;
 	}
 	if (str == NULL) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
@@ -134,10 +136,15 @@ static inline void init_flag_list(struct flag_list *list_struct)
 
 static inline void append_flag(struct flag_list *list_struct, enum src_flag flag)
 {
-	enum src_flag *temp;
-	if ((temp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
-		err(EXIT_FAILURE, "%s %d %s", "error during flag_list (cnt = ", list_struct->cnt, ") realloc()");
-	list_struct->list = temp;
+	enum src_flag *tmp;
+	list_struct->cnt++;
+	/* realloc if cnt reaches current size */
+	if (list_struct->cnt >= list_struct->max) {
+		list_struct->max = list_struct->cnt * 2;
+		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+			err(EXIT_FAILURE, "%s %zu %s", "error during flag_list ", list_struct->cnt, ") realloc()");
+		list_struct->list = tmp;
+	}
 	list_struct->list[list_struct->cnt - 1] = flag;
 }
 

@@ -83,7 +83,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 			if (!cc_list.list[0][0]) {
 				/* copy argument to cc_list.list[0] */
 				if ((tmp_arg = realloc(cc_list.list[0], strlen(optarg) + 1)) == NULL)
-					ERRARR("cc_list.list", 0);
+					ERRARR("cc_list.list", (size_t)0);
 				cc_list.list[0] = tmp_arg;
 				memset(cc_list.list[0], 0, strlen(optarg) + 1);
 				memcpy(cc_list.list[0], optarg, strlen(optarg) + 1);
@@ -240,7 +240,7 @@ void parse_libs(struct str_list *symbols, char *libs[])
 		struct str_list cur_syms = {.cnt = 0, .list = NULL};
 		init_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
-		for (register ssize_t j = 0; j < cur_syms.cnt; j++) {
+		for (register size_t j = 0; j < cur_syms.cnt; j++) {
 			append_str(symbols, cur_syms.list[j], 0);
 		}
 		append_str(&cur_syms, NULL, 0);

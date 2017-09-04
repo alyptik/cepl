@@ -216,7 +216,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 		free_str_list(id_list);
 	init_list(id_list, NULL);
 
-	ssize_t count = id_list->cnt;
+	size_t count = id_list->cnt;
 	memcpy(line_tmp[0], line, strlen(line) + 1);
 	line_tmp[1] = line_tmp[0];
 	/* extract all identifiers from the line */
@@ -236,7 +236,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 
 	/* get the type of each identifier */
 	enum var_type type_tmp[id_list->cnt];
-	for (register ssize_t i = 0; i < id_list->cnt; i++) {
+	for (register size_t i = 0; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp[1], id_list->list[i])) == T_ERR)
 			WARNXGEN(id_list->list[i]);
 	}
@@ -287,7 +287,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	off += sizeof newline - 1;
 
 	/* build var-tracking source */
-	for (register int i = 0; i < vars->cnt - 1; i++) {
+	for (register size_t i = 0; i < vars->cnt - 1; i++) {
 		if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + (strlen(vars->list[i].key) * 2) + psz)) == NULL)
 			ERRGEN("src_tmp malloc()");
 		char print_tmp[sizeof print_beg];

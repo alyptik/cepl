@@ -153,5 +153,6 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 		}
 	}
 
+	/* program returned success */
 	return 0;
 }

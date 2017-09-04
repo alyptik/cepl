@@ -42,9 +42,14 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 	void *tmp;
 	if (!list_struct || !key)
 		ERRX("invalid arguments passed to append_var()");
-	if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
-		ERRARR("var_list", list_struct->cnt);
-	list_struct->list = tmp;
+	list_struct->cnt++;
+	/* realloc if cnt reaches current size */
+	if (list_struct->cnt >= list_struct->max) {
+		list_struct->max = list_struct->cnt * 2;
+		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+			err(EXIT_FAILURE, "%s %zu %s", "error during var_list ", list_struct->cnt, ") realloc()");
+		list_struct->list = tmp;
+	}
 	if ((list_struct->list[list_struct->cnt - 1].key = malloc(strlen(key) + 1)) == NULL)
 		ERRGEN("append_var()");
 	memset(list_struct->list[list_struct->cnt - 1].key, 0, strlen(key) + 1);
@@ -57,7 +62,7 @@ static inline void gen_var_list(struct var_list *list_struct, struct str_list *i
 	/* sanity checks */
 	if (!list_struct || !list_struct->list || !id_list || !id_list->list || !type_list)
 		WARNX("NULL pointer passed to gen_var_list()");
-	for (ssize_t i = 0; i < id_list->cnt; i++)
+	for (register size_t i = 0; i < id_list->cnt; i++)
 		append_var(list_struct, id_list->list[i], (*type_list)[i]);
 }
 
