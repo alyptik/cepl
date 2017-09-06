@@ -22,7 +22,7 @@
 #include "defs.h"
 
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v3.1.0"
+#define VERSION_STRING "CEPL v3.1.1"
 #define USAGE_STRING "[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
@@ -94,6 +94,7 @@ static inline ssize_t free_str_list(struct str_list *plist)
 static inline void init_list(struct str_list *list_struct, char *init_str)
 {
 	list_struct->cnt = 0;
+	list_struct->max = 0;
 	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");
 	/* exit early if NULL */
@@ -129,8 +130,11 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 
 static inline void init_flag_list(struct flag_list *list_struct)
 {
-	if ((list_struct->list = malloc((sizeof *list_struct->list) * ++list_struct->cnt)) == NULL)
+	list_struct->cnt = 0;
+	list_struct->max = 0;
+	if ((list_struct->list = malloc((sizeof *list_struct->list))) == NULL)
 		err(EXIT_FAILURE, "%s", "error during initial flag_list malloc()");
+	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
 
