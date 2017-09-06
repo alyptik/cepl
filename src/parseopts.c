@@ -42,7 +42,7 @@ static char *const ld_arg_list[] = {
 static char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
 };
-static int option_index = 0;
+static int option_index;
 static char *tmp_arg;
 /* compiler arguments and library list structs */
 static struct str_list cc_list;
@@ -64,8 +64,13 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 	free_str_list(&ld_list);
 	free_str_list(&lib_list);
 	free_str_list(&comp_list);
+	cc_list.cnt = 0;
+	cc_list.max = 0;
 	/* don't print an error if option not found */
 	opterr = 0;
+	/* reset option indices to reuse argv */
+	option_index = 0;
+	optind = 1;
 
 	/* initilize argument lists */
 	init_list(&cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -244,7 +249,7 @@ void parse_libs(struct str_list *symbols, char *libs[])
 			append_str(symbols, cur_syms.list[j], 0);
 		}
 		append_str(&cur_syms, NULL, 0);
-		free_argv(cur_syms.list);
+		free_str_list(&cur_syms);
 	}
 	append_str(symbols, NULL, 0);
 }
