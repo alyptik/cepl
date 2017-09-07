@@ -156,9 +156,10 @@ static inline void free_buffers(void)
 static inline void cleanup(void)
 {
 	/* free generated completions */
-	free_str_list(&comp_list);
+	if (free_str_list(&comp_list))
+		free_str_list(&comp_list);
 	/* append history to history file */
-	if (append_history(nlines, hist_file))
+	if (hist_file && append_history(nlines, hist_file))
 		WARN(strcat("error writing history to ", hist_file));
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
