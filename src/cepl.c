@@ -181,13 +181,6 @@ static inline void init_buffers(void)
 		cleanup();
 		ERRGEN("initial pointer allocation");
 	}
-	/* zero source buffers */
-	memset(user.funcs, 0, 1);
-	memset(actual.funcs, 0, strlen(prog_includes) + 1);
-	memset(user.body, 0, strlen(prog_start) + 1);
-	memset(actual.body, 0, strlen(prog_start) + 1);
-	memset(user.final, 0, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
-	memset(actual.final, 0, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* no memcpy for user.funcs */
 	memcpy(actual.funcs, prog_includes, strlen(prog_includes) + 1);
 	memcpy(user.body, prog_start, strlen(prog_start) + 1);
