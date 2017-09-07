@@ -159,7 +159,7 @@ static inline void cleanup(void)
 	if (free_str_list(&comp_list))
 		free_str_list(&comp_list);
 	/* append history to history file */
-	if (hist_file && append_history(nlines, hist_file))
+	if (append_history(nlines, hist_file))
 		WARN(strcat("error writing history to ", hist_file));
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
@@ -170,17 +170,17 @@ static inline void cleanup(void)
 static inline void init_buffers(void)
 {
 	/* user is truncated source for display */
-	user.funcs = malloc(1);
+	user.funcs = calloc(1, 1);
 	/* actual is source passed to compiler */
-	actual.funcs = malloc(strlen(prog_includes) + 1);
-	user.body = malloc(strlen(prog_start) + 1);
-	actual.body = malloc(strlen(prog_start) + 1);
-	user.final = malloc(strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
-	actual.final = malloc(strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
+	actual.funcs = calloc(1, strlen(prog_includes) + 1);
+	user.body = calloc(1, strlen(prog_start) + 1);
+	actual.body = calloc(1, strlen(prog_start) + 1);
+	user.final = calloc(1, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
+	actual.final = calloc(1, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
 	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
 		cleanup();
-		ERRGEN("initial pointer allocation");
+		ERR("initial pointer allocation");
 	}
 	/* no memcpy for user.funcs */
 	memcpy(actual.funcs, prog_includes, strlen(prog_includes) + 1);
@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
 	using_history();
 	/* create history file if it doesn't exsit */
 	if (!(make_hist = fopen(hist_file, "a+b"))) {
-		WARN("error creating history file with fopen()");
+		ERR("error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
 	}
