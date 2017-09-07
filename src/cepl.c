@@ -515,10 +515,14 @@ int main(int argc, char *argv[])
 			case '\\':
 				build_body();
 				/* remove extra trailing ';' */
-				for (register int i = strlen(user.body) - 1; user.body[i - 1] == ';'; i--)
-					user.body[i] = '\0';
-				for (register int i = strlen(actual.body) - 1; actual.body[i - 1] == ';'; i--)
-					actual.body[i] = '\0';
+				for (register int i = strlen(user.body) - 1; user.body[i - 1] == ';'; i--) {
+					if (user.body[i] == ';')
+						user.body[i] = '\0';
+				}
+				for (register int i = strlen(actual.body) - 1; actual.body[i - 1] == ';'; i--) {
+					if (user.body[i] == ';')
+						actual.body[i] = '\0';
+				}
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
