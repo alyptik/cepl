@@ -10,7 +10,7 @@
 #	define _GNU_SOURCE
 #endif
 /* TODO: change history filename to a non-hardcoded string */
-#define HIST_NAME ".cepl_history"
+#define HIST_NAME "./.cepl_history"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -317,7 +317,14 @@ int main(int argc, char *argv[])
 	FILE *make_hist = NULL;
 	struct stat hist_stat;
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	char *tmp_str = strcat(strcat(getenv("HOME"), "/"), HIST_NAME);
+	char tmp_arr[COUNT], *tmp_str = tmp_arr;
+	memset(tmp_str, 0, sizeof tmp_arr);
+	/* check if HOME is defined */
+	if (strcmp(getenv("HOME"), "") != 0) {
+		tmp_str = strcat(tmp_str, getenv("HOME"));
+		tmp_str = strcat(tmp_str, "/");
+	}
+	tmp_str = strcat(tmp_str, HIST_NAME);
 	if ((hist_file = malloc(strlen(tmp_str) + 1)) == NULL)
 		ERRGEN("hist_file malloc()");
 	memcpy(hist_file, tmp_str, strlen(tmp_str) + 1);
