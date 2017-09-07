@@ -43,3 +43,4 @@ t/*
 # Debug files
 *.dSYM/
 *.su
+.cepl_history
