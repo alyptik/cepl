@@ -337,9 +337,6 @@ int main(int argc, char *argv[])
 	}
 	/* build history filename */
 	memcpy(hist_file + len, HIST_NAME, strlen(HIST_NAME) + 1);
-	/* if ((hist_file = malloc(strlen(hist_file) + 1)) == NULL) */
-	/*         ERRGEN("hist_file malloc()"); */
-	/* memcpy(hist_file, hist_file, strlen(hist_file) + 1); */
 
 	/* initialize source buffers */
 	init_buffers();
