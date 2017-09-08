@@ -157,8 +157,7 @@ static inline void free_buffers(void)
 static inline void cleanup(void)
 {
 	/* free generated completions */
-	if (free_str_list(&comp_list))
-		free_str_list(&comp_list);
+	free_str_list(&comp_list);
 	/* append history to history file */
 	if (has_hist) {
 		if (append_history(nlines, hist_file))
