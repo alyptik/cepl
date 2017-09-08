@@ -84,6 +84,7 @@ static struct prog_src {
 static struct var_list vars;
 static struct str_list ids;
 static enum var_type *types;
+static bool has_hist = false;
 
 /* completion list of generated symbols */
 extern struct str_list comp_list;
@@ -159,12 +160,12 @@ static inline void cleanup(void)
 	if (free_str_list(&comp_list))
 		free_str_list(&comp_list);
 	/* append history to history file */
-	if (append_history(nlines, hist_file))
-		WARN(strcat("error writing history to ", hist_file));
+	if (has_hist) {
+		if (append_history(nlines, hist_file))
+			WARN(strcat("error writing history to ", hist_file));
+	}
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
-	if (hist_file)
-		free(hist_file);
 }
 
 static inline void init_buffers(void)
@@ -359,9 +360,10 @@ int main(int argc, char *argv[])
 	using_history();
 	/* create history file if it doesn't exsit */
 	if (!(make_hist = fopen(hist_file, "a+b"))) {
-		ERR("error creating history file with fopen()");
+		WARN("error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
+		has_hist = true;
 	}
 	/* read hist_file if size is non-zero */
 	stat(hist_file, &hist_stat);
