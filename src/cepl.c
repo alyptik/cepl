@@ -164,6 +164,8 @@ static inline void cleanup(void)
 		if (append_history(nlines, hist_file))
 			WARN(strcat("error writing history to ", hist_file));
 	}
+	if (hist_file)
+		free(hist_file);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
 }
@@ -326,9 +328,8 @@ int main(int argc, char *argv[])
 	if (home_env && strcmp(home_env, "") != 0)
 		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	char hist_arr[buf_sz];
-	hist_file = hist_arr;
-	memset(hist_file, 0, sizeof hist_arr);
+	if ((hist_file = calloc(1, buf_sz)) == NULL)
+		ERRGEN("hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "") != 0) {
 		len = strlen(home_env);
