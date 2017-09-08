@@ -57,11 +57,13 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#include <sys/wait.h>\n\n"
 	"#define _Atomic\n"
 	"#define _Static_assert(a, b)\n"
-	"extern char **environ;\n";
-static char const prog_start[] = "\n\nint main(int argc, char *argv[])\n"
-	"{\n"
-	"\t/* silence -Wunused-parameter warning */\n"
-	"\t(void)argc, (void)argv;\n\n";
+	"extern char **environ;\n"
+    "#line 1\n";
+static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
+      "{(void)argc; (void)argv;\n"
+      "\n";
+static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
+      "{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
 static char *line = NULL, *tok_buf = NULL;
@@ -175,9 +177,9 @@ static inline void init_buffers(void)
 	user.funcs = calloc(1, 1);
 	/* actual is source passed to compiler */
 	actual.funcs = calloc(1, strlen(prog_includes) + 1);
-	user.body = calloc(1, strlen(prog_start) + 1);
+	user.body = calloc(1, strlen(prog_start_user) + 1);
 	actual.body = calloc(1, strlen(prog_start) + 1);
-	user.final = calloc(1, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
+	user.final = calloc(1, strlen(prog_includes) + strlen(prog_start_user) + strlen(prog_end) + 3);
 	actual.final = calloc(1, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
 	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
@@ -186,7 +188,7 @@ static inline void init_buffers(void)
 	}
 	/* no memcpy for user.funcs */
 	memcpy(actual.funcs, prog_includes, strlen(prog_includes) + 1);
-	memcpy(user.body, prog_start, strlen(prog_start) + 1);
+	memcpy(user.body, prog_start_user, strlen(prog_start_user) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
 	init_list(&user.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -564,7 +566,7 @@ int main(int argc, char *argv[])
 
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
-			printf("\n%s:\n\n%s\n", argv[0], user.final);
+			printf("\n%s:\n==========\n%s\n==========\n", argv[0], user.final);
 		/* print output and exit code */
 		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
 	}
