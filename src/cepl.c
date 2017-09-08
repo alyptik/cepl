@@ -314,21 +314,31 @@ static inline char *read_line(void)
 
 int main(int argc, char *argv[])
 {
-	char const optstring[] = "hptvwc:l:I:o:";
-	FILE *make_hist = NULL;
 	struct stat hist_stat;
+	size_t len = 0;
+	size_t buf_sz = strlen(HIST_NAME) + 1;
+	FILE *make_hist = NULL;
+	char const optstring[] = "hptvwc:l:I:o:";
+	char const *const home_env = getenv("HOME");
+
+	/* add length of “$HOME/” if home_env is non-NULL */
+	if (home_env && strcmp(home_env, "") != 0)
+		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	char tmp_arr[COUNT], *tmp_str = tmp_arr;
-	memset(tmp_str, 0, sizeof tmp_arr);
-	/* check if HOME is defined */
-	if (strcmp(getenv("HOME"), "") != 0) {
-		tmp_str = strcat(tmp_str, getenv("HOME"));
-		tmp_str = strcat(tmp_str, "/");
+	char hist_arr[buf_sz];
+	hist_file = hist_arr;
+	memset(hist_file, 0, sizeof hist_arr);
+	/* check if home_env is non-NULL */
+	if (home_env && strcmp(home_env, "") != 0) {
+		len = strlen(home_env);
+		memcpy(hist_file, home_env, len);
+		hist_file[len++] = '/';
 	}
-	tmp_str = strcat(tmp_str, HIST_NAME);
-	if ((hist_file = malloc(strlen(tmp_str) + 1)) == NULL)
-		ERRGEN("hist_file malloc()");
-	memcpy(hist_file, tmp_str, strlen(tmp_str) + 1);
+	/* build history filename */
+	memcpy(hist_file + len, HIST_NAME, strlen(HIST_NAME) + 1);
+	/* if ((hist_file = malloc(strlen(hist_file) + 1)) == NULL) */
+	/*         ERRGEN("hist_file malloc()"); */
+	/* memcpy(hist_file, hist_file, strlen(hist_file) + 1); */
 
 	/* initialize source buffers */
 	init_buffers();
