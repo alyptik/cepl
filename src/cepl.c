@@ -58,12 +58,12 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#define _Atomic\n"
 	"#define _Static_assert(a, b)\n"
 	"extern char **environ;\n"
-    "#line 1\n";
+	"#line 1\n";
 static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
-      "{(void)argc; (void)argv;\n"
-      "\n";
+	"{(void)argc; (void)argv;\n"
+	"\n";
 static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
-      "{\n";
+	"{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
 static char *line = NULL, *tok_buf = NULL;
