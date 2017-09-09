@@ -242,7 +242,7 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 void parse_libs(struct str_list *symbols, char *libs[])
 {
 	for (size_t i = 0; libs[i]; i++) {
-		struct str_list cur_syms = {.cnt = 0, .list = NULL};
+		struct str_list cur_syms = {.cnt = 0, .max = 0, .list = NULL};
 		init_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
 		for (size_t j = 0; j < cur_syms.cnt; j++) {
