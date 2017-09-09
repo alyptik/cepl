@@ -181,6 +181,7 @@ static inline void init_buffers(void)
 	actual.final = calloc(1, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
 	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
+		free_buffers();
 		cleanup();
 		ERR("initial pointer allocation");
 	}
@@ -200,7 +201,8 @@ static inline void resize_buffer(char **buf, size_t offset)
 {
 	char *tmp;
 	/* current length + line length + extra characters + \0 */
-	if ((tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
+	if (!buf || (tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
+		free_buffers();
 		cleanup();
 		ERRGEN("resize_buffer()");
 	}
@@ -228,8 +230,8 @@ static inline void build_body(void)
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
-	strcat(user.body, strtok(line, "\f\r\n\0"));
-	strcat(actual.body, strtok(line, "\f\r\n\0"));
+	strcat(user.body, strtok(line, "\f\r\n"));
+	strcat(actual.body, strtok(line, "\f\r\n"));
 }
 
 static inline void build_final(char *argv[])
@@ -268,6 +270,7 @@ static inline void pop_history(struct prog_src *prog)
 
 static inline void sig_handler(int sig)
 {
+	free_buffers();
 	cleanup();
 	exit(sig);
 }
@@ -374,7 +377,7 @@ int main(int argc, char *argv[])
 	while ((line = read_line()) && *line) {
 		fflush(stdout);
 		/* strip newlines */
-		if ((tok_buf = strpbrk(line, "\f\r\n\0")) != NULL)
+		if ((tok_buf = strpbrk(line, "\f\r\n")) != NULL)
 			tok_buf[0] = '\0';
 
 		/* add and dedup history */
@@ -409,6 +412,7 @@ int main(int argc, char *argv[])
 			switch(line[1]) {
 			/* clean up and exit program */
 			case 'q':
+				free_buffers();
 				cleanup();
 				exit(EXIT_SUCCESS);
 				/* unused break */
@@ -430,6 +434,7 @@ int main(int argc, char *argv[])
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
 				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL)) {
+					free_buffers();
 					cleanup();
 					ERR("failed to create output file");
 				}
