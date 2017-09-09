@@ -66,14 +66,14 @@ static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
 	"{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* line and token buffers */
-static char *line = NULL, *tok_buf = NULL;
+static char *line, *tok_buf;
 /* compiler arg array */
-static char **cc_argv = NULL;
+static char **cc_argv;
 /* readline history variables */
-static char *hist_file = NULL;
-static int nlines = 0;
+static char *hist_file;
+static int nlines;
 /* output file */
-static volatile FILE *ofile = NULL;
+static volatile FILE *ofile;
 /* struct definition for generated program sources */
 static struct prog_src {
 	char *funcs;
@@ -226,14 +226,17 @@ static inline void build_funcs(void)
 
 static inline void build_body(void)
 {
+	/* strip newlines */
+	if ((tok_buf = strpbrk(line,  "\f\r\n")) != NULL)
+		tok_buf[0] = '\0';
 	append_str(&user.hist, user.body, 0);
 	append_str(&actual.hist, actual.body, 0);
 	append_flag(&user.flags, IN_MAIN);
 	append_flag(&actual.flags, IN_MAIN);
 	strcat(user.body, "\t");
 	strcat(actual.body, "\t");
-	strcat(user.body, strtok(line, "\f\r\n"));
-	strcat(actual.body, strtok(line, "\f\r\n"));
+	strcat(user.body, line);
+	strcat(actual.body, line);
 }
 
 static inline void build_final(char *argv[])
