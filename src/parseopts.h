@@ -50,12 +50,12 @@
 #define COUNT sysconf(_SC_PAGESIZE)
 
 /* silence linter */
-int getopt(int argc, char * const argv[], const char *optstring);
-FILE *fdopen(int fd, const char *mode);
+int getopt(int argc, char *const argv[], char const *optstring);
+FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* prototypes */
-char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE **ofile);
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);
 void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 

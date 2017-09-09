@@ -56,7 +56,7 @@ extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
 
-char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE **ofile)
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile)
 {
 	int opt;
 	char *out_file = NULL;
