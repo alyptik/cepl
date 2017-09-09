@@ -70,7 +70,7 @@ static inline size_t free_argv(char **argv)
 	return count;
 }
 
-static inline ssize_t free_str_list(struct str_list *plist)
+static inline ptrdiff_t free_str_list(struct str_list *plist)
 {
 	ptrdiff_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
