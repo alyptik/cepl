@@ -18,7 +18,7 @@ int main(void)
 
 	plan(4);
 
-	ok(find_vars(src, &ids, &types), "succeed finding variable values.");
+	ok(find_vars(src, &ids, &types) > 0, "succeed finding variable values.");
 	ok(extract_type(src, "i") == T_INT, "succeed extracting int type.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned int type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
