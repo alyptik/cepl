@@ -508,7 +508,7 @@ int main(int argc, char *argv[])
 
 			/* pop last history statement */
 			case 'u':
-				/* break early if no history to pop_history */
+				/* break early if no history to pop */
 				if (user.flags.cnt < 2 || actual.flags.cnt < 2)
 					break;
 				pop_history(&user);
