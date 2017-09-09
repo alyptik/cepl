@@ -387,9 +387,8 @@ int main(int argc, char *argv[])
 
 		/* add and dedup history */
 		if (line[0]) {
-			int found;
 			/* search backward */
-			while ((found = history_search(line, -1)) != -1) {
+			while (history_search(line, -1) != -1) {
 				/* this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *removed = remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
