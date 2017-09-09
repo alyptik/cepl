@@ -135,7 +135,7 @@ static inline void free_buffers(void)
 	if (cc_argv)
 		free_argv(cc_argv);
 	if (vars.list) {
-		for (register size_t i = 0; i< vars.cnt; i++) {
+		for (size_t i = 0; i< vars.cnt; i++) {
 			if (vars.list[i].key)
 				free(vars.list[i].key);
 		}
@@ -526,7 +526,7 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
+			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
 				line[i] = '\0';
 			/* start building program source */
 			build_body();
@@ -536,7 +536,7 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (register int i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
+			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
 				line[i] = '\0';
 			switch(line[strlen(line) - 1]) {
 			case '{': /* fallthough */
@@ -545,11 +545,11 @@ int main(int argc, char *argv[])
 			case '\\':
 				build_body();
 				/* remove extra trailing ';' */
-				for (register int i = strlen(user.body) - 1; user.body[i - 1] == ';'; i--) {
+				for (size_t i = strlen(user.body) - 1; user.body[i - 1] == ';'; i--) {
 					if (user.body[i] == ';')
 						user.body[i] = '\0';
 				}
-				for (register int i = strlen(actual.body) - 1; actual.body[i - 1] == ';'; i--) {
+				for (size_t i = strlen(actual.body) - 1; actual.body[i - 1] == ';'; i--) {
 					if (user.body[i] == ';')
 						actual.body[i] = '\0';
 				}

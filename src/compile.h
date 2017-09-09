@@ -11,6 +11,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stddef.h>
 #include <unistd.h>
 #include "errors.h"
 
@@ -31,7 +32,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 {
 	/* pipe data in a loop */
 	for (;;) {
-		ssize_t buf_len;
+		ptrdiff_t buf_len;
 		char buf[COUNT];
 		if ((buf_len = read(in_fd, buf, COUNT)) == -1) {
 			if (errno == EINTR || errno == EAGAIN)

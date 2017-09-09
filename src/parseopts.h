@@ -14,6 +14,7 @@
 #include <gelf.h>
 #include <libelf.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,11 +72,11 @@ static inline size_t free_argv(char **argv)
 
 static inline ssize_t free_str_list(struct str_list *plist)
 {
-	ssize_t null_cnt = 0;
+	ptrdiff_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
 	if (!plist || !plist->list)
 		return -1;
-	for (register size_t i = 0; i < plist->cnt; i++) {
+	for (size_t i = 0; i < plist->cnt; i++) {
 		if (!plist->list[i]) {
 			/* if NULL pointer increment counter */
 			null_cnt++;

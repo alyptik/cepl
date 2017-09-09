@@ -163,7 +163,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 
 	/* append warning flags */
 	if (warn_flag) {
-		for (register size_t i = 0; warn_list[i]; i++)
+		for (size_t i = 0; warn_list[i]; i++)
 			append_str(&cc_list, warn_list[i], 0);
 	}
 
@@ -172,9 +172,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 		memcpy(cc_list.list[0], "gcc", strlen("gcc") + 1);
 
 	/* finalize argument lists */
-	for (register size_t i = 0; cc_arg_list[i]; i++)
+	for (size_t i = 0; cc_arg_list[i]; i++)
 		append_str(&cc_list, cc_arg_list[i], 0);
-	for (register size_t i = 0; ld_arg_list[i]; i++)
+	for (size_t i = 0; ld_arg_list[i]; i++)
 		append_str(&ld_list, ld_arg_list[i], 0);
 	/* append NULL to generated lists */
 	append_str(&cc_list, NULL, 0);
@@ -186,9 +186,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], volatile FILE 
 		init_list(&comp_list, NULL);
 		init_list(&sym_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
-		for (register size_t i = 0; comp_arg_list[i]; i++)
+		for (size_t i = 0; comp_arg_list[i]; i++)
 			append_str(&comp_list, comp_arg_list[i], 0);
-		for (register size_t i = 0; sym_list.list[i]; i++)
+		for (size_t i = 0; sym_list.list[i]; i++)
 			append_str(&comp_list, sym_list.list[i], 0);
 		append_str(&comp_list, NULL, 0);
 		append_str(&sym_list, NULL, 0);
@@ -225,7 +225,7 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 		Elf_Data *data = elf_getdata(scn, NULL);
 		size_t count = shdr.sh_size / shdr.sh_entsize;
 		/* read the symbol names */
-		for (register size_t i = 0; i < count; i++) {
+		for (size_t i = 0; i < count; i++) {
 			GElf_Sym sym;
 			char *sym_str;
 			gelf_getsym(data, i, &sym);
@@ -241,11 +241,11 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 
 void parse_libs(struct str_list *symbols, char *libs[])
 {
-	for (register size_t i = 0; libs[i]; i++) {
+	for (size_t i = 0; libs[i]; i++) {
 		struct str_list cur_syms = {.cnt = 0, .list = NULL};
 		init_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
-		for (register size_t j = 0; j < cur_syms.cnt; j++) {
+		for (size_t j = 0; j < cur_syms.cnt; j++) {
 			append_str(symbols, cur_syms.list[j], 0);
 		}
 		append_str(&cur_syms, NULL, 0);

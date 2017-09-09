@@ -261,7 +261,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 
 	/* get the type of each identifier */
 	enum var_type type_tmp[id_list->cnt];
-	for (register size_t i = 0; i < id_list->cnt; i++) {
+	for (size_t i = 0; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp[1], id_list->list[i])) == T_ERR)
 			WARNXGEN(id_list->list[i]);
 	}
@@ -312,7 +312,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	off += sizeof newline - 1;
 
 	/* build var-tracking source */
-	for (register size_t i = 0; i < vars->cnt - 1; i++) {
+	for (size_t i = 0; i < vars->cnt - 1; i++) {
 		if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + (strlen(vars->list[i].key) * 2) + psz)) == NULL)
 			ERRGEN("src_tmp malloc()");
 		char print_tmp[sizeof print_beg];
