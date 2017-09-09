@@ -488,6 +488,10 @@ int main(int argc, char *argv[])
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
+				if (track_flag) {
+					find_vars(tok_buf, &ids, &types);
+					gen_var_list(&vars, &ids, &types);
+				}
 				break;
 
 			/* show usage information */
