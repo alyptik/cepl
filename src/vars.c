@@ -212,6 +212,9 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 		ERR("error allocating line_tmp");
 
 	/* initialize lists */
+	if (*type_list)
+		free(*type_list);
+	*type_list = NULL;
 	if (id_list->list)
 		free_str_list(id_list);
 	init_list(id_list, NULL);

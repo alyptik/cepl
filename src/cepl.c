@@ -55,8 +55,6 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#include <sys/types.h>\n"
 	"#include <sys/syscall.h>\n"
 	"#include <sys/wait.h>\n\n"
-	"#define _Atomic\n"
-	"#define _Static_assert(a, b)\n"
 	"extern char **environ;\n"
 	"#line 1\n";
 static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
