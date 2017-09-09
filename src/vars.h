@@ -32,9 +32,10 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 static inline void init_var_list(struct var_list *list_struct)
 {
+	list_struct->cnt = 0;
+	list_struct->max = 0;
 	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
 		ERR("error during initial var_list malloc()");
-	list_struct->cnt = 0;
 }
 
 static inline void append_var(struct var_list *list_struct, char const *key, enum var_type type)

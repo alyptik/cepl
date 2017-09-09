@@ -152,7 +152,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	regex_t reg;
 	regmatch_t match[3];
 	/* second capture is ignored */
-	char regex[] = ".*[^[:alnum:]_]+"
+	char regex[] = "[^,;&|]*[^,;&|[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)"
 		"([^[:alnum:]_=!<>]*=|[^[:alnum:]_=!<>]*[<>]{2}=)";
 
@@ -169,7 +169,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 
 		/* first capture is ignored */
 		char fallback_regex[] =
-			"(,|bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
+			"(,|bool|_Bool|_Complex|_Imaginary|struct|union|"
+			"char|double|float|int|long|short|unsigned|void)"
 			"[^,;&|]*[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)";
 
@@ -179,6 +180,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			regfree(&reg);
 			return 0;
 		}
+
 		if ((*id = malloc(match[2].rm_eo - match[2].rm_so + 1)) == NULL)
 			ERR("failed to allocate space for captured id");
 		/* set the output parameter and return the offset */
@@ -207,7 +209,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	char *line_tmp[2], *id_tmp;
 
 	if (!line || !id_list || !type_list)
-		ERRX("NULL pointer passed to find_vars()");
+		return 0;
 	if ((line_tmp[0] = malloc(strlen(line) + 1)) == NULL)
 		ERR("error allocating line_tmp");
 
