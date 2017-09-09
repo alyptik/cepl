@@ -578,5 +578,5 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		}
 	}
 
-	return 1;
+	return 0;
 }
