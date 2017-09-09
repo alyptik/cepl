@@ -281,14 +281,14 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	char src_buffer[strnlen(src, COUNT) + 1];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "\n\tfprintf(stderr, \"%s = %___, \", \"";
-	char println_beg[] = "\n\tfprintf(stderr, \"%s = %___\\n \", \"";
+	char print_beg[] = "\n\tfprintf(stderr, \"%s = “%___”, \", \"";
+	char println_beg[] = "\n\tfprintf(stderr, \"%s = “%___”\\n \", \"";
 	char print_end[] = ");";
 	char *src_tmp = NULL;
-	size_t off = 0;
 	/* space for <name>, <name> */
 	size_t psz = sizeof print_beg + sizeof print_end + 5;
 	size_t plnsz = sizeof println_beg + sizeof print_end + 5;
+	size_t off = 0;
 
 	/* sanity checks */
 	if (!vars || !src || !cc_args || !exec_args)
@@ -455,13 +455,13 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	off += sizeof print_end - 1;
 
 	/* copy final source into buffer */
-	char final[off + sizeof prog_end + 1];
+	char final[off + sizeof prog_end + 1], *tok_buf;
 	memset(final, 0, sizeof final);
 	memcpy(final, src_tmp, off);
 	memcpy(final + off, prog_end, sizeof prog_end);
 	/* remove NULL bytes */
-	while (memchr(final, 0, sizeof final) != NULL)
-		((char *)memchr(final, 0, sizeof final))[0] = '\n';
+	while ((tok_buf = memchr(final, 0, sizeof final)) != NULL)
+		tok_buf[0] = '\n';
 	free(src_tmp);
 
 	/* create pipes */
