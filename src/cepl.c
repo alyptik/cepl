@@ -73,7 +73,7 @@ static char **cc_argv;
 static char *hist_file;
 static int nlines;
 /* output file */
-static volatile FILE *ofile;
+static FILE volatile *ofile;
 /* struct definition for generated program sources */
 static struct prog_src {
 	char *funcs;
