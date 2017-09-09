@@ -194,7 +194,6 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* normal branch */
 	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured id");
-
 	/* set the output parameter and return the offset */
 	memset(*id, 0, match[1].rm_eo - match[1].rm_so + 1);
 	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
@@ -208,6 +207,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	size_t off;
 	char *line_tmp[2], *id_tmp;
 
+	/* sanity checks */
 	if (!line || !id_list || !type_list)
 		return 0;
 	if ((line_tmp[0] = malloc(strlen(line) + 1)) == NULL)
