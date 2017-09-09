@@ -20,8 +20,8 @@
 #include "readline.h"
 #include "vars.h"
 
-/* source file templates */
-static char const prog_includes[] = "#define _BSD_SOURCE\n"
+/* source file includes template */
+static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#define _DEFAULT_SOURCE\n"
 	"#define _GNU_SOURCE\n"
 	"#define _POSIX_C_SOURCE 200809L\n"
@@ -57,9 +57,11 @@ static char const prog_includes[] = "#define _BSD_SOURCE\n"
 	"#include <sys/wait.h>\n\n"
 	"extern char **environ;\n"
 	"#line 1\n";
+/* compiler pre-program */
 static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
 	"{(void)argc; (void)argv;\n"
 	"\n";
+/* pre-program shown to user */
 static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
 	"{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
@@ -174,11 +176,11 @@ static inline void init_buffers(void)
 	/* user is truncated source for display */
 	user.funcs = calloc(1, 1);
 	/* actual is source passed to compiler */
-	actual.funcs = calloc(1, strlen(prog_includes) + 1);
+	actual.funcs = calloc(1, strlen(prelude) + 1);
 	user.body = calloc(1, strlen(prog_start_user) + 1);
 	actual.body = calloc(1, strlen(prog_start) + 1);
-	user.final = calloc(1, strlen(prog_includes) + strlen(prog_start_user) + strlen(prog_end) + 3);
-	actual.final = calloc(1, strlen(prog_includes) + strlen(prog_start) + strlen(prog_end) + 3);
+	user.final = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
+	actual.final = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
 	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
 		free_buffers();
@@ -186,7 +188,7 @@ static inline void init_buffers(void)
 		ERR("initial pointer allocation");
 	}
 	/* no memcpy for user.funcs */
-	memcpy(actual.funcs, prog_includes, strlen(prog_includes) + 1);
+	memcpy(actual.funcs, prelude, strlen(prelude) + 1);
 	memcpy(user.body, prog_start_user, strlen(prog_start_user) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
@@ -242,7 +244,7 @@ static inline void build_final(char *argv[])
 	strcat(user.final, user.body);
 	strcat(actual.final, actual.body);
 	/* print variable values */
-	if (track_flag)
+	if (!track_flag)
 		print_vars(&vars, actual.final, cc_argv, argv);
 	strcat(user.final, prog_end);
 	strcat(actual.final, prog_end);
@@ -491,7 +493,7 @@ int main(int argc, char *argv[])
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
-				if (track_flag) {
+				if (!track_flag) {
 					find_vars(tok_buf, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}
@@ -552,7 +554,7 @@ int main(int argc, char *argv[])
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
-				if (track_flag) {
+				if (!track_flag) {
 					find_vars(line, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}
@@ -563,7 +565,7 @@ int main(int argc, char *argv[])
 				strcat(user.body, ";\n");
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
-				if (track_flag) {
+				if (!track_flag) {
 					find_vars(line, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}

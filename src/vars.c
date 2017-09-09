@@ -166,19 +166,39 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
 		/* fallback branch */
 		regfree(&reg);
-
 		/* first capture is ignored */
 		char fallback_regex[] =
-			"(,|bool|_Bool|_Complex|_Imaginary|struct|union|"
+			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
 			"char|double|float|int|long|short|unsigned|void)"
-			"[^,;&|]*[[:blank:]]*\\**[[:blank:]]*"
+			"[^,(]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)";
 
 		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
 			ERR("failed to compile regex");
 		if (regexec(&reg, line, 3, match, 0) || match[2].rm_so == -1) {
 			regfree(&reg);
-			return 0;
+			/* first capture is ignored */
+			char final_regex[] =
+				"(bool|_Bool|_Complex|_Imaginary|struct|union|"
+				"char|double|float|int|long|short|unsigned|void)"
+				"[^,(]+,[[:blank:]]*\\**[[:blank:]]*"
+				"([[:alpha:]_][[:alnum:]_]*)";
+
+			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_ICASE|REG_NEWLINE))
+				ERR("failed to compile regex");
+			if (regexec(&reg, line, 3, match, 0) || match[2].rm_so == -1) {
+				regfree(&reg);
+				return 0;
+			}
+
+			if ((*id = malloc(match[2].rm_eo - match[2].rm_so + 1)) == NULL)
+				ERR("failed to allocate space for captured id");
+			/* set the output parameter and return the offset */
+			memset(*id, 0, match[2].rm_eo - match[2].rm_so + 1);
+			memcpy(*id, line + match[2].rm_so, match[2].rm_eo - match[2].rm_so);
+			regfree(&reg);
+			*offset = match[2].rm_so;
+			return match[2].rm_so;
 		}
 
 		if ((*id = malloc(match[2].rm_eo - match[2].rm_so + 1)) == NULL)
