@@ -205,9 +205,13 @@ static inline void init_buffers(void)
 
 static inline void resize_buffer(char **buf, size_t offset)
 {
+	/* sanity check */
+	if (!buf)
+		return;
 	char *tmp;
+	size_t alloc_sz = strlen(*buf) + strlen(line) + offset + 1;
 	/* current length + line length + extra characters + \0 */
-	if (!buf || (tmp = realloc(*buf, strlen(*buf) + strlen(line) + offset + 1)) == NULL) {
+	if ((tmp = realloc(*buf, alloc_sz * 2)) == NULL) {
 		free_buffers();
 		cleanup();
 		ERRGEN("resize_buffer()");
@@ -606,7 +610,7 @@ int main(int argc, char *argv[])
 						user.body[i] = '\0';
 				}
 				for (size_t i = strlen(actual.body) - 1; actual.body[i - 1] == ';'; i--) {
-					if (user.body[i] == ';')
+					if (actual.body[i] == ';')
 						actual.body[i] = '\0';
 				}
 				strcat(user.body, "\n");
