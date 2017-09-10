@@ -557,6 +557,9 @@ int main(int argc, char *argv[])
 					types = NULL;
 					vars.list = NULL;
 					init_var_list(&vars);
+					/* TODO: fix variable state after undo */
+					/* find_vars(user.hist.list[user.hist.cnt - 1], &ids, &types); */
+					/* gen_var_list(&vars, &ids, &types); */
 				}
 				break;
 
