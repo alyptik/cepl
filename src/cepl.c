@@ -268,6 +268,8 @@ static inline void pop_history(struct prog_src *prog)
 		memcpy(prog->funcs, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
 		free(prog->lines.list[prog->lines.cnt]);
+		prog->hist.list[prog->hist.cnt] = NULL;
+		prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
 		prog->flags.cnt--;
@@ -276,6 +278,8 @@ static inline void pop_history(struct prog_src *prog)
 		memcpy(prog->body, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
 		free(prog->lines.list[prog->lines.cnt]);
+		prog->hist.list[prog->hist.cnt] = NULL;
+		prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
 	default:; /* noop */
