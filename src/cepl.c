@@ -71,7 +71,6 @@ static char *line, *tok_buf;
 static char **cc_argv;
 /* readline history variables */
 static char *hist_file;
-static int nlines;
 /* output file */
 static FILE volatile *ofile;
 /* struct definition for generated program sources */
@@ -162,7 +161,7 @@ static inline void cleanup(void)
 	free_str_list(&comp_list);
 	/* append history to history file */
 	if (has_hist) {
-		if (append_history(nlines, hist_file))
+		if (write_history(hist_file))
 			WARN(strcat("error writing history to ", hist_file));
 	}
 	if (hist_file)
@@ -420,7 +419,6 @@ int main(int argc, char *argv[])
 				free(removed);
 			}
 			add_history(line);
-			nlines++;
 		}
 
 		/* re-enable completion if disabled */
