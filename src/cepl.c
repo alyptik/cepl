@@ -560,6 +560,7 @@ int main(int argc, char *argv[])
 				pop_history(&user);
 				pop_history(&actual);
 				if (!track_flag) {
+					/* re-init vars */
 					if (types)
 						free(types);
 					if (vars.list) {
@@ -573,7 +574,7 @@ int main(int argc, char *argv[])
 					types = NULL;
 					vars.list = NULL;
 					init_var_list(&vars);
-					/* TODO: fix variable state after undo */
+					/* add vars from previous lines */
 					for (size_t i = 1; i < user.lines.cnt; i++) {
 						if (user.lines.list[i]) {
 							find_vars(user.lines.list[i], &ids, &types);
