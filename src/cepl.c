@@ -373,8 +373,14 @@ int main(int argc, char *argv[])
 	/* read hist_file if size is non-zero */
 	stat(hist_file, &hist_stat);
 	if (hist_stat.st_size > 0) {
-		if (read_history(hist_file))
-			WARN(strcat("error reading history from ", hist_file));
+		if (read_history(hist_file)) {
+			char hist_pre[] = "error reading history from ";
+			char hist_full[sizeof hist_pre + strlen(hist_file)];
+			char *hist_ptr = hist_full;
+			memcpy(hist_ptr, hist_pre, sizeof hist_pre - 1);
+			memcpy(hist_ptr + sizeof hist_pre - 1, hist_file, strlen(hist_file) + 1);
+			WARN(hist_ptr);
+		}
 	}
 	reg_handlers();
 
