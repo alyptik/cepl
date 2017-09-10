@@ -33,7 +33,7 @@ int main (void)
 	char const optstring[] = "hptvwc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	char **result;
-	ssize_t ret;
+	ptrdiff_t ret;
 	struct str_list symbols = {.cnt = 0, .list = NULL};
 
 	/* print argument strings */

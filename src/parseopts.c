@@ -45,9 +45,8 @@ static char *const warn_list[] = {
 static int option_index;
 static char *tmp_arg;
 /* compiler arguments and library list structs */
-static struct str_list cc_list;
-static struct str_list lib_list;
-static struct str_list sym_list;
+static struct str_list cc_list, lib_list, sym_list;
+
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -188,7 +187,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 		parse_libs(&sym_list, lib_list.list);
 		for (size_t i = 0; comp_arg_list[i]; i++)
 			append_str(&comp_list, comp_arg_list[i], 0);
-		for (size_t i = 0; sym_list.list[i]; i++)
+		for (size_t i = 0; i < sym_list.cnt; i++)
 			append_str(&comp_list, sym_list.list[i], 0);
 		append_str(&comp_list, NULL, 0);
 		append_str(&sym_list, NULL, 0);
@@ -200,10 +199,10 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 
 void read_syms(struct str_list *tokens, char const *elf_file)
 {
+	int elf_fd;
 	GElf_Shdr shdr;
 	Elf *elf;
 	Elf_Scn *scn = NULL;
-	int elf_fd;
 
 	/* sanity check filename */
 	if (!elf_file)

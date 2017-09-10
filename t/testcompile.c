@@ -21,7 +21,7 @@ int main(void)
 	plan(3);
 
 	lives_ok({pipe_fd(-1, -1);}, "test living through pipe_fd() call with invalid fds.");
-	dies_ok({compile(NULL, cc_args, argv);}, "die passing a NULL pointer to compile().");
+	dies_ok({compile(NULL, NULL, argv);}, "die passing a NULL pointer to compile().");
 	ok(compile(src, cc_args, argv) == 0, "succeed compiling program.");
 
 	done_testing();
