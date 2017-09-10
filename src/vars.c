@@ -65,7 +65,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char[[:blank:]]*(const[[:blank:]]*|)\\*[[:blank:]]*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*(const[[:blank:]]*|)\\*[[:blank:]]*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
