@@ -225,13 +225,14 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 int find_vars(char const *line, struct str_list *id_list, enum var_type **type_list)
 {
 	size_t off;
-	char *line_tmp[2], *id_tmp;
+	char *line_tmp[2], *id_tmp = NULL;
 
 	/* sanity checks */
 	if (!line || !id_list || !type_list)
 		return 0;
 	if ((line_tmp[0] = malloc(strlen(line) + 1)) == NULL)
 		ERR("error allocating line_tmp");
+	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
 	if (*type_list)
@@ -242,24 +243,27 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	init_list(id_list, NULL);
 
 	size_t count = id_list->cnt;
-	memcpy(line_tmp[0], line, strlen(line) + 1);
-	line_tmp[1] = line_tmp[0];
+	memcpy(line_tmp[1], line, strlen(line) + 1);
 	/* extract all identifiers from the line */
-	while (extract_id(line_tmp[0], &id_tmp, &off) != 0) {
+	while (extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 		append_str(id_list, id_tmp, 0);
 		free(id_tmp);
 		id_tmp = NULL;
-		line_tmp[0] += off;
+		line_tmp[1] += off;
 		count++;
 	}
 
 	/* return early if nothing to do */
 	if (count == 0) {
-		free(line_tmp[1]);
+		if (id_tmp)
+			free(id_tmp);
+		if (line_tmp[0])
+			free(line_tmp[0]);
 		return 0;
 	}
 
 	/* get the type of each identifier */
+	line_tmp[1] = line_tmp[0];
 	enum var_type type_tmp[id_list->cnt];
 	for (size_t i = 0; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp[1], id_list->list[i])) == T_ERR)
@@ -270,7 +274,10 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
 		ERR("failed to allocate memory for type_list");
 	memcpy(*type_list, type_tmp, sizeof type_tmp);
-	free(line_tmp[1]);
+	if (id_tmp)
+		free(id_tmp);
+	if (line_tmp[0])
+		free(line_tmp[0]);
 	return id_list->cnt;
 }
 

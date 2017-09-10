@@ -41,7 +41,7 @@ static inline void init_var_list(struct var_list *list_struct)
 static inline void append_var(struct var_list *list_struct, char const *key, enum var_type type)
 {
 	void *tmp;
-	if (!list_struct || !key)
+	if (!list_struct || !list_struct->list || !key)
 		ERRX("invalid arguments passed to append_var()");
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
@@ -62,7 +62,7 @@ static inline void gen_var_list(struct var_list *list_struct, struct str_list *i
 {
 	/* sanity checks */
 	if (!list_struct || !list_struct->list || !id_list || !id_list->list || !type_list)
-		WARNX("NULL pointer passed to gen_var_list()");
+		ERRX("NULL pointer passed to gen_var_list()");
 	for (size_t i = 0; i < id_list->cnt; i++)
 		append_var(list_struct, id_list->list[i], (*type_list)[i]);
 }
