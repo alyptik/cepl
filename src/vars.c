@@ -166,23 +166,23 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
 		/* fallback branch */
 		regfree(&reg);
-		/* first/second capture is ignored */
+		/* first/second/fourth capture is ignored */
 		char const fallback_regex[] =
 			"(^|[^,\\({;&|'\"]+)(bool|_Bool|_Complex|_Imaginary|struct|union|"
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^,\\({;&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
-			"([[:alpha:]_][[:alnum:]_]*)";
+			"([[:alpha:]_][[:alnum:]_]*)([^\\({;&|'\"[:alnum:]]+|$)";
 
 		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
 		if (regexec(&reg, line, 4, match, 0) || match[3].rm_so == -1) {
 			regfree(&reg);
-			/* first/second capture is ignored */
+			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
 				"(^|[^,\\({;&|'\"]+)(|bool|_Bool|_Complex|_Imaginary|struct|union|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
-				"([[:alpha:]_][[:alnum:]_]*)";
+				"([[:alpha:]_][[:alnum:]_]*)([^\\({;&|'\"[:alnum:]]+|$)";
 
 			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_NEWLINE))
 				ERR("failed to compile regex");
