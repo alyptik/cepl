@@ -396,14 +396,14 @@ int main(int argc, char *argv[])
 		/* strip newlines */
 		if ((tok_buf = strpbrk(line, "\f\r\n")) != NULL)
 			tok_buf[0] = '\0';
+		char *line_tmp = line;
 		/* strip leading ' ' and '\t' */
-		if (strspn(line, " \t") !=0)
-			line += strspn(line, " \t");
+		line_tmp += strspn(line, " \t");
 
 		/* add and dedup history */
-		if (line[0]) {
+		if (line_tmp[0]) {
 			/* search backward */
-			while (history_search(line, -1) != -1) {
+			while (history_search(line_tmp, -1) != -1) {
 				/* this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *removed = remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
 				free(removed);
 			}
 			/* search forward */
-			while (history_search(line, 0) != -1) {
+			while (history_search(line_tmp, 0) != -1) {
 				/* this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *removed = remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
 					free(removed->data);
 				free(removed);
 			}
-			add_history(line);
+			add_history(line_tmp);
 		}
 
 		/* re-enable completion if disabled */
@@ -436,9 +436,9 @@ int main(int argc, char *argv[])
 		resize_buffer(&actual.final, 3);
 
 		/* control sequence and preprocessor directive parsing */
-		switch (line[0]) {
+		switch (line_tmp[0]) {
 		case ';':
-			switch(line[1]) {
+			switch(line_tmp[1]) {
 			/* clean up and exit program */
 			case 'q':
 				free_buffers();
@@ -457,7 +457,7 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				out_flag ^= true;
 				/* break if file name empty */
-				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line_tmp, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 			case 'm': /* fallthrough */
 			case 'f':
 				/* break if function definition empty */
-				if (!(tok_buf = strpbrk(line, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!(tok_buf = strpbrk(line_tmp, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
@@ -551,8 +551,8 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
-				line[i] = '\0';
+			for (size_t i = strlen(line_tmp) - 1; line_tmp[i] == ' ' || line_tmp[i] == '\t'; i--)
+				line_tmp[i] = '\0';
 			/* start building program source */
 			build_body();
 			strcat(user.body, "\n");
@@ -561,9 +561,9 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
-				line[i] = '\0';
-			switch(line[strlen(line) - 1]) {
+			for (size_t i = strlen(line_tmp) - 1; line_tmp[i] == ' ' || line_tmp[i] == '\t'; i--)
+				line_tmp[i] = '\0';
+			switch(line_tmp[strlen(line_tmp) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
@@ -582,7 +582,7 @@ int main(int argc, char *argv[])
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
 				if (!track_flag) {
-					find_vars(line, &ids, &types);
+					find_vars(line_tmp, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}
 				break;
@@ -593,7 +593,7 @@ int main(int argc, char *argv[])
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
 				if (!track_flag) {
-					find_vars(line, &ids, &types);
+					find_vars(line_tmp, &ids, &types);
 					gen_var_list(&vars, &ids, &types);
 				}
 			}
