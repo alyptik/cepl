@@ -574,9 +574,12 @@ int main(int argc, char *argv[])
 					vars.list = NULL;
 					init_var_list(&vars);
 					/* TODO: fix variable state after undo */
-					for (size_t i = 1; i < user.lines.cnt; i++)
-						find_vars(user.lines.list[i], &ids, &types);
-					gen_var_list(&vars, &ids, &types);
+					for (size_t i = 1; i < user.lines.cnt; i++) {
+						if (user.lines.list[i]) {
+							find_vars(user.lines.list[i], &ids, &types);
+							gen_var_list(&vars, &ids, &types);
+						}
+					}
 				}
 				break;
 
