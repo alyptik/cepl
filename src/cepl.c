@@ -161,8 +161,14 @@ static inline void cleanup(void)
 	free_str_list(&comp_list);
 	/* append history to history file */
 	if (has_hist) {
-		if (write_history(hist_file))
-			WARN(strcat("error writing history to ", hist_file));
+		if (write_history(hist_file)) {
+			char hist_pre[] = "error writing history to ";
+			char hist_full[sizeof hist_pre + strlen(hist_file)];
+			char *hist_ptr = hist_full;
+			memcpy(hist_ptr, hist_pre, sizeof hist_pre - 1);
+			memcpy(hist_ptr + sizeof hist_pre - 1, hist_file, strlen(hist_file) + 1);
+			WARN(hist_ptr);
+		}
 	}
 	if (hist_file)
 		free(hist_file);
