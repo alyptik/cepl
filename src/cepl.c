@@ -92,7 +92,7 @@ extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
 
-static inline void write_hist(void) {
+static inline void write_file(void) {
 	/* return early if no file open */
 	if (!ofile)
 		return;
@@ -107,7 +107,7 @@ static inline void write_hist(void) {
 
 static inline void free_buffers(void)
 {
-	write_hist();
+	write_file();
 
 	if (line)
 		free(line);
@@ -449,20 +449,24 @@ int main(int argc, char *argv[])
 
 			/* toggle output file writing */
 			case 'o':
-				/* if file is open, close it and break early */
-				if (out_flag) {
-					write_hist();
-					break;
-				}
 				/* toggle global warning flag */
 				out_flag ^= true;
-				/* break if file name empty */
-				if (!(tok_buf = strpbrk(line_tmp, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				/* if file was open, close it and break early */
+				if (!out_flag) {
+					write_file();
 					break;
+				}
+				tok_buf = strpbrk(line_tmp + 2, " \t");
+				/* break if file name empty */
+				if (!tok_buf || strspn(tok_buf, " \t") == strlen(tok_buf)) {
+					/* reset flag */
+					out_flag ^= true;
+					break;
+				}
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
-				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL)) {
+				if (out_flag && ((ofile = (FILE volatile *)fopen(tok_buf, "w")) == NULL)) {
 					free_buffers();
 					cleanup();
 					ERR("failed to create output file");
@@ -511,8 +515,9 @@ int main(int argc, char *argv[])
 			case 'i': /* fallthrough */
 			case 'm': /* fallthrough */
 			case 'f':
+				tok_buf = strpbrk(line_tmp, " \t");
 				/* break if function definition empty */
-				if (!(tok_buf = strpbrk(line_tmp, " \t")) || strspn(tok_buf, " \t") == strlen(tok_buf))
+				if (!tok_buf || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
