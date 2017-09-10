@@ -1,6 +1,6 @@
 # CEPL - *C Read-Eval-Print Loop*
 
-C11 (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently supporting multiple compilers, readline key-bindings/tab-completion, variable tracking, and incremental undo.
+An interactive C (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently supporting multiple compilers, shell-esque readline key-bindings/tab-completion, and incremental undo.
 
 ## Dependencies
 
