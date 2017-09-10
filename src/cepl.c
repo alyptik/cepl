@@ -564,14 +564,7 @@ int main(int argc, char *argv[])
 				break;
 
 			/* unknown command becomes a noop */
-			default:
-				build_body();
-				strcat(user.body, "\n");
-				strcat(actual.body, "\n");
-				if (!track_flag) {
-					find_vars(tok_buf, &ids, &types);
-					gen_var_list(&vars, &ids, &types);
-				}
+			default:;
 			}
 			break;
 
