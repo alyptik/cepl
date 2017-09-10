@@ -33,7 +33,7 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* first/fourth captures are ignored */
 	char *regex, *type;
-	char beg[] = "(^|.*[\\(\\{\\;[:blank:]]*)"
+	char beg[] = "(^|.*[({;[:blank:]]*)"
 		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
 		"(.*)(";
 	char end[] = ")(\\[*)";
@@ -191,7 +191,6 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 				regfree(&reg);
 				return 0;
 			}
-	puts("3");
 
 			if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 				ERR("failed to allocate space for captured id");
@@ -202,7 +201,6 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			*offset = match[3].rm_so;
 			return match[3].rm_so;
 		}
-	puts("2");
 
 		if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 			ERR("failed to allocate space for captured id");
@@ -213,7 +211,6 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		*offset = match[3].rm_so;
 		return match[3].rm_so;
 	}
-	puts("1");
 
 	/* normal branch */
 	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
