@@ -152,7 +152,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	regex_t reg;
 	regmatch_t match[4];
 	/* second capture is ignored */
-	char const regex[] = "[^,;&|]*[^,;&|[:alnum:]_]+"
+	char const regex[] = "^[^,;&|]*[^,;&|[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 		"(=[^,({;&|'\"_=!<>[:alnum:]]+|<>{2}=[^,({;&|'\"_=!<>[:alnum:]]*|=[^=]+)";
 
@@ -194,6 +194,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 				return 0;
 			}
 
+puts("3");
 			if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 				ERR("failed to allocate space for captured id");
 			/* set the output parameter and return the offset */
@@ -204,6 +205,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			return match[3].rm_so;
 		}
 
+puts("2");
 		if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 			ERR("failed to allocate space for captured id");
 		/* set the output parameter and return the offset */
@@ -214,6 +216,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		return match[3].rm_so;
 	}
 
+puts("1");
 	/* normal branch */
 	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured id");
@@ -248,7 +251,22 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	size_t count = id_list->cnt;
 	memcpy(line_tmp[1], line, strlen(line) + 1);
 	/* extract all identifiers from the line */
-	while (extract_id(line_tmp[1], &id_tmp, &off) != 0) {
+	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
+		append_str(id_list, id_tmp, 0);
+		free(id_tmp);
+		id_tmp = NULL;
+		line_tmp[1] += off;
+		count++;
+	}
+	/* second pass */
+	if (id_tmp) {
+		free(id_tmp);
+		id_tmp = NULL;
+	}
+	line_tmp[1] = line_tmp[0];
+	while (strpbrk(line_tmp[1], ";") != NULL)
+		line_tmp[1] = strpbrk(line_tmp[1], ";") + 1;
+	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 		append_str(id_list, id_tmp, 0);
 		free(id_tmp);
 		id_tmp = NULL;
