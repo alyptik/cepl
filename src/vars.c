@@ -168,9 +168,9 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		regfree(&reg);
 		/* first/second capture is ignored */
 		char const fallback_regex[] =
-			"(^|[^,({;&|'\"]+)(bool|_Bool|_Complex|_Imaginary|struct|union|"
+			"(^|[^,\\({;&|'\"]+)(bool|_Bool|_Complex|_Imaginary|struct|union|"
 			"char|double|float|int|long|short|unsigned|void)"
-			"[^,({;&|'\"]+[[:blank:]]*\\**[[:blank:]]*"
+			"[^,\\({;&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)";
 
 		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_NEWLINE))
@@ -179,7 +179,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			regfree(&reg);
 			/* first/second capture is ignored */
 			char const final_regex[] =
-				"(^|[^,({;&|'\"]+)(|bool|_Bool|_Complex|_Imaginary|struct|union|"
+				"(^|[^,\\({;&|'\"]+)(|bool|_Bool|_Complex|_Imaginary|struct|union|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
