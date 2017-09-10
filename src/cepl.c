@@ -217,29 +217,21 @@ static inline void resize_buffer(char **buf, size_t offset)
 
 static inline void build_funcs(void)
 {
-	/* strip newlines */
-	if ((tok_buf = strpbrk(line,  "\f\r\n")) != NULL)
-		tok_buf[0] = '\0';
-	append_str(&user.lines, line, 0);
-	append_str(&actual.lines, line, 0);
+	append_str(&user.lines, tok_buf, 0);
+	append_str(&actual.lines, tok_buf, 0);
 	append_str(&user.hist, user.funcs, 0);
-	append_str(&user.hist, user.body, 0);
 	append_str(&actual.hist, actual.funcs, 0);
-	append_str(&actual.hist, actual.body, 0);
 	append_flag(&user.flags, NOT_IN_MAIN);
 	append_flag(&actual.flags, NOT_IN_MAIN);
 	/* generate function buffers */
-	strcat(user.funcs, line);
-	strcat(actual.funcs, line);
+	strcat(user.funcs, tok_buf);
+	strcat(actual.funcs, tok_buf);
 	strcat(user.funcs, "\n");
 	strcat(actual.funcs, "\n");
 }
 
 static inline void build_body(void)
 {
-	/* strip newlines */
-	if ((tok_buf = strpbrk(line,  "\f\r\n")) != NULL)
-		tok_buf[0] = '\0';
 	append_str(&user.lines, line, 0);
 	append_str(&actual.lines, line, 0);
 	append_str(&user.hist, user.body, 0);
@@ -276,8 +268,6 @@ static inline void pop_history(struct prog_src *prog)
 		memcpy(prog->funcs, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
 		free(prog->lines.list[prog->lines.cnt]);
-		prog->hist.list[prog->hist.cnt] = NULL;
-		prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
 		prog->flags.cnt--;
@@ -286,8 +276,6 @@ static inline void pop_history(struct prog_src *prog)
 		memcpy(prog->body, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
 		free(prog->lines.list[prog->lines.cnt]);
-		prog->hist.list[prog->hist.cnt] = NULL;
-		prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
 	default:; /* noop */
@@ -412,14 +400,11 @@ int main(int argc, char *argv[])
 		/* strip newlines */
 		if ((tok_buf = strpbrk(line, "\f\r\n")) != NULL)
 			tok_buf[0] = '\0';
-		char *line_tmp = line;
-		/* strip leading ' ' and '\t' */
-		line_tmp += strspn(line, " \t");
 
 		/* add and dedup history */
-		if (line_tmp[0]) {
+		if (line[0]) {
 			/* search backward */
-			while (history_search(line_tmp, -1) != -1) {
+			while (history_search(line, -1) != -1) {
 				/* this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *removed = remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
@@ -430,7 +415,7 @@ int main(int argc, char *argv[])
 				free(removed);
 			}
 			/* search forward */
-			while (history_search(line_tmp, 0) != -1) {
+			while (history_search(line, 0) != -1) {
 				/* this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *removed = remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
@@ -440,7 +425,7 @@ int main(int argc, char *argv[])
 					free(removed->data);
 				free(removed);
 			}
-			add_history(line_tmp);
+			add_history(line);
 		}
 
 		/* re-enable completion if disabled */
@@ -452,9 +437,9 @@ int main(int argc, char *argv[])
 		resize_buffer(&actual.final, 3);
 
 		/* control sequence and preprocessor directive parsing */
-		switch (line_tmp[0]) {
+		switch (line[0]) {
 		case ';':
-			switch(line_tmp[1]) {
+			switch(line[1]) {
 			/* clean up and exit program */
 			case 'q':
 				free_buffers();
@@ -472,7 +457,7 @@ int main(int argc, char *argv[])
 					write_file();
 					break;
 				}
-				tok_buf = strpbrk(line_tmp + 2, " \t");
+				tok_buf = strpbrk(line, " \t");
 				/* break if file name empty */
 				if (!tok_buf || strspn(tok_buf, " \t") == strlen(tok_buf)) {
 					/* reset flag */
@@ -531,7 +516,7 @@ int main(int argc, char *argv[])
 			case 'i': /* fallthrough */
 			case 'm': /* fallthrough */
 			case 'f':
-				tok_buf = strpbrk(line_tmp, " \t");
+				tok_buf = strpbrk(line, " \t");
 				/* break if function definition empty */
 				if (!tok_buf || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
@@ -542,8 +527,8 @@ int main(int argc, char *argv[])
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
 				if (!track_flag) {
-					find_vars(tok_buf, &ids, &types);
-					gen_var_list(&vars, &ids, &types);
+					if (find_vars(tok_buf, &ids, &types))
+						gen_var_list(&vars, &ids, &types);
 				}
 				break;
 
@@ -579,8 +564,8 @@ int main(int argc, char *argv[])
 				/* add vars from previous lines */
 				for (size_t i = 1; i < user.lines.cnt; i++) {
 					if (user.lines.list[i]) {
-						find_vars(user.lines.list[i], &ids, &types);
-						gen_var_list(&vars, &ids, &types);
+						if (find_vars(user.lines.list[i], &ids, &types))
+							gen_var_list(&vars, &ids, &types);
 					}
 				}
 				break;
@@ -593,8 +578,8 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(line_tmp) - 1; line_tmp[i] == ' ' || line_tmp[i] == '\t'; i--)
-				line_tmp[i] = '\0';
+			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
+				line[i] = '\0';
 			/* start building program source */
 			build_body();
 			strcat(user.body, "\n");
@@ -603,9 +588,9 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(line_tmp) - 1; line_tmp[i] == ' ' || line_tmp[i] == '\t'; i--)
-				line_tmp[i] = '\0';
-			switch(line_tmp[strlen(line_tmp) - 1]) {
+			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
+				line[i] = '\0';
+			switch(line[strlen(line) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
@@ -624,8 +609,8 @@ int main(int argc, char *argv[])
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
 				if (!track_flag) {
-					find_vars(line_tmp, &ids, &types);
-					gen_var_list(&vars, &ids, &types);
+					if (find_vars(line, &ids, &types))
+						gen_var_list(&vars, &ids, &types);
 				}
 				break;
 			default:
@@ -635,8 +620,8 @@ int main(int argc, char *argv[])
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
 				if (!track_flag) {
-					find_vars(line_tmp, &ids, &types);
-					gen_var_list(&vars, &ids, &types);
+					if (find_vars(line, &ids, &types))
+						gen_var_list(&vars, &ids, &types);
 				}
 			}
 		}
