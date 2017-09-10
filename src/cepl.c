@@ -543,6 +543,21 @@ int main(int argc, char *argv[])
 					break;
 				pop_history(&user);
 				pop_history(&actual);
+				if (!track_flag) {
+					if (types)
+						free(types);
+					if (vars.list) {
+						for (size_t i = 0; i < vars.cnt; i++) {
+							if (vars.list[i].key)
+								free(vars.list[i].key);
+						}
+						free(vars.list);
+					}
+					free_str_list(&ids);
+					types = NULL;
+					vars.list = NULL;
+					init_var_list(&vars);
+				}
 				break;
 
 			/* unknown command becomes a noop */
@@ -550,6 +565,10 @@ int main(int argc, char *argv[])
 				build_body();
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
+				if (!track_flag) {
+					find_vars(tok_buf, &ids, &types);
+					gen_var_list(&vars, &ids, &types);
+				}
 			}
 			break;
 
