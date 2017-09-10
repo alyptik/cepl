@@ -33,10 +33,10 @@ enum var_type extract_type(char const *line, char const *id)
 
 	/* first/fourth captures are ignored */
 	char *regex, *type;
-	char beg[] = "(^|.*[({;[:blank:]]*)"
+	char const beg[] = "(^|.*[({;[:blank:]]*)"
 		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
 		"(.*)(";
-	char end[] = ")(\\[*)";
+	char const end[] = ")(\\[*)";
 
 	/* append identifier to regex */
 	if ((regex = malloc(strlen(id) + sizeof beg + sizeof end - 1)) == NULL)
