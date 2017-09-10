@@ -380,15 +380,30 @@ int main(int argc, char *argv[])
 
 	/* loop readline() until EOF is read */
 	while ((line = read_line()) && *line) {
-		fflush(stdout);
+		/* flush output streams */
+		fflush(NULL);
 		/* strip newlines */
 		if ((tok_buf = strpbrk(line, "\f\r\n")) != NULL)
 			tok_buf[0] = '\0';
+		/* strip leading ' ' and '\t' */
+		if (strspn(line, " \t") !=0)
+			line += strspn(line, " \t");
 
 		/* add and dedup history */
 		if (line[0]) {
 			/* search backward */
 			while (history_search(line, -1) != -1) {
+				/* this line is already in the history, remove the earlier entry */
+				HIST_ENTRY *removed = remove_history(where_history());
+				/* according to history docs we are supposed to free the stuff */
+				if (removed->line)
+					free(removed->line);
+				if (removed->data)
+					free(removed->data);
+				free(removed);
+			}
+			/* search forward */
+			while (history_search(line, 1) != -1) {
 				/* this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *removed = remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
