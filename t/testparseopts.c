@@ -49,7 +49,7 @@ int main (void)
 	putchar('\n');
 	init_list(&symbols, "cepl");
 
-	plan(6);
+	plan(7);
 
 	ok(result != NULL, "test option parsing.");
 	like(result[0], "^(gcc|clang)$", "test generation of compiler string.");
@@ -57,6 +57,7 @@ int main (void)
 	lives_ok({parse_libs(&symbols, libs);}, "test shared library parsing.");
 	ok((ret = free_str_list(&symbols)) != -1, "test free_str_list() doesn't return -1.");
 	ok(ret == 1, "test free_str_list() return is exactly 1.");
+	ok(free_str_list(&symbols) == -1, "test free_str_list() on empty pointer returns -1.");
 
 	/* cleanup */
 	free_argv(result);
