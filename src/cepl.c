@@ -559,27 +559,28 @@ int main(int argc, char *argv[])
 					break;
 				pop_history(&user);
 				pop_history(&actual);
-				if (!track_flag) {
-					/* re-init vars */
-					if (types)
-						free(types);
-					if (vars.list) {
-						for (size_t i = 0; i < vars.cnt; i++) {
-							if (vars.list[i].key)
-								free(vars.list[i].key);
-						}
-						free(vars.list);
+				/* break early if tracking disabled */
+				if (track_flag)
+					break;
+				/* re-init vars */
+				if (types)
+					free(types);
+				if (vars.list) {
+					for (size_t i = 0; i < vars.cnt; i++) {
+						if (vars.list[i].key)
+							free(vars.list[i].key);
 					}
-					free_str_list(&ids);
-					types = NULL;
-					vars.list = NULL;
-					init_var_list(&vars);
-					/* add vars from previous lines */
-					for (size_t i = 1; i < user.lines.cnt; i++) {
-						if (user.lines.list[i]) {
-							find_vars(user.lines.list[i], &ids, &types);
-							gen_var_list(&vars, &ids, &types);
-						}
+					free(vars.list);
+				}
+				free_str_list(&ids);
+				types = NULL;
+				vars.list = NULL;
+				init_var_list(&vars);
+				/* add vars from previous lines */
+				for (size_t i = 1; i < user.lines.cnt; i++) {
+					if (user.lines.list[i]) {
+						find_vars(user.lines.list[i], &ids, &types);
+						gen_var_list(&vars, &ids, &types);
 					}
 				}
 				break;
