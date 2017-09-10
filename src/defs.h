@@ -29,6 +29,16 @@ struct flag_list {
 	enum src_flag *list;
 };
 
+/* struct definition for generated program sources */
+struct prog_src {
+	char *funcs;
+	char *body;
+	char *final;
+	struct str_list lines;
+	struct str_list hist;
+	struct flag_list flags;
+};
+
 /* possible types of tracked variable */
 enum var_type {
 	T_ERR = 0,

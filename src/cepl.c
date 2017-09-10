@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "compile.h"
+#include "defs.h"
 #include "errors.h"
 #include "parseopts.h"
 #include "readline.h"
@@ -74,13 +75,7 @@ static char *hist_file;
 /* output file */
 static FILE volatile *ofile;
 /* struct definition for generated program sources */
-static struct prog_src {
-	char *funcs;
-	char *body;
-	char *final;
-	struct str_list hist;
-	struct flag_list flags;
-} user, actual;
+static struct prog_src user, actual;
 /* var list */
 static struct var_list vars;
 static struct str_list ids;
@@ -142,6 +137,8 @@ static inline void free_buffers(void)
 	}
 	free_str_list(&user.hist);
 	free_str_list(&actual.hist);
+	free_str_list(&user.lines);
+	free_str_list(&actual.lines);
 	free_str_list(&ids);
 
 	/* set pointers to NULL */
@@ -197,6 +194,8 @@ static inline void init_buffers(void)
 	memcpy(user.body, prog_start_user, strlen(prog_start_user) + 1);
 	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
+	init_list(&user.lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&actual.lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_list(&user.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_list(&actual.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_flag_list(&user.flags);
@@ -218,13 +217,20 @@ static inline void resize_buffer(char **buf, size_t offset)
 
 static inline void build_funcs(void)
 {
+	/* strip newlines */
+	if ((tok_buf = strpbrk(line,  "\f\r\n")) != NULL)
+		tok_buf[0] = '\0';
+	append_str(&user.lines, line, 0);
+	append_str(&actual.lines, line, 0);
 	append_str(&user.hist, user.funcs, 0);
+	append_str(&user.hist, user.body, 0);
 	append_str(&actual.hist, actual.funcs, 0);
+	append_str(&actual.hist, actual.body, 0);
 	append_flag(&user.flags, NOT_IN_MAIN);
 	append_flag(&actual.flags, NOT_IN_MAIN);
 	/* generate function buffers */
-	strcat(user.funcs, tok_buf);
-	strcat(actual.funcs, tok_buf);
+	strcat(user.funcs, line);
+	strcat(actual.funcs, line);
 	strcat(user.funcs, "\n");
 	strcat(actual.funcs, "\n");
 }
@@ -234,6 +240,8 @@ static inline void build_body(void)
 	/* strip newlines */
 	if ((tok_buf = strpbrk(line,  "\f\r\n")) != NULL)
 		tok_buf[0] = '\0';
+	append_str(&user.lines, line, 0);
+	append_str(&actual.lines, line, 0);
 	append_str(&user.hist, user.body, 0);
 	append_str(&actual.hist, actual.body, 0);
 	append_flag(&user.flags, IN_MAIN);
@@ -264,14 +272,22 @@ static inline void pop_history(struct prog_src *prog)
 	case NOT_IN_MAIN:
 		prog->flags.cnt--;
 		prog->hist.cnt--;
+		prog->lines.cnt--;
 		memcpy(prog->funcs, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
+		free(prog->lines.list[prog->lines.cnt]);
+		prog->hist.list[prog->hist.cnt] = NULL;
+		prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
 		prog->flags.cnt--;
 		prog->hist.cnt--;
+		prog->lines.cnt--;
 		memcpy(prog->body, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
+		free(prog->lines.list[prog->lines.cnt]);
+		prog->hist.list[prog->hist.cnt] = NULL;
+		prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
 	default:; /* noop */
@@ -558,8 +574,9 @@ int main(int argc, char *argv[])
 					vars.list = NULL;
 					init_var_list(&vars);
 					/* TODO: fix variable state after undo */
-					/* find_vars(user.hist.list[user.hist.cnt - 1], &ids, &types); */
-					/* gen_var_list(&vars, &ids, &types); */
+					for (size_t i = 1; i < user.lines.cnt; i++)
+						find_vars(user.lines.list[i], &ids, &types);
+					gen_var_list(&vars, &ids, &types);
 				}
 				break;
 
