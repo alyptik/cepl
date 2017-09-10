@@ -134,7 +134,7 @@ static inline void free_buffers(void)
 	if (cc_argv)
 		free_argv(cc_argv);
 	if (vars.list) {
-		for (size_t i = 0; i< vars.cnt; i++) {
+		for (size_t i = 0; i < vars.cnt; i++) {
 			if (vars.list[i].key)
 				free(vars.list[i].key);
 		}
