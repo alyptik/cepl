@@ -153,8 +153,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	regmatch_t match[4];
 	/* second capture is ignored */
 	char const regex[] = "[^,;&|]*[^,;&|[:alnum:]_]+"
-		"([[:alpha:]_][[:alnum:]_]*)"
-		"([^[:alnum:]_=!<>]*=|[^[:alnum:]_=!<>]*[<>]{2}=)";
+		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
+		"(=[^,({;&|'\"_=!<>[:alnum:]]+|<>{2}=[^,({;&|'\"_=!<>[:alnum:]]*|=[^=]+)";
 
 	/* return early if passed NULL pointers */
 	if (!line || !id || !offset)
@@ -168,18 +168,19 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
 		char const fallback_regex[] =
-			"(^|[^,\\({;&|'\"]+)(bool|_Bool|_Complex|_Imaginary|struct|union|"
+			"(^|[^,({;&|'\"]+)(bool|_Bool|_Complex|_Imaginary|struct|union|"
 			"char|double|float|int|long|short|unsigned|void)"
-			"[^,\\({;&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
-			"([[:alpha:]_][[:alnum:]_]*)([^\\({;&|'\"[:alnum:]]+|$)";
+			"[^,({;&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
+			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
+			"([^({;&|'\"[:alnum:][:blank:]]+$|$|,)";
 
 		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
-		if (regexec(&reg, line, 4, match, 0) || match[3].rm_so == -1) {
+		if (regexec(&reg, line, 5, match, 0) || match[3].rm_so == -1) {
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
-				"(^|[^,\\({;&|'\"]+)(|bool|_Bool|_Complex|_Imaginary|struct|union|"
+				"(^|[^,({;&|'\"]+)(|bool|_Bool|_Complex|_Imaginary|struct|union|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
@@ -190,6 +191,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 				regfree(&reg);
 				return 0;
 			}
+	puts("3");
 
 			if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 				ERR("failed to allocate space for captured id");
@@ -200,6 +202,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			*offset = match[3].rm_so;
 			return match[3].rm_so;
 		}
+	puts("2");
 
 		if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 			ERR("failed to allocate space for captured id");
@@ -210,6 +213,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		*offset = match[3].rm_so;
 		return match[3].rm_so;
 	}
+	puts("1");
 
 	/* normal branch */
 	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
