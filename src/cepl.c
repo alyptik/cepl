@@ -659,7 +659,5 @@ int main(int argc, char *argv[])
 		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
 	}
 
-	free_buffers();
-	cleanup();
 	return 0;
 }
