@@ -573,7 +573,7 @@ int main(int argc, char *argv[])
 				init_var_list(&vars);
 				/* add vars from previous lines */
 				for (size_t i = 1; i < user.lines.cnt; i++) {
-					if (user.lines.list[i]) {
+					if (user.lines.list[i] && user.flags.list[i] == IN_MAIN) {
 						if (find_vars(user.lines.list[i], &ids, &types))
 							gen_var_list(&vars, &ids, &types);
 					}
