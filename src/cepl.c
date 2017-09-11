@@ -81,7 +81,6 @@ static struct var_list vars;
 static struct str_list ids;
 static enum var_type *types;
 static bool has_hist = false;
-
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
@@ -142,14 +141,18 @@ static inline void free_buffers(void)
 	free_str_list(&ids);
 
 	/* set pointers to NULL */
-	line = NULL;
+	user.funcs = NULL;
 	user.body = NULL;
-	actual.body = NULL;
 	user.final = NULL;
+	user.flags.list = NULL;
+	actual.funcs = NULL;
+	actual.body = NULL;
 	actual.final = NULL;
+	actual.flags.list = NULL;
 	vars.list = NULL;
 	cc_argv = NULL;
 	types = NULL;
+	line = NULL;
 }
 
 static inline void cleanup(void)
@@ -167,8 +170,10 @@ static inline void cleanup(void)
 			WARN(hist_ptr);
 		}
 	}
-	if (hist_file)
+	if (hist_file) {
 		free(hist_file);
+		hist_file = NULL;
+	}
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
 }
@@ -320,6 +325,14 @@ static inline void reg_handlers(void)
 		WARN("unable to register SIGALRM handler");
 	if (signal(SIGTERM, &sig_handler) == SIG_ERR)
 		WARN("unable to register SIGTERM handler");
+	if (atexit(&cleanup))
+		WARNGEN("atexit(&cleanup)");
+	if (atexit(&free_buffers))
+		WARNGEN("atexit(&free_buffers)");
+	if (at_quick_exit(&cleanup))
+		WARNGEN("at_quick_exit(&cleanup)");
+	if (at_quick_exit(&free_buffers))
+		WARNGEN("at_quick_exit(&free_buffers)");
 }
 
 static inline char *read_line(void)
@@ -381,7 +394,7 @@ int main(int argc, char *argv[])
 	/* initialize history sesssion */
 	using_history();
 	/* create history file if it doesn't exsit */
-	if (!(make_hist = fopen(hist_file, "a+b"))) {
+	if (!(make_hist = fopen(hist_file, "a"))) {
 		WARN("error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
