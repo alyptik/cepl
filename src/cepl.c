@@ -549,8 +549,8 @@ int main(int argc, char *argv[])
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
-				/* gets in the way of functions */
-				/* TODO: find a workaround */
+				/* TODO: find a workaround for var tracking */
+				/* getting in the way of functions */
 				/* if (!track_flag) { */
 				/*         if (find_vars(tok_buf, &ids, &types)) */
 				/*                 gen_var_list(&vars, &ids, &types); */
