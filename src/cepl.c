@@ -356,7 +356,7 @@ static inline char *read_line(void)
 static inline void dedup_history(void)
 {
 	if (line && *line) {
-		int cur_hist = where_history();
+		size_t cur_hist = where_history();
 		/* search backward */
 		while (history_search_prefix(line, -1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
