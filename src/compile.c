@@ -26,7 +26,6 @@ extern char **environ;
 /* silence linter */
 long syscall(long number, ...);
 int fexecve(int mem_fd, char *const argv[], char *const envp[]);
-size_t strnlen(char const *s, size_t maxlen);
 
 int compile(char const *src, char *const cc_args[], char *const exec_args[])
 {
@@ -35,7 +34,7 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	char src_buffer[strnlen(src, COUNT) + 1];
+	char src_buffer[strlen(src)+1];
 
 	if (sizeof src_buffer < 2)
 		ERRX("empty source string passed to compile()");
