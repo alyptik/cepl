@@ -208,7 +208,8 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 	if (!elf_file)
 		return;
 	/* coordinate API and lib versions */
-	elf_version(EV_CURRENT);
+	if (elf_version(EV_CURRENT) == EV_NONE)
+		ERR("libelf out of date");
 	elf_fd = open(elf_file, O_RDONLY);
 	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
 
