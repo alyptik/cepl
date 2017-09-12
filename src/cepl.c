@@ -355,7 +355,7 @@ static inline char *read_line(void)
 /* look for current line in readline history */
 static inline void dedup_history(void)
 {
-	if (line && line[0]) {
+	if (line && *line) {
 		int cur_hist = where_history();
 		/* search backward */
 		while (history_search_prefix(line, -1) != -1) {
