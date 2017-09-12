@@ -497,14 +497,12 @@ int main(int argc, char *argv[])
 				}
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				FILE *out_tmp = NULL;
 				/* output file flag */
-				if (out_flag && ((out_tmp = fopen(tok_buf, "w")) == NULL)) {
+				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL)) {
 					free_buffers();
 					cleanup();
 					ERR("failed to create output file");
 				}
-				ofile = (FILE volatile *)out_tmp;
 				break;
 
 			/* toggle library parsing */
