@@ -23,7 +23,7 @@
 #include "defs.h"
 
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v3.6.1"
+#define VERSION_STRING "CEPL v3.6.2"
 #define USAGE_STRING "[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
@@ -97,13 +97,13 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 	list_struct->cnt = 0;
 	list_struct->max = 0;
 	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial list_ptr malloc()");
+		ERRGEN("error during initial list_ptr malloc()");
 	/* exit early if NULL */
 	if (!init_str)
 		return;
 	list_struct->cnt++;
 	if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(init_str) + 1)) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial list_ptr[0] malloc()");
+		ERRGEN("error during initial list_ptr[0] malloc()");
 	memset(list_struct->list[list_struct->cnt - 1], 0, strlen(init_str) + 1);
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
@@ -116,14 +116,14 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
 		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
-			err(EXIT_FAILURE, "%s[%zu] %s", "error during list_ptr", list_struct->cnt - 1, "malloc()");
+			ERRARR("list_ptr", list_struct->cnt - 1);
 		list_struct->list = tmp;
 	}
 	if (str == NULL) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
 		if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(str) + padding + 1)) == NULL)
-			err(EXIT_FAILURE, "%s[%zu]", "error appending string to list_ptr", list_struct->cnt - 1);
+			ERRARR("list_ptr", list_struct->cnt - 1);
 		memset(list_struct->list[list_struct->cnt - 1], 0, strlen(str) + padding + 1);
 		memcpy(list_struct->list[list_struct->cnt - 1] + padding, str, strlen(str) + 1);
 	}
@@ -134,7 +134,7 @@ static inline void init_flag_list(struct flag_list *list_struct)
 	list_struct->cnt = 0;
 	list_struct->max = 0;
 	if ((list_struct->list = malloc((sizeof *list_struct->list))) == NULL)
-		err(EXIT_FAILURE, "%s", "error during initial flag_list malloc()");
+		ERRGEN("error during initial flag_list malloc()");
 	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
@@ -147,7 +147,7 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
 		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
-			err(EXIT_FAILURE, "%s %zu %s", "error during flag_list ", list_struct->cnt, " realloc()");
+			ERRARR("flag_list", list_struct->cnt);
 		list_struct->list = tmp;
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
