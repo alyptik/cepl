@@ -363,7 +363,7 @@ static inline void dedup_history(void)
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
 				remove_history(where_history());
-				/* according to history docs we are supposed to free the stuff */
+				/* free application data */
 				histdata_t data = free_history_entry(ent);
 				if (data)
 					free(data);
@@ -376,7 +376,7 @@ static inline void dedup_history(void)
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
 				remove_history(where_history());
-				/* according to history docs we are supposed to free the stuff */
+				/* free application data */
 				histdata_t data = free_history_entry(ent);
 				if (data)
 					free(data);
