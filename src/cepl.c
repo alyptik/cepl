@@ -352,6 +352,41 @@ static inline char *read_line(void)
 	return line;
 }
 
+/* look for current line in readline history */
+static inline void dedup_history(void)
+{
+	if (line && line[0]) {
+		int cur_hist = where_history();
+		/* search backward */
+		while (history_search_prefix(line, -1) != -1) {
+			/* if this line is already in the history, remove the earlier entry */
+			HIST_ENTRY *ent = current_history();
+			if (ent && ent->line && strcmp(line, ent->line) == 0) {
+				ent = remove_history(where_history());
+				/* according to history docs we are supposed to free the stuff */
+				histdata_t data = free_history_entry(ent);
+				if (data)
+					free(data);
+			}
+
+		}
+		/* search forward */
+		while (history_search(line, 1) != -1) {
+			/* if this line is already in the history, remove the earlier entry */
+			HIST_ENTRY *ent = current_history();
+			if (ent && ent->line && strcmp(line, ent->line) == 0) {
+				ent = remove_history(where_history());
+				/* according to history docs we are supposed to free the stuff */
+				histdata_t data = free_history_entry(ent);
+				if (data)
+					free(data);
+			}
+		}
+		history_set_pos(cur_hist);
+		add_history(line);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	struct stat hist_stat;
@@ -423,32 +458,7 @@ int main(int argc, char *argv[])
 			tok_buf[0] = '\0';
 
 		/* add and dedup history */
-		if (line[0]) {
-			/* search backward */
-			while (history_search(line, -1) != -1) {
-				/* this line is already in the history, remove the earlier entry */
-				HIST_ENTRY *removed = remove_history(where_history());
-				/* according to history docs we are supposed to free the stuff */
-				if (removed->line)
-					free(removed->line);
-				if (removed->data)
-					free(removed->data);
-				free(removed);
-			}
-			/* search forward */
-			while (history_search(line, 0) != -1) {
-				/* this line is already in the history, remove the earlier entry */
-				HIST_ENTRY *removed = remove_history(where_history());
-				/* according to history docs we are supposed to free the stuff */
-				if (removed->line)
-					free(removed->line);
-				if (removed->data)
-					free(removed->data);
-				free(removed);
-			}
-			add_history(line);
-		}
-
+		dedup_history();
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
