@@ -395,12 +395,12 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		switch (vars->list[i].type) {
 		case T_OTHER: /* fallthrough */
 		case T_ERR:
-			memcpy(src_tmp + off, "\", &", strlen("\", &"));
-			off += strlen("\", &");
+			memcpy(src_tmp + off, "\", &", 5);
+			off += 5;
 			break;
 		default:
-			memcpy(src_tmp + off, "\", ", strlen("\", "));
-			off += strlen("\", ");
+			memcpy(src_tmp + off, "\", ", 4);
+			off += 4;
 		}
 
 		/* copy final part of printf */
@@ -466,12 +466,12 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	switch (vars->list[vars->cnt - 1].type) {
 	case T_OTHER: /* fallthrough */
 	case T_ERR:
-		memcpy(src_tmp + off, "\", &", strlen("\", &"));
-		off += strlen("\", &");
+		memcpy(src_tmp + off, "\", &", 5);
+		off += 5;
 		break;
 	default:
-		memcpy(src_tmp + off, "\", ", strlen("\", "));
-		off += strlen("\", ");
+		memcpy(src_tmp + off, "\", ", 4);
+		off += 4;
 	}
 
 	/* copy final part of printf */
