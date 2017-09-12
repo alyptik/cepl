@@ -168,7 +168,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 
 	/* default to gcc as a compiler */
 	if (!cc_list.list[0][0])
-		memcpy(cc_list.list[0], "gcc", strlen("gcc") + 1);
+		memcpy(cc_list.list[0], "gcc", 4);
 
 	/* finalize argument lists */
 	for (size_t i = 0; cc_arg_list[i]; i++)
