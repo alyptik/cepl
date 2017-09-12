@@ -152,7 +152,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	regex_t reg;
 	regmatch_t match[4];
 	/* second capture is ignored */
-	char const regex[] = "^[^,({;&|]*[^,({;&|[:alnum:]_]+"
+	char const initial_regex[] = "^[^,({;&|]*[^,({;&|[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 		"(=[^,({;&|'\"_=!<>[:alnum:]]+|<>{2}=[^,({;&|'\"_=!<>[:alnum:]]*|=[^=]+)";
 
@@ -160,14 +160,14 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (!line || !id || !offset)
 		ERRX("NULL pointer passed to extract_id()");
 
-	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
+	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
 		/* fallback branch */
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
-		char const fallback_regex[] =
+		char const middle_regex[] =
 			"(^|[^t][^y][^p][^e][^d][^e][^,({;&|'\"f]+[[:blank:]]+)"
 			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
 			"char|double|float|int|long|short|unsigned|void)"
@@ -175,7 +175,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^({;&|'\"[:alnum:][:blank:]]+$|$|,)";
 
-		if (regcomp(&reg, fallback_regex, REG_EXTENDED|REG_NEWLINE))
+		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
 		if (regexec(&reg, line, 5, match, 0) || match[3].rm_so == -1) {
 			regfree(&reg);
