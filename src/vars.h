@@ -48,7 +48,7 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
 		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
-			err(EXIT_FAILURE, "%s %zu %s", "error during var_list ", list_struct->cnt, " realloc()");
+			ERRARR("var_list", list_struct->cnt);
 		list_struct->list = tmp;
 	}
 	if ((list_struct->list[list_struct->cnt - 1].key = malloc(strlen(key) + 1)) == NULL)
