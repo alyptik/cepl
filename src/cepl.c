@@ -362,7 +362,7 @@ static inline void dedup_history(void)
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
-				ent = remove_history(where_history());
+				remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
 				histdata_t data = free_history_entry(ent);
 				if (data)
@@ -375,7 +375,7 @@ static inline void dedup_history(void)
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
-				ent = remove_history(where_history());
+				remove_history(where_history());
 				/* according to history docs we are supposed to free the stuff */
 				histdata_t data = free_history_entry(ent);
 				if (data)
