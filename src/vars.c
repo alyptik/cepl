@@ -9,7 +9,11 @@
 
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {
-	"gcc", "-xassembler", "/dev/stdin",
+	"gcc",
+	"-O0", "-pipe",
+	"-fPIC", "-std=c11",
+	"-Wno-unused-parameter",
+	"-xassembler", "/dev/stdin",
 	"-o/dev/stdout", NULL
 };
 

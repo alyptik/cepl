@@ -28,13 +28,15 @@ static struct option long_opts[] = {
 	{0, 0, 0, 0}
 };
 static char *const cc_arg_list[] = {
-	"-O0", "-pipe", "-fPIC", "-std=c11",
+	"-O0", "-pipe",
+	"-fPIC", "-std=c11",
 	"-Wno-unused-parameter",
 	"-S", "-xc", "/dev/stdin",
 	"-o", "/dev/stdout", NULL
 };
 static char *const ld_arg_list[] = {
-	"-O0", "-pipe", "-fPIC", "-std=c11",
+	"-O0", "-pipe",
+	"-fPIC", "-std=c11",
 	"-Wno-unused-parameter",
 	"-xassembler", "/dev/stdin",
 	"-o", "/dev/stdout", NULL
