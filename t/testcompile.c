@@ -10,12 +10,16 @@
 
 int main(void)
 {
-	char *const src = "int main(void) { return 0; }";
+	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
-		"gcc", "-O2", "-pipe", "-Wall", "-Wextra",
-		"-pedantic-errors", "-std=c11", "-S", "-xc",
-		"/proc/self/fd/0", "-o", "/proc/self/fd/1", NULL
+		"gcc",
+		"-O0", "-pipe",
+		"-Wall", "-Wextra",
+		"-pedantic-errors",
+		"-std=c11", "-S", "-xc",
+		"/proc/self/fd/0",
+		"-o", "/proc/self/fd/1", NULL
 	};
 
 	plan(3);

@@ -24,7 +24,7 @@ int main (void)
 		if ((tmp_fd = mkstemp(tempfile)) == -1)
 			ERRGEN("mkstemp()");
 	}
-	volatile FILE *ofile = NULL;
+	FILE volatile *ofile = NULL;
 	int argc;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
