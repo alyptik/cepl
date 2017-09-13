@@ -367,11 +367,14 @@ static inline void dedup_history(void)
 				histdata_t data = free_history_entry(ent);
 				if (data)
 					free(data);
+			} else {
+				previous_history();
 			}
-
 		}
+		history_set_pos(cur_hist);
+
 		/* search forward */
-		while (history_search(line, 1) != -1) {
+		while (history_search_prefix(line, 1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
@@ -380,8 +383,11 @@ static inline void dedup_history(void)
 				histdata_t data = free_history_entry(ent);
 				if (data)
 					free(data);
+			} else {
+				next_history();
 			}
 		}
+
 		history_set_pos(cur_hist);
 		add_history(line);
 	}
