@@ -9,8 +9,6 @@
 #ifndef _GNU_SOURCE
 #	define _GNU_SOURCE
 #endif
-/* TODO: change history filename to a non-hardcoded string */
-#define HIST_NAME "./.cepl_history"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -20,6 +18,9 @@
 #include "parseopts.h"
 #include "readline.h"
 #include "vars.h"
+
+/* TODO: change history filename to a non-hardcoded string */
+#define HIST_NAME "./.cepl_history"
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
