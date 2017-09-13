@@ -21,7 +21,7 @@ int main(void)
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned int type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
-	done_testing();
-
 	free(types);
+	free_str_list(&ids);
+	done_testing();
 }
