@@ -87,6 +87,9 @@ extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
 
+/* silence linter */
+int rl_tty_set_echoing (int value);
+
 static inline void write_file(void) {
 	/* return early if no file open */
 	if (!ofile)
@@ -362,7 +365,20 @@ static inline char *read_line(void)
 	if (line)
 		free(line);
 	/* use an empty prompt if stdin is a pipe */
-	return line = readline(isatty(STDIN_FILENO) ? "\n>>> " : NULL);
+	if (isatty(STDIN_FILENO)) {
+		line = readline("\n>>> ");
+	} else {
+		/* redirect stdout to /dev/null */
+		FILE *null;
+		if (!(null = fopen("/dev/null", "r+")))
+			ERRGEN("read_line() fopen()");
+		rl_outstream = null;
+		line = readline(NULL);
+		rl_outstream = NULL;
+		fclose(null);
+	}
+
+	return line;
 }
 
 /* look for current line in readline history */

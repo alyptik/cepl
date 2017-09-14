@@ -595,7 +595,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		pipe_fd(pipe_exec[0], mem_fd);
 		/* redirect stdout to /dev/null */
 		if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
-		err(EXIT_FAILURE, "%s", "open() error!");
+			ERRGEN("open()");
 		dup2(null, 1);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
