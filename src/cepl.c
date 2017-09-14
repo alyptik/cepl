@@ -338,19 +338,11 @@ static inline void reg_handlers(void)
 
 static inline char *read_line(void)
 {
-	if (line) {
+	/* cleanup old buffer */
+	if (line)
 		free(line);
-		line = NULL;
-	}
 	/* use an empty prompt if stdin is a pipe */
-	if (isatty(STDIN_FILENO)) {
-		line = readline("\n>>> ");
-	} else {
-		size_t cnt = 0;
-		if (getline(&line, &cnt, stdin) == -1)
-			line = NULL;
-	}
-	return line;
+	return line = readline(isatty(STDIN_FILENO) ? "\n>>> " : NULL);
 }
 
 /* look for current line in readline history */
@@ -664,8 +656,9 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
-		build_final(argv);
 
+		/* finalize source */
+		build_final(argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
 			printf("\n%s:\n==========\n%s\n==========\n", argv[0], user.final);
