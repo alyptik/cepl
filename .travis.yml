@@ -27,17 +27,6 @@ matrix:
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-7 CXX=g++-7"
 
-    # works on Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-4.0
-          packages:
-            - clang-4.0
-      env:
-        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-4.0 CXX=clang++-4.0"
-
     # # works on Trusty
     # - os: linux
     #   addons:
