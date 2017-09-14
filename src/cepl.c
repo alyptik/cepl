@@ -365,32 +365,25 @@ static inline void dedup_history(void)
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
 				remove_history(where_history());
 				/* free application data */
-				if (ent->line)
-					free(ent->line);
-				if (ent->timestamp)
-					free(ent->timestamp);
-				if (ent->data)
-					free(ent->data);
-				free(ent);
+				histdata_t data = free_history_entry(ent);
+				if (data)
+					free(data);
 			} else {
 				next_history();
 			}
 		}
 
 		/* search backward */
+		history_set_pos(cur_hist);
 		while (history_search_prefix(line, -1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
 				ent = remove_history(where_history());
 				/* free application data */
-				if (ent->line)
-					free(ent->line);
-				if (ent->timestamp)
-					free(ent->timestamp);
-				if (ent->data)
-					free(ent->data);
-				free(ent);
+				histdata_t data = free_history_entry(ent);
+				if (data)
+					free(data);
 			} else {
 				previous_history();
 			}
