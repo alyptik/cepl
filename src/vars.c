@@ -43,9 +43,8 @@ enum var_type extract_type(char const *line, char const *id)
 	char const end[] = ")(\\[*)";
 
 	/* append identifier to regex */
-	if ((regex = malloc(strlen(id) + sizeof beg + sizeof end - 1)) == NULL)
+	if ((regex = calloc(1, strlen(id) + sizeof beg + sizeof end - 1)) == NULL)
 		ERR("failed to allocate space for regex");
-	memset(regex, 0, strlen(id) + sizeof beg + 5);
 	memcpy(regex, beg, sizeof beg - 1);
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
 	memcpy(regex + sizeof beg - 1 + strlen(id), end, sizeof end);
@@ -59,11 +58,10 @@ enum var_type extract_type(char const *line, char const *id)
 		regfree(&reg);
 		return T_ERR;
 	}
-	if ((type = malloc(match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
+	if ((type = calloc(1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured type");
 
 	/* copy matched string */
-	memset(type, 0, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1);
 	memcpy(type, line + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
 	memcpy(type + match[3].rm_eo - match[2].rm_so, line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 	regfree(&reg);
@@ -198,20 +196,18 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 				return 0;
 			}
 
-			if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
+			if ((*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 				ERR("failed to allocate space for captured id");
 			/* set the output parameter and return the offset */
-			memset(*id, 0, match[3].rm_eo - match[3].rm_so + 1);
 			memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 			regfree(&reg);
 			*offset = match[3].rm_so;
 			return match[3].rm_so;
 		}
 
-		if ((*id = malloc(match[3].rm_eo - match[3].rm_so + 1)) == NULL)
+		if ((*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)) == NULL)
 			ERR("failed to allocate space for captured id");
 		/* set the output parameter and return the offset */
-		memset(*id, 0, match[3].rm_eo - match[3].rm_so + 1);
 		memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 		regfree(&reg);
 		*offset = match[3].rm_so;
@@ -219,10 +215,9 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	}
 
 	/* normal branch */
-	if ((*id = malloc(match[1].rm_eo - match[1].rm_so + 1)) == NULL)
+	if ((*id = calloc(1, match[1].rm_eo - match[1].rm_so + 1)) == NULL)
 		ERR("failed to allocate space for captured id");
 	/* set the output parameter and return the offset */
-	memset(*id, 0, match[1].rm_eo - match[1].rm_so + 1);
 	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
 	regfree(&reg);
 	*offset = match[1].rm_so;
@@ -237,7 +232,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	/* sanity checks */
 	if (!line || !id_list || !type_list)
 		return 0;
-	if ((line_tmp[0] = malloc(strlen(line) + 1)) == NULL)
+	if ((line_tmp[0] = calloc(1, strlen(line) + 1)) == NULL)
 		ERR("error allocating line_tmp");
 	line_tmp[1] = line_tmp[0];
 
@@ -290,11 +285,11 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	enum var_type type_tmp[id_list->cnt];
 	for (size_t i = 0; i < id_list->cnt; i++) {
 		if ((type_tmp[i] = extract_type(line_tmp[1], id_list->list[i])) == T_ERR)
-			WARNXGEN(id_list->list[i]);
+			WARNX("unable to find type of variable");
 	}
 
 	/* copy it into the output parameter */
-	if ((*type_list = malloc(sizeof type_tmp)) == NULL)
+	if ((*type_list = calloc(1, sizeof type_tmp)) == NULL)
 		ERR("failed to allocate memory for type_list");
 	memcpy(*type_list, type_tmp, sizeof type_tmp);
 	if (id_tmp)
@@ -314,10 +309,10 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	char print_beg[] = "\n\tfprintf(stderr, \"%s = “%___”, \", \"";
 	char println_beg[] = "\n\tfprintf(stderr, \"%s = “%___”\\n \", \"";
 	char print_end[] = ");";
-	char *src_tmp = NULL;
+	char *src_tmp = NULL, *tmp_ptr = NULL;
 	/* space for <name>, <name> */
-	size_t psz = sizeof print_beg + sizeof print_end + 5;
-	size_t plnsz = sizeof println_beg + sizeof print_end + 5;
+	size_t psz = sizeof print_beg + sizeof print_end + 7;
+	size_t plnsz = sizeof println_beg + sizeof print_end + 7;
 	size_t off = 0;
 
 	/* sanity checks */
@@ -331,20 +326,26 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 	/* copy source buffer */
 	memcpy(src_buffer, src, sizeof src_buffer);
-	if ((src_tmp = malloc(sizeof src_buffer)) == NULL)
-		ERRGEN("src_tmp malloc()");
-	memset(src_tmp, 0, sizeof src_buffer);
+	if ((src_tmp = calloc(1, sizeof src_buffer)) == NULL)
+		ERRGEN("src_tmp calloc()");
 	memcpy(src_tmp, src_buffer, sizeof src_buffer);
 	off = sizeof src_buffer - 1;
-	if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + sizeof newline)) == NULL)
-		ERRGEN("src_tmp malloc()");
+	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
+		free(src_tmp);
+		ERRGEN("src_tmp realloc()");
+	}
+	src_tmp = tmp_ptr;
 	memcpy(src_tmp + off, newline, sizeof newline);
 	off += sizeof newline - 1;
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vars->cnt - 1; i++) {
-		if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + (strlen(vars->list[i].key) * 2) + psz)) == NULL)
-			ERRGEN("src_tmp malloc()");
+		size_t cur_sz = (strlen(vars->list[i].key) + 1) * 2;
+		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + psz))) {
+			free(src_tmp);
+			ERRGEN("src_tmp realloc()");
+		}
+		src_tmp = tmp_ptr;
 		char print_tmp[sizeof print_beg];
 		memcpy(print_tmp, print_beg, sizeof print_beg);
 
@@ -390,7 +391,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		}
 
 		/* copy format string */
-		memcpy(src_tmp + off, print_tmp, sizeof print_tmp - 1);
+		memcpy(src_tmp + off, print_tmp, sizeof print_tmp);
 		off += sizeof print_tmp - 1;
 		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
 		off += strlen(vars->list[i].key);
@@ -400,11 +401,11 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_OTHER: /* fallthrough */
 		case T_ERR:
 			memcpy(src_tmp + off, "\", &", 5);
-			off += 5;
+			off += 4;
 			break;
 		default:
 			memcpy(src_tmp + off, "\", ", 4);
-			off += 4;
+			off += 3;
 		}
 
 		/* copy final part of printf */
@@ -415,8 +416,12 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	}
 
 	/* finish source */
-	if ((src_tmp = realloc(src_tmp, strlen(src_tmp) + (strlen(vars->list[vars->cnt - 1].key) * 2) + plnsz)) == NULL)
-		ERRGEN("src_tmp malloc()");
+	size_t key_sz = (strlen(vars->list[vars->cnt - 1].key) + 1) * 2;
+	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + key_sz + plnsz))) {
+		free(src_tmp);
+		ERRGEN("src_tmp realloc()");
+	}
+	src_tmp = tmp_ptr;
 	char print_tmp[sizeof println_beg];
 	memcpy(print_tmp, println_beg, sizeof println_beg);
 
@@ -461,7 +466,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	}
 
 	/* copy format string */
-	memcpy(src_tmp + off, print_tmp, sizeof print_tmp - 1);
+	memcpy(src_tmp + off, print_tmp, sizeof print_tmp);
 	off += sizeof print_tmp - 1;
 	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
 	off += strlen(vars->list[vars->cnt - 1].key);
@@ -471,17 +476,17 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	case T_OTHER: /* fallthrough */
 	case T_ERR:
 		memcpy(src_tmp + off, "\", &", 5);
-		off += 5;
+		off += 4;
 		break;
 	default:
 		memcpy(src_tmp + off, "\", ", 4);
-		off += 4;
+		off += 3;
 	}
 
 	/* copy final part of printf */
 	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
 	off += strlen(vars->list[vars->cnt - 1].key);
-	memcpy(src_tmp + off, print_end, sizeof print_end);
+	memcpy(src_tmp + off, print_end, sizeof print_end - 1);
 	off += sizeof print_end - 1;
 
 	/* copy final source into buffer */

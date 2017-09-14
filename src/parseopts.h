@@ -96,15 +96,14 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 0;
-	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
-		ERRGEN("error during initial list_ptr malloc()");
+	if ((list_struct->list = calloc(1, sizeof *list_struct->list)) == NULL)
+		ERRGEN("error during initial list_ptr calloc()");
 	/* exit early if NULL */
 	if (!init_str)
 		return;
 	list_struct->cnt++;
-	if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(init_str) + 1)) == NULL)
-		ERRGEN("error during initial list_ptr[0] malloc()");
-	memset(list_struct->list[list_struct->cnt - 1], 0, strlen(init_str) + 1);
+	if ((list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(init_str) + 1)) == NULL)
+		ERRGEN("error during initial list_ptr[0] calloc()");
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
 
@@ -122,9 +121,8 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 	if (str == NULL) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
-		if ((list_struct->list[list_struct->cnt - 1] = malloc(strlen(str) + padding + 1)) == NULL)
+		if ((list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(str) + padding + 1)) == NULL)
 			ERRARR("list_ptr", list_struct->cnt - 1);
-		memset(list_struct->list[list_struct->cnt - 1], 0, strlen(str) + padding + 1);
 		memcpy(list_struct->list[list_struct->cnt - 1] + padding, str, strlen(str) + 1);
 	}
 }
@@ -133,8 +131,8 @@ static inline void init_flag_list(struct flag_list *list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 0;
-	if ((list_struct->list = malloc((sizeof *list_struct->list))) == NULL)
-		ERRGEN("error during initial flag_list malloc()");
+	if ((list_struct->list = calloc(1, sizeof *list_struct->list)) == NULL)
+		ERRGEN("error during initial flag_list calloc()");
 	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
