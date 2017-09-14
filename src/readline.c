@@ -18,7 +18,7 @@ char *comp_arg_list[] = {
 	"do", "double", "else", "enum", "extern", "float", "for", "goto",
 	"if", "inline", "int", "long", "register", "restrict", "return",
 	"short", "signed", "size_t", "sizeof", "static", "struct", "switch",
-	"typedef", "union", "unsigned", "void", "volatile", "while",
+	"ptrdiff_t", "typedef", "union", "unsigned", "void", "volatile", "while",
 	"_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local", "__asm__",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
@@ -28,7 +28,7 @@ char *comp_arg_list[] = {
 	"open(", "close(", "read(", "write(", "fopen(", "fclose(",
 	"scanf(", "fscanf(", "mmap(", "munmap(", "syscall(",
 	"fread(", "fwrite(", "memcpy(", "memset(", "memcmp(",
-	"puts(", "strspn(", "strlen(", "strcat(", "strtok(", "stpcpy(",
+	"puts(", "strspn(", "strlen(", "strcat(", "strtok(",
 	";function", ";parse", ";quit", ";reset", ";tracking", ";warnings", NULL
 };
 /* global completion list struct */
