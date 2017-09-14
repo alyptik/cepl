@@ -326,6 +326,26 @@ static inline void reg_handlers(void)
 		WARN("unable to register SIGALRM handler");
 	if (signal(SIGTERM, &sig_handler) == SIG_ERR)
 		WARN("unable to register SIGTERM handler");
+	if (signal(SIGUSR1, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGUSR1 handler");
+	if (signal(SIGUSR2, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGUSR2 handler");
+	if (signal(SIGBUS, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGBUS handler");
+	if (signal(SIGPOLL, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGPOLL handler");
+	if (signal(SIGPROF, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGPROF handler");
+	if (signal(SIGSYS, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGSYS handler");
+	if (signal(SIGTRAP, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGTRAP handler");
+	if (signal(SIGVTALRM, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGVTALRM handler");
+	if (signal(SIGXCPU, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGXCPU handler");
+	if (signal(SIGXFSZ, &sig_handler) == SIG_ERR)
+		WARN("unable to register SIGXFSZ handler");
 	if (atexit(&cleanup))
 		WARNGEN("atexit(&cleanup)");
 	if (atexit(&free_buffers))
