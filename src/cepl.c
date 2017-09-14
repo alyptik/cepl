@@ -363,11 +363,15 @@ static inline void dedup_history(void)
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
-				remove_history(where_history());
+				ent = remove_history(where_history());
 				/* free application data */
-				histdata_t data = free_history_entry(ent);
-				if (data)
-					free(data);
+				if (ent->line)
+					free(ent->line);
+				if (ent->timestamp)
+					free(ent->timestamp);
+				if (ent->data)
+					free(ent->data);
+				free(ent);
 			} else {
 				previous_history();
 			}
@@ -381,9 +385,13 @@ static inline void dedup_history(void)
 			if (ent && ent->line && strcmp(line, ent->line) == 0) {
 				remove_history(where_history());
 				/* free application data */
-				histdata_t data = free_history_entry(ent);
-				if (data)
-					free(data);
+				if (ent->line)
+					free(ent->line);
+				if (ent->timestamp)
+					free(ent->timestamp);
+				if (ent->data)
+					free(ent->data);
+				free(ent);
 			} else {
 				next_history();
 			}
@@ -463,7 +471,6 @@ int main(int argc, char *argv[])
 		/* strip newlines */
 		if ((tok_buf = strpbrk(line, "\f\r\n")) != NULL)
 			tok_buf[0] = '\0';
-
 		/* add and dedup history */
 		dedup_history();
 		/* re-enable completion if disabled */

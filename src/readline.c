@@ -45,8 +45,8 @@ char *generator(char const *text, int state)
 		len = strlen(text);
 	}
 	while ((name = completions[list_index++])) {
-		if (memcmp(name, text, len) == 0) {
-			if ((buf = malloc(strlen(name) + 1)) == NULL) {
+		if (strncmp(name, text, len) == 0) {
+			if ((buf = calloc(1, strlen(name) + 1)) == NULL) {
 				WARN("error allocating generator string");
 				return NULL;
 			}
