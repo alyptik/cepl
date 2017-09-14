@@ -358,7 +358,7 @@ static inline void dedup_history(void)
 {
 	if (line && *line) {
 		/* search forward */
-		size_t cur_hist = where_history();
+		ptrdiff_t cur_hist = where_history();
 		while (history_search_prefix(line, 1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
