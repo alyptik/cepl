@@ -378,7 +378,6 @@ static inline void dedup_history(void)
 		}
 
 		/* search backward */
-		history_set_pos(cur_hist);
 		while (history_search_prefix(line, -1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
