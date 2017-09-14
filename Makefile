@@ -12,7 +12,7 @@ CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN
 CFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -fuse-ld=gold -std=c11 -Wall -Wextra -pedantic-errors
 LDFLAGS := -pipe -MMD -fPIC -fstack-protector-strong -fuse-ld=gold -Wl,-O1,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
-DEBUG := -Og -ggdb3 -pie -fPIE -fsanitize=address
+DEBUG := -Og -ggdb3 -no-pie -fsanitize=address
 RELEASE := -O2
 TARGET := cepl
 MANPAGE := cepl.7
