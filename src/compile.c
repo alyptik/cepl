@@ -73,8 +73,8 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 
 	/* child */
 	case 0:
-		dup2(pipe_cc[0], 0);
-		dup2(pipe_ld[1], 1);
+		dup2(pipe_cc[0], STDIN_FILENO);
+		dup2(pipe_ld[1], STDOUT_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
 		ERR("error forking compiler");
@@ -106,8 +106,8 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 
 	/* child */
 	case 0:
-		dup2(pipe_ld[0], 0);
-		dup2(pipe_exec[1], 1);
+		dup2(pipe_ld[0], STDIN_FILENO);
+		dup2(pipe_exec[1], STDOUT_FILENO);
 		if (ld_list.list)
 			execvp(ld_list.list[0], ld_list.list);
 		/* fallback linker exec */
