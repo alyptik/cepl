@@ -357,28 +357,8 @@ static inline char *read_line(void)
 static inline void dedup_history(void)
 {
 	if (line && *line) {
-		size_t cur_hist = where_history();
-		/* search backward */
-		while (history_search_prefix(line, -1) != -1) {
-			/* if this line is already in the history, remove the earlier entry */
-			HIST_ENTRY *ent = current_history();
-			if (ent && ent->line && strcmp(line, ent->line) == 0) {
-				ent = remove_history(where_history());
-				/* free application data */
-				if (ent->line)
-					free(ent->line);
-				if (ent->timestamp)
-					free(ent->timestamp);
-				if (ent->data)
-					free(ent->data);
-				free(ent);
-			} else {
-				previous_history();
-			}
-		}
-		history_set_pos(cur_hist);
-
 		/* search forward */
+		size_t cur_hist = where_history();
 		while (history_search_prefix(line, 1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
@@ -394,6 +374,26 @@ static inline void dedup_history(void)
 				free(ent);
 			} else {
 				next_history();
+			}
+		}
+
+		/* search backward */
+		history_set_pos(cur_hist);
+		while (history_search_prefix(line, -1) != -1) {
+			/* if this line is already in the history, remove the earlier entry */
+			HIST_ENTRY *ent = current_history();
+			if (ent && ent->line && strcmp(line, ent->line) == 0) {
+				ent = remove_history(where_history());
+				/* free application data */
+				if (ent->line)
+					free(ent->line);
+				if (ent->timestamp)
+					free(ent->timestamp);
+				if (ent->data)
+					free(ent->data);
+				free(ent);
+			} else {
+				previous_history();
 			}
 		}
 
