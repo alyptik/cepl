@@ -81,4 +81,4 @@ clean:
 	@rm -fv $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz $(wildcard t/*.d) $(wildcard src/*.d)
 
 -include $(wildcard src/*.d) $(wildcard t/*.d)
-.PHONY: all clean install uninstall dist debug check test tests Makefile
+.PHONY: all clean install uninstall dist debug check test tests Makefile $(wildcard t/*.d) $(wildcard src/*.d)
