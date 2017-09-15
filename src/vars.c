@@ -303,33 +303,31 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 {
 	int mem_fd, status, null;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	char src_buffer[strnlen(src, COUNT) + 1];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char prog_end[] = "\n\treturn 0;\n}\n";
 	char print_beg[] = "\n\tfprintf(stderr, \"%s = “%___”, \", \"";
 	char println_beg[] = "\n\tfprintf(stderr, \"%s = “%___”\\n\", \"";
 	char print_end[] = ");";
-	char *src_tmp = NULL, *tmp_ptr = NULL;
+	char *src_tmp, *tmp_ptr;
+	size_t off;
 	/* space for <name>, <name> */
 	size_t psz = sizeof print_beg + sizeof print_end + 7;
 	size_t plnsz = sizeof println_beg + sizeof print_end + 7;
-	size_t off = 0;
 
 	/* sanity checks */
 	if (!vars || !src || !cc_args || !exec_args)
 		ERRX("NULL pointer passed to print_vars()");
-	if (sizeof src_buffer < 2)
+	if (strlen(src) < 2)
 		ERRX("empty source string passed to print_vars()");
 	/* return early if nothing to do */
 	if (vars->cnt == 0)
 		return -1;
 
 	/* copy source buffer */
-	memcpy(src_buffer, src, sizeof src_buffer);
-	if (!(src_tmp = calloc(1, sizeof src_buffer)))
+	if (!(src_tmp = calloc(1, strlen(src) + 1)))
 		ERR("src_tmp calloc()");
-	memcpy(src_tmp, src_buffer, sizeof src_buffer);
-	off = sizeof src_buffer - 2;
+	memcpy(src_tmp, src, strlen(src));
+	off = strlen(src) - 1;
 	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
 		free(src_tmp);
 		ERR("src_tmp realloc()");
@@ -349,9 +347,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			ERR("src_tmp realloc()");
 		}
 		src_tmp = tmp_ptr;
-		char *print_tmp;
-		if (!(print_tmp = calloc(1, arr_sz)))
-			ERR("print_tmp calloc()");
+		char print_tmp[arr_sz];
 		memcpy(print_tmp, *arr_ptr, arr_sz);
 
 		/* build format string */
@@ -418,7 +414,6 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		off += strlen(vars->list[i].key);
 		memcpy(src_tmp + off, print_end, sizeof print_end);
 		off += sizeof print_end - 1;
-		free(print_tmp);
 	}
 
 	/* copy final source into buffer */
