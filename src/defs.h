@@ -10,23 +10,23 @@
 
 #include <stdlib.h>
 
-/* use specific message */
-#define ERR(X) err(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
-#define ERRX(X) errx(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
-#define WARN(X) warn("%s %s %d", (X), "at line", __LINE__)
-#define WARNX(X) warnx("%s %s %d", (X), "at line", __LINE__)
+/* message case */
+#define ERR(X)		err(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
+#define ERRX(X)		errx(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
+#define WARN(X)		warn("%s %s %d", (X), "at line", __LINE__)
+#define WARNX(X)	warnx("%s %s %d", (X), "at line", __LINE__)
 
 /* general case */
-#define ERRGEN(X) err(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
-#define ERRXGEN(X) errx(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
-#define WARNGEN(X) warn("%s %s %s %d", "error during", (X), "at line", __LINE__)
-#define WARNXGEN(X) warnx("%s %s %s %d", "error during", (X), "at line", __LINE__)
+#define ERRGEN(X)	err(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
+#define ERRXGEN(X)	errx(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
+#define WARNGEN(X)	warn("%s %s %s %d", "error during", (X), "at line", __LINE__)
+#define WARNXGEN(X)	warnx("%s %s %s %d", "error during", (X), "at line", __LINE__)
 
 /* array case */
-#define ERRARR(X, Y) err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define ERRXARR(X, Y) err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define WARNARR(X, Y) err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define WARNXARR(X, Y) err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define ERRARR(X, Y)	err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define ERRXARR(X, Y)	err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define WARNARR(X, Y)	err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+#define WARNXARR(X, Y)	err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
 
 /* flag constants for type of source buffer */
 enum src_flag {
@@ -71,11 +71,8 @@ struct var_list {
 
 /* struct definition for generated program sources */
 struct prog_src {
-	char *funcs;
-	char *body;
-	char *final;
-	struct str_list lines;
-	struct str_list hist;
+	char *body, *funcs, *total;
+	struct str_list hist, lines;
 	struct flag_list flags;
 };
 

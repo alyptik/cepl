@@ -91,7 +91,7 @@ static inline void write_file(void) {
 		return;
 	/* write out program to file */
 	FILE *output = (FILE *)ofile;
-	fwrite(actual.final, strlen(actual.final), 1, output);
+	fwrite(actual.total, strlen(actual.total), 1, output);
 	fputc('\n', output);
 	fflush(output);
 	fclose(output);
@@ -112,10 +112,10 @@ static inline void free_buffers(void)
 		free(user.body);
 	if (actual.body)
 		free(actual.body);
-	if (user.final)
-		free(user.final);
-	if (actual.final)
-		free(actual.final);
+	if (user.total)
+		free(user.total);
+	if (actual.total)
+		free(actual.total);
 	if (user.flags.list)
 		free(user.flags.list);
 	if (actual.flags.list)
@@ -142,11 +142,11 @@ static inline void free_buffers(void)
 	/* set pointers to NULL */
 	user.funcs = NULL;
 	user.body = NULL;
-	user.final = NULL;
+	user.total = NULL;
 	user.flags.list = NULL;
 	actual.funcs = NULL;
 	actual.body = NULL;
-	actual.final = NULL;
+	actual.total = NULL;
 	actual.flags.list = NULL;
 	vars.list = NULL;
 	cc_argv = NULL;
@@ -185,10 +185,10 @@ static inline void init_buffers(void)
 	actual.funcs = calloc(1, strlen(prelude) + 1);
 	user.body = calloc(1, strlen(prog_start_user) + 1);
 	actual.body = calloc(1, strlen(prog_start) + 1);
-	user.final = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
-	actual.final = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
+	user.total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
+	actual.total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
-	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.final || !actual.final) {
+	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.total || !actual.total) {
 		free_buffers();
 		cleanup();
 		ERR("initial pointer allocation");
@@ -255,15 +255,15 @@ static inline void build_body(void)
 static inline void build_final(char *argv[])
 {
 	/* finish building current iteration of source code */
-	memcpy(user.final, user.funcs, strlen(user.funcs) + 1);
-	memcpy(actual.final, actual.funcs, strlen(actual.funcs) + 1);
-	strcat(user.final, user.body);
-	strcat(actual.final, actual.body);
+	memcpy(user.total, user.funcs, strlen(user.funcs) + 1);
+	memcpy(actual.total, actual.funcs, strlen(actual.funcs) + 1);
+	strcat(user.total, user.body);
+	strcat(actual.total, actual.body);
 	/* print variable values */
 	if (!track_flag)
-		print_vars(&vars, actual.final, cc_argv, argv);
-	strcat(user.final, prog_end);
-	strcat(actual.final, prog_end);
+		print_vars(&vars, actual.total, cc_argv, argv);
+	strcat(user.total, prog_end);
+	strcat(actual.total, prog_end);
 }
 
 static inline void pop_history(struct prog_src *prog)
@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
 	init_buffers();
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
-	/* initialize user.final and actual.final then print version */
+	/* initialize user.total and actual.total then print version */
 	build_final(argv);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n", VERSION_STRING);
@@ -493,8 +493,8 @@ int main(int argc, char *argv[])
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&user.body, 3);
 		resize_buffer(&actual.body, 3);
-		resize_buffer(&user.final, 3);
-		resize_buffer(&actual.final, 3);
+		resize_buffer(&user.total, 3);
+		resize_buffer(&actual.total, 3);
 
 		/* control sequence and preprocessor directive parsing */
 		switch (line[0]) {
@@ -692,9 +692,9 @@ int main(int argc, char *argv[])
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
-			printf("\n%s:\n==========\n%s\n==========\n", argv[0], user.final);
+			printf("\n%s:\n==========\n%s\n==========\n", argv[0], user.total);
 		/* print output and exit code */
-		printf("exit status: %d\n", compile(actual.final, cc_argv, argv));
+		printf("exit status: %d\n", compile(actual.total, cc_argv, argv));
 	}
 
 	return 0;
