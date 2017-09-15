@@ -694,9 +694,9 @@ int main(int argc, char *argv[])
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
 			printf("\n%s:\n==========\n%s\n==========\n", argv[0], user.total);
-		/* print output and exit code if non-zero */
 		int ret = compile(actual.total, cc_argv, argv);
-		if (isatty(STDIN_FILENO) || ret)
+		/* print output and exit code if non-zero */
+		if (ret || isatty(STDIN_FILENO))
 			printf("[exit status: %d]\n", ret);
 	}
 
