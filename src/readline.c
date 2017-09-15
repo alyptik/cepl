@@ -5,7 +5,6 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#include <err.h>
 #include <stdlib.h>
 #include <string.h>
 #include "parseopts.h"

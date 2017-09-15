@@ -29,7 +29,7 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#define _XOPEN_SOURCE 700\n\n"
 	"#include <assert.h>\n"
 	"#include <ctype.h>\n"
-	"#include <err.h>\n"
+	"#include <error.h>\n"
 	"#include <errno.h>\n"
 	"#include <fcntl.h>\n"
 	"#include <limits.h>\n"
@@ -218,7 +218,7 @@ static inline void resize_buffer(char **buf, size_t offset)
 	if (!(tmp = realloc(*buf, alloc_sz))) {
 		free_buffers();
 		cleanup();
-		ERRGEN("resize_buffer()");
+		ERR("resize_buffer()");
 	}
 	*buf = tmp;
 }
@@ -345,13 +345,13 @@ static inline void reg_handlers(void)
 	if (signal(SIGXFSZ, &sig_handler) == SIG_ERR)
 		WARN("unable to register SIGXFSZ handler");
 	if (atexit(&cleanup))
-		WARNGEN("atexit(&cleanup)");
+		WARN("atexit(&cleanup)");
 	if (atexit(&free_buffers))
-		WARNGEN("atexit(&free_buffers)");
+		WARN("atexit(&free_buffers)");
 	if (at_quick_exit(&cleanup))
-		WARNGEN("at_quick_exit(&cleanup)");
+		WARN("at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_buffers))
-		WARNGEN("at_quick_exit(&free_buffers)");
+		WARN("at_quick_exit(&free_buffers)");
 }
 
 static inline char *read_line(void)
@@ -365,8 +365,8 @@ static inline char *read_line(void)
 	} else {
 		/* redirect stdout to /dev/null */
 		FILE *null;
-		if (!(null = fopen("/dev/null", "r+")))
-			ERRGEN("read_line() fopen()");
+		if (!(null = fopen("/dev/null", "r+b")))
+			ERR("read_line() fopen()");
 		rl_outstream = null;
 		line = readline(NULL);
 		rl_outstream = NULL;
@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
 	if (!(hist_file = calloc(1, buf_sz)))
-		ERRGEN("hist_file malloc()");
+		ERR("hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "") != 0) {
 		len = strlen(home_env);
@@ -460,7 +460,7 @@ int main(int argc, char *argv[])
 	/* initialize history sesssion */
 	using_history();
 	/* create history file if it doesn't exsit */
-	if (!(make_hist = fopen(hist_file, "a"))) {
+	if (!(make_hist = fopen(hist_file, "ab"))) {
 		WARN("error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
@@ -528,7 +528,7 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
-				if (out_flag && !(ofile = fopen(tok_buf, "w"))) {
+				if (out_flag && !(ofile = fopen(tok_buf, "wb"))) {
 					free_buffers();
 					cleanup();
 					ERR("failed to create output file");

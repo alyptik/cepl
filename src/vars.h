@@ -8,8 +8,6 @@
 #ifndef VARS_H
 #define VARS_H 1
 
-#include <err.h>
-#include <errno.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -54,7 +52,7 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 		list_struct->list = tmp;
 	}
 	if (!(list_struct->list[list_struct->cnt - 1].key = malloc(strlen(key) + 1)))
-		ERRGEN("append_var()");
+		ERR("append_var()");
 	memset(list_struct->list[list_struct->cnt - 1].key, 0, strlen(key) + 1);
 	memcpy(list_struct->list[list_struct->cnt - 1].key, key, strlen(key) + 1);
 	list_struct->list[list_struct->cnt - 1].type = type;

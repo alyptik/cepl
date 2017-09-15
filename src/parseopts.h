@@ -8,8 +8,6 @@
 #ifndef PARSEOPTS_H
 #define PARSEOPTS_H
 
-#include <err.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <gelf.h>
 #include <libelf.h>
@@ -97,13 +95,13 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 	list_struct->cnt = 0;
 	list_struct->max = 0;
 	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
-		ERRGEN("error during initial list_ptr calloc()");
+		ERR("error during initial list_ptr calloc()");
 	/* exit early if NULL */
 	if (!init_str)
 		return;
 	list_struct->cnt++;
 	if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(init_str) + 1)))
-		ERRGEN("error during initial list_ptr[0] calloc()");
+		ERR("error during initial list_ptr[0] calloc()");
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
 
@@ -132,7 +130,7 @@ static inline void init_flag_list(struct flag_list *list_struct)
 	list_struct->cnt = 0;
 	list_struct->max = 0;
 	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
-		ERRGEN("error during initial flag_list calloc()");
+		ERR("error during initial flag_list calloc()");
 	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }

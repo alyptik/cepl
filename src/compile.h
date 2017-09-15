@@ -8,8 +8,6 @@
 #ifndef COMPILE_H
 #define COMPILE_H
 
-#include <err.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <unistd.h>

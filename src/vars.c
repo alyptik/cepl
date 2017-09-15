@@ -327,12 +327,12 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	/* copy source buffer */
 	memcpy(src_buffer, src, sizeof src_buffer);
 	if (!(src_tmp = calloc(1, sizeof src_buffer)))
-		ERRGEN("src_tmp calloc()");
+		ERR("src_tmp calloc()");
 	memcpy(src_tmp, src_buffer, sizeof src_buffer);
 	off = sizeof src_buffer - 1;
 	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
 		free(src_tmp);
-		ERRGEN("src_tmp realloc()");
+		ERR("src_tmp realloc()");
 	}
 	src_tmp = tmp_ptr;
 	memcpy(src_tmp + off, newline, sizeof newline);
@@ -343,7 +343,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		size_t cur_sz = (strlen(vars->list[i].key) + 1) * 2;
 		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + psz))) {
 			free(src_tmp);
-			ERRGEN("src_tmp realloc()");
+			ERR("src_tmp realloc()");
 		}
 		src_tmp = tmp_ptr;
 		char print_tmp[sizeof print_beg];
@@ -419,7 +419,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	size_t key_sz = (strlen(vars->list[vars->cnt - 1].key) + 1) * 2;
 	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + key_sz + plnsz))) {
 		free(src_tmp);
-		ERRGEN("src_tmp realloc()");
+		ERR("src_tmp realloc()");
 	}
 	src_tmp = tmp_ptr;
 	char print_tmp[sizeof println_beg];
@@ -597,7 +597,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		pipe_fd(pipe_exec[0], mem_fd);
 		/* redirect stdout to /dev/null */
 		if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
-			ERRGEN("open()");
+			ERR("open()");
 		dup2(null, STDOUT_FILENO);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */

@@ -8,23 +8,42 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <error.h>
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-/* message case */
-#define ERR(X)		err(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
-#define ERRX(X)		errx(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
-#define WARN(X)		warn("%s %s %d", (X), "at line", __LINE__)
-#define WARNX(X)	warnx("%s %s %d", (X), "at line", __LINE__)
-/* general case */
-#define ERRGEN(X)	err(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
-#define ERRXGEN(X)	errx(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
-#define WARNGEN(X)	warn("%s %s %s %d", "error during", (X), "at line", __LINE__)
-#define WARNXGEN(X)	warnx("%s %s %s %d", "error during", (X), "at line", __LINE__)
-/* array case */
-#define ERRARR(X, Y)	err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define ERRXARR(X, Y)	err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define WARNARR(X, Y)	err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
-#define WARNXARR(X, Y)	err("%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
+/* error macros */
+#define ERR(X)		do { \
+				fprintf(stderr, "\n%s: \"%s\" line %d\n", strerror(errno), (X), __LINE__); \
+				exit(1); \
+			} while (0)
+#define ERRX(X)		do { \
+				fprintf(stderr, "\n\"%s\" line %d\n", (X), __LINE__); \
+				exit(1); \
+			} while (0)
+#define WARN(X)		do { \
+				fprintf(stderr, "\n%s: \"%s\" line %d\n", strerror(errno), (X), __LINE__); \
+			} while (0)
+#define WARNX(X)	do { \
+				fprintf(stderr, "\n\"%s\" line %d\n", (X), __LINE__); \
+			} while (0)
+/* array error macros */
+#define ERRARR(X, Y)	do { \
+				fprintf(stderr, "\n%s: \"%s[%zu]\" line %d\n", strerror(errno), (X), (Y), __LINE__); \
+				exit(1); \
+			} while (0)
+#define ERRXARR(X, Y)	do { \
+				fprintf(stderr, "\n\"%s[%zu]\" line %d\n", (X), (Y), __LINE__); \
+				exit(1); \
+			} while (0)
+#define WARNARR(X, Y)	do { \
+				fprintf(stderr, "\n%s: \"%s[%zu]\" line %d\n", strerror(errno), (X), (Y), __LINE__); \
+			} while (0)
+#define WARNXARR(X, Y)	do { \
+				fprintf(stderr, "\n\"%s[%zu]\" line %d\n", (X), (Y), __LINE__); \
+			} while (0)
 
 /* flag constants for type of source buffer */
 enum src_flag {

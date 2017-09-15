@@ -157,7 +157,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	if (out_flag && out_file) {
 		if (*ofile)
 			fclose((FILE *)*ofile);
-		if (!(*ofile = fopen(out_file, "w")))
+		if (!(*ofile = fopen(out_file, "wb")))
 			ERR("failed to create output file");
 	}
 	/* append warning flags */

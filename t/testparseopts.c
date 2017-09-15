@@ -16,12 +16,12 @@ int main (void)
 	char tempfile[] = "/tmp/ceplXXXXXX";
 	int tmp_fd;
 	if ((tmp_fd = mkstemp(tempfile)) == -1) {
-		WARNGEN("mkstemp()");
+		WARN("mkstemp()");
 		memset(tempfile, 0, sizeof tempfile);
 		memcpy(tempfile, "./ceplXXXXXX", strlen("./ceplXXXXXX") + 1);
 		WARNX("attempting to create a tmpfile in ./ instead");
 		if ((tmp_fd = mkstemp(tempfile)) == -1)
-			ERRGEN("mkstemp()");
+			ERR("mkstemp()");
 	}
 	FILE volatile *ofile = NULL;
 	int argc;
@@ -62,7 +62,7 @@ int main (void)
 	free_argv(result);
 	close(tmp_fd);
 	if (remove(tempfile) == -1)
-		WARNGEN("remove()");
+		WARN("remove()");
 
 	done_testing();
 }
