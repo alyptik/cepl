@@ -386,8 +386,12 @@ static inline void dedup_history(void)
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			/* skip if NULL or not a complete match */
-			if (!ent || !ent->line || strcmp(line, ent->line) != 0)
-				next_history();
+			if (!ent || !ent->line || strcmp(line, ent->line) != 0) {
+				/* break if at end of list */
+				if (!next_history())
+					break;
+				continue;
+			}
 			/* remove and free data */
 			remove_history(where_history());
 			/* free application data */
@@ -402,8 +406,12 @@ static inline void dedup_history(void)
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			/* skip if NULL or not a complete match */
-			if (!ent || !ent->line || strcmp(line, ent->line) != 0)
-				previous_history();
+			if (!ent || !ent->line || strcmp(line, ent->line) != 0) {
+				/* break if at beginning of list */
+				if (!previous_history())
+					break;
+				continue;
+			}
 			/* remove and free data */
 			remove_history(where_history());
 			/* free application data */
