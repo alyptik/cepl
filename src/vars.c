@@ -283,10 +283,8 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	/* get the type of each identifier */
 	line_tmp[1] = line_tmp[0];
 	enum var_type type_tmp[id_list->cnt];
-	for (size_t i = 0; i < id_list->cnt; i++) {
-		if ((type_tmp[i] = extract_type(line_tmp[1], id_list->list[i])) == T_ERR)
-			WARNX("unable to find type of variable");
-	}
+	for (size_t i = 0; i < id_list->cnt; i++)
+		type_tmp[i] = extract_type(line_tmp[1], id_list->list[i]);
 
 	/* copy it into the output parameter */
 	if (!(*type_list = calloc(1, sizeof type_tmp)))
