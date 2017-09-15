@@ -85,9 +85,6 @@ extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
 
-/* silence linter */
-int rl_tty_set_echoing (int value);
-
 static inline void write_file(void) {
 	/* return early if no file open */
 	if (!ofile)
