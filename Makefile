@@ -78,7 +78,7 @@ dist: clean
 
 clean:
 	@printf "%s\n" "cleaning"
-	@rm -fv $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz $(wildcard t/*.d) $(wildcard src/*.d)
+	@rm -fv $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz $(wildcard src/*.d) $(wildcard t/*.d)
 
 -include $(wildcard src/*.d) $(wildcard t/*.d)
-.PHONY: all clean install uninstall dist debug check test tests Makefile $(wildcard t/*.d) $(wildcard src/*.d)
+.PHONY: all clean install uninstall dist debug check test tests Makefile $(wildcard src/*.d) $(wildcard t/*.d)
