@@ -215,7 +215,7 @@ static inline void resize_buffer(char **buf, size_t offset)
 	char *tmp;
 	size_t alloc_sz = strlen(*buf) + strlen(line) + offset + 1;
 	/* current length + line length + extra characters + \0 */
-	if (!(tmp = realloc(*buf, alloc_sz * 2))) {
+	if (!(tmp = realloc(*buf, alloc_sz))) {
 		free_buffers();
 		cleanup();
 		ERRGEN("resize_buffer()");
