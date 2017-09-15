@@ -307,7 +307,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char prog_end[] = "\n\treturn 0;\n}\n";
 	char print_beg[] = "\n\tfprintf(stderr, \"%s = “%___”, \", \"";
-	char println_beg[] = "\n\tfprintf(stderr, \"%s = “%___”\\n \", \"";
+	char println_beg[] = "\n\tfprintf(stderr, \"%s = “%___”\\n\", \"";
 	char print_end[] = ");";
 	char *src_tmp = NULL, *tmp_ptr = NULL;
 	/* space for <name>, <name> */
@@ -329,7 +329,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	if (!(src_tmp = calloc(1, sizeof src_buffer)))
 		ERR("src_tmp calloc()");
 	memcpy(src_tmp, src_buffer, sizeof src_buffer);
-	off = sizeof src_buffer - 1;
+	off = sizeof src_buffer - 2;
 	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
 		free(src_tmp);
 		ERR("src_tmp realloc()");
@@ -339,15 +339,20 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	off += sizeof newline - 1;
 
 	/* build var-tracking source */
-	for (size_t i = 0; i < vars->cnt - 1; i++) {
+	for (size_t i = 0; i < vars->cnt; i++) {
+		size_t printf_sz = (i < vars->cnt - 1) ? psz : plnsz;
+		size_t arr_sz = (i < vars->cnt - 1) ? sizeof print_beg : sizeof println_beg;
+		char (*arr_ptr)[printf_sz] = (i < vars->cnt - 1) ? &print_beg : &println_beg;
 		size_t cur_sz = (strlen(vars->list[i].key) + 1) * 2;
-		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + psz))) {
+		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
 			free(src_tmp);
 			ERR("src_tmp realloc()");
 		}
 		src_tmp = tmp_ptr;
-		char print_tmp[sizeof print_beg];
-		memcpy(print_tmp, print_beg, sizeof print_beg);
+		char *print_tmp;
+		if (!(print_tmp = calloc(1, arr_sz)))
+			ERR("print_tmp calloc()");
+		memcpy(print_tmp, *arr_ptr, arr_sz);
 
 		/* build format string */
 		switch (vars->list[i].type) {
@@ -391,8 +396,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		}
 
 		/* copy format string */
-		memcpy(src_tmp + off, print_tmp, sizeof print_tmp);
-		off += sizeof print_tmp - 1;
+		memcpy(src_tmp + off, print_tmp, arr_sz);
+		off += arr_sz - 1;
 		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
 		off += strlen(vars->list[i].key);
 
@@ -400,11 +405,11 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		switch (vars->list[i].type) {
 		case T_OTHER: /* fallthrough */
 		case T_ERR:
-			memcpy(src_tmp + off, "\", &", 5);
-			off += 4;
+			memcpy(src_tmp + off, "\",&", 3);
+			off += 3;
 			break;
 		default:
-			memcpy(src_tmp + off, "\", ", 4);
+			memcpy(src_tmp + off, "\", ", 3);
 			off += 3;
 		}
 
@@ -413,81 +418,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		off += strlen(vars->list[i].key);
 		memcpy(src_tmp + off, print_end, sizeof print_end);
 		off += sizeof print_end - 1;
+		free(print_tmp);
 	}
-
-	/* finish source */
-	size_t key_sz = (strlen(vars->list[vars->cnt - 1].key) + 1) * 2;
-	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + key_sz + plnsz))) {
-		free(src_tmp);
-		ERR("src_tmp realloc()");
-	}
-	src_tmp = tmp_ptr;
-	char print_tmp[sizeof println_beg];
-	memcpy(print_tmp, println_beg, sizeof println_beg);
-
-	/* build format string */
-	switch (vars->list[vars->cnt - 1].type) {
-	case T_CHR:
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = 'c';
-		break;
-	case T_STR:
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = 's';
-		break;
-	case T_INT:
-		strchr(print_tmp, '_')[0] = 'l';
-		strchr(print_tmp, '_')[0] = 'l';
-		strchr(print_tmp, '_')[0] = 'd';
-		break;
-	case T_UINT:
-		strchr(print_tmp, '_')[0] = 'l';
-		strchr(print_tmp, '_')[0] = 'l';
-		strchr(print_tmp, '_')[0] = 'u';
-		break;
-	case T_DBL:
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = 'l';
-		strchr(print_tmp, '_')[0] = 'f';
-		break;
-	case T_LDBL:
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = 'L';
-		strchr(print_tmp, '_')[0] = 'f';
-		break;
-	case T_PTR: /* fallthrough */
-	case T_OTHER: /* fallthrough */
-	case T_ERR:
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = '0';
-		strchr(print_tmp, '_')[0] = 'p';
-	}
-
-	/* copy format string */
-	memcpy(src_tmp + off, print_tmp, sizeof print_tmp);
-	off += sizeof print_tmp - 1;
-	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
-	off += strlen(vars->list[vars->cnt - 1].key);
-
-	/* handle other variable types */
-	switch (vars->list[vars->cnt - 1].type) {
-	case T_OTHER: /* fallthrough */
-	case T_ERR:
-		memcpy(src_tmp + off, "\", &", 5);
-		off += 4;
-		break;
-	default:
-		memcpy(src_tmp + off, "\", ", 4);
-		off += 3;
-	}
-
-	/* copy final part of printf */
-	memcpy(src_tmp + off, vars->list[vars->cnt - 1].key, strlen(vars->list[vars->cnt - 1].key));
-	off += strlen(vars->list[vars->cnt - 1].key);
-	memcpy(src_tmp + off, print_end, sizeof print_end - 1);
-	off += sizeof print_end - 1;
 
 	/* copy final source into buffer */
 	char final[off + sizeof prog_end + 1], *tok_buf;
