@@ -210,7 +210,7 @@ static inline void init_buffers(void)
 static inline void resize_buffer(char **buf, size_t offset)
 {
 	/* sanity check */
-	if (!buf)
+	if (!buf || !*buf)
 		return;
 	char *tmp;
 	size_t alloc_sz = strlen(*buf) + strlen(line) + offset + 1;
