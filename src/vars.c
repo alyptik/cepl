@@ -311,8 +311,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	char *src_tmp, *tmp_ptr;
 	size_t off;
 	/* space for <name>, <name> */
-	size_t psz = sizeof print_beg + sizeof print_end + 7;
-	size_t plnsz = sizeof println_beg + sizeof print_end + 7;
+	size_t psz = sizeof print_beg + sizeof print_end + 3;
+	size_t plnsz = sizeof println_beg + sizeof print_end + 3;
 
 	/* sanity checks */
 	if (!vars || !src || !cc_args || !exec_args)
@@ -338,6 +338,11 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vars->cnt; i++) {
+		/* skip unknown types */
+		if (vars->list[i].type == T_ERR)
+			continue;
+
+		/* populate buffers */
 		size_t printf_sz = (i < vars->cnt - 1) ? psz : plnsz;
 		size_t arr_sz = (i < vars->cnt - 1) ? sizeof print_beg : sizeof println_beg;
 		char (*arr_ptr)[printf_sz] = (i < vars->cnt - 1) ? &print_beg : &println_beg;
@@ -352,6 +357,10 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 		/* build format string */
 		switch (vars->list[i].type) {
+		case T_ERR:
+			/* should never hit this branch */
+			ERR(vars->list[i].key);
+			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
@@ -384,7 +393,6 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			break;
 		case T_PTR: /* fallthrough */
 		case T_OTHER: /* fallthrough */
-		case T_ERR: /* fallthrough */
 		default:
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
@@ -399,8 +407,11 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 		/* handle other variable types */
 		switch (vars->list[i].type) {
-		case T_OTHER: /* fallthrough */
 		case T_ERR:
+			/* should never hit this branch */
+			ERR(vars->list[i].key);
+			break;
+		case T_OTHER: /* fallthrough */
 			memcpy(src_tmp + off, "\",&", 3);
 			off += 3;
 			break;
