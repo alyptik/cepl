@@ -15,13 +15,11 @@
 #define ERRX(X)		errx(EXIT_FAILURE, "%s %s %d", (X), "at line", __LINE__)
 #define WARN(X)		warn("%s %s %d", (X), "at line", __LINE__)
 #define WARNX(X)	warnx("%s %s %d", (X), "at line", __LINE__)
-
 /* general case */
 #define ERRGEN(X)	err(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
 #define ERRXGEN(X)	errx(EXIT_FAILURE, "%s %s %s %d", "error during", (X), "at line", __LINE__)
 #define WARNGEN(X)	warn("%s %s %s %d", "error during", (X), "at line", __LINE__)
 #define WARNXGEN(X)	warnx("%s %s %s %d", "error during", (X), "at line", __LINE__)
-
 /* array case */
 #define ERRARR(X, Y)	err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
 #define ERRXARR(X, Y)	err(EXIT_FAILURE, "%s %s[%zu] %s %d", "error allocating", (X), (Y), "at line", __LINE__)
@@ -34,19 +32,6 @@ enum src_flag {
 	NOT_IN_MAIN = 1,
 	IN_MAIN = 2,
 };
-
-/* struct definition for NULL-terminated string dynamic array */
-struct str_list {
-	size_t cnt, max;
-	char **list;
-};
-
-/* struct definition for flag dynamic array */
-struct flag_list {
-	size_t cnt, max;
-	enum src_flag *list;
-};
-
 /* possible types of tracked variable */
 enum var_type {
 	T_ERR = 0,
@@ -60,6 +45,16 @@ enum var_type {
 	T_OTHER = 8,
 };
 
+/* struct definition for NULL-terminated string dynamic array */
+struct str_list {
+	size_t cnt, max;
+	char **list;
+};
+/* struct definition for flag dynamic array */
+struct flag_list {
+	size_t cnt, max;
+	enum src_flag *list;
+};
 /* struct definition for var-tracking dynamic array */
 struct var_list {
 	size_t cnt, max;
@@ -68,7 +63,6 @@ struct var_list {
 		enum var_type type;
 	} *list;
 };
-
 /* struct definition for generated program sources */
 struct prog_src {
 	char *body, *funcs, *total;
