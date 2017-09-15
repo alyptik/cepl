@@ -175,7 +175,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^,({;&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-			"([^({;&|'\"[:alnum:][:blank:]]+$|$|,)";
+			"([^({;&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
@@ -183,7 +183,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
-				"(^|[^,({;&|'\"]+)"
+				"(^[^,({;&|'\"]*)"
 				"(|bool|_Bool|_Complex|_Imaginary|struct|union|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
