@@ -13,8 +13,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "compile.h"
-#include "defs.h"
-#include "errors.h"
 #include "parseopts.h"
 #include "readline.h"
 #include "vars.h"

@@ -21,10 +21,9 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "defs.h"
-#include "errors.h"
 
 /* global version and usage strings */
-#define VERSION_STRING "CEPL v3.8.1"
+#define VERSION_STRING "CEPL v3.9.0"
 #define USAGE_STRING "[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \

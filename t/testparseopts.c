@@ -6,7 +6,6 @@
  */
 
 #include "tap.h"
-#include "../src/errors.h"
 #include "../src/parseopts.h"
 
 /* silence linter */

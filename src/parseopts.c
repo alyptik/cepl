@@ -6,7 +6,6 @@
  */
 
 #include <getopt.h>
-#include "errors.h"
 #include "parseopts.h"
 #include "readline.h"
 
