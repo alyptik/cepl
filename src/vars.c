@@ -344,7 +344,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		size_t printf_sz = (i < vars->cnt - 1) ? psz : plnsz;
 		size_t arr_sz = (i < vars->cnt - 1) ? sizeof print_beg : sizeof println_beg;
 		char (*arr_ptr)[printf_sz] = (i < vars->cnt - 1) ? &print_beg : &println_beg;
-		size_t cur_sz = (strlen(vars->list[i].key) + 1) * 2;
+		size_t cur_sz = strlen(vars->list[i].key) * 2;
 		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
 			free(src_tmp);
 			ERR("src_tmp realloc()");
