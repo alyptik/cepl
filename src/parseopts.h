@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "defs.h"
+#include "errors.h"
 
 /* global version and usage strings */
 #define VERSION_STRING "CEPL v3.8.1"
@@ -96,13 +97,13 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 0;
-	if ((list_struct->list = calloc(1, sizeof *list_struct->list)) == NULL)
+	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
 		ERRGEN("error during initial list_ptr calloc()");
 	/* exit early if NULL */
 	if (!init_str)
 		return;
 	list_struct->cnt++;
-	if ((list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(init_str) + 1)) == NULL)
+	if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(init_str) + 1)))
 		ERRGEN("error during initial list_ptr[0] calloc()");
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
@@ -114,14 +115,14 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
-		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+		if (!(tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)))
 			ERRARR("list_ptr", list_struct->cnt - 1);
 		list_struct->list = tmp;
 	}
-	if (str == NULL) {
+	if (!str) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
-		if ((list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(str) + padding + 1)) == NULL)
+		if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(str) + padding + 1)))
 			ERRARR("list_ptr", list_struct->cnt - 1);
 		memcpy(list_struct->list[list_struct->cnt - 1] + padding, str, strlen(str) + 1);
 	}
@@ -131,7 +132,7 @@ static inline void init_flag_list(struct flag_list *list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 0;
-	if ((list_struct->list = calloc(1, sizeof *list_struct->list)) == NULL)
+	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
 		ERRGEN("error during initial flag_list calloc()");
 	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
@@ -144,7 +145,7 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
-		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+		if (!(tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)))
 			ERRARR("flag_list", list_struct->cnt);
 		list_struct->list = tmp;
 	}

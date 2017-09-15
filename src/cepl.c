@@ -220,7 +220,7 @@ static inline void resize_buffer(char **buf, size_t offset)
 	char *tmp;
 	size_t alloc_sz = strlen(*buf) + strlen(line) + offset + 1;
 	/* current length + line length + extra characters + \0 */
-	if ((tmp = realloc(*buf, alloc_sz * 2)) == NULL) {
+	if (!(tmp = realloc(*buf, alloc_sz * 2))) {
 		free_buffers();
 		cleanup();
 		ERRGEN("resize_buffer()");
@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
 	if (home_env && strcmp(home_env, "") != 0)
 		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
-	if ((hist_file = calloc(1, buf_sz)) == NULL)
+	if (!(hist_file = calloc(1, buf_sz)))
 		ERRGEN("hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "") != 0) {
@@ -489,7 +489,7 @@ int main(int argc, char *argv[])
 		/* flush output streams */
 		fflush(NULL);
 		/* strip newlines */
-		if ((tok_buf = strpbrk(line, "\f\r\n")) != NULL)
+		if ((tok_buf = strpbrk(line, "\f\r\n")))
 			tok_buf[0] = '\0';
 		/* add and dedup history */
 		dedup_history();
@@ -532,7 +532,7 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
-				if (out_flag && ((ofile = fopen(tok_buf, "w")) == NULL)) {
+				if (out_flag && !(ofile = fopen(tok_buf, "w"))) {
 					free_buffers();
 					cleanup();
 					ERR("failed to create output file");

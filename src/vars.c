@@ -43,7 +43,7 @@ enum var_type extract_type(char const *line, char const *id)
 	char const end[] = ")(\\[*)";
 
 	/* append identifier to regex */
-	if ((regex = calloc(1, strlen(id) + sizeof beg + sizeof end - 1)) == NULL)
+	if (!(regex = calloc(1, strlen(id) + sizeof beg + sizeof end - 1)))
 		ERR("failed to allocate space for regex");
 	memcpy(regex, beg, sizeof beg - 1);
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
@@ -58,7 +58,7 @@ enum var_type extract_type(char const *line, char const *id)
 		regfree(&reg);
 		return T_ERR;
 	}
-	if ((type = calloc(1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)) == NULL)
+	if (!(type = calloc(1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)))
 		ERR("failed to allocate space for captured type");
 
 	/* copy matched string */
@@ -196,7 +196,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 				return 0;
 			}
 
-			if ((*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)) == NULL)
+			if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
 				ERR("failed to allocate space for captured id");
 			/* set the output parameter and return the offset */
 			memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
@@ -205,7 +205,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			return match[3].rm_so;
 		}
 
-		if ((*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)) == NULL)
+		if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
 			ERR("failed to allocate space for captured id");
 		/* set the output parameter and return the offset */
 		memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
@@ -215,7 +215,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	}
 
 	/* normal branch */
-	if ((*id = calloc(1, match[1].rm_eo - match[1].rm_so + 1)) == NULL)
+	if (!(*id = calloc(1, match[1].rm_eo - match[1].rm_so + 1)))
 		ERR("failed to allocate space for captured id");
 	/* set the output parameter and return the offset */
 	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
@@ -232,7 +232,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	/* sanity checks */
 	if (!line || !id_list || !type_list)
 		return 0;
-	if ((line_tmp[0] = calloc(1, strlen(line) + 1)) == NULL)
+	if (!(line_tmp[0] = calloc(1, strlen(line) + 1)))
 		ERR("error allocating line_tmp");
 	line_tmp[1] = line_tmp[0];
 
@@ -259,8 +259,8 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 		free(id_tmp);
 		id_tmp = NULL;
 	}
-	if ((line_tmp[1] = strpbrk(line_tmp[0], ";")) != NULL) {
-		while (strpbrk(line_tmp[1], ";") != NULL)
+	if ((line_tmp[1] = strpbrk(line_tmp[0], ";"))) {
+		while (strpbrk(line_tmp[1], ";"))
 			line_tmp[1] = strpbrk(line_tmp[1], ";") + 1;
 		while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 			append_str(id_list, id_tmp, 0);
@@ -289,7 +289,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	}
 
 	/* copy it into the output parameter */
-	if ((*type_list = calloc(1, sizeof type_tmp)) == NULL)
+	if (!(*type_list = calloc(1, sizeof type_tmp)))
 		ERR("failed to allocate memory for type_list");
 	memcpy(*type_list, type_tmp, sizeof type_tmp);
 	if (id_tmp)
@@ -326,7 +326,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 
 	/* copy source buffer */
 	memcpy(src_buffer, src, sizeof src_buffer);
-	if ((src_tmp = calloc(1, sizeof src_buffer)) == NULL)
+	if (!(src_tmp = calloc(1, sizeof src_buffer)))
 		ERRGEN("src_tmp calloc()");
 	memcpy(src_tmp, src_buffer, sizeof src_buffer);
 	off = sizeof src_buffer - 1;
@@ -495,7 +495,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	memcpy(final, src_tmp, off);
 	memcpy(final + off, prog_end, sizeof prog_end);
 	/* remove NULL bytes */
-	while ((tok_buf = memchr(final, 0, sizeof final)) != NULL)
+	while ((tok_buf = memchr(final, 0, sizeof final)))
 		tok_buf[0] = '\n';
 	free(src_tmp);
 

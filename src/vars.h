@@ -34,7 +34,7 @@ static inline void init_var_list(struct var_list *list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 0;
-	if ((list_struct->list = malloc(sizeof *list_struct->list)) == NULL)
+	if (!(list_struct->list = malloc(sizeof *list_struct->list)))
 		ERR("error during initial var_list malloc()");
 }
 
@@ -47,11 +47,13 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
-		if ((tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)) == NULL)
+		if (!(tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max))) {
+			free(list_struct->list);
 			ERRARR("var_list", list_struct->cnt);
+		}
 		list_struct->list = tmp;
 	}
-	if ((list_struct->list[list_struct->cnt - 1].key = malloc(strlen(key) + 1)) == NULL)
+	if (!(list_struct->list[list_struct->cnt - 1].key = malloc(strlen(key) + 1)))
 		ERRGEN("append_var()");
 	memset(list_struct->list[list_struct->cnt - 1].key, 0, strlen(key) + 1);
 	memcpy(list_struct->list[list_struct->cnt - 1].key, key, strlen(key) + 1);

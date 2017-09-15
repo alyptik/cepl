@@ -88,7 +88,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 		case 'c':
 			if (!cc_list.list[0][0]) {
 				/* copy argument to cc_list.list[0] */
-				if ((tmp_arg = realloc(cc_list.list[0], strlen(optarg) + 1)) == NULL)
+				if (!(tmp_arg = realloc(cc_list.list[0], strlen(optarg) + 1)))
 					ERRARR("cc_list.list", (size_t)0);
 				cc_list.list[0] = tmp_arg;
 				memset(cc_list.list[0], 0, strlen(optarg) + 1);
@@ -117,7 +117,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 
 		/* output file flag */
 		case 'o':
-			if (out_file != NULL)
+			if (out_file)
 				ERRX("too many output files specified");
 			out_file = optarg;
 			out_flag ^= true;
