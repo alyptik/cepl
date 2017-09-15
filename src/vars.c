@@ -543,7 +543,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("compiler returned non-zero exit code");
-			return WEXITSTATUS(status);
+			/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
+			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
 
@@ -576,7 +577,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		wait(&status);
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("linker returned non-zero exit code");
-			return WEXITSTATUS(status);
+			/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
+			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
 
@@ -596,7 +598,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		/* redirect stdout to /dev/null */
 		if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
 			ERRGEN("open()");
-		dup2(null, 1);
+		dup2(null, STDOUT_FILENO);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
 		ERR("error forking executable");
@@ -609,7 +611,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		/* don't overwrite non-zero exit status from compiler */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("executable returned non-zero exit code");
-			return WEXITSTATUS(status);
+			/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
+			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
 
