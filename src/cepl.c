@@ -412,6 +412,7 @@ static inline void dedup_history(void)
 			}
 		}
 
+		/* reset history position and add the line */
 		history_set_pos(cur_hist);
 		add_history(line);
 	}
