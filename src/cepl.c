@@ -642,7 +642,7 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(strip) - 1; strip[i] == ' ' || strip[i] == '\t'; i--)
+			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i]) == '\t'; i--)
 				strip[i] = '\0';
 			/* start building program source */
 			build_body();
@@ -652,7 +652,7 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(strip) - 1; strip[i] == ' ' || strip[i] == '\t'; i--)
+			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i]) == '\t'; i--)
 				strip[i] = '\0';
 			switch(strip[strlen(strip) - 1]) {
 			case '{': /* fallthough */
@@ -661,11 +661,11 @@ int main(int argc, char *argv[])
 			case '\\':
 				build_body();
 				/* remove extra trailing ';' */
-				for (size_t i = strlen(prog[0].body) - 1; prog[0].body[i - 1] == ';'; i--) {
+				for (size_t i = strlen(prog[0].body) - 1; i > 0 && prog[0].body[i - 1] == ';'; i--) {
 					if (prog[0].body[i] == ';')
 						prog[0].body[i] = '\0';
 				}
-				for (size_t i = strlen(prog[1].body) - 1; prog[1].body[i - 1] == ';'; i--) {
+				for (size_t i = strlen(prog[1].body) - 1; i > 0 && prog[1].body[i - 1] == ';'; i--) {
 					if (prog[1].body[i] == ';')
 						prog[1].body[i] = '\0';
 				}
