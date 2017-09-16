@@ -73,8 +73,8 @@ static char **cc_argv;
 static char *hist_file;
 /* output file */
 static FILE volatile *ofile;
-/* struct definition for generated program sources */
-static struct prog_src user, actual;
+/* program source strucs (prog[0] is truncated for interactive printing) */
+static struct prog_src prog[2];
 /* var list */
 static struct var_list vars;
 static struct str_list ids;
@@ -91,7 +91,7 @@ static inline void write_file(void) {
 		return;
 	/* write out program to file */
 	FILE *output = (FILE *)ofile;
-	fwrite(actual.total, strlen(actual.total), 1, output);
+	fwrite(prog[1].total, strlen(prog[1].total), 1, output);
 	fputc('\n', output);
 	fflush(output);
 	fclose(output);
@@ -104,22 +104,22 @@ static inline void free_buffers(void)
 
 	if (line)
 		free(line);
-	if (user.funcs)
-		free(user.funcs);
-	if (actual.funcs)
-		free(actual.funcs);
-	if (user.body)
-		free(user.body);
-	if (actual.body)
-		free(actual.body);
-	if (user.total)
-		free(user.total);
-	if (actual.total)
-		free(actual.total);
-	if (user.flags.list)
-		free(user.flags.list);
-	if (actual.flags.list)
-		free(actual.flags.list);
+	if (prog[0].funcs)
+		free(prog[0].funcs);
+	if (prog[1].funcs)
+		free(prog[1].funcs);
+	if (prog[0].body)
+		free(prog[0].body);
+	if (prog[1].body)
+		free(prog[1].body);
+	if (prog[0].total)
+		free(prog[0].total);
+	if (prog[1].total)
+		free(prog[1].total);
+	if (prog[0].flags.list)
+		free(prog[0].flags.list);
+	if (prog[1].flags.list)
+		free(prog[1].flags.list);
 	if (types)
 		free(types);
 
@@ -133,21 +133,21 @@ static inline void free_buffers(void)
 		}
 		free(vars.list);
 	}
-	free_str_list(&user.hist);
-	free_str_list(&actual.hist);
-	free_str_list(&user.lines);
-	free_str_list(&actual.lines);
+	free_str_list(&prog[0].hist);
+	free_str_list(&prog[1].hist);
+	free_str_list(&prog[0].lines);
+	free_str_list(&prog[1].lines);
 	free_str_list(&ids);
 
 	/* set pointers to NULL */
-	user.funcs = NULL;
-	user.body = NULL;
-	user.total = NULL;
-	user.flags.list = NULL;
-	actual.funcs = NULL;
-	actual.body = NULL;
-	actual.total = NULL;
-	actual.flags.list = NULL;
+	prog[0].funcs = NULL;
+	prog[0].body = NULL;
+	prog[0].total = NULL;
+	prog[0].flags.list = NULL;
+	prog[1].funcs = NULL;
+	prog[1].body = NULL;
+	prog[1].total = NULL;
+	prog[1].flags.list = NULL;
 	vars.list = NULL;
 	cc_argv = NULL;
 	types = NULL;
@@ -180,30 +180,30 @@ static inline void cleanup(void)
 static inline void init_buffers(void)
 {
 	/* user is truncated source for display */
-	user.funcs = calloc(1, 1);
+	prog[0].funcs = calloc(1, 1);
 	/* actual is source passed to compiler */
-	actual.funcs = calloc(1, strlen(prelude) + 1);
-	user.body = calloc(1, strlen(prog_start_user) + 1);
-	actual.body = calloc(1, strlen(prog_start) + 1);
-	user.total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
-	actual.total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
+	prog[1].funcs = calloc(1, strlen(prelude) + 1);
+	prog[0].body = calloc(1, strlen(prog_start_user) + 1);
+	prog[1].body = calloc(1, strlen(prog_start) + 1);
+	prog[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
+	prog[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
-	if (!user.funcs || !actual.funcs || !user.body || !actual.body || !user.total || !actual.total) {
+	if (!prog[0].funcs || !prog[1].funcs || !prog[0].body || !prog[1].body || !prog[0].total || !prog[1].total) {
 		free_buffers();
 		cleanup();
 		ERR("initial pointer allocation");
 	}
-	/* no memcpy for user.funcs */
-	memcpy(actual.funcs, prelude, strlen(prelude) + 1);
-	memcpy(user.body, prog_start_user, strlen(prog_start_user) + 1);
-	memcpy(actual.body, prog_start, strlen(prog_start) + 1);
+	/* no memcpy for prog[0].funcs */
+	memcpy(prog[1].funcs, prelude, strlen(prelude) + 1);
+	memcpy(prog[0].body, prog_start_user, strlen(prog_start_user) + 1);
+	memcpy(prog[1].body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
-	init_list(&user.lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&actual.lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&user.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&actual.hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_flag_list(&user.flags);
-	init_flag_list(&actual.flags);
+	init_list(&prog[0].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&prog[1].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&prog[0].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&prog[1].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_flag_list(&prog[0].flags);
+	init_flag_list(&prog[1].flags);
 	init_var_list(&vars);
 }
 
@@ -225,45 +225,45 @@ static inline void resize_buffer(char **buf, size_t offset)
 
 static inline void build_funcs(void)
 {
-	append_str(&user.lines, tok_buf, 0);
-	append_str(&actual.lines, tok_buf, 0);
-	append_str(&user.hist, user.funcs, 0);
-	append_str(&actual.hist, actual.funcs, 0);
-	append_flag(&user.flags, NOT_IN_MAIN);
-	append_flag(&actual.flags, NOT_IN_MAIN);
+	append_str(&prog[0].lines, tok_buf, 0);
+	append_str(&prog[1].lines, tok_buf, 0);
+	append_str(&prog[0].hist, prog[0].funcs, 0);
+	append_str(&prog[1].hist, prog[1].funcs, 0);
+	append_flag(&prog[0].flags, NOT_IN_MAIN);
+	append_flag(&prog[1].flags, NOT_IN_MAIN);
 	/* generate function buffers */
-	strcat(user.funcs, tok_buf);
-	strcat(actual.funcs, tok_buf);
-	strcat(user.funcs, "\n");
-	strcat(actual.funcs, "\n");
+	strcat(prog[0].funcs, tok_buf);
+	strcat(prog[1].funcs, tok_buf);
+	strcat(prog[0].funcs, "\n");
+	strcat(prog[1].funcs, "\n");
 }
 
 static inline void build_body(void)
 {
-	append_str(&user.lines, line, 0);
-	append_str(&actual.lines, line, 0);
-	append_str(&user.hist, user.body, 0);
-	append_str(&actual.hist, actual.body, 0);
-	append_flag(&user.flags, IN_MAIN);
-	append_flag(&actual.flags, IN_MAIN);
-	strcat(user.body, "\t");
-	strcat(actual.body, "\t");
-	strcat(user.body, line);
-	strcat(actual.body, line);
+	append_str(&prog[0].lines, line, 0);
+	append_str(&prog[1].lines, line, 0);
+	append_str(&prog[0].hist, prog[0].body, 0);
+	append_str(&prog[1].hist, prog[1].body, 0);
+	append_flag(&prog[0].flags, IN_MAIN);
+	append_flag(&prog[1].flags, IN_MAIN);
+	strcat(prog[0].body, "\t");
+	strcat(prog[1].body, "\t");
+	strcat(prog[0].body, line);
+	strcat(prog[1].body, line);
 }
 
 static inline void build_final(char *argv[])
 {
 	/* finish building current iteration of source code */
-	memcpy(user.total, user.funcs, strlen(user.funcs) + 1);
-	memcpy(actual.total, actual.funcs, strlen(actual.funcs) + 1);
-	strcat(user.total, user.body);
-	strcat(actual.total, actual.body);
+	memcpy(prog[0].total, prog[0].funcs, strlen(prog[0].funcs) + 1);
+	memcpy(prog[1].total, prog[1].funcs, strlen(prog[1].funcs) + 1);
+	strcat(prog[0].total, prog[0].body);
+	strcat(prog[1].total, prog[1].body);
 	/* print variable values */
 	if (track_flag)
-		print_vars(&vars, actual.total, cc_argv, argv);
-	strcat(user.total, prog_end);
-	strcat(actual.total, prog_end);
+		print_vars(&vars, prog[1].total, cc_argv, argv);
+	strcat(prog[0].total, prog_end);
+	strcat(prog[1].total, prog_end);
 }
 
 static inline void pop_history(struct prog_src *prog)
@@ -447,7 +447,7 @@ int main(int argc, char *argv[])
 	init_buffers();
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
-	/* initialize user.total and actual.total then print version */
+	/* initialize prog[0].total and prog[1].total then print version */
 	build_final(argv);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n", VERSION_STRING);
@@ -491,10 +491,10 @@ int main(int argc, char *argv[])
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		resize_buffer(&user.body, 3);
-		resize_buffer(&actual.body, 3);
-		resize_buffer(&user.total, 3);
-		resize_buffer(&actual.total, 3);
+		resize_buffer(&prog[0].body, 3);
+		resize_buffer(&prog[1].body, 3);
+		resize_buffer(&prog[0].total, 3);
+		resize_buffer(&prog[1].total, 3);
 
 		/* strip leading whitespace */
 		char *strip = line;
@@ -586,15 +586,12 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* re-allocate enough memory for strip + '\n' + '\n' + '\0' */
-				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
-				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
+				resize_buffer(&prog[0].funcs, strlen(tok_buf) + 3);
+				resize_buffer(&prog[1].funcs, strlen(tok_buf) + 3);
 				build_funcs();
-				/* TODO: find a workaround for var tracking */
-				/* getting in the way of functions */
-				/* if (track_flag) { */
-				/*         if (find_vars(tok_buf, &ids, &types)) */
-				/*                 gen_var_list(&vars, &ids, &types); */
-				/* } */
+				/* TODO: find a workaround for var tracking getting in the way of functions */
+				/* if (track_flag && find_vars(tok_buf, &ids, &types)) */
+				/*         gen_var_list(&vars, &ids, &types); */
 				break;
 
 			/* show usage information */
@@ -605,10 +602,10 @@ int main(int argc, char *argv[])
 			/* pop last history statement */
 			case 'u':
 				/* break early if no history to pop */
-				if (user.flags.cnt < 2 || actual.flags.cnt < 2)
+				if (prog[0].flags.cnt < 2 || prog[1].flags.cnt < 2)
 					break;
-				pop_history(&user);
-				pop_history(&actual);
+				pop_history(&prog[0]);
+				pop_history(&prog[1]);
 				/* break early if tracking disabled */
 				if (track_flag)
 					break;
@@ -627,9 +624,9 @@ int main(int argc, char *argv[])
 				vars.list = NULL;
 				init_var_list(&vars);
 				/* add vars from previous lines */
-				for (size_t i = 1; i < user.lines.cnt; i++) {
-					if (user.lines.list[i] && user.flags.list[i] == IN_MAIN) {
-						if (find_vars(user.lines.list[i], &ids, &types))
+				for (size_t i = 1; i < prog[0].lines.cnt; i++) {
+					if (prog[0].lines.list[i] && prog[0].flags.list[i] == IN_MAIN) {
+						if (find_vars(prog[0].lines.list[i], &ids, &types))
 							gen_var_list(&vars, &ids, &types);
 					}
 				}
@@ -647,8 +644,8 @@ int main(int argc, char *argv[])
 				strip[i] = '\0';
 			/* start building program source */
 			build_body();
-			strcat(user.body, "\n");
-			strcat(actual.body, "\n");
+			strcat(prog[0].body, "\n");
+			strcat(prog[1].body, "\n");
 			break;
 
 		default:
@@ -662,32 +659,28 @@ int main(int argc, char *argv[])
 			case '\\':
 				build_body();
 				/* remove extra trailing ';' */
-				for (size_t i = strlen(user.body) - 1; user.body[i - 1] == ';'; i--) {
-					if (user.body[i] == ';')
-						user.body[i] = '\0';
+				for (size_t i = strlen(prog[0].body) - 1; prog[0].body[i - 1] == ';'; i--) {
+					if (prog[0].body[i] == ';')
+						prog[0].body[i] = '\0';
 				}
-				for (size_t i = strlen(actual.body) - 1; actual.body[i - 1] == ';'; i--) {
-					if (actual.body[i] == ';')
-						actual.body[i] = '\0';
+				for (size_t i = strlen(prog[1].body) - 1; prog[1].body[i - 1] == ';'; i--) {
+					if (prog[1].body[i] == ';')
+						prog[1].body[i] = '\0';
 				}
-				strcat(user.body, "\n");
-				strcat(actual.body, "\n");
+				strcat(prog[0].body, "\n");
+				strcat(prog[1].body, "\n");
 				/* extract identifiers and types */
-				if (track_flag) {
-					if (find_vars(strip, &ids, &types))
-						gen_var_list(&vars, &ids, &types);
-				}
+				if (track_flag && find_vars(strip, &ids, &types))
+					gen_var_list(&vars, &ids, &types);
 				break;
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
 				build_body();
-				strcat(user.body, ";\n");
-				strcat(actual.body, ";\n");
+				strcat(prog[0].body, ";\n");
+				strcat(prog[1].body, ";\n");
 				/* extract identifiers and types */
-				if (track_flag) {
-					if (find_vars(strip, &ids, &types))
-						gen_var_list(&vars, &ids, &types);
-				}
+				if (track_flag && find_vars(strip, &ids, &types))
+					gen_var_list(&vars, &ids, &types);
 			}
 		}
 
@@ -695,8 +688,8 @@ int main(int argc, char *argv[])
 		build_final(argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
-			printf("\n%s:\n==========\n%s\n==========\n", argv[0], user.total);
-		int ret = compile(actual.total, cc_argv, argv);
+			printf("\n%s:\n==========\n%s\n==========\n", argv[0], prog[0].total);
+		int ret = compile(prog[1].total, cc_argv, argv);
 		/* print output and exit code if non-zero */
 		if (ret || isatty(STDIN_FILENO))
 			printf("[exit status: %d]\n", ret);
