@@ -303,8 +303,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "\n\tfprintf(stderr, \"%s = “%___”, \", \"";
-	char println_beg[] = "\n\tfprintf(stderr, \"%s = “%___”\\n\", \"";
+	char print_beg[] = "\n\tfprintf(stderr, \"%s = “_____”, \", \"";
+	char println_beg[] = "\n\tfprintf(stderr, \"%s = “_____”\\n\", \"";
 	char print_end[] = ");";
 	char *src_tmp, *tmp_ptr;
 	size_t off;
@@ -360,31 +360,43 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			ERR(vars->list[i].key);
 			break;
 		case T_CHR:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'c';
 			break;
 		case T_STR:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 's';
 			break;
 		case T_INT:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'd';
 			break;
 		case T_UINT:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'u';
 			break;
 		case T_DBL:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'f';
 			break;
 		case T_LDBL:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'L';
 			strchr(print_tmp, '_')[0] = 'f';
@@ -392,6 +404,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_PTR: /* fallthrough */
 		case T_OTHER: /* fallthrough */
 		default:
+			strchr(print_tmp, '_')[0] = '&';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'p';
