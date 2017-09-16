@@ -573,6 +573,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		/* redirect stdout to /dev/null */
 		if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
 			ERR("open()");
+		dup2(null, STDIN_FILENO);
 		dup2(null, STDOUT_FILENO);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
