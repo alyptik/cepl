@@ -410,7 +410,14 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			strchr(print_tmp, '_')[0] = 'L';
 			strchr(print_tmp, '_')[0] = 'f';
 			break;
-		case T_PTR: /* fallthrough */
+		case T_PTR:
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
+			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = 'p';
+			break;
 		case T_OTHER: /* fallthrough */
 		default:
 			strchr(print_tmp, '_')[0] = '&';
@@ -433,10 +440,18 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			/* should never hit this branch */
 			ERR(vars->list[i].key);
 			break;
-		case T_OTHER: /* fallthrough */
+		case T_OTHER:
+			/* take the address of variable if unknown type */
 			memcpy(src_tmp + off, "\",&", 3);
 			off += 3;
 			break;
+		case T_CHR: /* fallthrough */
+		case T_STR: /* fallthrough */
+		case T_INT: /* fallthrough */
+		case T_UINT: /* fallthrough */
+		case T_DBL: /* fallthrough */
+		case T_LDBL: /* fallthrough */
+		case T_PTR: /* fallthrough */
 		default:
 			memcpy(src_tmp + off, "\", ", 3);
 			off += 3;
