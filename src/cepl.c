@@ -300,7 +300,7 @@ static inline void dedup_history(void)
 	if (line && *line) {
 		/* search forward and backward in history */
 		ptrdiff_t cur_hist = where_history();
-		for (ptrdiff_t i = 1; i > -2; i -= 2) {
+		for (ptrdiff_t i = -1; i < 2; i += 2) {
 			/* seek backwords or forwards */
 			HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
 			while (history_search_prefix(line, i) != -1) {
