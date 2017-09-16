@@ -100,28 +100,30 @@ static inline void write_file(void) {
 
 static inline void free_buffers(void)
 {
+	/* clean up input data */
 	write_file();
-
 	if (line)
 		free(line);
-	if (prog[0].funcs)
-		free(prog[0].funcs);
-	if (prog[1].funcs)
-		free(prog[1].funcs);
-	if (prog[0].body)
-		free(prog[0].body);
-	if (prog[1].body)
-		free(prog[1].body);
-	if (prog[0].total)
-		free(prog[0].total);
-	if (prog[1].total)
-		free(prog[1].total);
-	if (prog[0].flags.list)
-		free(prog[0].flags.list);
-	if (prog[1].flags.list)
-		free(prog[1].flags.list);
 	if (types)
 		free(types);
+
+	/* free program structs */
+	if (prog[0].funcs)
+		free(prog[0].funcs);
+	if (prog[0].body)
+		free(prog[0].body);
+	if (prog[0].total)
+		free(prog[0].total);
+	if (prog[0].flags.list)
+		free(prog[0].flags.list);
+	if (prog[1].funcs)
+		free(prog[1].funcs);
+	if (prog[1].body)
+		free(prog[1].body);
+	if (prog[1].total)
+		free(prog[1].total);
+	if (prog[1].flags.list)
+		free(prog[1].flags.list);
 
 	/* free vectors */
 	if (cc_argv)
@@ -134,18 +136,18 @@ static inline void free_buffers(void)
 		free(vars.list);
 	}
 	free_str_list(&prog[0].hist);
-	free_str_list(&prog[1].hist);
 	free_str_list(&prog[0].lines);
+	free_str_list(&prog[1].hist);
 	free_str_list(&prog[1].lines);
 	free_str_list(&ids);
 
 	/* set pointers to NULL */
-	prog[0].funcs = NULL;
 	prog[0].body = NULL;
+	prog[0].funcs = NULL;
 	prog[0].total = NULL;
 	prog[0].flags.list = NULL;
-	prog[1].funcs = NULL;
 	prog[1].body = NULL;
+	prog[1].funcs = NULL;
 	prog[1].total = NULL;
 	prog[1].flags.list = NULL;
 	vars.list = NULL;
@@ -181,28 +183,28 @@ static inline void init_buffers(void)
 {
 	/* user is truncated source for display */
 	prog[0].funcs = calloc(1, 1);
+	prog[0].body = calloc(1, strlen(prog_start_user) + 1);
+	prog[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
 	/* actual is source passed to compiler */
 	prog[1].funcs = calloc(1, strlen(prelude) + 1);
-	prog[0].body = calloc(1, strlen(prog_start_user) + 1);
 	prog[1].body = calloc(1, strlen(prog_start) + 1);
-	prog[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
 	prog[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
 	/* sanity check */
-	if (!prog[0].funcs || !prog[1].funcs || !prog[0].body || !prog[1].body || !prog[0].total || !prog[1].total) {
+	if (!prog[0].funcs || !prog[0].body || !prog[0].total || !prog[1].funcs || !prog[1].body || !prog[1].total) {
 		free_buffers();
 		cleanup();
 		ERR("initial pointer allocation");
 	}
 	/* no memcpy for prog[0].funcs */
-	memcpy(prog[1].funcs, prelude, strlen(prelude) + 1);
 	memcpy(prog[0].body, prog_start_user, strlen(prog_start_user) + 1);
+	memcpy(prog[1].funcs, prelude, strlen(prelude) + 1);
 	memcpy(prog[1].body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
 	init_list(&prog[0].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&prog[1].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_list(&prog[0].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&prog[1].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_flag_list(&prog[0].flags);
+	init_list(&prog[1].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_list(&prog[1].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_flag_list(&prog[1].flags);
 	init_var_list(&vars);
 }
@@ -256,8 +258,8 @@ static inline void build_final(char *argv[])
 {
 	/* finish building current iteration of source code */
 	memcpy(prog[0].total, prog[0].funcs, strlen(prog[0].funcs) + 1);
-	memcpy(prog[1].total, prog[1].funcs, strlen(prog[1].funcs) + 1);
 	strcat(prog[0].total, prog[0].body);
+	memcpy(prog[1].total, prog[1].funcs, strlen(prog[1].funcs) + 1);
 	strcat(prog[1].total, prog[1].body);
 	/* print variable values */
 	if (track_flag)
@@ -492,8 +494,8 @@ int main(int argc, char *argv[])
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		resize_buffer(&prog[0].body, 3);
-		resize_buffer(&prog[1].body, 3);
 		resize_buffer(&prog[0].total, 3);
+		resize_buffer(&prog[1].body, 3);
 		resize_buffer(&prog[1].total, 3);
 
 		/* strip leading whitespace */
