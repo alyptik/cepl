@@ -39,7 +39,7 @@ enum var_type extract_type(char const *line, char const *id)
 	char *regex, *type;
 	char const beg[] = "(^|.*[({;[:blank:]]*)"
 		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
-		"(.*)(";
+		"([^&]*)(";
 	char const end[] = ")(\\[*)";
 
 	/* append identifier to regex */
@@ -49,7 +49,7 @@ enum var_type extract_type(char const *line, char const *id)
 	memcpy(regex + sizeof beg - 1, id, strlen(id));
 	memcpy(regex + sizeof beg - 1 + strlen(id), end, sizeof end);
 
-	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
+	if (regcomp(&reg, regex, REG_EXTENDED | REG_NEWLINE))
 		ERR("failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
@@ -67,7 +67,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char[[:blank:]]*(const[[:blank:]]*|)\\*[[:blank:]]*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*[[:blank:]]*", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -78,7 +78,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* pointer */
-	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -89,7 +89,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* char */
-	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -100,7 +100,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* long double */
-	if (regcomp(&reg, "long[[:blank:]]*double", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "long[[:blank:]]*double", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -111,7 +111,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* double */
-	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(float|double)", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -122,7 +122,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* unsigned integral */
-	if (regcomp(&reg, "(size_t|unsigned)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(size_t|unsigned)", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -133,7 +133,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* signed integral */
-	if (regcomp(&reg, "(bool|_Bool|short|int|long|ptrdiff_t)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(bool|_Bool|short|int|long|ptrdiff_t)", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -156,13 +156,13 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* second capture is ignored */
 	char const initial_regex[] = "^[^,({;&|]*[^,({;&|[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-		"(=[^,({;&|'\"_=!<>[:alnum:]]+|<>{2}=[^,({;&|'\"_=!<>[:alnum:]]*|=[^=]+)";
+		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|=[^=]+)";
 
 	/* return early if passed NULL pointers */
 	if (!line || !id || !offset)
 		ERRX("NULL pointer passed to extract_id()");
 
-	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
+	if (regcomp(&reg, initial_regex, REG_EXTENDED | REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
@@ -177,19 +177,19 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^({;&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
 
-		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
+		if (regcomp(&reg, middle_regex, REG_EXTENDED | REG_NEWLINE))
 			ERR("failed to compile regex");
 		if (regexec(&reg, line, 5, match, 0) || match[3].rm_so == -1) {
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
-				"(^[^,({;&|'\"]*)"
+				"(^|[^,({;|]+)"
 				"(|bool|_Bool|_Complex|_Imaginary|struct|union|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
 
-			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_NEWLINE))
+			if (regcomp(&reg, final_regex, REG_EXTENDED | REG_NEWLINE))
 				ERR("failed to compile regex");
 			if (regexec(&reg, line, 4, match, 0) || match[3].rm_so == -1) {
 				regfree(&reg);
@@ -201,8 +201,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			/* set the output parameter and return the offset */
 			memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 			regfree(&reg);
-			*offset = match[3].rm_so;
-			return match[3].rm_so;
+			*offset = match[3].rm_eo;
+			return match[3].rm_eo;
 		}
 
 		if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
@@ -210,8 +210,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		/* set the output parameter and return the offset */
 		memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 		regfree(&reg);
-		*offset = match[3].rm_so;
-		return match[3].rm_so;
+		*offset = match[3].rm_eo;
+		return match[3].rm_eo;
 	}
 
 	/* normal branch */
@@ -220,8 +220,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* set the output parameter and return the offset */
 	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
 	regfree(&reg);
-	*offset = match[1].rm_so;
-	return match[1].rm_so;
+	*offset = match[1].rm_eo;
+	return match[1].rm_eo;
 }
 
 int find_vars(char const *line, struct str_list *id_list, enum var_type **type_list)
@@ -259,15 +259,18 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 		free(id_tmp);
 		id_tmp = NULL;
 	}
-	if ((line_tmp[1] = strpbrk(line_tmp[0], ";"))) {
-		while (strpbrk(line_tmp[1], ";"))
-			line_tmp[1] = strpbrk(line_tmp[1], ";") + 1;
-		while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
+	while (line_tmp[1] && (line_tmp[1] = strpbrk(line_tmp[1], ";"))) {
+		line_tmp[1]++;
+		while (extract_id(line_tmp[1], &id_tmp, &off)) {
 			append_str(id_list, id_tmp, 0);
 			free(id_tmp);
 			id_tmp = NULL;
 			line_tmp[1] += off;
 			count++;
+		}
+		if (id_tmp) {
+			free(id_tmp);
+			id_tmp = NULL;
 		}
 	}
 
@@ -303,8 +306,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "\n\tfprintf(stderr, \"%s = “_____”, \", \"";
-	char println_beg[] = "\n\tfprintf(stderr, \"%s = “_____”\\n\", \"";
+	char print_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\", \", \"";
+	char println_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
 	char print_end[] = ");";
 	char *src_tmp, *tmp_ptr;
 	size_t off;
@@ -362,6 +365,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'c';
@@ -369,6 +373,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_STR:
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 's';
@@ -376,6 +381,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_INT:
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'd';
@@ -383,6 +389,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_UINT:
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'u';
@@ -390,6 +397,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_DBL:
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'f';
@@ -397,6 +405,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_LDBL:
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'L';
 			strchr(print_tmp, '_')[0] = 'f';
@@ -405,6 +414,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_OTHER: /* fallthrough */
 		default:
 			strchr(print_tmp, '_')[0] = '&';
+			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
