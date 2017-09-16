@@ -298,12 +298,15 @@ static inline void pop_history(struct prog_src *prog)
 static inline void dedup_history(void)
 {
 	if (line && *line) {
+		/* strip leading whitespace */
+		char *strip = line;
+		strip += strspn(line, " \t");
 		/* search forward and backward in history */
 		ptrdiff_t cur_hist = where_history();
 		for (ptrdiff_t i = -1; i < 2; i += 2) {
 			/* seek backwords or forwards */
 			HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
-			while (history_search_prefix(line, i) != -1) {
+			while (history_search_prefix(strip, i) != -1) {
 				/* if this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *ent = current_history();
 				/* skip if NULL or not a complete match */
@@ -324,7 +327,7 @@ static inline void dedup_history(void)
 		}
 		/* reset history position and add the line */
 		history_set_pos(cur_hist);
-		add_history(line);
+		add_history(strip);
 	}
 }
 
@@ -494,10 +497,13 @@ int main(int argc, char *argv[])
 		resize_buffer(&user.total, 3);
 		resize_buffer(&actual.total, 3);
 
+		/* strip leading whitespace */
+		char *strip = line;
+		strip += strspn(line, " \t");
 		/* control sequence and preprocessor directive parsing */
-		switch (line[0]) {
+		switch (strip[0]) {
 		case ';':
-			switch(line[1]) {
+			switch(strip[1]) {
 			/* clean up and exit program */
 			case 'q':
 				free_buffers();
@@ -515,7 +521,7 @@ int main(int argc, char *argv[])
 					write_file();
 					break;
 				}
-				tok_buf = strpbrk(line, " \t");
+				tok_buf = strpbrk(strip, " \t");
 				/* break if file name empty */
 				if (!tok_buf || strspn(tok_buf, " \t") == strlen(tok_buf)) {
 					/* reset flag */
@@ -574,13 +580,13 @@ int main(int argc, char *argv[])
 			case 'i': /* fallthrough */
 			case 'm': /* fallthrough */
 			case 'f':
-				tok_buf = strpbrk(line, " \t");
+				tok_buf = strpbrk(strip, " \t");
 				/* break if function definition empty */
 				if (!tok_buf || strspn(tok_buf, " \t") == strlen(tok_buf))
 					break;
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
-				/* re-allocate enough memory for line + '\n' + '\n' + '\0' */
+				/* re-allocate enough memory for strip + '\n' + '\n' + '\0' */
 				resize_buffer(&user.funcs, strlen(tok_buf) + 3);
 				resize_buffer(&actual.funcs, strlen(tok_buf) + 3);
 				build_funcs();
@@ -638,8 +644,8 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
-				line[i] = '\0';
+			for (size_t i = strlen(strip) - 1; strip[i] == ' ' || strip[i] == '\t'; i--)
+				strip[i] = '\0';
 			/* start building program source */
 			build_body();
 			strcat(user.body, "\n");
@@ -648,9 +654,9 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(line) - 1; line[i] == ' ' || line[i] == '\t'; i--)
-				line[i] = '\0';
-			switch(line[strlen(line) - 1]) {
+			for (size_t i = strlen(strip) - 1; strip[i] == ' ' || strip[i] == '\t'; i--)
+				strip[i] = '\0';
+			switch(strip[strlen(strip) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
@@ -669,7 +675,7 @@ int main(int argc, char *argv[])
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
 				if (!track_flag) {
-					if (find_vars(line, &ids, &types))
+					if (find_vars(strip, &ids, &types))
 						gen_var_list(&vars, &ids, &types);
 				}
 				break;
@@ -680,7 +686,7 @@ int main(int argc, char *argv[])
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
 				if (!track_flag) {
-					if (find_vars(line, &ids, &types))
+					if (find_vars(strip, &ids, &types))
 						gen_var_list(&vars, &ids, &types);
 				}
 			}
