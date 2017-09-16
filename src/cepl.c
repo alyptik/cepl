@@ -260,7 +260,7 @@ static inline void build_final(char *argv[])
 	strcat(user.total, user.body);
 	strcat(actual.total, actual.body);
 	/* print variable values */
-	if (!track_flag)
+	if (track_flag)
 		print_vars(&vars, actual.total, cc_argv, argv);
 	strcat(user.total, prog_end);
 	strcat(actual.total, prog_end);
@@ -591,7 +591,7 @@ int main(int argc, char *argv[])
 				build_funcs();
 				/* TODO: find a workaround for var tracking */
 				/* getting in the way of functions */
-				/* if (!track_flag) { */
+				/* if (track_flag) { */
 				/*         if (find_vars(tok_buf, &ids, &types)) */
 				/*                 gen_var_list(&vars, &ids, &types); */
 				/* } */
@@ -673,7 +673,7 @@ int main(int argc, char *argv[])
 				strcat(user.body, "\n");
 				strcat(actual.body, "\n");
 				/* extract identifiers and types */
-				if (!track_flag) {
+				if (track_flag) {
 					if (find_vars(strip, &ids, &types))
 						gen_var_list(&vars, &ids, &types);
 				}
@@ -684,7 +684,7 @@ int main(int argc, char *argv[])
 				strcat(user.body, ";\n");
 				strcat(actual.body, ";\n");
 				/* extract identifiers and types */
-				if (!track_flag) {
+				if (track_flag) {
 					if (find_vars(strip, &ids, &types))
 						gen_var_list(&vars, &ids, &types);
 				}

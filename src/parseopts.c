@@ -15,7 +15,7 @@ FILE *fdopen(int fd, char const *mode);
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* global toggle flag for warnings and completions */
-bool warn_flag = false, parse_flag = false, track_flag = false, out_flag = false;
+bool warn_flag = false, parse_flag = true, track_flag = true, out_flag = false;
 
 static struct option long_opts[] = {
 	{"help", no_argument, 0, 'h'},
@@ -180,7 +180,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	append_str(&lib_list, NULL, 0);
 
 	/* parse ELF shared libraries for completions */
-	if (!parse_flag) {
+	if (parse_flag) {
 		init_list(&comp_list, NULL);
 		init_list(&sym_list, NULL);
 		parse_libs(&sym_list, lib_list.list);
