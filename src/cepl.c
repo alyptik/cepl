@@ -89,6 +89,8 @@ static inline void write_file(void) {
 	/* return early if no file open */
 	if (!ofile)
 		return;
+	/* flush output streams */
+	fflush(NULL);
 	/* write out program to file */
 	FILE *output = (FILE *)ofile;
 	fwrite(actual.total, strlen(actual.total), 1, output);
@@ -414,7 +416,8 @@ static inline char *read_line(void)
 		rl_outstream = NULL;
 		fclose(null);
 	}
-
+	/* flush output streams */
+	fflush(NULL);
 	return line;
 }
 
@@ -482,8 +485,6 @@ int main(int argc, char *argv[])
 
 	/* loop readline() until EOF is read */
 	while ((line = read_line()) && *line) {
-		/* flush output streams */
-		fflush(NULL);
 		/* strip newlines */
 		if ((tok_buf = strpbrk(line, "\f\r\n")))
 			tok_buf[0] = '\0';
