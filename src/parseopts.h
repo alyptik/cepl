@@ -75,8 +75,8 @@ static inline ptrdiff_t free_str_list(struct str_list *plist)
 	if (!plist || !plist->list)
 		return -1;
 	for (size_t i = 0; i < plist->cnt; i++) {
+		/* if NULL increment counter and skip */
 		if (!plist->list[i]) {
-			/* if NULL pointer increment counter */
 			null_cnt++;
 			continue;
 		}
@@ -142,7 +142,7 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max = list_struct->cnt * 2;
-		if (!(tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)))
+		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
 			ERRARR("flag_list", list_struct->cnt);
 		list_struct->list = tmp;
 	}

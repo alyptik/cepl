@@ -89,8 +89,6 @@ static inline void write_file(void) {
 	/* return early if no file open */
 	if (!ofile)
 		return;
-	/* flush output streams */
-	fflush(NULL);
 	/* write out program to file */
 	FILE *output = (FILE *)ofile;
 	fwrite(actual.total, strlen(actual.total), 1, output);
