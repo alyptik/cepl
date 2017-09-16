@@ -294,8 +294,43 @@ static inline void pop_history(struct prog_src *prog)
 	}
 }
 
+/* look for current line in readline history */
+static inline void dedup_history(void)
+{
+	if (line && *line) {
+		/* search forward and backward in history */
+		ptrdiff_t cur_hist = where_history();
+		for (ptrdiff_t i = 1; i > -2; i -= 2) {
+			/* seek backwords or forwards */
+			HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
+			while (history_search_prefix(line, i) != -1) {
+				/* if this line is already in the history, remove the earlier entry */
+				HIST_ENTRY *ent = current_history();
+				/* skip if NULL or not a complete match */
+				if (!ent || !ent->line || strcmp(line, ent->line) != 0) {
+					/* break if at end of list */
+					if (!seek_hist())
+						break;
+					continue;
+				}
+				/* remove and free data */
+				remove_history(where_history());
+				/* free application data */
+				histdata_t data = free_history_entry(ent);
+				if (data)
+					free(data);
+			}
+			history_set_pos(cur_hist);
+		}
+		/* reset history position and add the line */
+		history_set_pos(cur_hist);
+		add_history(line);
+	}
+}
+
 static inline void sig_handler(int sig)
 {
+	dedup_history();
 	free_buffers();
 	cleanup();
 	exit(sig);
@@ -348,10 +383,14 @@ static inline void reg_handlers(void)
 		WARN("atexit(&cleanup)");
 	if (atexit(&free_buffers))
 		WARN("atexit(&free_buffers)");
+	if (atexit(&dedup_history))
+		WARN("atexit(&dedup_history)");
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_buffers))
 		WARN("at_quick_exit(&free_buffers)");
+	if (at_quick_exit(&dedup_history))
+		WARN("at_quick_exit(&dedup_history)");
 }
 
 static inline char *read_line(void)
@@ -374,56 +413,6 @@ static inline char *read_line(void)
 	}
 
 	return line;
-}
-
-/* look for current line in readline history */
-static inline void dedup_history(void)
-{
-	if (line && *line) {
-		/* search forward */
-		ptrdiff_t cur_hist = where_history();
-		while (history_search_prefix(line, 1) != -1) {
-			/* if this line is already in the history, remove the earlier entry */
-			HIST_ENTRY *ent = current_history();
-			/* skip if NULL or not a complete match */
-			if (!ent || !ent->line || strcmp(line, ent->line) != 0) {
-				/* break if at end of list */
-				if (!next_history())
-					break;
-				continue;
-			}
-			/* remove and free data */
-			remove_history(where_history());
-			/* free application data */
-			histdata_t data = free_history_entry(ent);
-			if (data)
-				free(data);
-		}
-
-		/* search backward */
-		history_set_pos(cur_hist);
-		while (history_search_prefix(line, -1) != -1) {
-			/* if this line is already in the history, remove the earlier entry */
-			HIST_ENTRY *ent = current_history();
-			/* skip if NULL or not a complete match */
-			if (!ent || !ent->line || strcmp(line, ent->line) != 0) {
-				/* break if at beginning of list */
-				if (!previous_history())
-					break;
-				continue;
-			}
-			/* remove and free data */
-			remove_history(where_history());
-			/* free application data */
-			histdata_t data = free_history_entry(ent);
-			if (data)
-				free(data);
-		}
-
-		/* reset history position and add the line */
-		history_set_pos(cur_hist);
-		add_history(line);
-	}
 }
 
 int main(int argc, char *argv[])
