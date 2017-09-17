@@ -93,6 +93,7 @@ static inline void write_file(void) {
 	FILE *output = (FILE *)ofile;
 	fwrite(prog[1].total, strlen(prog[1].total), 1, output);
 	fputc('\n', output);
+	fflush(NULL);
 	fclose(output);
 	ofile = NULL;
 }
@@ -100,7 +101,6 @@ static inline void write_file(void) {
 static inline void free_buffers(void)
 {
 	/* write out history before freeing buffers */
-	fflush(NULL);
 	write_file();
 	free_str_list(&ids);
 	/* clean up user data */
