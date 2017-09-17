@@ -154,6 +154,18 @@ static inline void free_buffers(void)
 	cc_argv = NULL;
 	types = NULL;
 	line = NULL;
+	prog[0].b_sz = 0;
+	prog[0].f_sz = 0;
+	prog[0].t_sz = 0;
+	prog[0].b_max = 1;
+	prog[0].f_max = 1;
+	prog[0].t_max = 1;
+	prog[1].b_sz = 0;
+	prog[1].f_sz = 0;
+	prog[1].t_sz = 0;
+	prog[1].b_max = 1;
+	prog[1].f_max = 1;
+	prog[1].t_max = 1;
 }
 
 static inline void cleanup(void)
@@ -185,10 +197,22 @@ static inline void init_buffers(void)
 	prog[0].funcs = calloc(1, 1);
 	prog[0].body = calloc(1, strlen(prog_start_user) + 1);
 	prog[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
+	prog[0].f_sz = 1;
+	prog[0].b_sz = strlen(prog_start_user) + 1;
+	prog[0].t_sz = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
+	prog[0].f_max = 1;
+	prog[0].b_max = strlen(prog_start_user) + 1;
+	prog[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
 	prog[1].funcs = calloc(1, strlen(prelude) + 1);
 	prog[1].body = calloc(1, strlen(prog_start) + 1);
 	prog[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
+	prog[1].f_sz = strlen(prelude) + 1;
+	prog[1].b_sz = strlen(prog_start) + 1;
+	prog[1].t_sz = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
+	prog[1].f_max = strlen(prelude) + 1;
+	prog[1].b_max = strlen(prog_start) + 1;
+	prog[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
 	/* sanity check */
 	if (!prog[0].funcs || !prog[0].body || !prog[0].total || !prog[1].funcs || !prog[1].body || !prog[1].total) {
 		free_buffers();
@@ -209,20 +233,36 @@ static inline void init_buffers(void)
 	init_var_list(&vars);
 }
 
-static inline void resize_buffer(char **buf, size_t offset)
+static inline void resize_buffer(char **buf, size_t *buf_sz, size_t *buf_max, size_t offset)
 {
 	/* sanity check */
 	if (!buf || !*buf)
 		return;
 	char *tmp;
 	size_t alloc_sz = strlen(*buf) + strlen(line) + offset + 1;
-	/* current length + line length + extra characters + \0 */
-	if (!(tmp = realloc(*buf, alloc_sz))) {
-		free_buffers();
-		cleanup();
-		ERR("resize_buffer()");
+	if (!buf_sz || !buf_max) {
+		/* current length + line length + extra characters + \0 */
+		if (!(tmp = realloc(*buf, alloc_sz))) {
+			free_buffers();
+			cleanup();
+			ERR("resize_buffer()");
+		}
+		*buf = tmp;
+	} else {
+		*buf_sz += alloc_sz;
+		/* realloc only if buf_max is less than current size */
+		if (*buf_sz < *buf_max)
+			return;
+		/* double until size is reached */
+		while ((*buf_max *= 2) < *buf_sz);
+		/* current length + line length + extra characters + \0 */
+		if (!(tmp = realloc(*buf, *buf_max))) {
+			free_buffers();
+			cleanup();
+			ERR("resize_buffer()");
+		}
+		*buf = tmp;
 	}
-	*buf = tmp;
 }
 
 static inline void build_funcs(void)
@@ -493,10 +533,10 @@ int main(int argc, char *argv[])
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		resize_buffer(&prog[0].body, 3);
-		resize_buffer(&prog[0].total, 3);
-		resize_buffer(&prog[1].body, 3);
-		resize_buffer(&prog[1].total, 3);
+		resize_buffer(&prog[0].body, &prog[0].b_sz, &prog[0].b_max, 3);
+		resize_buffer(&prog[0].total, &prog[0].t_sz, &prog[0].t_max, 3);
+		resize_buffer(&prog[1].body, &prog[0].b_sz, &prog[0].b_max, 3);
+		resize_buffer(&prog[1].total, &prog[0].t_sz, &prog[0].t_max, 3);
 
 		/* strip leading whitespace */
 		char *strip = line;
@@ -588,8 +628,8 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* re-allocate enough memory for strip + '\n' + '\n' + '\0' */
-				resize_buffer(&prog[0].funcs, strlen(tok_buf) + 3);
-				resize_buffer(&prog[1].funcs, strlen(tok_buf) + 3);
+				resize_buffer(&prog[0].funcs, &prog[0].f_sz, &prog[0].f_max, strlen(tok_buf) + 3);
+				resize_buffer(&prog[1].funcs, &prog[0].f_sz, &prog[0].f_max, strlen(tok_buf) + 3);
 				build_funcs();
 				/* TODO: find a workaround for var tracking getting in the way of functions */
 				/* if (track_flag && find_vars(tok_buf, &ids, &types)) */
@@ -642,7 +682,7 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i]) == '\t'; i--)
+			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i] == '\t'); i--)
 				strip[i] = '\0';
 			/* start building program source */
 			build_body();
@@ -652,7 +692,7 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i]) == '\t'; i--)
+			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i] == '\t'); i--)
 				strip[i] = '\0';
 			switch(strip[strlen(strip) - 1]) {
 			case '{': /* fallthough */

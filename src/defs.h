@@ -84,6 +84,8 @@ struct var_list {
 };
 /* struct definition for generated program sources */
 struct prog_src {
+	size_t b_sz, f_sz, t_sz;
+	size_t b_max, f_max, t_max;
 	char *body, *funcs, *total;
 	struct str_list hist, lines;
 	struct flag_list flags;
