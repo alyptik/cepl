@@ -93,7 +93,6 @@ static inline void write_file(void) {
 	FILE *output = (FILE *)ofile;
 	fwrite(prog[1].total, strlen(prog[1].total), 1, output);
 	fputc('\n', output);
-	fflush(NULL);
 	fclose(output);
 	ofile = NULL;
 }
@@ -101,22 +100,28 @@ static inline void write_file(void) {
 static inline void free_buffers(void)
 {
 	/* write out history before freeing buffers */
+	fflush(NULL);
 	write_file();
 	free_str_list(&ids);
 	/* clean up user data */
-	if (line)
+	if (line) {
 		free(line);
-	if (types)
+		line = NULL;
+	}
+	if (types) {
 		free(types);
+		types = NULL;
+	}
 	/* free vectors */
 	if (cc_argv)
-		free_argv(cc_argv);
+		free_argv(&cc_argv);
 	if (vars.list) {
 		for (size_t i = 0; i < vars.cnt; i++) {
 			if (vars.list[i].key)
 				free(vars.list[i].key);
 		}
 		free(vars.list);
+		vars.list = NULL;
 	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
@@ -135,8 +140,6 @@ static inline void free_buffers(void)
 		/* `(void *)` casts needed to chain diff ptr types */
 		prog[i].body = prog[i].funcs = prog[i].total = (void *)(prog[i].flags.list = NULL);
 	}
-	/* `(void *)` casts needed to chain diff ptr types */
-	vars.list = (void *)(line = (void *)(cc_argv = (void *)(types = NULL)));
 }
 
 static inline void cleanup(void)
@@ -306,7 +309,7 @@ static inline void dedup_history(void)
 				/* if this line is already in the history, remove the earlier entry */
 				HIST_ENTRY *ent = current_history();
 				/* skip if NULL or not a complete match */
-				if (!ent || !ent->line || strcmp(line, ent->line) != 0) {
+				if (!ent || !ent->line || strcmp(line, ent->line)) {
 					/* break if at end of list */
 					if (!seek_hist())
 						break;
@@ -376,8 +379,6 @@ static inline char *read_line(void)
 		rl_outstream = NULL;
 		fclose(null);
 	}
-	/* flush output streams */
-	fflush(NULL);
 	return line;
 }
 
@@ -391,13 +392,13 @@ int main(int argc, char *argv[])
 	char const *const home_env = getenv("HOME");
 
 	/* add hist_length of “$HOME/” if home_env is non-NULL */
-	if (home_env && strcmp(home_env, "") != 0)
+	if (home_env && strcmp(home_env, ""))
 		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history fihist_lename ("~/.cepl_history" by default) */
 	if (!(hist_file = calloc(1, buf_sz)))
 		ERR("hist_file malloc()");
 	/* check if home_env is non-NULL */
-	if (home_env && strcmp(home_env, "") != 0) {
+	if (home_env && strcmp(home_env, "")) {
 		hist_len = strlen(home_env);
 		strmv(0, hist_file, home_env);
 		hist_file[hist_len++] = '/';

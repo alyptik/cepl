@@ -27,15 +27,16 @@ void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 
 /* recursive free */
-static inline size_t free_argv(char **argv)
+static inline ptrdiff_t free_argv(char ***argv)
 {
-	size_t count;
-	if (!argv || !(argv[0]))
+	size_t cnt;
+	if (!argv || !*argv || !(*argv)[0])
 		return -1;
-	for (count = 0; argv[count]; count++)
-		free(argv[count]);
-	free(argv);
-	return count;
+	for (cnt = 0; (*argv)[cnt]; cnt++)
+		free((*argv)[cnt]);
+	free(*argv);
+	*argv = NULL;
+	return cnt;
 }
 
 /* emulate `strcat()` if `off < 0`, else copy `src` to `dest` at offset `off` */

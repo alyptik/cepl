@@ -9,7 +9,7 @@
 #include "../src/parseopts.h"
 
 /* silence linter */
-int mkstemp(char *template);
+int mkstemp(char *__template);
 
 int main (void)
 {
@@ -59,7 +59,7 @@ int main (void)
 	ok(free_str_list(&symbols) == -1, "test free_str_list() on empty pointer returns -1.");
 
 	/* cleanup */
-	free_argv(result);
+	free_argv(&result);
 	close(tmp_fd);
 	if (remove(tempfile) == -1)
 		WARN("remove()");
