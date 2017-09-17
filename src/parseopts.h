@@ -40,7 +40,7 @@ static inline ptrdiff_t free_argv(char ***argv)
 }
 
 /* emulate `strcat()` if `off < 0`, else copy `src` to `dest` at offset `off` */
-static inline void strmv(ptrdiff_t off, char *dest, char const *restrict src) {
+static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restrict src) {
 	/* sanity checks */
 	if (!dest || !src)
 		ERRX("NULL pointer passed to strmv()");
