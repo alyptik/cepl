@@ -383,14 +383,10 @@ static inline void reg_handlers(void)
 		WARN("atexit(&cleanup)");
 	if (atexit(&free_buffers))
 		WARN("atexit(&free_buffers)");
-	/* if (atexit(&dedup_history)) */
-	/*         WARN("atexit(&dedup_history)"); */
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_buffers))
 		WARN("at_quick_exit(&free_buffers)");
-	/* if (at_quick_exit(&dedup_history)) */
-	/*         WARN("at_quick_exit(&dedup_history)"); */
 }
 
 static inline char *read_line(void)
