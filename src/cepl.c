@@ -149,12 +149,7 @@ static inline void cleanup(void)
 	/* append history to history file */
 	if (has_hist) {
 		if (write_history(hist_file)) {
-			char hist_pre[] = "error writing history to ";
-			char hist_full[sizeof hist_pre + strlen(hist_file)];
-			char *hist_ptr = hist_full;
-			strmv(CONCAT, hist_ptr, hist_pre);
-			strmv(sizeof hist_pre - 1, hist_ptr, hist_file);
-			WARN(hist_ptr);
+			WARN("write_history()");
 		}
 	}
 	if (hist_file) {
@@ -182,10 +177,12 @@ static inline void init_buffers(void)
 	prog[1].b_sz = prog[1].b_max = strlen(prog_start) + 1;
 	prog[1].t_sz = prog[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
 	/* sanity check */
-	if (!prog[0].funcs || !prog[0].body || !prog[0].total || !prog[1].funcs || !prog[1].body || !prog[1].total) {
-		free_buffers();
-		cleanup();
-		ERR("initial pointer allocation");
+	for (size_t i = 0; i < 2; i++) {
+		if (!prog[i].funcs || !prog[i].body || !prog[i].total) {
+			free_buffers();
+			cleanup();
+			ERR("prog[2] calloc()");
+		}
 	}
 	/* no memcpy for prog[0].funcs */
 	strmv(0, prog[0].body, prog_start_user);

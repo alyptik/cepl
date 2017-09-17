@@ -22,10 +22,9 @@ extern struct str_list ld_list;
 extern char **environ;
 
 /* silence linter */
-long syscall(long number, ...);
-int fexecve(int mem_fd, char *const argv[], char *const envp[]);
-size_t strnlen(char const *s, size_t maxlen);
-void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+long syscall(long __sysno, ...);
+int fexecve(int __fd, char *const __argv[], char *const __envp[]);
+void *mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset);
 
 enum var_type extract_type(char const *line, char const *id)
 {
