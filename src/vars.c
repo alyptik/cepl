@@ -295,8 +295,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char prog_end[] = "\n\treturn 0;\n}\n";
-	char print_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\" \", \"";
-	char println_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\",\"";
+	char print_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\", \", \"";
+	char println_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
 	char print_end[] = ");";
 	char *src_tmp, *tmp_ptr;
 	size_t off;
