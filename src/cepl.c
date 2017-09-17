@@ -99,31 +99,12 @@ static inline void write_file(void) {
 
 static inline void free_buffers(void)
 {
-	/* clean up input data */
+	/* clean up user data */
 	write_file();
 	if (line)
 		free(line);
 	if (types)
 		free(types);
-
-	/* free program structs */
-	if (prog[0].funcs)
-		free(prog[0].funcs);
-	if (prog[0].body)
-		free(prog[0].body);
-	if (prog[0].total)
-		free(prog[0].total);
-	if (prog[0].flags.list)
-		free(prog[0].flags.list);
-	if (prog[1].funcs)
-		free(prog[1].funcs);
-	if (prog[1].body)
-		free(prog[1].body);
-	if (prog[1].total)
-		free(prog[1].total);
-	if (prog[1].flags.list)
-		free(prog[1].flags.list);
-
 	/* free vectors */
 	if (cc_argv)
 		free_argv(cc_argv);
@@ -134,37 +115,28 @@ static inline void free_buffers(void)
 		}
 		free(vars.list);
 	}
-	free_str_list(&prog[0].hist);
-	free_str_list(&prog[0].lines);
-	free_str_list(&prog[1].hist);
-	free_str_list(&prog[1].lines);
 	free_str_list(&ids);
-
+	/* free program structs */
+	for (size_t i = 0; i < 2; i++) {
+		if (prog[i].funcs)
+			free(prog[i].funcs);
+		if (prog[i].body)
+			free(prog[i].body);
+		if (prog[i].total)
+			free(prog[i].total);
+		if (prog[i].flags.list)
+			free(prog[i].flags.list);
+		free_str_list(&prog[i].hist);
+		free_str_list(&prog[i].lines);
+	}
 	/* set pointers to NULL */
-	prog[0].body = NULL;
-	prog[0].funcs = NULL;
-	prog[0].total = NULL;
-	prog[0].flags.list = NULL;
-	prog[1].body = NULL;
-	prog[1].funcs = NULL;
-	prog[1].total = NULL;
-	prog[1].flags.list = NULL;
-	vars.list = NULL;
-	cc_argv = NULL;
-	types = NULL;
-	line = NULL;
-	prog[0].b_sz = 0;
-	prog[0].f_sz = 0;
-	prog[0].t_sz = 0;
-	prog[0].b_max = 1;
-	prog[0].f_max = 1;
-	prog[0].t_max = 1;
-	prog[1].b_sz = 0;
-	prog[1].f_sz = 0;
-	prog[1].t_sz = 0;
-	prog[1].b_max = 1;
-	prog[1].f_max = 1;
-	prog[1].t_max = 1;
+	prog[0].b_sz = prog[0].f_sz = prog[0].t_sz = prog[1].b_sz = prog[1].f_sz = prog[1].t_sz = 0;
+	prog[0].b_max = prog[0].f_max = prog[0].t_max = prog[1].b_max = prog[1].f_max = prog[1].t_max = 1;
+	prog[0].body = prog[0].funcs = prog[0].total = prog[1].body = prog[1].funcs = prog[1].total = NULL;
+	prog[0].flags.list = prog[1].flags.list = NULL;
+	/* `void *` cast needed to chain different ptr types */
+	vars.list = (void *)(line = (void *)(cc_argv = (void *)(types = NULL)));
+
 }
 
 static inline void cleanup(void)
@@ -177,7 +149,7 @@ static inline void cleanup(void)
 			char hist_pre[] = "error writing history to ";
 			char hist_full[sizeof hist_pre + strlen(hist_file)];
 			char *hist_ptr = hist_full;
-			memcpy(hist_ptr, hist_pre, sizeof hist_pre - 1);
+			memcpy(hist_ptr, hist_pre, sizeof hist_pre);
 			memcpy(hist_ptr + sizeof hist_pre - 1, hist_file, strlen(hist_file) + 1);
 			WARN(hist_ptr);
 		}
@@ -196,22 +168,16 @@ static inline void init_buffers(void)
 	prog[0].funcs = calloc(1, 1);
 	prog[0].body = calloc(1, strlen(prog_start_user) + 1);
 	prog[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
-	prog[0].f_sz = 1;
-	prog[0].b_sz = strlen(prog_start_user) + 1;
-	prog[0].t_sz = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
-	prog[0].f_max = 1;
-	prog[0].b_max = strlen(prog_start_user) + 1;
-	prog[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
+	prog[0].f_sz = prog[0].f_max = 1;
+	prog[0].b_sz = prog[0].b_max = strlen(prog_start_user) + 1;
+	prog[0].t_sz = prog[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
 	prog[1].funcs = calloc(1, strlen(prelude) + 1);
 	prog[1].body = calloc(1, strlen(prog_start) + 1);
 	prog[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
-	prog[1].f_sz = strlen(prelude) + 1;
-	prog[1].b_sz = strlen(prog_start) + 1;
-	prog[1].t_sz = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
-	prog[1].f_max = strlen(prelude) + 1;
-	prog[1].b_max = strlen(prog_start) + 1;
-	prog[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
+	prog[1].f_sz = prog[1].f_max = strlen(prelude) + 1;
+	prog[1].b_sz = prog[1].b_max = strlen(prog_start) + 1;
+	prog[1].t_sz = prog[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
 	/* sanity check */
 	if (!prog[0].funcs || !prog[0].body || !prog[0].total || !prog[1].funcs || !prog[1].body || !prog[1].total) {
 		free_buffers();
@@ -223,12 +189,11 @@ static inline void init_buffers(void)
 	memcpy(prog[1].funcs, prelude, strlen(prelude) + 1);
 	memcpy(prog[1].body, prog_start, strlen(prog_start) + 1);
 	/* init source history and flag lists */
-	init_list(&prog[0].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&prog[0].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_flag_list(&prog[0].flags);
-	init_list(&prog[1].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_list(&prog[1].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	init_flag_list(&prog[1].flags);
+	for (size_t i = 0; i < 2; i++) {
+		init_list(&prog[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_list(&prog[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_flag_list(&prog[i].flags);
+	}
 	init_var_list(&vars);
 }
 
@@ -266,45 +231,38 @@ static inline void resize_buffer(char **buf, size_t *buf_sz, size_t *buf_max, si
 
 static inline void build_funcs(void)
 {
-	append_str(&prog[0].lines, tok_buf, 0);
-	append_str(&prog[1].lines, tok_buf, 0);
-	append_str(&prog[0].hist, prog[0].funcs, 0);
-	append_str(&prog[1].hist, prog[1].funcs, 0);
-	append_flag(&prog[0].flags, NOT_IN_MAIN);
-	append_flag(&prog[1].flags, NOT_IN_MAIN);
-	/* generate function buffers */
-	strcat(prog[0].funcs, tok_buf);
-	strcat(prog[1].funcs, tok_buf);
-	strcat(prog[0].funcs, "\n");
-	strcat(prog[1].funcs, "\n");
+	for (size_t i = 0; i < 2; i++) {
+		append_str(&prog[i].lines, tok_buf, 0);
+		append_str(&prog[i].hist, prog[i].funcs, 0);
+		append_flag(&prog[i].flags, NOT_IN_MAIN);
+		/* generate function buffers */
+		strcat(prog[i].funcs, tok_buf);
+		strcat(prog[i].funcs, "\n");
+	}
 }
 
 static inline void build_body(void)
 {
-	append_str(&prog[0].lines, line, 0);
-	append_str(&prog[1].lines, line, 0);
-	append_str(&prog[0].hist, prog[0].body, 0);
-	append_str(&prog[1].hist, prog[1].body, 0);
-	append_flag(&prog[0].flags, IN_MAIN);
-	append_flag(&prog[1].flags, IN_MAIN);
-	strcat(prog[0].body, "\t");
-	strcat(prog[1].body, "\t");
-	strcat(prog[0].body, line);
-	strcat(prog[1].body, line);
+	for (size_t i = 0; i < 2; i++) {
+		append_str(&prog[i].lines, line, 0);
+		append_str(&prog[i].hist, prog[i].body, 0);
+		append_flag(&prog[i].flags, IN_MAIN);
+		strcat(prog[i].body, "\t");
+		strcat(prog[i].body, line);
+	}
 }
 
 static inline void build_final(char *argv[])
 {
 	/* finish building current iteration of source code */
-	memcpy(prog[0].total, prog[0].funcs, strlen(prog[0].funcs) + 1);
-	strcat(prog[0].total, prog[0].body);
-	memcpy(prog[1].total, prog[1].funcs, strlen(prog[1].funcs) + 1);
-	strcat(prog[1].total, prog[1].body);
-	/* print variable values */
-	if (track_flag)
-		print_vars(&vars, prog[1].total, cc_argv, argv);
-	strcat(prog[0].total, prog_end);
-	strcat(prog[1].total, prog_end);
+	for (size_t i = 0; i < 2; i++) {
+		memcpy(prog[i].total, prog[i].funcs, strlen(prog[i].funcs) + 1);
+		strcat(prog[i].total, prog[i].body);
+		/* print variable values */
+		if (track_flag && i == 1)
+			print_vars(&vars, prog[i].total, cc_argv, argv);
+		strcat(prog[i].total, prog_end);
+	}
 }
 
 static inline void pop_history(struct prog_src *prog)
@@ -344,7 +302,7 @@ static inline void dedup_history(void)
 		strip += strspn(line, " \t");
 		/* search forward and backward in history */
 		int cur_hist = where_history();
-		for (ptrdiff_t i = -1; i < 2; i += 2) {
+		for (int i = -1; i < 2; i += 2) {
 			/* seek backwords or forwards */
 			HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
 			while (history_search_prefix(strip, i) != -1) {
@@ -532,10 +490,10 @@ int main(int argc, char *argv[])
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		resize_buffer(&prog[0].body, &prog[0].b_sz, &prog[0].b_max, 3);
-		resize_buffer(&prog[0].total, &prog[0].t_sz, &prog[0].t_max, 3);
-		resize_buffer(&prog[1].body, &prog[0].b_sz, &prog[0].b_max, 3);
-		resize_buffer(&prog[1].total, &prog[0].t_sz, &prog[0].t_max, 3);
+		for (size_t i = 0; i < 2; i++) {
+			resize_buffer(&prog[i].body, &prog[i].b_sz, &prog[i].b_max, 3);
+			resize_buffer(&prog[i].total, &prog[i].t_sz, &prog[i].t_max, 3);
+		}
 
 		/* strip leading whitespace */
 		char *strip = line;
@@ -627,8 +585,9 @@ int main(int argc, char *argv[])
 				/* increment pointer to start of definition */
 				tok_buf += strspn(tok_buf, " \t");
 				/* re-allocate enough memory for strip + '\n' + '\n' + '\0' */
-				resize_buffer(&prog[0].funcs, &prog[0].f_sz, &prog[0].f_max, strlen(tok_buf) + 3);
-				resize_buffer(&prog[1].funcs, &prog[0].f_sz, &prog[0].f_max, strlen(tok_buf) + 3);
+				size_t tok_sz = strlen(tok_buf) + 3;
+				for (size_t i = 0; i < 2; i++)
+					resize_buffer(&prog[i].funcs, &prog[i].f_sz, &prog[i].f_max, tok_sz);
 				build_funcs();
 				/* TODO: find a workaround for var tracking getting in the way of functions */
 				/* if (track_flag && find_vars(tok_buf, &ids, &types)) */
@@ -645,8 +604,8 @@ int main(int argc, char *argv[])
 				/* break early if no history to pop */
 				if (prog[0].flags.cnt < 2 || prog[1].flags.cnt < 2)
 					break;
-				pop_history(&prog[0]);
-				pop_history(&prog[1]);
+				for (size_t i = 0; i < 2; i++)
+					pop_history(&prog[i]);
 				/* break early if tracking disabled */
 				if (track_flag)
 					break;
@@ -685,8 +644,8 @@ int main(int argc, char *argv[])
 				strip[i] = '\0';
 			/* start building program source */
 			build_body();
-			strcat(prog[0].body, "\n");
-			strcat(prog[1].body, "\n");
+			for (size_t i = 0; i < 2; i++)
+				strcat(prog[i].body, "\n");
 			break;
 
 		default:
@@ -699,17 +658,15 @@ int main(int argc, char *argv[])
 			case ';': /* fallthough */
 			case '\\':
 				build_body();
-				/* remove extra trailing ';' */
-				for (size_t i = strlen(prog[0].body) - 1; i > 0 && prog[0].body[i - 1] == ';'; i--) {
-					if (prog[0].body[i] == ';')
-						prog[0].body[i] = '\0';
+				for (size_t i = 0; i < 2; i++) {
+					/* remove extra trailing ';' */
+					size_t len = strlen(prog[i].body) - 1;
+					for (size_t j = len; i > 0 && prog[i].body[j - 1] == ';'; j--) {
+						if (prog[i].body[j] == ';')
+							prog[i].body[j] = '\0';
+					}
+					strcat(prog[i].body, "\n");
 				}
-				for (size_t i = strlen(prog[1].body) - 1; i > 0 && prog[1].body[i - 1] == ';'; i--) {
-					if (prog[1].body[i] == ';')
-						prog[1].body[i] = '\0';
-				}
-				strcat(prog[0].body, "\n");
-				strcat(prog[1].body, "\n");
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
 					gen_var_list(&vars, &ids, &types);
@@ -717,8 +674,8 @@ int main(int argc, char *argv[])
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
 				build_body();
-				strcat(prog[0].body, ";\n");
-				strcat(prog[1].body, ";\n");
+				for (size_t i = 0; i < 2; i++)
+					strcat(prog[i].body, ";\n");
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
 					gen_var_list(&vars, &ids, &types);
