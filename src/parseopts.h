@@ -93,7 +93,7 @@ static inline ptrdiff_t free_str_list(struct str_list *plist)
 static inline void init_list(struct str_list *list_struct, char *init_str)
 {
 	list_struct->cnt = 0;
-	list_struct->max = 0;
+	list_struct->max = 1;
 	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
 		ERR("error during initial list_ptr calloc()");
 	/* exit early if NULL */
@@ -111,8 +111,9 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
-		list_struct->max = list_struct->cnt * 2;
-		if (!(tmp = realloc(list_struct->list, (sizeof *list_struct->list) * list_struct->max)))
+		/* double until size is reached */
+		while ((list_struct->max *= 2) < list_struct->cnt);
+		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
 			ERRARR("list_ptr", list_struct->cnt - 1);
 		list_struct->list = tmp;
 	}
@@ -128,7 +129,7 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 static inline void init_flag_list(struct flag_list *list_struct)
 {
 	list_struct->cnt = 0;
-	list_struct->max = 0;
+	list_struct->max = 1;
 	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
 		ERR("error during initial flag_list calloc()");
 	list_struct->cnt++;
@@ -141,7 +142,8 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
-		list_struct->max = list_struct->cnt * 2;
+		/* double until size is reached */
+		while ((list_struct->max *= 2) < list_struct->cnt);
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
 			ERRARR("flag_list", list_struct->cnt);
 		list_struct->list = tmp;
