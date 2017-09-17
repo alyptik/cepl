@@ -84,14 +84,16 @@ extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
 
-static inline void concat(char **dest, char const *restrict src) {
+static inline void strmv(ptrdiff_t off, char *dest, char const *restrict src) {
 	/* sanity checks */
-	if (!dest || !*dest || !src)
-		ERRX("NULL pointer passed to concat()");
+	if (!dest || !src)
+		ERRX("NULL pointer passed to strmv(-1, )");
 	char *dest_ptr, *src_ptr;
 	ptrdiff_t src_sz;
-	if (!(dest_ptr = strchr(*dest, 0)) || !(src_ptr = strchr(src, 0)))
-		ERR("concat() string not null-terminated");
+	if (!(dest_ptr = strchr(dest, 0)) || !(src_ptr = strchr(src, 0)))
+		ERR("strmv(-1, ) string not null-terminated");
+	if (off >= 0)
+		dest_ptr = dest + off;
 	src_sz = src_ptr - src;
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
@@ -160,8 +162,8 @@ static inline void cleanup(void)
 			char hist_pre[] = "error writing history to ";
 			char hist_full[sizeof hist_pre + strlen(hist_file)];
 			char *hist_ptr = hist_full;
-			memcpy(hist_ptr, hist_pre, sizeof hist_pre);
-			memcpy(hist_ptr + sizeof hist_pre - 1, hist_file, strlen(hist_file) + 1);
+			strmv(-1, hist_ptr, hist_pre);
+			strmv(sizeof hist_pre - 1, hist_ptr, hist_file);
 			WARN(hist_ptr);
 		}
 	}
@@ -196,9 +198,9 @@ static inline void init_buffers(void)
 		ERR("initial pointer allocation");
 	}
 	/* no memcpy for prog[0].funcs */
-	memcpy(prog[0].body, prog_start_user, strlen(prog_start_user) + 1);
-	memcpy(prog[1].funcs, prelude, strlen(prelude) + 1);
-	memcpy(prog[1].body, prog_start, strlen(prog_start) + 1);
+	strmv(0, prog[0].body, prog_start_user);
+	strmv(0, prog[1].funcs, prelude);
+	strmv(0, prog[1].body, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
 		init_list(&prog[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -250,8 +252,8 @@ static inline void build_funcs(void)
 		append_str(&prog[i].hist, prog[i].funcs, 0);
 		append_flag(&prog[i].flags, NOT_IN_MAIN);
 		/* generate function buffers */
-		concat(&prog[i].funcs, tok_buf);
-		concat(&prog[i].funcs, "\n");
+		strmv(-1, prog[i].funcs, tok_buf);
+		strmv(-1, prog[i].funcs, "\n");
 	}
 }
 
@@ -261,8 +263,8 @@ static inline void build_body(void)
 		append_str(&prog[i].lines, line, 0);
 		append_str(&prog[i].hist, prog[i].body, 0);
 		append_flag(&prog[i].flags, IN_MAIN);
-		concat(&prog[i].body, "\t");
-		concat(&prog[i].body, line);
+		strmv(-1, prog[i].body, "\t");
+		strmv(-1, prog[i].body, line);
 	}
 }
 
@@ -270,12 +272,12 @@ static inline void build_final(char *argv[])
 {
 	/* finish building current iteration of source code */
 	for (size_t i = 0; i < 2; i++) {
-		memcpy(prog[i].total, prog[i].funcs, strlen(prog[i].funcs) + 1);
-		concat(&prog[i].total, prog[i].body);
+		strmv(0, prog[i].total, prog[i].funcs);
+		strmv(-1, prog[i].total, prog[i].body);
 		/* print variable values */
 		if (track_flag && i == 1)
 			print_vars(&vars, prog[i].total, cc_argv, argv);
-		concat(&prog[i].total, prog_end);
+		strmv(-1, prog[i].total, prog_end);
 	}
 }
 
@@ -284,14 +286,14 @@ static inline void pop_history(struct prog_src *prgm)
 	switch(prgm->flags.list[prgm->flags.cnt - 1]) {
 	case NOT_IN_MAIN:
 		prgm->flags.cnt = prgm->hist.cnt = --prgm->lines.cnt;
-		memcpy(prgm->funcs, prgm->hist.list[prgm->hist.cnt], strlen(prgm->hist.list[prgm->hist.cnt]) + 1);
+		strmv(0, prgm->funcs, prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
 		prgm->flags.cnt = prgm->hist.cnt = --prgm->lines.cnt;
-		memcpy(prgm->body, prgm->hist.list[prgm->hist.cnt], strlen(prgm->hist.list[prgm->hist.cnt]) + 1);
+		strmv(0, prgm->body, prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
@@ -410,11 +412,11 @@ int main(int argc, char *argv[])
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "") != 0) {
 		hist_len = strlen(home_env);
-		memcpy(hist_file, home_env, hist_len);
+		strmv(0, hist_file, home_env);
 		hist_file[hist_len++] = '/';
 	}
 	/* build history fihist_lename */
-	memcpy(hist_file + hist_len, hist_name, sizeof hist_name);
+	strmv(hist_len, hist_file, hist_name);
 
 	/* initialize source buffers */
 	init_buffers();
@@ -447,8 +449,8 @@ int main(int argc, char *argv[])
 			char hist_pre[] = "error reading history from ";
 			char hist_full[sizeof hist_pre + strlen(hist_file)];
 			char *hist_ptr = hist_full;
-			memcpy(hist_ptr, hist_pre, sizeof hist_pre - 1);
-			memcpy(hist_ptr + sizeof hist_pre - 1, hist_file, strlen(hist_file) + 1);
+			strmv(0, hist_ptr, hist_pre);
+			strmv(sizeof hist_pre - 1, hist_ptr, hist_file);
 			WARN(hist_ptr);
 		}
 	}
@@ -623,7 +625,7 @@ int main(int argc, char *argv[])
 			/* start building program source */
 			build_body();
 			for (size_t i = 0; i < 2; i++)
-				concat(&prog[i].body, "\n");
+				strmv(-1, prog[i].body, "\n");
 			break;
 
 		default:
@@ -643,7 +645,7 @@ int main(int argc, char *argv[])
 						if (prog[i].body[j] == ';')
 							prog[i].body[j] = '\0';
 					}
-					concat(&prog[i].body, "\n");
+					strmv(-1, prog[i].body, "\n");
 				}
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
@@ -653,7 +655,7 @@ int main(int argc, char *argv[])
 				/* append ';' if no trailing '}', ';', or '\' */
 				build_body();
 				for (size_t i = 0; i < 2; i++)
-					concat(&prog[i].body, ";\n");
+					strmv(-1, prog[i].body, ";\n");
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
 					gen_var_list(&vars, &ids, &types);
