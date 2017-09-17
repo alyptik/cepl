@@ -17,9 +17,6 @@
 #include "readline.h"
 #include "vars.h"
 
-/* TODO: change history filename to a non-hardcoded string */
-#define HIST_NAME "./.cepl_history"
-
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#define _DEFAULT_SOURCE\n"
@@ -65,6 +62,8 @@ static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
 static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
 	"{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
+/* TODO: change history filename to a non-hardcoded string */
+static char hist_name[] = "./.cepl_history";
 /* line and token buffers */
 static char *line, *tok_buf;
 /* compiler arg array */
@@ -344,7 +343,7 @@ static inline void dedup_history(void)
 		char *strip = line;
 		strip += strspn(line, " \t");
 		/* search forward and backward in history */
-		ptrdiff_t cur_hist = where_history();
+		int cur_hist = where_history();
 		for (ptrdiff_t i = -1; i < 2; i += 2) {
 			/* seek backwords or forwards */
 			HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
@@ -465,7 +464,7 @@ int main(int argc, char *argv[])
 {
 	struct stat hist_stat;
 	size_t len = 0;
-	size_t buf_sz = strlen(HIST_NAME) + 1;
+	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
 	char const optstring[] = "hptvwc:l:I:o:";
 	char const *const home_env = getenv("HOME");
@@ -483,7 +482,7 @@ int main(int argc, char *argv[])
 		hist_file[len++] = '/';
 	}
 	/* build history filename */
-	memcpy(hist_file + len, HIST_NAME, strlen(HIST_NAME) + 1);
+	memcpy(hist_file + len, hist_name, sizeof hist_name);
 
 	/* initialize source buffers */
 	init_buffers();
