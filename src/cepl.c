@@ -339,53 +339,20 @@ static inline void sig_handler(int sig)
 	exit(sig);
 }
 
-/* signal handlers to make sure that history is written and cleanup is done */
+/* signal handlers to make sure that history is written out */
 static inline void reg_handlers(void)
 {
-	if (signal(SIGHUP, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGHUP handler");
-	if (signal(SIGINT, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGINT handler");
-	if (signal(SIGQUIT, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGQUIT handler");
-	if (signal(SIGILL, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGILL handler");
-	if (signal(SIGABRT, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGABRT handler");
-	if (signal(SIGFPE, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGFPE handler");
-	if (signal(SIGSEGV, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGSEGV handler");
-	if (signal(SIGPIPE, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGPIPE handler");
-	if (signal(SIGALRM, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGALRM handler");
-	if (signal(SIGTERM, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGTERM handler");
-	if (signal(SIGUSR1, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGUSR1 handler");
-	if (signal(SIGUSR2, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGUSR2 handler");
-	if (signal(SIGBUS, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGBUS handler");
-	if (signal(SIGPOLL, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGPOLL handler");
-	if (signal(SIGPROF, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGPROF handler");
-	if (signal(SIGSYS, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGSYS handler");
-	if (signal(SIGTRAP, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGTRAP handler");
-	if (signal(SIGVTALRM, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGVTALRM handler");
-	if (signal(SIGXCPU, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGXCPU handler");
-	if (signal(SIGXFSZ, &sig_handler) == SIG_ERR)
-		WARN("unable to register SIGXFSZ handler");
-	if (atexit(&cleanup))
-		WARN("atexit(&cleanup)");
-	if (atexit(&free_buffers))
-		WARN("atexit(&free_buffers)");
+	int sigs[] = {
+		SIGHUP, SIGINT, SIGQUIT, SIGILL,
+		SIGABRT, SIGFPE, SIGSEGV, SIGPIPE,
+		SIGALRM, SIGTERM, SIGUSR1, SIGUSR2,
+		SIGBUS, SIGPOLL, SIGPROF, SIGSYS,
+		SIGTRAP, SIGVTALRM, SIGXCPU, SIGXFSZ,
+	};
+	for (size_t i = 0; i < sizeof sigs / sizeof sigs[0]; i++) {
+		if (signal(sigs[i], &sig_handler) == SIG_ERR)
+			WARN("unable to register signal handler");
+	}
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_buffers))
