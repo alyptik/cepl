@@ -92,7 +92,7 @@ static inline void write_file(void) {
 	FILE *output = (FILE *)ofile;
 	fwrite(prog[1].total, strlen(prog[1].total), 1, output);
 	fputc('\n', output);
-	fflush(output);
+	fflush(NULL);
 	fclose(output);
 	ofile = NULL;
 }
@@ -267,26 +267,26 @@ static inline void build_final(char *argv[])
 	}
 }
 
-static inline void pop_history(struct prog_src *prog)
+static inline void pop_history(struct prog_src *prgm)
 {
-	switch(prog->flags.list[prog->flags.cnt - 1]) {
+	switch(prgm->flags.list[prgm->flags.cnt - 1]) {
 	case NOT_IN_MAIN:
-		prog->flags.cnt--;
-		prog->hist.cnt--;
-		prog->lines.cnt--;
-		memcpy(prog->funcs, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
-		free(prog->hist.list[prog->hist.cnt]);
-		free(prog->lines.list[prog->lines.cnt]);
-		prog->hist.list[prog->hist.cnt] = prog->lines.list[prog->lines.cnt] = NULL;
+		prgm->flags.cnt--;
+		prgm->hist.cnt--;
+		prgm->lines.cnt--;
+		memcpy(prgm->funcs, prgm->hist.list[prgm->hist.cnt], strlen(prgm->hist.list[prgm->hist.cnt]) + 1);
+		free(prgm->hist.list[prgm->hist.cnt]);
+		free(prgm->lines.list[prgm->lines.cnt]);
+		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
-		prog->flags.cnt--;
-		prog->hist.cnt--;
-		prog->lines.cnt--;
-		memcpy(prog->body, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
-		free(prog->hist.list[prog->hist.cnt]);
-		free(prog->lines.list[prog->lines.cnt]);
-		prog->hist.list[prog->hist.cnt] = prog->lines.list[prog->lines.cnt] = NULL;
+		prgm->flags.cnt--;
+		prgm->hist.cnt--;
+		prgm->lines.cnt--;
+		memcpy(prgm->body, prgm->hist.list[prgm->hist.cnt], strlen(prgm->hist.list[prgm->hist.cnt]) + 1);
+		free(prgm->hist.list[prgm->hist.cnt]);
+		free(prgm->lines.list[prgm->lines.cnt]);
+		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
 	default:; /* noop */
@@ -387,26 +387,26 @@ static inline char *read_line(void)
 int main(int argc, char *argv[])
 {
 	struct stat hist_stat;
-	size_t len = 0;
+	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
 	char const optstring[] = "hptvwc:l:I:o:";
 	char const *const home_env = getenv("HOME");
 
-	/* add length of “$HOME/” if home_env is non-NULL */
+	/* add hist_length of “$HOME/” if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "") != 0)
 		buf_sz += strlen(home_env) + 1;
-	/* prepend "~/" to history filename ("~/.cepl_history" by default) */
+	/* prepend "~/" to history fihist_lename ("~/.cepl_history" by default) */
 	if (!(hist_file = calloc(1, buf_sz)))
 		ERR("hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "") != 0) {
-		len = strlen(home_env);
-		memcpy(hist_file, home_env, len);
-		hist_file[len++] = '/';
+		hist_len = strlen(home_env);
+		memcpy(hist_file, home_env, hist_len);
+		hist_file[hist_len++] = '/';
 	}
-	/* build history filename */
-	memcpy(hist_file + len, hist_name, sizeof hist_name);
+	/* build history fihist_lename */
+	memcpy(hist_file + hist_len, hist_name, sizeof hist_name);
 
 	/* initialize source buffers */
 	init_buffers();
