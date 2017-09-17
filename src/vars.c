@@ -392,8 +392,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			strchr(print_tmp, '_')[0] = 'f';
 			break;
 		case T_PTR:
+			strchr(print_tmp, '_')[0] = '*';
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '0';
@@ -422,15 +422,17 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			ERR(vars->list[i].key);
 			break;
 		case T_INT:
+			/* cast integral type to long long */
 			memcpy(src_tmp + off, "\", (long long)", 14);
 			off += 14;
 			break;
 		case T_DBL:
+			/* cast floating type to long double */
 			memcpy(src_tmp + off, "\", (long double)", 16);
 			off += 16;
 			break;
 		case T_OTHER:
-			/* take the address of variable if unknown type */
+			/* take the address of variable if type unknown */
 			memcpy(src_tmp + off, "\", &", 4);
 			off += 4;
 			break;

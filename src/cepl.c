@@ -216,6 +216,9 @@ static inline void resize_buffer(char **buf, size_t *buf_sz, size_t *buf_max, si
 		/* realloc only if buf_max is less than current size */
 		if (*buf_sz < *buf_max)
 			return;
+		/* check if size too large */
+		if (*buf_sz > MAX)
+			ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((*buf_max *= 2) < *buf_sz);
 		/* current length + line length + extra characters + \0 */
@@ -274,8 +277,7 @@ static inline void pop_history(struct prog_src *prog)
 		memcpy(prog->funcs, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
 		free(prog->lines.list[prog->lines.cnt]);
-		prog->hist.list[prog->hist.cnt] = NULL;
-		prog->lines.list[prog->lines.cnt] = NULL;
+		prog->hist.list[prog->hist.cnt] = prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
 		prog->flags.cnt--;
@@ -284,8 +286,7 @@ static inline void pop_history(struct prog_src *prog)
 		memcpy(prog->body, prog->hist.list[prog->hist.cnt], strlen(prog->hist.list[prog->hist.cnt]) + 1);
 		free(prog->hist.list[prog->hist.cnt]);
 		free(prog->lines.list[prog->lines.cnt]);
-		prog->hist.list[prog->hist.cnt] = NULL;
-		prog->lines.list[prog->lines.cnt] = NULL;
+		prog->hist.list[prog->hist.cnt] = prog->lines.list[prog->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
 	default:; /* noop */
@@ -318,8 +319,10 @@ static inline void dedup_history(void)
 				remove_history(where_history());
 				/* free application data */
 				histdata_t data = free_history_entry(ent);
-				if (data)
+				if (data) {
 					free(data);
+					data = NULL;
+				}
 			}
 			history_set_pos(cur_hist);
 		}
@@ -392,8 +395,10 @@ static inline void reg_handlers(void)
 static inline char *read_line(void)
 {
 	/* cleanup old buffer */
-	if (line)
+	if (line) {
 		free(line);
+		line = NULL;
+	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
 		line = readline("\n>>> ");
@@ -604,17 +609,21 @@ int main(int argc, char *argv[])
 				if (!track_flag)
 					break;
 				/* re-init vars */
-				if (types)
+				if (types) {
 					free(types);
+					types = NULL;
+				}
 				if (vars.list) {
 					for (size_t i = 0; i < vars.cnt; i++) {
-						if (vars.list[i].key)
+						if (vars.list[i].key) {
 							free(vars.list[i].key);
+							vars.list[i].key = NULL;
+						}
+
 					}
 					free(vars.list);
+					vars.list = NULL;
 				}
-				types = NULL;
-				vars.list = NULL;
 				free_str_list(&ids);
 				init_var_list(&vars);
 				/* add vars from previous lines */

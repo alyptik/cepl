@@ -44,6 +44,9 @@ static inline void append_var(struct var_list *list_struct, char const *key, enu
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
+		/* check if size too large */
+		if (list_struct->cnt > MAX)
+			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((list_struct->max *= 2) < list_struct->cnt);
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max))) {

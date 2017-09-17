@@ -46,6 +46,7 @@
 	";w[arnings]:\t\tToggle -w (warnings) flag"
 /* set pipe buffer byte count to page size */
 #define COUNT sysconf(_SC_PAGESIZE)
+#define MAX (SIZE_MAX / 2 - 1)
 
 /* silence linter */
 int getopt(int argc, char *const argv[], char const *optstring);
@@ -70,7 +71,7 @@ static inline size_t free_argv(char **argv)
 
 static inline ptrdiff_t free_str_list(struct str_list *plist)
 {
-	ptrdiff_t null_cnt = 0;
+	size_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
 	if (!plist || !plist->list)
 		return -1;
@@ -111,6 +112,9 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
+		/* check if size too large */
+		if (list_struct->cnt > MAX)
+			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((list_struct->max *= 2) < list_struct->cnt);
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
@@ -142,6 +146,9 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
+		/* check if size too large */
+		if (list_struct->cnt > MAX)
+			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((list_struct->max *= 2) < list_struct->cnt);
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
