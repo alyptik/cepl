@@ -10,9 +10,9 @@
 #include <getopt.h>
 
 /* silence linter */
-int getopt_long(int argc, char *const argv[], char const *optstring, struct option const *longopts, int *longindex);
-FILE *fdopen(int fd, char const *mode);
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+int getopt_long(int ___argc, char *const ___argv[], char const *__shortopts, struct option const *__longopts, int *__longind);
+FILE *fdopen(int __fd, char const *__modes);
+ssize_t getline(char **__lineptr, size_t *__n, FILE *__stream);
 
 /* global toggle flag for warnings and completions */
 bool warn_flag = false, parse_flag = true, track_flag = true, out_flag = false;
@@ -86,28 +86,33 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 		/* switch compiler */
 		case 'c':
 			if (!cc_list.list[0][0]) {
-				/* copy argument to cc_list.list[0] */
-				if (!(tmp_arg = realloc(cc_list.list[0], strlen(optarg) + 1)))
-					ERRARR("cc_list.list", (size_t)0);
-				cc_list.list[0] = tmp_arg;
-				memset(cc_list.list[0], 0, strlen(optarg) + 1);
-				memcpy(cc_list.list[0], optarg, strlen(optarg) + 1);
+				size_t cc_len = strlen(optarg) + 1;
+				size_t pval_len = strlen("FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL") + 1;
+				/* realloc if needed */
+				if (cc_len > pval_len) {
+					if (!(tmp_arg = realloc(cc_list.list[0], cc_len)))
+						ERRARR("cc_list.list", (size_t)0);
+					/* copy argument to cc_list.list[0] */
+					cc_list.list[0] = tmp_arg;
+					memset(cc_list.list[0], 0, strlen(optarg) + 1);
+				}
+				strmv(0, cc_list.list[0], optarg);
 			}
 			break;
 
 		/* header directory flag */
 		case 'I':
 			append_str(&cc_list, optarg, 2);
-			memcpy(cc_list.list[cc_list.cnt - 1], "-I", 2);
+			strmv(0, cc_list.list[cc_list.cnt - 1], "-I");
 			break;
 
 		/* dynamic library flag */
 		case 'l':
 			do {
 				char buf[strlen(optarg) + 12];
-				memcpy(buf, "/lib/lib", 8);
-				memcpy(buf + 8, optarg, strlen(optarg));
-				memcpy(buf + 8 + strlen(optarg), ".so", 4);
+				strmv(0, buf, "/lib/lib");
+				strmv(CONCAT, buf, optarg);
+				strmv(CONCAT, buf, ".so");
 				append_str(&lib_list, buf, 0);
 				append_str(&ld_list, optarg, 2);
 				memcpy(ld_list.list[ld_list.cnt - 1], "-l", 2);
@@ -168,7 +173,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 
 	/* default to gcc as a compiler */
 	if (!cc_list.list[0][0])
-		memcpy(cc_list.list[0], "gcc", 4);
+		strmv(0, cc_list.list[0], "gcc");
 	/* finalize argument lists */
 	for (size_t i = 0; cc_arg_list[i]; i++)
 		append_str(&cc_list, cc_arg_list[i], 0);

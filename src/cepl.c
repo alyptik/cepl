@@ -10,6 +10,7 @@
 #	define _GNU_SOURCE
 #endif
 
+#include "errs.h"
 #include "compile.h"
 #include "parseopts.h"
 #include "readline.h"
@@ -84,20 +85,6 @@ extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
 
-static inline void strmv(ptrdiff_t off, char *dest, char const *restrict src) {
-	/* sanity checks */
-	if (!dest || !src)
-		ERRX("NULL pointer passed to strmv(-1, )");
-	char *dest_ptr, *src_ptr;
-	ptrdiff_t src_sz;
-	if (!(dest_ptr = strchr(dest, 0)) || !(src_ptr = strchr(src, 0)))
-		ERR("strmv(-1, ) string not null-terminated");
-	if (off >= 0)
-		dest_ptr = dest + off;
-	src_sz = src_ptr - src;
-	memcpy(dest_ptr, src, (size_t)src_sz + 1);
-}
-
 static inline void write_file(void) {
 	/* return early if no file open */
 	if (!ofile)
@@ -162,7 +149,7 @@ static inline void cleanup(void)
 			char hist_pre[] = "error writing history to ";
 			char hist_full[sizeof hist_pre + strlen(hist_file)];
 			char *hist_ptr = hist_full;
-			strmv(-1, hist_ptr, hist_pre);
+			strmv(CONCAT, hist_ptr, hist_pre);
 			strmv(sizeof hist_pre - 1, hist_ptr, hist_file);
 			WARN(hist_ptr);
 		}
@@ -252,8 +239,8 @@ static inline void build_funcs(void)
 		append_str(&prog[i].hist, prog[i].funcs, 0);
 		append_flag(&prog[i].flags, NOT_IN_MAIN);
 		/* generate function buffers */
-		strmv(-1, prog[i].funcs, tok_buf);
-		strmv(-1, prog[i].funcs, "\n");
+		strmv(CONCAT, prog[i].funcs, tok_buf);
+		strmv(CONCAT, prog[i].funcs, "\n");
 	}
 }
 
@@ -263,8 +250,8 @@ static inline void build_body(void)
 		append_str(&prog[i].lines, line, 0);
 		append_str(&prog[i].hist, prog[i].body, 0);
 		append_flag(&prog[i].flags, IN_MAIN);
-		strmv(-1, prog[i].body, "\t");
-		strmv(-1, prog[i].body, line);
+		strmv(CONCAT, prog[i].body, "\t");
+		strmv(CONCAT, prog[i].body, line);
 	}
 }
 
@@ -273,11 +260,11 @@ static inline void build_final(char *argv[])
 	/* finish building current iteration of source code */
 	for (size_t i = 0; i < 2; i++) {
 		strmv(0, prog[i].total, prog[i].funcs);
-		strmv(-1, prog[i].total, prog[i].body);
+		strmv(CONCAT, prog[i].total, prog[i].body);
 		/* print variable values */
 		if (track_flag && i == 1)
 			print_vars(&vars, prog[i].total, cc_argv, argv);
-		strmv(-1, prog[i].total, prog_end);
+		strmv(CONCAT, prog[i].total, prog_end);
 	}
 }
 
@@ -625,7 +612,7 @@ int main(int argc, char *argv[])
 			/* start building program source */
 			build_body();
 			for (size_t i = 0; i < 2; i++)
-				strmv(-1, prog[i].body, "\n");
+				strmv(CONCAT, prog[i].body, "\n");
 			break;
 
 		default:
@@ -645,7 +632,7 @@ int main(int argc, char *argv[])
 						if (prog[i].body[j] == ';')
 							prog[i].body[j] = '\0';
 					}
-					strmv(-1, prog[i].body, "\n");
+					strmv(CONCAT, prog[i].body, "\n");
 				}
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
@@ -655,7 +642,7 @@ int main(int argc, char *argv[])
 				/* append ';' if no trailing '}', ';', or '\' */
 				build_body();
 				for (size_t i = 0; i < 2; i++)
-					strmv(-1, prog[i].body, ";\n");
+					strmv(CONCAT, prog[i].body, ";\n");
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
 					gen_var_list(&vars, &ids, &types);

@@ -9,11 +9,8 @@
 #define COMPILE_H
 
 #include "defs.h"
+#include "errs.h"
 #include <fcntl.h>
-#include <stddef.h>
-#include <unistd.h>
-
-#define COUNT sysconf(_SC_PAGESIZE)
 
 /* prototypes */
 int compile(char const *src, char *const cc_args[], char *const exec_args[]);

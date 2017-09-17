@@ -8,42 +8,38 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#include <error.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <unistd.h>
 
-/* error macros */
-#define ERR(X)		do { \
-				fprintf(stderr, "\n%s: \"%s\" line %d\n", strerror(errno), (X), __LINE__); \
-				exit(1); \
-			} while (0)
-#define ERRX(X)		do { \
-				fprintf(stderr, "\n\"%s\" line %d\n", (X), __LINE__); \
-				exit(1); \
-			} while (0)
-#define WARN(X)		do { \
-				fprintf(stderr, "\n%s: \"%s\" line %d\n", strerror(errno), (X), __LINE__); \
-			} while (0)
-#define WARNX(X)	do { \
-				fprintf(stderr, "\n\"%s\" line %d\n", (X), __LINE__); \
-			} while (0)
-/* array error macros */
-#define ERRARR(X, Y)	do { \
-				fprintf(stderr, "\n%s: \"%s[%zu]\" line %d\n", strerror(errno), (X), (Y), __LINE__); \
-				exit(1); \
-			} while (0)
-#define ERRXARR(X, Y)	do { \
-				fprintf(stderr, "\n\"%s[%zu]\" line %d\n", (X), (Y), __LINE__); \
-				exit(1); \
-			} while (0)
-#define WARNARR(X, Y)	do { \
-				fprintf(stderr, "\n%s: \"%s[%zu]\" line %d\n", strerror(errno), (X), (Y), __LINE__); \
-			} while (0)
-#define WARNXARR(X, Y)	do { \
-				fprintf(stderr, "\n\"%s[%zu]\" line %d\n", (X), (Y), __LINE__); \
-			} while (0)
+/* global version and usage strings */
+#define VERSION_STRING	("CEPL v4.2.2")
+#define USAGE_STRING	("[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
+	"-h,--help:\t\tShow help/usage information.\n\t" \
+	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
+	"-t,--tracking:\t\tToggle variable tracking.\n\t" \
+	"-v,--version:\t\tShow version information.\n\t" \
+	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
+	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
+	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
+	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t" \
+	"-o:\t\t\tName of the file to output source to.\n\n" \
+	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
+	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
+	";h[elp]:\t\tShow help\n\t" \
+	";i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t" \
+	";m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t" \
+	";o[utput]:\t\tToggle -o (output file) flag\n\t" \
+	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
+	";q[uit]:\t\tExit CEPL\n\t" \
+	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
+	";t[racking]:\t\tToggle variable tracking.\n\t" \
+	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
+	";w[arnings]:\t\tToggle -w (warnings) flag")
+/* `strmv() `concat constant */
+#define CONCAT		(-1)
+/* `malloc()` size ceiling */
+#define MAX		(SIZE_MAX / 2 - 1)
+/* page size for buffer count */
+#define COUNT		(sysconf(_SC_PAGESIZE))
 
 /* flag constants for type of source buffer */
 enum src_flag {
@@ -89,6 +85,5 @@ struct prog_src {
 	struct str_list hist, lines;
 	struct flag_list flags;
 };
-
 
 #endif

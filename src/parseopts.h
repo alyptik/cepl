@@ -9,6 +9,7 @@
 #define PARSEOPTS_H
 
 #include "defs.h"
+#include "errs.h"
 #include <fcntl.h>
 #include <gelf.h>
 #include <libelf.h>
@@ -17,42 +18,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/wait.h>
-
-/* global version and usage strings */
-#define VERSION_STRING "CEPL v4.2.2"
-#define USAGE_STRING "[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
-	"-h,--help:\t\tShow help/usage information.\n\t" \
-	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
-	"-t,--tracking:\t\tToggle variable tracking.\n\t" \
-	"-v,--version:\t\tShow version information.\n\t" \
-	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
-	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
-	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
-	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t" \
-	"-o:\t\t\tName of the file to output source to.\n\n" \
-	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
-	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
-	";h[elp]:\t\tShow help\n\t" \
-	";i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t" \
-	";m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t" \
-	";o[utput]:\t\tToggle -o (output file) flag\n\t" \
-	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
-	";q[uit]:\t\tExit CEPL\n\t" \
-	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
-	";t[racking]:\t\tToggle variable tracking.\n\t" \
-	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
-	";w[arnings]:\t\tToggle -w (warnings) flag"
-/* set pipe buffer byte count to page size */
-#define COUNT sysconf(_SC_PAGESIZE)
-#define MAX (SIZE_MAX / 2 - 1)
+#include <unistd.h>
 
 /* prototypes */
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);
 void read_syms(struct str_list *tokens, char const *elf_file);
 void parse_libs(struct str_list *symbols, char *libs[]);
 
+/* recursive free */
 static inline size_t free_argv(char **argv)
 {
 	size_t count;
@@ -62,6 +36,21 @@ static inline size_t free_argv(char **argv)
 		free(argv[count]);
 	free(argv);
 	return count;
+}
+
+/* emulate `strcat()` if `off < 0`, else copy `src` to `dest` at offset `off` */
+static inline void strmv(ptrdiff_t off, char *dest, char const *restrict src) {
+	/* sanity checks */
+	if (!dest || !src)
+		ERRX("NULL pointer passed to strmv()");
+	char *dest_ptr, *src_ptr;
+	ptrdiff_t src_sz;
+	if (!(dest_ptr = strchr(dest, 0)) || !(src_ptr = strchr(src, 0)))
+		ERR("strmv() string not null-terminated");
+	if (off >= 0)
+		dest_ptr = dest + off;
+	src_sz = src_ptr - src;
+	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
 static inline ptrdiff_t free_str_list(struct str_list *plist)

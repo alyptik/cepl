@@ -7,10 +7,10 @@
 
 #include "compile.h"
 #include "parseopts.h"
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
 #include <linux/memfd.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
 
 /* global linker arguments struct */
 struct str_list ld_list;
@@ -28,8 +28,8 @@ static char *const ld_alt_list[] = {
 extern char **environ;
 
 /* silence linter */
-long syscall(long number, ...);
-int fexecve(int mem_fd, char *const argv[], char *const envp[]);
+long syscall(long __sysno, ...);
+int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 
 int compile(char const *src, char *const cc_args[], char *const exec_args[])
 {
