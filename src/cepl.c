@@ -331,7 +331,6 @@ static inline void dedup_history(void)
 
 static inline void sig_handler(int sig)
 {
-	dedup_history();
 	free_buffers();
 	cleanup();
 	exit(sig);
@@ -384,14 +383,14 @@ static inline void reg_handlers(void)
 		WARN("atexit(&cleanup)");
 	if (atexit(&free_buffers))
 		WARN("atexit(&free_buffers)");
-	if (atexit(&dedup_history))
-		WARN("atexit(&dedup_history)");
+	/* if (atexit(&dedup_history)) */
+	/*         WARN("atexit(&dedup_history)"); */
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_buffers))
 		WARN("at_quick_exit(&free_buffers)");
-	if (at_quick_exit(&dedup_history))
-		WARN("at_quick_exit(&dedup_history)");
+	/* if (at_quick_exit(&dedup_history)) */
+	/*         WARN("at_quick_exit(&dedup_history)"); */
 }
 
 static inline char *read_line(void)
@@ -606,7 +605,7 @@ int main(int argc, char *argv[])
 				for (size_t i = 0; i < 2; i++)
 					pop_history(&prog[i]);
 				/* break early if tracking disabled */
-				if (track_flag)
+				if (!track_flag)
 					break;
 				/* re-init vars */
 				if (types)
@@ -618,9 +617,9 @@ int main(int argc, char *argv[])
 					}
 					free(vars.list);
 				}
-				free_str_list(&ids);
 				types = NULL;
 				vars.list = NULL;
+				free_str_list(&ids);
 				init_var_list(&vars);
 				/* add vars from previous lines */
 				for (size_t i = 1; i < prog[0].lines.cnt; i++) {
