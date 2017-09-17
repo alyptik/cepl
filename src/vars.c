@@ -99,17 +99,6 @@ enum var_type extract_type(char const *line, char const *id)
 	}
 	regfree(&reg);
 
-	/* long double */
-	if (regcomp(&reg, "long[[:blank:]]*double", REG_EXTENDED | REG_NOSUB))
-		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
-		free(regex);
-		free(type);
-		regfree(&reg);
-		return T_LDBL;
-	}
-	regfree(&reg);
-
 	/* double */
 	if (regcomp(&reg, "(float|double)", REG_EXTENDED | REG_NOSUB))
 		ERR("failed to compile regex");
@@ -312,8 +301,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	char *src_tmp, *tmp_ptr;
 	size_t off;
 	/* space for <name>, <name> */
-	size_t psz = sizeof print_beg + sizeof print_end + 3;
-	size_t plnsz = sizeof println_beg + sizeof print_end + 3;
+	size_t psz = sizeof print_beg + sizeof print_end + 16;
+	size_t plnsz = sizeof println_beg + sizeof print_end + 16;
 
 	/* sanity checks */
 	if (!vars || !src || !cc_args || !exec_args)
@@ -399,14 +388,6 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '0';
-			strchr(print_tmp, '_')[0] = 'l';
-			strchr(print_tmp, '_')[0] = 'f';
-			break;
-		case T_LDBL:
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
 			strchr(print_tmp, '_')[0] = 'L';
 			strchr(print_tmp, '_')[0] = 'f';
 			break;
@@ -440,17 +421,22 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			/* should never hit this branch */
 			ERR(vars->list[i].key);
 			break;
+		case T_INT:
+			memcpy(src_tmp + off, "\", (long long)", 14);
+			off += 14;
+			break;
+		case T_DBL:
+			memcpy(src_tmp + off, "\", (long double)", 16);
+			off += 16;
+			break;
 		case T_OTHER:
 			/* take the address of variable if unknown type */
-			memcpy(src_tmp + off, "\",&", 3);
-			off += 3;
+			memcpy(src_tmp + off, "\", &", 4);
+			off += 4;
 			break;
 		case T_CHR: /* fallthrough */
 		case T_STR: /* fallthrough */
-		case T_INT: /* fallthrough */
 		case T_UINT: /* fallthrough */
-		case T_DBL: /* fallthrough */
-		case T_LDBL: /* fallthrough */
 		case T_PTR: /* fallthrough */
 		default:
 			memcpy(src_tmp + off, "\", ", 3);

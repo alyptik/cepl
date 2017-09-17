@@ -47,21 +47,20 @@
 
 /* flag constants for type of source buffer */
 enum src_flag {
-	EMPTY = 0,
-	NOT_IN_MAIN = 1,
-	IN_MAIN = 2,
+	EMPTY,
+	NOT_IN_MAIN,
+	IN_MAIN,
 };
 /* possible types of tracked variable */
 enum var_type {
-	T_ERR = 0,
-	T_CHR = 1,
-	T_STR = 2,
-	T_INT = 3,
-	T_UINT = 4,
-	T_DBL = 5,
-	T_LDBL = 6,
-	T_PTR = 7,
-	T_OTHER = 8,
+	T_ERR,
+	T_CHR,
+	T_STR,
+	T_INT,
+	T_UINT,
+	T_DBL,
+	T_PTR,
+	T_OTHER,
 };
 
 /* struct definition for NULL-terminated string dynamic array */
