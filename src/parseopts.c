@@ -65,7 +65,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	free_str_list(&lib_list);
 	free_str_list(&comp_list);
 	cc_list.cnt = 0;
-	cc_list.max = 0;
+	cc_list.max = 1;
 	/* don't print an error if option not found */
 	opterr = 0;
 	/* reset option indices to reuse argv */
@@ -241,7 +241,7 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 void parse_libs(struct str_list *symbols, char *libs[])
 {
 	for (size_t i = 0; libs[i]; i++) {
-		struct str_list cur_syms = {.cnt = 0, .max = 0, .list = NULL};
+		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};
 		init_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
 		for (size_t j = 0; j < cur_syms.cnt; j++) {

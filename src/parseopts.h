@@ -86,7 +86,7 @@ static inline ptrdiff_t free_str_list(struct str_list *plist)
 	free(plist->list);
 	plist->list = NULL;
 	plist->cnt = 0;
-	plist->max = 0;
+	plist->max = 1;
 	return null_cnt;
 }
 

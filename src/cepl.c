@@ -99,8 +99,10 @@ static inline void write_file(void) {
 
 static inline void free_buffers(void)
 {
-	/* clean up user data */
+	/* write out history before freeing buffers */
 	write_file();
+	free_str_list(&ids);
+	/* clean up user data */
 	if (line)
 		free(line);
 	if (types)
@@ -115,7 +117,6 @@ static inline void free_buffers(void)
 		}
 		free(vars.list);
 	}
-	free_str_list(&ids);
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
 		if (prog[i].funcs)
@@ -128,15 +129,13 @@ static inline void free_buffers(void)
 			free(prog[i].flags.list);
 		free_str_list(&prog[i].hist);
 		free_str_list(&prog[i].lines);
+		prog[i].b_sz = prog[i].f_sz = prog[i].t_sz = 0;
+		prog[i].b_max = prog[i].f_max = prog[i].t_max = 1;
+		/* `(void *)` casts needed to chain diff ptr types */
+		prog[i].body = prog[i].funcs = prog[i].total = (void *)(prog[i].flags.list = NULL);
 	}
-	/* set pointers to NULL */
-	prog[0].b_sz = prog[0].f_sz = prog[0].t_sz = prog[1].b_sz = prog[1].f_sz = prog[1].t_sz = 0;
-	prog[0].b_max = prog[0].f_max = prog[0].t_max = prog[1].b_max = prog[1].f_max = prog[1].t_max = 1;
-	prog[0].body = prog[0].funcs = prog[0].total = prog[1].body = prog[1].funcs = prog[1].total = NULL;
-	prog[0].flags.list = prog[1].flags.list = NULL;
-	/* `void *` cast needed to chain different ptr types */
+	/* `(void *)` casts needed to chain diff ptr types */
 	vars.list = (void *)(line = (void *)(cc_argv = (void *)(types = NULL)));
-
 }
 
 static inline void cleanup(void)
