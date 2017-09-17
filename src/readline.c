@@ -5,10 +5,10 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include "parseopts.h"
 #include "readline.h"
+#include <stdlib.h>
+#include <string.h>
 
 /* default completion list */
 char *comp_arg_list[] = {

@@ -8,6 +8,8 @@
 #ifndef VARS_H
 #define VARS_H 1
 
+#include "compile.h"
+#include "parseopts.h"
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -19,8 +21,6 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <linux/memfd.h>
-#include "compile.h"
-#include "parseopts.h"
 
 /* prototypes */
 enum var_type extract_type(char const *line, char const *id);

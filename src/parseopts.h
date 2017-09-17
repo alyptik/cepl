@@ -8,6 +8,7 @@
 #ifndef PARSEOPTS_H
 #define PARSEOPTS_H
 
+#include "defs.h"
 #include <fcntl.h>
 #include <gelf.h>
 #include <libelf.h>
@@ -18,7 +19,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include "defs.h"
 
 /* global version and usage strings */
 #define VERSION_STRING "CEPL v4.2.2"
@@ -47,11 +47,6 @@
 /* set pipe buffer byte count to page size */
 #define COUNT sysconf(_SC_PAGESIZE)
 #define MAX (SIZE_MAX / 2 - 1)
-
-/* silence linter */
-int getopt(int argc, char *const argv[], char const *optstring);
-FILE *fdopen(int fd, char const *mode);
-ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
 /* prototypes */
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);

@@ -5,9 +5,9 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#include <getopt.h>
 #include "parseopts.h"
 #include "readline.h"
+#include <getopt.h>
 
 /* silence linter */
 int getopt_long(int argc, char *const argv[], char const *optstring, struct option const *longopts, int *longindex);

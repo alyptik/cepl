@@ -5,12 +5,12 @@
  * See LICENSE.md file for copyright and license details.
  */
 
+#include "compile.h"
+#include "parseopts.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <linux/memfd.h>
-#include "compile.h"
-#include "parseopts.h"
 
 /* global linker arguments struct */
 struct str_list ld_list;

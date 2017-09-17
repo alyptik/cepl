@@ -8,10 +8,10 @@
 #ifndef COMPILE_H
 #define COMPILE_H
 
+#include "defs.h"
 #include <fcntl.h>
 #include <stddef.h>
 #include <unistd.h>
-#include "defs.h"
 
 #define COUNT sysconf(_SC_PAGESIZE)
 
