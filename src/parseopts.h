@@ -44,10 +44,11 @@ static inline void strmv(ptrdiff_t off, char *dest, char const *restrict src) {
 	/* sanity checks */
 	if (!dest || !src)
 		ERRX("NULL pointer passed to strmv()");
-	char *dest_ptr, *src_ptr;
 	ptrdiff_t src_sz;
-	if (!(dest_ptr = strchr(dest, 0)) || !(src_ptr = strchr(src, 0)))
-		ERR("strmv() string not null-terminated");
+	char *src_ptr = strchr(src, 0);
+	char *dest_ptr = strchr(dest, 0);
+	if (!src_ptr || !dest_ptr)
+		ERRX("strmv() string not null-terminated");
 	if (off >= 0)
 		dest_ptr = dest + off;
 	src_sz = src_ptr - src;
