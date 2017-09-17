@@ -283,18 +283,14 @@ static inline void pop_history(struct prog_src *prgm)
 {
 	switch(prgm->flags.list[prgm->flags.cnt - 1]) {
 	case NOT_IN_MAIN:
-		prgm->flags.cnt--;
-		prgm->hist.cnt--;
-		prgm->lines.cnt--;
+		prgm->flags.cnt = prgm->hist.cnt = --prgm->lines.cnt;
 		memcpy(prgm->funcs, prgm->hist.list[prgm->hist.cnt], strlen(prgm->hist.list[prgm->hist.cnt]) + 1);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
-		prgm->flags.cnt--;
-		prgm->hist.cnt--;
-		prgm->lines.cnt--;
+		prgm->flags.cnt = prgm->hist.cnt = --prgm->lines.cnt;
 		memcpy(prgm->body, prgm->hist.list[prgm->hist.cnt], strlen(prgm->hist.list[prgm->hist.cnt]) + 1);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
