@@ -295,37 +295,39 @@ static inline void pop_history(struct prog_src *prgm)
 /* look for current line in readline history */
 static inline void dedup_history(void)
 {
-	if (line && *line) {
-		/* strip leading whitespace */
-		char *strip = line;
-		strip += strspn(line, " \t");
-		/* search forward and backward in history */
-		int cur_hist = where_history();
-		for (int i = -1; i < 2; i += 2) {
-			/* seek backwords or forwards */
-			HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
-			while (history_search_prefix(strip, i) != -1) {
-				/* if this line is already in the history, remove the earlier entry */
-				HIST_ENTRY *ent = current_history();
-				/* skip if NULL or not a complete match */
-				if (!ent || !ent->line || strcmp(line, ent->line)) {
-					/* break if at end of list */
-					if (!seek_hist())
-						break;
-					continue;
-				}
-				/* remove and free data */
-				remove_history(where_history());
-				/* free application data */
-				histdata_t data = free_history_entry(ent);
-				if (data)
-					free(data);
+	/* return early on empty input */
+	if (!line || !*line)
+		return;
+	/* strip leading whitespace */
+	char *strip = line;
+	strip += strspn(line, " \t");
+	/* search forward and backward in history */
+	int cur_hist = where_history();
+	for (int i = -1; i < 2; i += 2) {
+		/* seek backwords or forwards */
+		HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
+		while (history_search_prefix(strip, i) != -1) {
+			/* if this line is already in the history, remove the earlier entry */
+			HIST_ENTRY *ent = current_history();
+			/* skip if NULL or not a complete match */
+			if (!ent || !ent->line || strcmp(line, ent->line)) {
+				/* break if at end of list */
+				if (!seek_hist())
+					break;
+				continue;
 			}
-			history_set_pos(cur_hist);
+			/* remove and free data */
+			remove_history(where_history());
+			/* free application data */
+			histdata_t data = free_history_entry(ent);
+			if (data)
+				free(data);
 		}
-		/* reset history position and add the line */
 		history_set_pos(cur_hist);
-		add_history(strip);
+
+	/* reset history position and add the line */
+	history_set_pos(cur_hist);
+	add_history(strip);
 	}
 }
 
