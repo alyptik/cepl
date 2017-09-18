@@ -27,23 +27,6 @@ matrix:
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
 
-    # works on Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - ppa:paulo-miguel-dias/llvm-snapshot
-          packages:
-            - gcc-7
-            - g++-7
-            - clang-6.0 lldb-6.0 lld-6.0
-      before_install:
-        - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-        - sudo apt-get update -qq --fix-missing
-      env:
-        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-6.0 CXX=clang++-6.0"
-
 before_install:
     - eval "${MATRIX_EVAL}"
     - sudo apt-get update -qq --fix-missing
