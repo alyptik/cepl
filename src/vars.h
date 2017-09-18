@@ -61,7 +61,7 @@ static inline void append_var(struct var_list *vlist, char const *key, enum var_
 	vlist->list[vlist->cnt - 1].type = type;
 }
 
-static inline void gen_vlist(struct var_list *vlist, struct str_list *restrict ilist, enum var_type *restrict tlist)
+static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enum var_type *tlist)
 {
 	/* sanity checks */
 	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
