@@ -45,7 +45,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main"
+            - llvm-toolchain-snapshot
+            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main"
           packages:
             - clang-6.0 lldb-6.0 lld-6.0
       env:
