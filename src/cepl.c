@@ -84,17 +84,6 @@ static bool has_hist = false;
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
-/* signal array */
-static int sigs[] = {
-	SIGHUP, SIGINT, SIGQUIT,
-	SIGABRT, SIGFPE, SIGSEGV,
-	SIGPIPE, SIGALRM, SIGTERM,
-	SIGUSR1, SIGUSR2, SIGBUS,
-	SIGPOLL, SIGPROF, SIGSYS,
-	SIGVTALRM, SIGXCPU, SIGXFSZ,
-};
-/* array of old/new signal actiona */
-static struct sigaction sa[sizeof sigs / sizeof sigs[0]][2];
 
 static inline void write_file(void) {
 	/* return early if no file open */
@@ -344,23 +333,28 @@ static inline void sig_handler(int sig)
 {
 	free_buffers();
 	cleanup();
-	/* signal(sig, SIG_DFL); */
-	if (sigaction(sig, &sa[sig][1], NULL) == -1)
-		ERRARR("sigaction() sig", (size_t)sig);
 	raise(sig);
 }
 
 /* signal handlers to make sure that history is written out */
 static inline void reg_handlers(void)
 {
+	/* signal array */
+	int sigs[] = {
+		SIGHUP, SIGINT, SIGQUIT,
+		SIGABRT, SIGFPE, SIGSEGV,
+		SIGPIPE, SIGALRM, SIGTERM,
+		SIGUSR1, SIGUSR2, SIGBUS,
+		SIGPOLL, SIGPROF, SIGSYS,
+		SIGVTALRM, SIGXCPU, SIGXFSZ,
+	};
+	struct sigaction sa[sizeof sigs / sizeof sigs[0]];
 	for (size_t i = 0; i < sizeof sigs / sizeof sigs[0]; i++) {
-		sa[i][0].sa_handler = &sig_handler;
-		for (size_t j = 0; j < 2; j++) {
-			sigemptyset(&sa[i][j].sa_mask);
-			/* Restart functions if interrupted by handler */
-			sa[i][j].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
-		}
-		if (sigaction(sigs[i], &sa[i][0], &sa[i][1]) == -1)
+		sa[i].sa_handler = &sig_handler;
+		sigemptyset(&sa[i].sa_mask);
+		/* Restart functions if interrupted by handler and reset disposition */
+		sa[i].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
+		if (sigaction(sigs[i], &sa[i], NULL) == -1)
 			ERRARR("sigaction() sig", i);
 	}
 	if (at_quick_exit(&cleanup))
