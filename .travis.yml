@@ -40,6 +40,7 @@ matrix:
             - clang-6.0 lldb-6.0 lld-6.0
       before_install:
         - wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+        - sudo apt-get update -qq --fix-missing
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-6.0 CXX=clang++-6.0"
 
