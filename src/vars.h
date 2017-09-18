@@ -6,10 +6,11 @@
  */
 
 #ifndef VARS_H
-#define VARS_H 1
+#define VARS_H
 
 #include "compile.h"
 #include "parseopts.h"
+#include <linux/memfd.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -20,54 +21,63 @@
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <linux/memfd.h>
 
 /* prototypes */
 enum var_type extract_type(char const *line, char const *id);
 size_t extract_id(char const *line, char **id, size_t *offset);
-int find_vars(char const *line, struct str_list *id_list, enum var_type **type_list);
-int print_vars(struct var_list *vars, char const *src, char *const cc_args[], char *const exec_args[]);
+int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist);
+int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[]);
 
-static inline void init_var_list(struct var_list *list_struct)
+static inline void init_vlist(struct var_list *vlist)
 {
-	list_struct->cnt = 0;
-	list_struct->max = 1;
-	if (!(list_struct->list = malloc(sizeof *list_struct->list)))
+	vlist->cnt = 0;
+	vlist->max = 1;
+	if (!(vlist->list = malloc(sizeof *vlist->list)))
 		ERR("error during initial var_list malloc()");
 }
 
-static inline void append_var(struct var_list *list_struct, char const *key, enum var_type type)
+static inline void append_var(struct var_list *vlist, char const *key, enum var_type type)
 {
 	void *tmp;
-	if (!list_struct || !list_struct->list || !key)
+	if (!vlist || !vlist->list || !key)
 		ERRX("invalid arguments passed to append_var()");
-	list_struct->cnt++;
+	vlist->cnt++;
 	/* realloc if cnt reaches current size */
-	if (list_struct->cnt >= list_struct->max) {
+	if (vlist->cnt >= vlist->max) {
 		/* check if size too large */
-		if (list_struct->cnt > MAX)
-			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
+		if (vlist->cnt > MAX)
+			ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
-		while ((list_struct->max *= 2) < list_struct->cnt);
-		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max))) {
-			free(list_struct->list);
-			ERRARR("var_list", list_struct->cnt);
+		while ((vlist->max *= 2) < vlist->cnt);
+		if (!(tmp = realloc(vlist->list, sizeof *vlist->list * vlist->max))) {
+			free(vlist->list);
+			ERRARR("var_list", vlist->cnt);
 		}
-		list_struct->list = tmp;
+		vlist->list = tmp;
 	}
-	if (!(list_struct->list[list_struct->cnt - 1].key = calloc(1, strlen(key) + 1)))
+	if (!(vlist->list[vlist->cnt - 1].key = calloc(1, strlen(key) + 1)))
 		ERR("append_var()");
-	memcpy(list_struct->list[list_struct->cnt - 1].key, key, strlen(key) + 1);
-	list_struct->list[list_struct->cnt - 1].type = type;
+	memcpy(vlist->list[vlist->cnt - 1].key, key, strlen(key) + 1);
+	vlist->list[vlist->cnt - 1].type = type;
 }
 
-static inline void gen_var_list(struct var_list *list_struct, struct str_list *id_list, enum var_type **type_list)
+static inline void gen_vlist(struct var_list *vlist, struct str_list *restrict ilist, enum var_type *restrict tlist)
 {
 	/* sanity checks */
-	if (!list_struct || !list_struct->list || !id_list || !id_list->list || !type_list)
+	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
 		ERRX("NULL pointer passed to gen_var_list()");
-	for (size_t i = 0; i < id_list->cnt; i++)
-		append_var(list_struct, id_list->list[i], (*type_list)[i]);
+	/* don't add duplicate keys to vlist */
+	for (size_t i = 0; i < ilist->cnt; i++) {
+		bool uniq = true;
+		for (size_t j = 0; j < vlist->cnt; j++) {
+			if (!strcmp(ilist->list[i], vlist->list[j].key) && tlist[i] == vlist->list[j].type) {
+				uniq = false;
+				break;
+			}
+		}
+		if (uniq)
+			append_var(vlist, ilist->list[i], tlist[i]);
+	}
 }
 
 #endif

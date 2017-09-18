@@ -212,31 +212,31 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	return match[1].rm_eo;
 }
 
-int find_vars(char const *line, struct str_list *id_list, enum var_type **type_list)
+int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist)
 {
 	size_t off;
 	char *line_tmp[2], *id_tmp = NULL;
 
 	/* sanity checks */
-	if (!line || !id_list || !type_list)
+	if (!line || !ilist || !tlist)
 		return 0;
 	if (!(line_tmp[0] = calloc(1, strlen(line) + 1)))
 		ERR("error allocating line_tmp");
 	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
-	if (*type_list)
-		free(*type_list);
-	*type_list = NULL;
-	if (id_list->list)
-		free_str_list(id_list);
-	init_list(id_list, NULL);
+	if (*tlist)
+		free(*tlist);
+	*tlist = NULL;
+	if (ilist->list)
+		free_str_list(ilist);
+	init_list(ilist, NULL);
 
-	size_t count = id_list->cnt;
+	size_t count = ilist->cnt;
 	strmv(0, line_tmp[1], line);
 	/* extract all identifiers from the line */
 	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
-		append_str(id_list, id_tmp, 0);
+		append_str(ilist, id_tmp, 0);
 		free(id_tmp);
 		id_tmp = NULL;
 		line_tmp[1] += off;
@@ -250,7 +250,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	while (line_tmp[1] && (line_tmp[1] = strpbrk(line_tmp[1], ";"))) {
 		line_tmp[1]++;
 		while (extract_id(line_tmp[1], &id_tmp, &off)) {
-			append_str(id_list, id_tmp, 0);
+			append_str(ilist, id_tmp, 0);
 			free(id_tmp);
 			id_tmp = NULL;
 			line_tmp[1] += off;
@@ -273,22 +273,25 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 
 	/* get the type of each identifier */
 	line_tmp[1] = line_tmp[0];
-	enum var_type type_tmp[id_list->cnt];
-	for (size_t i = 0; i < id_list->cnt; i++)
-		type_tmp[i] = extract_type(line_tmp[1], id_list->list[i]);
+	/* if no keys found return early */
+	if (ilist->cnt < 1)
+		return 0;
+	enum var_type type_tmp[ilist->cnt];
+	for (size_t i = 0; i < ilist->cnt; i++)
+		type_tmp[i] = extract_type(line_tmp[1], ilist->list[i]);
 
 	/* copy it into the output parameter */
-	if (!(*type_list = calloc(1, sizeof type_tmp)))
-		ERR("failed to allocate memory for type_list");
-	memcpy(*type_list, type_tmp, sizeof type_tmp);
+	if (!(*tlist = calloc(1, sizeof type_tmp)))
+		ERR("failed to allocate memory for tlist");
+	memcpy(*tlist, type_tmp, sizeof type_tmp);
 	if (id_tmp)
 		free(id_tmp);
 	if (line_tmp[0])
 		free(line_tmp[0]);
-	return id_list->cnt;
+	return ilist->cnt;
 }
 
-int print_vars(struct var_list *vars, char const *src, char *const cc_args[], char *const exec_args[])
+int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[])
 {
 	int mem_fd, status, null;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
@@ -304,12 +307,12 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	size_t plnsz = sizeof println_beg + sizeof print_end + 16;
 
 	/* sanity checks */
-	if (!vars || !src || !cc_args || !exec_args)
-		ERRX("NULL pointer passed to print_vars()");
+	if (!vlist || !src || !cc_args || !exec_args)
+		ERRX("NULL pointer passed to print_vlist()");
 	if (strlen(src) < 2)
-		ERRX("empty source string passed to print_vars()");
+		ERRX("empty source string passed to print_vlist()");
 	/* return early if nothing to do */
-	if (vars->cnt == 0)
+	if (vlist->cnt == 0)
 		return -1;
 
 	/* copy source buffer */
@@ -326,16 +329,16 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	off += sizeof newline - 1;
 
 	/* build var-tracking source */
-	for (size_t i = 0; i < vars->cnt; i++) {
+	for (size_t i = 0; i < vlist->cnt; i++) {
 		/* skip unknown types */
-		if (vars->list[i].type == T_ERR)
+		if (vlist->list[i].type == T_ERR)
 			continue;
 
 		/* populate buffers */
-		size_t printf_sz = (i < vars->cnt - 1) ? psz : plnsz;
-		size_t arr_sz = (i < vars->cnt - 1) ? sizeof print_beg : sizeof println_beg;
-		size_t cur_sz = strlen(vars->list[i].key) * 2;
-		char (*arr_ptr)[printf_sz] = (i < vars->cnt - 1) ? &print_beg : &println_beg;
+		size_t printf_sz = (i < vlist->cnt - 1) ? psz : plnsz;
+		size_t arr_sz = (i < vlist->cnt - 1) ? sizeof print_beg : sizeof println_beg;
+		size_t cur_sz = strlen(vlist->list[i].key) * 2;
+		char (*arr_ptr)[printf_sz] = (i < vlist->cnt - 1) ? &print_beg : &println_beg;
 		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
 			free(src_tmp);
 			ERR("src_tmp realloc()");
@@ -345,10 +348,10 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		strmv(0, print_tmp, *arr_ptr);
 
 		/* build format string */
-		switch (vars->list[i].type) {
+		switch (vlist->list[i].type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vars->list[i].key);
+			ERR(vlist->list[i].key);
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
@@ -411,14 +414,14 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		/* copy format string */
 		strmv(off, src_tmp, print_tmp);
 		off += arr_sz - 1;
-		strmv(off, src_tmp, vars->list[i].key);
-		off += strlen(vars->list[i].key);
+		strmv(off, src_tmp, vlist->list[i].key);
+		off += strlen(vlist->list[i].key);
 
 		/* handle other variable types */
-		switch (vars->list[i].type) {
+		switch (vlist->list[i].type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vars->list[i].key);
+			ERR(vlist->list[i].key);
 			break;
 		case T_INT:
 			/* cast integral type to long long */
@@ -445,8 +448,8 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		}
 
 		/* copy final part of printf */
-		strmv(off, src_tmp, vars->list[i].key);
-		off += strlen(vars->list[i].key);
+		strmv(off, src_tmp, vlist->list[i].key);
+		off += strlen(vlist->list[i].key);
 		strmv(off, src_tmp, print_end);
 		off += sizeof print_end - 1;
 	}

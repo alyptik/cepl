@@ -75,11 +75,11 @@ static char *hist_file;
 static FILE volatile *ofile;
 /* program source strucs (prog[0] is truncated for interactive printing) */
 static struct prog_src prog[2];
-/* var list */
-static struct var_list vars;
 static struct str_list ids;
+static struct var_list vars;
 static enum var_type *types;
 static bool has_hist = false;
+
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
@@ -194,7 +194,7 @@ static inline void init_buffers(void)
 		init_list(&prog[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 		init_flag_list(&prog[i].flags);
 	}
-	init_var_list(&vars);
+	init_vlist(&vars);
 }
 
 static inline void resize_buffer(char **buf, size_t *buf_sz, size_t *buf_max, size_t offset)
@@ -559,7 +559,7 @@ int main(int argc, char *argv[])
 				build_funcs();
 				/* TODO: find a workaround for var tracking getting in the way of functions */
 				/* if (track_flag && find_vars(tok_buf, &ids, &types)) */
-				/*         gen_var_list(&vars, &ids, &types); */
+				/*         gen_vlist(&vars, &ids, types); */
 				break;
 
 			/* show usage information */
@@ -594,12 +594,12 @@ int main(int argc, char *argv[])
 					vars.list = NULL;
 				}
 				free_str_list(&ids);
-				init_var_list(&vars);
+				init_vlist(&vars);
 				/* add vars from previous lines */
 				for (size_t i = 1; i < prog[0].lines.cnt; i++) {
 					if (prog[0].lines.list[i] && prog[0].flags.list[i] == IN_MAIN) {
 						if (find_vars(prog[0].lines.list[i], &ids, &types))
-							gen_var_list(&vars, &ids, &types);
+							gen_vlist(&vars, &ids, types);
 					}
 				}
 				break;
@@ -641,7 +641,7 @@ int main(int argc, char *argv[])
 				}
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
-					gen_var_list(&vars, &ids, &types);
+					gen_vlist(&vars, &ids, types);
 				break;
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
@@ -650,7 +650,7 @@ int main(int argc, char *argv[])
 					strmv(CONCAT, prog[i].body, ";\n");
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
-					gen_var_list(&vars, &ids, &types);
+					gen_vlist(&vars, &ids, types);
 			}
 		}
 
