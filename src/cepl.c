@@ -84,6 +84,17 @@ static bool has_hist = false;
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
+/* signal array */
+static int sigs[] = {
+	SIGHUP, SIGINT, SIGQUIT,
+	SIGABRT, SIGFPE, SIGSEGV,
+	SIGPIPE, SIGALRM, SIGTERM,
+	SIGUSR1, SIGUSR2, SIGBUS,
+	SIGPOLL, SIGPROF, SIGSYS,
+	SIGVTALRM, SIGXCPU, SIGXFSZ,
+};
+/* array of old/new signal actiona */
+static struct sigaction sa[sizeof sigs / sizeof sigs[0]][2];
 
 static inline void write_file(void) {
 	/* return early if no file open */
@@ -333,23 +344,24 @@ static inline void sig_handler(int sig)
 {
 	free_buffers();
 	cleanup();
-	signal(sig, SIG_DFL);
+	/* signal(sig, SIG_DFL); */
+	if (sigaction(sig, &sa[sig][1], NULL) == -1)
+		ERRARR("sigaction() sig", (size_t)sig);
 	raise(sig);
 }
 
 /* signal handlers to make sure that history is written out */
 static inline void reg_handlers(void)
 {
-	int sigs[] = {
-		SIGHUP, SIGINT, SIGQUIT, SIGILL,
-		SIGABRT, SIGFPE, SIGSEGV, SIGPIPE,
-		SIGALRM, SIGTERM, SIGUSR1, SIGUSR2,
-		SIGBUS, SIGPOLL, SIGPROF, SIGSYS,
-		SIGTRAP, SIGVTALRM, SIGXCPU, SIGXFSZ,
-	};
 	for (size_t i = 0; i < sizeof sigs / sizeof sigs[0]; i++) {
-		if (signal(sigs[i], &sig_handler) == SIG_ERR)
-			WARN("unable to register signal handler");
+		sa[i][0].sa_handler = &sig_handler;
+		for (size_t j = 0; j < 2; j++) {
+			sigemptyset(&sa[i][j].sa_mask);
+			/* Restart functions if interrupted by handler */
+			sa[i][j].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
+		}
+		if (sigaction(sigs[i], &sa[i][0], &sa[i][1]) == -1)
+			ERRARR("sigaction() sig", i);
 	}
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");

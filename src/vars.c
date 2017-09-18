@@ -48,7 +48,7 @@ enum var_type extract_type(char const *line, char const *id)
 	strmv(CONCAT, regex, id);
 	strmv(CONCAT, regex, end);
 
-	if (regcomp(&reg, regex, REG_EXTENDED | REG_NEWLINE))
+	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
@@ -66,7 +66,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*[[:blank:]]*", REG_EXTENDED | REG_NOSUB))
+	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*[[:blank:]]*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -77,7 +77,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* pointer */
-	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED | REG_NOSUB))
+	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -88,7 +88,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* char */
-	if (regcomp(&reg, "char", REG_EXTENDED | REG_NOSUB))
+	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -99,7 +99,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* double */
-	if (regcomp(&reg, "(float|double)", REG_EXTENDED | REG_NOSUB))
+	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -110,7 +110,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* unsigned integral */
-	if (regcomp(&reg, "(size_t|unsigned)", REG_EXTENDED | REG_NOSUB))
+	if (regcomp(&reg, "(size_t|unsigned)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -121,7 +121,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* signed integral */
-	if (regcomp(&reg, "(bool|_Bool|short|int|long|ptrdiff_t)", REG_EXTENDED | REG_NOSUB))
+	if (regcomp(&reg, "(bool|_Bool|short|int|long|ptrdiff_t)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -150,7 +150,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (!line || !id || !offset)
 		ERRX("NULL pointer passed to extract_id()");
 
-	if (regcomp(&reg, initial_regex, REG_EXTENDED | REG_NEWLINE))
+	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
@@ -165,7 +165,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^({;&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
 
-		if (regcomp(&reg, middle_regex, REG_EXTENDED | REG_NEWLINE))
+		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
 		if (regexec(&reg, line, 5, match, 0) || match[3].rm_so == -1) {
 			regfree(&reg);
@@ -177,7 +177,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
 
-			if (regcomp(&reg, final_regex, REG_EXTENDED | REG_NEWLINE))
+			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_NEWLINE))
 				ERR("failed to compile regex");
 			if (regexec(&reg, line, 4, match, 0) || match[3].rm_so == -1) {
 				regfree(&reg);

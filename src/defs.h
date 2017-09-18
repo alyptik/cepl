@@ -8,6 +8,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <signal.h>
 #include <unistd.h>
 
 /* global version and usage strings */
@@ -41,22 +42,27 @@
 /* page size for buffer count */
 #define COUNT		(sysconf(_SC_PAGESIZE))
 
+/* signal-to-index map */
+/* enum sig_map { */
+/*         HUP = SIGHUP, INT = SIGINT, */
+/*         QUIT = SIGQUIT, ILL = SIGILL, */
+/*         ABRT = SIGABRT, FPE = SIGFPE, */
+/*         SEGV = SIGSEGV, PIPE = SIGPIPE, */
+/*         ALRM = SIGALRM, TERM = SIGTERM, */
+/*         USR1 = SIGUSR1, USR2 = SIGUSR2, */
+/*         BUS = SIGBUS, POLL = SIGPOLL, */
+/*         PROF = SIGPROF, SYS = SIGSYS, */
+/*         TRAP = SIGTRAP, VTALRM = SIGVTALRM, */
+/*         XCPU = SIGXCPU, XFSZ = SIGXFSZ, */
+/* }; */
 /* flag constants for type of source buffer */
 enum src_flag {
-	EMPTY,
-	NOT_IN_MAIN,
-	IN_MAIN,
+	NOT_IN_MAIN, IN_MAIN, EMPTY,
 };
 /* possible types of tracked variable */
 enum var_type {
-	T_ERR,
-	T_CHR,
-	T_STR,
-	T_INT,
-	T_UINT,
-	T_DBL,
-	T_PTR,
-	T_OTHER,
+	T_ERR, T_CHR, T_STR, T_INT, T_UINT,
+	T_DBL, T_PTR, T_OTHER,
 };
 
 /* struct definition for NULL-terminated string dynamic array */
