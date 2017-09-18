@@ -8,11 +8,10 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#include <signal.h>
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	("CEPL v4.2.3")
+#define VERSION_STRING	("CEPL v4.2.4")
 #define USAGE_STRING	("[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
@@ -42,27 +41,14 @@
 /* page size for buffer count */
 #define COUNT		(sysconf(_SC_PAGESIZE))
 
-/* signal-to-index map */
-/* enum sig_map { */
-/*         HUP = SIGHUP, INT = SIGINT, */
-/*         QUIT = SIGQUIT, ILL = SIGILL, */
-/*         ABRT = SIGABRT, FPE = SIGFPE, */
-/*         SEGV = SIGSEGV, PIPE = SIGPIPE, */
-/*         ALRM = SIGALRM, TERM = SIGTERM, */
-/*         USR1 = SIGUSR1, USR2 = SIGUSR2, */
-/*         BUS = SIGBUS, POLL = SIGPOLL, */
-/*         PROF = SIGPROF, SYS = SIGSYS, */
-/*         TRAP = SIGTRAP, VTALRM = SIGVTALRM, */
-/*         XCPU = SIGXCPU, XFSZ = SIGXFSZ, */
-/* }; */
-/* flag constants for type of source buffer */
 enum src_flag {
 	NOT_IN_MAIN, IN_MAIN, EMPTY,
 };
 /* possible types of tracked variable */
 enum var_type {
-	T_ERR, T_CHR, T_STR, T_INT, T_UINT,
-	T_DBL, T_PTR, T_OTHER,
+	T_ERR, T_CHR, T_STR,
+	T_INT, T_UINT, T_DBL,
+	T_PTR, T_OTHER,
 };
 
 /* struct definition for NULL-terminated string dynamic array */

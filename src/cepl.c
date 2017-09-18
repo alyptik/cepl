@@ -270,23 +270,25 @@ static inline void build_final(char *argv[])
 
 static inline void pop_history(struct prog_src *prgm)
 {
-	switch(prgm->flags.list[prgm->flags.cnt - 1]) {
+	switch(prgm->flags.list[--prgm->flags.cnt]) {
 	case NOT_IN_MAIN:
-		prgm->flags.cnt = prgm->hist.cnt = --prgm->lines.cnt;
+		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
 		strmv(0, prgm->funcs, prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
-		prgm->flags.cnt = prgm->hist.cnt = --prgm->lines.cnt;
+		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
 		strmv(0, prgm->body, prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
-	default:; /* noop */
+	default:
+		/* revert decrement */
+		prgm->flags.cnt++;
 	}
 }
 
@@ -316,10 +318,8 @@ static inline void dedup_history(void)
 				remove_history(where_history());
 				/* free application data */
 				histdata_t data = free_history_entry(ent);
-				if (data) {
+				if (data)
 					free(data);
-					data = NULL;
-				}
 			}
 			history_set_pos(cur_hist);
 		}
@@ -665,5 +665,7 @@ int main(int argc, char *argv[])
 			printf("[exit status: %d]\n", ret);
 	}
 
+	free_buffers();
+	cleanup();
 	return 0;
 }
