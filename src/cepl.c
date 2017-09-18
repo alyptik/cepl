@@ -559,7 +559,7 @@ int main(int argc, char *argv[])
 				build_funcs();
 				/* TODO: find a workaround for var tracking getting in the way of functions */
 				/* if (track_flag && find_vars(tok_buf, &ids, &types)) */
-				/*         gen_vlist(&vars, &ids, types); */
+				/*         gen_vlist(&vars, &ids, &types); */
 				break;
 
 			/* show usage information */
@@ -599,7 +599,7 @@ int main(int argc, char *argv[])
 				for (size_t i = 1; i < prog[0].lines.cnt; i++) {
 					if (prog[0].lines.list[i] && prog[0].flags.list[i] == IN_MAIN) {
 						if (find_vars(prog[0].lines.list[i], &ids, &types))
-							gen_vlist(&vars, &ids, types);
+							gen_vlist(&vars, &ids, &types);
 					}
 				}
 				break;
@@ -641,7 +641,7 @@ int main(int argc, char *argv[])
 				}
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
-					gen_vlist(&vars, &ids, types);
+					gen_vlist(&vars, &ids, &types);
 				break;
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
@@ -650,7 +650,7 @@ int main(int argc, char *argv[])
 					strmv(CONCAT, prog[i].body, ";\n");
 				/* extract identifiers and types */
 				if (track_flag && find_vars(strip, &ids, &types))
-					gen_vlist(&vars, &ids, types);
+					gen_vlist(&vars, &ids, &types);
 			}
 		}
 

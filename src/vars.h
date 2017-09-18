@@ -61,7 +61,7 @@ static inline void append_var(struct var_list *vlist, char const *key, enum var_
 	vlist->list[vlist->cnt - 1].type = type;
 }
 
-static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enum var_type *tlist)
+static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enum var_type **tlist)
 {
 	/* sanity checks */
 	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
@@ -69,14 +69,14 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	/* don't add duplicate keys to vlist */
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;
-		for (size_t j = 0; j < vlist->cnt; j++) {
-			if (!strcmp(ilist->list[i], vlist->list[j].key) && tlist[i] == vlist->list[j].type) {
+		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
+			if (!strcmp(ilist->list[i], vlist->list[j].key) && (*tlist)[i] == vlist->list[j].type) {
 				uniq = false;
 				break;
 			}
 		}
 		if (uniq)
-			append_var(vlist, ilist->list[i], tlist[i]);
+			append_var(vlist, ilist->list[i], (*tlist)[i]);
 	}
 }
 
