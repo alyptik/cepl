@@ -333,7 +333,8 @@ static inline void sig_handler(int sig)
 {
 	free_buffers();
 	cleanup();
-	exit(sig);
+	signal(sig, SIG_DFL);
+	raise(sig);
 }
 
 /* signal handlers to make sure that history is written out */

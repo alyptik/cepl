@@ -44,9 +44,9 @@ enum var_type extract_type(char const *line, char const *id)
 	/* append identifier to regex */
 	if (!(regex = calloc(1, strlen(id) + sizeof beg + sizeof end - 1)))
 		ERR("failed to allocate space for regex");
-	memcpy(regex, beg, sizeof beg - 1);
-	memcpy(regex + sizeof beg - 1, id, strlen(id));
-	memcpy(regex + sizeof beg - 1 + strlen(id), end, sizeof end);
+	strmv(0, regex, beg);
+	strmv(CONCAT, regex, id);
+	strmv(CONCAT, regex, end);
 
 	if (regcomp(&reg, regex, REG_EXTENDED | REG_NEWLINE))
 		ERR("failed to compile regex");
@@ -233,7 +233,7 @@ int find_vars(char const *line, struct str_list *id_list, enum var_type **type_l
 	init_list(id_list, NULL);
 
 	size_t count = id_list->cnt;
-	memcpy(line_tmp[1], line, strlen(line) + 1);
+	strmv(0, line_tmp[1], line);
 	/* extract all identifiers from the line */
 	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 		append_str(id_list, id_tmp, 0);
@@ -315,14 +315,14 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 	/* copy source buffer */
 	if (!(src_tmp = calloc(1, strlen(src) + 1)))
 		ERR("src_tmp calloc()");
-	memcpy(src_tmp, src, strlen(src));
+	strmv(0, src_tmp, src);
 	off = strlen(src) - 1;
 	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
 		free(src_tmp);
 		ERR("src_tmp realloc()");
 	}
 	src_tmp = tmp_ptr;
-	memcpy(src_tmp + off, newline, sizeof newline);
+	strmv(off, src_tmp, newline);
 	off += sizeof newline - 1;
 
 	/* build var-tracking source */
@@ -342,7 +342,7 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		}
 		src_tmp = tmp_ptr;
 		char print_tmp[arr_sz];
-		memcpy(print_tmp, *arr_ptr, arr_sz);
+		strmv(0, print_tmp, *arr_ptr);
 
 		/* build format string */
 		switch (vars->list[i].type) {
@@ -409,9 +409,9 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		}
 
 		/* copy format string */
-		memcpy(src_tmp + off, print_tmp, arr_sz);
+		strmv(off, src_tmp, print_tmp);
 		off += arr_sz - 1;
-		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
+		strmv(off, src_tmp, vars->list[i].key);
 		off += strlen(vars->list[i].key);
 
 		/* handle other variable types */
@@ -422,17 +422,17 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 			break;
 		case T_INT:
 			/* cast integral type to long long */
-			memcpy(src_tmp + off, "\", (long long)", 14);
+			strmv(off, src_tmp, "\", (long long)");
 			off += 14;
 			break;
 		case T_DBL:
 			/* cast floating type to long double */
-			memcpy(src_tmp + off, "\", (long double)", 16);
+			strmv(off, src_tmp, "\", (long double)");
 			off += 16;
 			break;
 		case T_OTHER:
 			/* take the address of variable if type unknown */
-			memcpy(src_tmp + off, "\", &", 4);
+			strmv(off, src_tmp, "\", &");
 			off += 4;
 			break;
 		case T_CHR: /* fallthrough */
@@ -440,22 +440,22 @@ int print_vars(struct var_list *vars, char const *src, char *const cc_args[], ch
 		case T_UINT: /* fallthrough */
 		case T_PTR: /* fallthrough */
 		default:
-			memcpy(src_tmp + off, "\", ", 3);
+			strmv(off, src_tmp, "\", ");
 			off += 3;
 		}
 
 		/* copy final part of printf */
-		memcpy(src_tmp + off, vars->list[i].key, strlen(vars->list[i].key));
+		strmv(off, src_tmp, vars->list[i].key);
 		off += strlen(vars->list[i].key);
-		memcpy(src_tmp + off, print_end, sizeof print_end);
+		strmv(off, src_tmp, print_end);
 		off += sizeof print_end - 1;
 	}
 
 	/* copy final source into buffer */
 	char final[off + sizeof prog_end + 1], *tok_buf;
 	memset(final, 0, sizeof final);
-	memcpy(final, src_tmp, off);
-	memcpy(final + off, prog_end, sizeof prog_end);
+	strmv(0, final, src_tmp);
+	strmv(off, final, prog_end);
 	/* remove NULL bytes */
 	while ((tok_buf = memchr(final, 0, sizeof final)))
 		tok_buf[0] = '\n';
