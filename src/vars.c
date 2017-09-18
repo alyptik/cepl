@@ -161,9 +161,9 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			"(^|[^t][^y][^p][^e][^d][^e][^,({;&|'\"f]+[[:blank:]]+)"
 			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
 			"char|double|float|int|long|short|unsigned|void)"
-			"[^,({;&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
+			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-			"([^({;&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
+			"([^(){};&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
