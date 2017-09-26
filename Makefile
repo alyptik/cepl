@@ -12,7 +12,7 @@ CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN
 CFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
 LDFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -Wl,-O1,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
-DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wshadow -fsanitize=address,alignment,leak,undefined
+DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
 RELEASE := -O2
 TARGET := cepl
 MANPAGE := cepl.7
@@ -35,15 +35,17 @@ all: $(TARGET) check
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
+debug: test
 debug: $(OBJ)
 	$(LD) $(LDFLAGS) $(filter src/%.o,$^) $(LIBS) -o $(TARGET)
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): LDFLAGS := $(RELEASE) $(LDFLAGS)
+$(TARGET): test
 $(TARGET): $(OBJ)
 
-$(TESTS): CFLAGS := $(DEBUG) $(CFLAGS)
-$(TESTS): LDFLAGS := $(DEBUG) $(LDFLAGS)
+$(TESTS): CFLAGS := $(RELEASE) $(CFLAGS)
+$(TESTS): LDFLAGS := $(RELEASE) $(LDFLAGS)
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
 
 $(OBJ): %.o: %.c $(HDR)
