@@ -61,7 +61,7 @@ test: tests
 	printf "test string\n" | ./t/testreadline
 	./t/testvars
 
-tests: $(TESTS)
+tests: $(OBJ) $(TESTS)
 
 install: $(TARGET)
 	@printf "%s\n" "installing"
