@@ -267,7 +267,6 @@ void build_funcs(struct prog_src (*prgm)[], char *ln)
 		append_flag(&(*prgm)[i].flags, NOT_IN_MAIN);
 		/* generate function buffers */
 		strmv(CONCAT, (*prgm)[i].funcs, ln);
-		strmv(CONCAT, (*prgm)[i].funcs, "\n");
 	}
 }
 

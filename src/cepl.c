@@ -287,19 +287,62 @@ int main(int argc, char *argv[])
 				size_t tok_sz = strlen(tok_buf) + 3;
 				for (size_t i = 0; i < 2; i++)
 					resize_buffer(&prog[i].funcs, &prog[i].f_sz, &prog[i].f_max, tok_sz, &vars, &types, &ids, &prog, &tok_buf);
-				build_funcs(&prog, tok_buf);
-				for (size_t i = 0; i < 2; i++) {
-					/* remove extra trailing ';' */
-					size_t len = strlen(prog[i].funcs) - 1;
-					for (size_t j = len; i > 0 && prog[i].funcs[j - 1] == ';'; j--) {
-						if (prog[i].funcs[j] == ';')
-							prog[i].funcs[j] = '\0';
+				switch (tok_buf[0]) {
+				/* dont append ';' for preprocessor directives */
+				case '#':
+					/* remove trailing ' ' and '\t' */
+					for (size_t i = strlen(tok_buf) - 1; i > 0; i--) {
+						if (tok_buf[i] != ' ' && tok_buf[i] != '\t')
+							break;
+						tok_buf[i] = '\0';
 					}
-					strmv(CONCAT, prog[i].funcs, "\n");
+					build_funcs(&prog, tok_buf);
+					for (size_t i = 0; i < 2; i++)
+						strmv(CONCAT, prog[i].funcs, "\n");
+					break;
+
+				default:
+					/* remove trailing ' ' and '\t' */
+					for (size_t i = strlen(tok_buf) - 1; i > 0; i--) {
+						if (tok_buf[i] != ' ' && tok_buf[i] != '\t')
+							break;
+						tok_buf[i] = '\0';
+					}
+					switch(tok_buf[strlen(tok_buf) - 1]) {
+					case '{': /* fallthough */
+					case '}': /* fallthough */
+					case ';': /* fallthough */
+					case '\\':
+						build_funcs(&prog, tok_buf);
+						for (size_t i = 0; i < 2; i++) {
+							/* remove extra trailing ';' */
+							size_t len = strlen(prog[i].funcs) - 1;
+							for (size_t j = len; i > 0 && prog[i].funcs[j - 1] == ';'; j--) {
+								if (prog[i].funcs[j] == ';')
+									prog[i].funcs[j] = '\0';
+							}
+							strmv(CONCAT, prog[i].funcs, "\n");
+						}
+						/* extract identifiers and types */
+						if (track_flag && find_vars(strip, &ids, &types))
+							gen_vlist(&vars, &ids, &types);
+						break;
+
+					default:
+						build_funcs(&prog, tok_buf);
+						/* append ';' if no trailing '}', ';', or '\' */
+						for (size_t i = 0; i < 2; i++)
+							strmv(CONCAT, prog[i].funcs, ";\n");
+						/* extract identifiers and types */
+						if (track_flag && find_vars(strip, &ids, &types))
+							gen_vlist(&vars, &ids, &types);
+					}
+					/* track variables */
+					if (track_flag && !strpbrk(tok_buf, "()")) {
+						if (find_vars(tok_buf, &ids, &types))
+							gen_vlist(&vars, &ids, &types);
+					}
 				}
-				/* track variables */
-				if (track_flag && !strpbrk(tok_buf, "()") && find_vars(tok_buf, &ids, &types))
-					gen_vlist(&vars, &ids, &types);
 				break;
 
 			/* show usage information */
@@ -391,8 +434,8 @@ int main(int argc, char *argv[])
 				break;
 
 			default:
-				/* append ';' if no trailing '}', ';', or '\' */
 				build_body(&prog, line);
+				/* append ';' if no trailing '}', ';', or '\' */
 				for (size_t i = 0; i < 2; i++)
 					strmv(CONCAT, prog[i].body, ";\n");
 				/* extract identifiers and types */
