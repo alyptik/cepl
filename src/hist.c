@@ -63,7 +63,7 @@ void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 	*out_file = NULL;
 }
 
-void free_buffers(struct prog_src (*prgm)[], char **ln)
+void free_buffers(struct prog_src (*prgm)[], enum var_type **tlist, char **ln)
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
@@ -73,9 +73,9 @@ void free_buffers(struct prog_src (*prgm)[], char **ln)
 		free(*ln);
 		*ln = NULL;
 	}
-	if (types) {
-		free(types);
-		types = NULL;
+	if (*tlist) {
+		free(*tlist);
+		*tlist = NULL;
 	}
 	/* free vectors */
 	if (cc_argv)
@@ -107,7 +107,7 @@ void free_buffers(struct prog_src (*prgm)[], char **ln)
 	}
 }
 
-void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], char **ln)
+void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], enum var_type **tlist, char **ln)
 {
 	/* user is truncated source for display */
 	(*prgm)[0].funcs = calloc(1, 1);
@@ -126,7 +126,7 @@ void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], char **ln)
 	/* sanity check */
 	for (size_t i = 0; i < 2; i++) {
 		if (!(*prgm)[i].funcs || !(*prgm)[i].body || !(*prgm)[i].total) {
-			free_buffers(prgm, ln);
+			free_buffers(prgm, tlist, ln);
 			cleanup();
 			ERR("prgm[2] calloc()");
 		}
@@ -154,7 +154,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
 	if (!buf_sz || !b_max) {
 		/* current length + line length + extra characters + \0 */
 		if (!(tmp = realloc(*buf, alloc_sz))) {
-			free_buffers(&prog, &line);
+			free_buffers(&prog, &types, &line);
 			cleanup();
 			ERR("resize_buffer()");
 		}
@@ -172,7 +172,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
 	while ((*b_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
 	if (!(tmp = realloc(*buf, *b_max))) {
-		free_buffers(&prog, &line);
+		free_buffers(&prog, &types, &line);
 		cleanup();
 		ERR("resize_buffer()");
 	}

@@ -20,6 +20,7 @@ extern bool track_flag;
 int main (void)
 {
 	struct var_list vars = {0, 0, NULL};
+	enum var_type *types = NULL;
 	char const optstring[] = "hptvwc:l:I:o:";
 	int argc = 0;
 	FILE volatile *output = NULL;
@@ -52,7 +53,7 @@ int main (void)
 	strmv(0, line, "int foobar");
 
 	/* initialize source buffers */
-	lives_ok({init_buffers(&vars, &prog, &line);}, "test buffer initialization.");
+	lives_ok({init_buffers(&vars, &prog, &types, &line);}, "test buffer initialization.");
 	/* initiatalize compiler arg array */
 	ok(cc_args != NULL, "test for non-NULL parse_opts() return.");
 	lives_ok({build_final(&prog, &vars, argv);}, "test initial program build success.");
@@ -77,7 +78,7 @@ int main (void)
 		lives_ok({pop_history(&prog[i]);}, "test pop_history() prog[%zu] call.", i);
 	lives_ok({build_final(&prog, &vars, argv);}, "test secondary program build success.");
 
-	lives_ok({free_buffers(&prog, &line);}, "test successful free_buffers() call.");
+	lives_ok({free_buffers(&prog, &types, &line);}, "test successful free_buffers() call.");
 
 	/* redirect stdout to /dev/null */
 	int saved_fd[2], null_fd;

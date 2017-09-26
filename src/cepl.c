@@ -69,13 +69,13 @@ static inline char *read_line(void)
 /* free_buffers() wrapper for at_quick_exit() registration */
 static inline void free_bufs(void)
 {
-	free_buffers(&prog, &line);
+	free_buffers(&prog, &types, &line);
 }
 
 /* general signal handling function */
 static inline void sig_handler(int sig)
 {
-	free_buffers(&prog, &line);
+	free_buffers(&prog, &types, &line);
 	cleanup();
 	raise(sig);
 }
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 	strmv(hist_len, hist_file, hist_name);
 
 	/* initialize source buffers */
-	init_buffers(&vars, &prog, &line);
+	init_buffers(&vars, &prog, &types, &line);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize prog[0].total and prog[1].total then print version */
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 			switch(strip[1]) {
 			/* clean up and exit program */
 			case 'q':
-				free_buffers(&prog, &line);
+				free_buffers(&prog, &types, &line);
 				cleanup();
 				exit(EXIT_SUCCESS);
 				/* unused break */
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
 				if (out_flag && !(ofile = fopen(tok_buf, "wb"))) {
-					free_buffers(&prog, &line);
+					free_buffers(&prog, &types, &line);
 					cleanup();
 					ERR("failed to create output file");
 				}
@@ -227,8 +227,8 @@ int main(int argc, char *argv[])
 
 			/* toggle library parsing */
 			case 'p':
-				free_buffers(&prog, &line);
-				init_buffers(&vars, &prog, &line);
+				free_buffers(&prog, &types, &line);
+				init_buffers(&vars, &prog, &types, &line);
 				/* toggle global parse flag */
 				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -237,8 +237,8 @@ int main(int argc, char *argv[])
 
 			/* toggle variable tracking */
 			case 't':
-				free_buffers(&prog, &line);
-				init_buffers(&vars, &prog, &line);
+				free_buffers(&prog, &types, &line);
+				init_buffers(&vars, &prog, &types, &line);
 				/* toggle global parse flag */
 				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -247,8 +247,8 @@ int main(int argc, char *argv[])
 
 			/* toggle warnings */
 			case 'w':
-				free_buffers(&prog, &line);
-				init_buffers(&vars, &prog, &line);
+				free_buffers(&prog, &types, &line);
+				init_buffers(&vars, &prog, &types, &line);
 				/* toggle global warning flag */
 				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -257,8 +257,8 @@ int main(int argc, char *argv[])
 
 			/* reset state */
 			case 'r':
-				free_buffers(&prog, &line);
-				init_buffers(&vars, &prog, &line);
+				free_buffers(&prog, &types, &line);
+				init_buffers(&vars, &prog, &types, &line);
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
 			printf("[exit status: %d]\n", ret);
 	}
 
-	free_buffers(&prog, &line);
+	free_buffers(&prog, &types, &line);
 	cleanup();
 	return 0;
 }
