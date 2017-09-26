@@ -49,21 +49,21 @@ void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-void write_file(FILE volatile **out_file, struct prog_src prgm[])
+void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 {
 	/* return early if no file open */
-	if (!out_file || !*out_file || !prgm || !prgm[1].total)
+	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
 		return;
 	/* write out program to file */
 	FILE *output = (FILE *)*out_file;
-	fwrite(prgm[1].total, strlen(prgm[1].total), 1, output);
+	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, output);
 	fputc('\n', output);
 	fflush(NULL);
 	fclose(output);
 	*out_file = NULL;
 }
 
-void free_buffers(char *ln, struct prog_src prgm[])
+void free_buffers(struct prog_src (*prgm)[], char *ln)
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
@@ -90,96 +90,97 @@ void free_buffers(char *ln, struct prog_src prgm[])
 	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
-		if (prgm[i].funcs)
-			free(prgm[i].funcs);
-		if (prgm[i].body)
-			free(prgm[i].body);
-		if (prgm[i].total)
-			free(prgm[i].total);
-		if (prgm[i].flags.list)
-			free(prgm[i].flags.list);
-		free_str_list(&prgm[i].hist);
-		free_str_list(&prgm[i].lines);
-		prgm[i].b_sz = prgm[i].f_sz = prgm[i].t_sz = 0;
-		prgm[i].b_max = prgm[i].f_max = prgm[i].t_max = 1;
+		if ((*prgm)[i].funcs)
+			free((*prgm)[i].funcs);
+		if ((*prgm)[i].body)
+			free((*prgm)[i].body);
+		if ((*prgm)[i].total)
+			free((*prgm)[i].total);
+		if ((*prgm)[i].flags.list)
+			free((*prgm)[i].flags.list);
+		free_str_list(&(*prgm)[i].hist);
+		free_str_list(&(*prgm)[i].lines);
+		(*prgm)[i].b_sz = (*prgm)[i].f_sz = (*prgm)[i].t_sz = 0;
+		(*prgm)[i].b_max = (*prgm)[i].f_max = (*prgm)[i].t_max = 1;
 		/* `(void *)` casts needed to chain diff ptr types */
-		prgm[i].body = prgm[i].funcs = prgm[i].total = (void *)(prgm[i].flags.list = NULL);
+		(*prgm)[i].body = (*prgm)[i].funcs = (*prgm)[i].total = (void *)((*prgm)[i].flags.list = NULL);
 	}
 }
 
-void init_buffers(char *ln, struct prog_src prgm[])
+void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], char *ln)
 {
 	/* user is truncated source for display */
-	prgm[0].funcs = calloc(1, 1);
-	prgm[0].body = calloc(1, strlen(prog_start_user) + 1);
-	prgm[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
-	prgm[0].f_sz = prgm[0].f_max = 1;
-	prgm[0].b_sz = prgm[0].b_max = strlen(prog_start_user) + 1;
-	prgm[0].t_sz = prgm[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
+	(*prgm)[0].funcs = calloc(1, 1);
+	(*prgm)[0].body = calloc(1, strlen(prog_start_user) + 1);
+	(*prgm)[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
+	(*prgm)[0].f_sz = (*prgm)[0].f_max = 1;
+	(*prgm)[0].b_sz = (*prgm)[0].b_max = strlen(prog_start_user) + 1;
+	(*prgm)[0].t_sz = (*prgm)[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	prgm[1].funcs = calloc(1, strlen(prelude) + 1);
-	prgm[1].body = calloc(1, strlen(prog_start) + 1);
-	prgm[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
-	prgm[1].f_sz = prgm[1].f_max = strlen(prelude) + 1;
-	prgm[1].b_sz = prgm[1].b_max = strlen(prog_start) + 1;
-	prgm[1].t_sz = prgm[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
+	(*prgm)[1].funcs = calloc(1, strlen(prelude) + 1);
+	(*prgm)[1].body = calloc(1, strlen(prog_start) + 1);
+	(*prgm)[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
+	(*prgm)[1].f_sz = (*prgm)[1].f_max = strlen(prelude) + 1;
+	(*prgm)[1].b_sz = (*prgm)[1].b_max = strlen(prog_start) + 1;
+	(*prgm)[1].t_sz = (*prgm)[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
 	/* sanity check */
 	for (size_t i = 0; i < 2; i++) {
-		if (!prgm[i].funcs || !prgm[i].body || !prgm[i].total) {
-			free_buffers(ln, prgm);
+		if (!(*prgm)[i].funcs || !(*prgm)[i].body || !(*prgm)[i].total) {
+			free_buffers(prgm, ln);
 			cleanup();
 			ERR("prgm[2] calloc()");
 		}
 	}
 	/* no memcpy for prgm[0].funcs */
-	strmv(0, prgm[0].body, prog_start_user);
-	strmv(0, prgm[1].funcs, prelude);
-	strmv(0, prgm[1].body, prog_start);
+	strmv(0, (*prgm)[0].body, prog_start_user);
+	strmv(0, (*prgm)[1].funcs, prelude);
+	strmv(0, (*prgm)[1].body, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
-		init_list(&prgm[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_list(&prgm[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_flag_list(&prgm[i].flags);
+		init_list(&(*prgm)[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_list(&(*prgm)[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_flag_list(&(*prgm)[i].flags);
 	}
-	init_vlist(&vars);
+	init_vlist(vlist);
 }
 
-void resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
+size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
 {
 	/* sanity check */
 	if (!buf || !*buf)
-		return;
+		return 0;
 	char *tmp;
 	size_t alloc_sz = strlen(*buf) + strlen(line) + off + 1;
 	if (!buf_sz || !b_max) {
 		/* current length + line length + extra characters + \0 */
 		if (!(tmp = realloc(*buf, alloc_sz))) {
-			free_buffers(line, prog);
+			free_buffers(&prog, line);
 			cleanup();
 			ERR("resize_buffer()");
 		}
 		*buf = tmp;
-	} else {
-		*buf_sz += alloc_sz;
-		/* realloc only if b_max is less than current size */
-		if (*buf_sz < *b_max)
-			return;
-		/* check if size too large */
-		if (*buf_sz > MAX)
-			ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
-		/* double until size is reached */
-		while ((*b_max *= 2) < *buf_sz);
-		/* current length + line length + extra characters + \0 */
-		if (!(tmp = realloc(*buf, *b_max))) {
-			free_buffers(line, prog);
-			cleanup();
-			ERR("resize_buffer()");
-		}
-		*buf = tmp;
+		return alloc_sz;
 	}
+	*buf_sz += alloc_sz;
+	/* realloc only if b_max is less than current size */
+	if (*buf_sz < *b_max)
+		return 0;
+	/* check if size too large */
+	if (*buf_sz > MAX)
+		ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
+	/* double until size is reached */
+	while ((*b_max *= 2) < *buf_sz);
+	/* current length + line length + extra characters + \0 */
+	if (!(tmp = realloc(*buf, *b_max))) {
+		free_buffers(&prog, line);
+		cleanup();
+		ERR("resize_buffer()");
+	}
+	*buf = tmp;
+	return *buf_sz;
 }
 
-void pop_history(struct prog_src prgm[])
+void pop_history(struct prog_src *prgm)
 {
 	switch(prgm->flags.list[--prgm->flags.cnt]) {
 	case NOT_IN_MAIN:
@@ -241,38 +242,47 @@ void dedup_history(char *ln)
 	add_history(strip);
 }
 
-void build_body(struct prog_src prgm[], char *ln)
+void build_body(struct prog_src (*prgm)[], char *ln)
 {
+	/* sanity check */
+	if (!prgm)
+		return;
 	for (size_t i = 0; i < 2; i++) {
-		append_str(&prgm[i].lines, ln, 0);
-		append_str(&prgm[i].hist, prgm[i].body, 0);
-		append_flag(&prgm[i].flags, IN_MAIN);
-		strmv(CONCAT, prgm[i].body, "\t");
-		strmv(CONCAT, prgm[i].body, ln);
+		append_str(&(*prgm)[i].lines, ln, 0);
+		append_str(&(*prgm)[i].hist, (*prgm)[i].body, 0);
+		append_flag(&(*prgm)[i].flags, IN_MAIN);
+		strmv(CONCAT, (*prgm)[i].body, "\t");
+		strmv(CONCAT, (*prgm)[i].body, ln);
 	}
 }
 
-void build_funcs(struct prog_src prgm[], char *ln)
+void build_funcs(struct prog_src (*prgm)[], char *ln)
 {
+	/* sanity check */
+	if (!prgm)
+		return;
 	for (size_t i = 0; i < 2; i++) {
-		append_str(&prgm[i].lines, ln, 0);
-		append_str(&prgm[i].hist, prgm[i].funcs, 0);
-		append_flag(&prgm[i].flags, NOT_IN_MAIN);
+		append_str(&(*prgm)[i].lines, ln, 0);
+		append_str(&(*prgm)[i].hist, (*prgm)[i].funcs, 0);
+		append_flag(&(*prgm)[i].flags, NOT_IN_MAIN);
 		/* generate function buffers */
-		strmv(CONCAT, prgm[i].funcs, ln);
-		strmv(CONCAT, prgm[i].funcs, "\n");
+		strmv(CONCAT, (*prgm)[i].funcs, ln);
+		strmv(CONCAT, (*prgm)[i].funcs, "\n");
 	}
 }
 
-void build_final(struct prog_src prgm[], struct var_list vlist, char *argv[])
+void build_final(struct prog_src (*prgm)[], struct var_list vlist, char *argv[])
 {
+	/* sanity check */
+	if (!prgm)
+		return;
 	/* finish building current iteration of source code */
 	for (size_t i = 0; i < 2; i++) {
-		strmv(0, prgm[i].total, prgm[i].funcs);
-		strmv(CONCAT, prgm[i].total, prgm[i].body);
+		strmv(0, (*prgm)[i].total, (*prgm)[i].funcs);
+		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].body);
 		/* print variable values */
 		if (track_flag && i == 1)
-			print_vars(&vlist, prgm[i].total, cc_argv, argv);
-		strmv(CONCAT, prgm[i].total, prog_end);
+			print_vars(&vlist, (*prgm)[i].total, cc_argv, argv);
+		strmv(CONCAT, (*prgm)[i].total, prog_end);
 	}
 }
