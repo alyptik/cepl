@@ -26,7 +26,7 @@ TOBJ := $(patsubst %.c,%.o,$(TSRC))
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 
-all: check
+all: test
 
 %:
 	$(LD) $(LDFLAGS) $(filter %.o,$^) $(LIBS) -o $@
@@ -50,12 +50,9 @@ $(OBJ): %.o: %.c $(HDR)
 
 $(TOBJ): %.o: %.c $(HDR)
 
-check: CFLAGS := $(RELEASE) $(CFLAGS)
-check: LDFLAGS := $(RELEASE) $(LDFLAGS)
-check: $(TARGET)
-check: test
-
-test: tests
+check test: CFLAGS := $(RELEASE) $(CFLAGS)
+check test: LDFLAGS := $(RELEASE) $(LDFLAGS)
+check test: $(TARGET) tests
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts
