@@ -10,329 +10,71 @@
 #	define _GNU_SOURCE
 #endif
 
-#include "errs.h"
 #include "compile.h"
+#include "errs.h"
+#include "hist.h"
 #include "parseopts.h"
 #include "readline.h"
 #include "vars.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 
-/* source file includes template */
-static char const prelude[] = "#define _BSD_SOURCE\n"
-	"#define _DEFAULT_SOURCE\n"
-	"#define _GNU_SOURCE\n"
-	"#define _POSIX_C_SOURCE 200809L\n"
-	"#define _SVID_SOURCE\n"
-	"#define _XOPEN_SOURCE 700\n\n"
-	"#include <assert.h>\n"
-	"#include <ctype.h>\n"
-	"#include <error.h>\n"
-	"#include <errno.h>\n"
-	"#include <fcntl.h>\n"
-	"#include <limits.h>\n"
-	"#include <math.h>\n"
-	"#include <regex.h>\n"
-	"#include <signal.h>\n"
-	"#include <stdalign.h>\n"
-	"#include <stdarg.h>\n"
-	"#include <stdbool.h>\n"
-	"#include <stddef.h>\n"
-	"#include <stdint.h>\n"
-	"#include <stdio.h>\n"
-	"#include <stdlib.h>\n"
-	"#include <stdnoreturn.h>\n"
-	"#include <string.h>\n"
-	"#include <strings.h>\n"
-	"#include <time.h>\n"
-	"#include <uchar.h>\n"
-	"#include <wchar.h>\n"
-	"#include <unistd.h>\n"
-	"#include <linux/memfd.h>\n"
-	"#include <sys/mman.h>\n"
-	"#include <sys/types.h>\n"
-	"#include <sys/syscall.h>\n"
-	"#include <sys/wait.h>\n\n"
-	"extern char **environ;\n"
-	"#line 1\n";
-/* compiler pre-program */
-static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
-	"{(void)argc; (void)argv;\n"
-	"\n";
-/* pre-program shown to user */
-static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
-	"{\n";
-static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
-/* line and token buffers */
-static char *line, *tok_buf;
-/* compiler arg array */
-static char **cc_argv;
-/* readline history variables */
-static char *hist_file;
-/* output file */
-static FILE volatile *ofile;
-/* program source strucs (prog[0] is truncated for interactive printing) */
-static struct prog_src prog[2];
-static struct str_list ids;
-static struct var_list vars;
-static enum var_type *types;
-static bool has_hist = false;
 
+/* `-o` flag output file */
+extern FILE volatile *ofile;
+/* output file buffer */
+extern char *hist_file;
+/* line and token buffers */
+extern char *line, *tok_buf;
+/* program source strucs (prog[0] is truncated for interactive printing) */
+extern struct prog_src prog[2];
+/* compiler arg array */
+extern char **cc_argv;
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flag for warnings and completions */
 extern bool warn_flag, parse_flag, track_flag, out_flag;
+/* history file flag */
+extern bool has_hist;
+/* type, identifier, and var lists */
+extern enum var_type *types;
+extern struct str_list ids;
+extern struct var_list vars;
 
-static inline void write_file(void) {
-	/* return early if no file open */
-	if (!ofile)
-		return;
-	/* write out program to file */
-	FILE *output = (FILE *)ofile;
-	fwrite(prog[1].total, strlen(prog[1].total), 1, output);
-	fputc('\n', output);
-	fflush(NULL);
-	fclose(output);
-	ofile = NULL;
-}
-
-static inline void free_buffers(void)
+static inline char *read_line(void)
 {
-	/* write out history before freeing buffers */
-	write_file();
-	free_str_list(&ids);
-	/* clean up user data */
+	/* cleanup old buffer */
 	if (line) {
 		free(line);
 		line = NULL;
 	}
-	if (types) {
-		free(types);
-		types = NULL;
-	}
-	/* free vectors */
-	if (cc_argv)
-		free_argv(&cc_argv);
-	if (vars.list) {
-		for (size_t i = 0; i < vars.cnt; i++) {
-			if (vars.list[i].key)
-				free(vars.list[i].key);
-		}
-		free(vars.list);
-		vars.list = NULL;
-	}
-	/* free program structs */
-	for (size_t i = 0; i < 2; i++) {
-		if (prog[i].funcs)
-			free(prog[i].funcs);
-		if (prog[i].body)
-			free(prog[i].body);
-		if (prog[i].total)
-			free(prog[i].total);
-		if (prog[i].flags.list)
-			free(prog[i].flags.list);
-		free_str_list(&prog[i].hist);
-		free_str_list(&prog[i].lines);
-		prog[i].b_sz = prog[i].f_sz = prog[i].t_sz = 0;
-		prog[i].b_max = prog[i].f_max = prog[i].t_max = 1;
-		/* `(void *)` casts needed to chain diff ptr types */
-		prog[i].body = prog[i].funcs = prog[i].total = (void *)(prog[i].flags.list = NULL);
-	}
-}
-
-static inline void cleanup(void)
-{
-	/* free generated completions */
-	free_str_list(&comp_list);
-	/* append history to history file */
-	if (has_hist) {
-		if (write_history(hist_file)) {
-			WARN("write_history()");
-		}
-	}
-	if (hist_file) {
-		free(hist_file);
-		hist_file = NULL;
-	}
-	if (isatty(STDIN_FILENO))
-		printf("\n%s\n\n", "Terminating program.");
-}
-
-static inline void init_buffers(void)
-{
-	/* user is truncated source for display */
-	prog[0].funcs = calloc(1, 1);
-	prog[0].body = calloc(1, strlen(prog_start_user) + 1);
-	prog[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
-	prog[0].f_sz = prog[0].f_max = 1;
-	prog[0].b_sz = prog[0].b_max = strlen(prog_start_user) + 1;
-	prog[0].t_sz = prog[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
-	/* actual is source passed to compiler */
-	prog[1].funcs = calloc(1, strlen(prelude) + 1);
-	prog[1].body = calloc(1, strlen(prog_start) + 1);
-	prog[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
-	prog[1].f_sz = prog[1].f_max = strlen(prelude) + 1;
-	prog[1].b_sz = prog[1].b_max = strlen(prog_start) + 1;
-	prog[1].t_sz = prog[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
-	/* sanity check */
-	for (size_t i = 0; i < 2; i++) {
-		if (!prog[i].funcs || !prog[i].body || !prog[i].total) {
-			free_buffers();
-			cleanup();
-			ERR("prog[2] calloc()");
-		}
-	}
-	/* no memcpy for prog[0].funcs */
-	strmv(0, prog[0].body, prog_start_user);
-	strmv(0, prog[1].funcs, prelude);
-	strmv(0, prog[1].body, prog_start);
-	/* init source history and flag lists */
-	for (size_t i = 0; i < 2; i++) {
-		init_list(&prog[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_list(&prog[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_flag_list(&prog[i].flags);
-	}
-	init_vlist(&vars);
-}
-
-static inline void resize_buffer(char **buf, size_t *buf_sz, size_t *buf_max, size_t offset)
-{
-	/* sanity check */
-	if (!buf || !*buf)
-		return;
-	char *tmp;
-	size_t alloc_sz = strlen(*buf) + strlen(line) + offset + 1;
-	if (!buf_sz || !buf_max) {
-		/* current length + line length + extra characters + \0 */
-		if (!(tmp = realloc(*buf, alloc_sz))) {
-			free_buffers();
-			cleanup();
-			ERR("resize_buffer()");
-		}
-		*buf = tmp;
+	/* use an empty prompt if stdin is a pipe */
+	if (isatty(STDIN_FILENO)) {
+		line = readline("\n>>> ");
 	} else {
-		*buf_sz += alloc_sz;
-		/* realloc only if buf_max is less than current size */
-		if (*buf_sz < *buf_max)
-			return;
-		/* check if size too large */
-		if (*buf_sz > MAX)
-			ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
-		/* double until size is reached */
-		while ((*buf_max *= 2) < *buf_sz);
-		/* current length + line length + extra characters + \0 */
-		if (!(tmp = realloc(*buf, *buf_max))) {
-			free_buffers();
-			cleanup();
-			ERR("resize_buffer()");
-		}
-		*buf = tmp;
+		/* redirect stdout to /dev/null */
+		FILE *null;
+		if (!(null = fopen("/dev/null", "r+b")))
+			ERR("read_line() fopen()");
+		rl_outstream = null;
+		line = readline(NULL);
+		rl_outstream = NULL;
+		fclose(null);
 	}
+	return line;
 }
 
-static inline void build_funcs(void)
+/* free_buffers() wrapper for at_quick_exit() registration */
+static inline void free_bufs(void)
 {
-	for (size_t i = 0; i < 2; i++) {
-		append_str(&prog[i].lines, tok_buf, 0);
-		append_str(&prog[i].hist, prog[i].funcs, 0);
-		append_flag(&prog[i].flags, NOT_IN_MAIN);
-		/* generate function buffers */
-		strmv(CONCAT, prog[i].funcs, tok_buf);
-		strmv(CONCAT, prog[i].funcs, "\n");
-	}
-}
-
-static inline void build_body(void)
-{
-	for (size_t i = 0; i < 2; i++) {
-		append_str(&prog[i].lines, line, 0);
-		append_str(&prog[i].hist, prog[i].body, 0);
-		append_flag(&prog[i].flags, IN_MAIN);
-		strmv(CONCAT, prog[i].body, "\t");
-		strmv(CONCAT, prog[i].body, line);
-	}
-}
-
-static inline void build_final(char *argv[])
-{
-	/* finish building current iteration of source code */
-	for (size_t i = 0; i < 2; i++) {
-		strmv(0, prog[i].total, prog[i].funcs);
-		strmv(CONCAT, prog[i].total, prog[i].body);
-		/* print variable values */
-		if (track_flag && i == 1)
-			print_vars(&vars, prog[i].total, cc_argv, argv);
-		strmv(CONCAT, prog[i].total, prog_end);
-	}
-}
-
-static inline void pop_history(struct prog_src *prgm)
-{
-	switch(prgm->flags.list[--prgm->flags.cnt]) {
-	case NOT_IN_MAIN:
-		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
-		strmv(0, prgm->funcs, prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->lines.list[prgm->lines.cnt]);
-		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
-		break;
-	case IN_MAIN:
-		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
-		strmv(0, prgm->body, prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->lines.list[prgm->lines.cnt]);
-		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
-		break;
-	case EMPTY: /* fallthrough */
-	default:
-		/* revert decrement */
-		prgm->flags.cnt++;
-	}
-}
-
-/* look for current line in readline history */
-static inline void dedup_history(void)
-{
-	/* return early on empty input */
-	if (!line || !*line)
-		return;
-	/* strip leading whitespace */
-	char *strip = line;
-	strip += strspn(line, " \t");
-	/* search forward and backward in history */
-	int cur_hist = where_history();
-	for (int i = -1; i < 2; i += 2) {
-		/* seek backwords or forwards */
-		HIST_ENTRY *(*seek_hist)(void) = (i < 0) ? &previous_history : &next_history;
-		while (history_search_prefix(strip, i) != -1) {
-			/* if this line is already in the history, remove the earlier entry */
-			HIST_ENTRY *ent = current_history();
-			/* skip if NULL or not a complete match */
-			if (!ent || !ent->line || strcmp(line, ent->line)) {
-				/* break if at end of list */
-				if (!seek_hist())
-					break;
-				continue;
-			}
-			/* remove and free data */
-			remove_history(where_history());
-			/* free application data */
-			histdata_t data = free_history_entry(ent);
-			if (data)
-				free(data);
-		}
-		history_set_pos(cur_hist);
-	}
-	/* reset history position and add the line */
-	history_set_pos(cur_hist);
-	add_history(strip);
+	free_buffers(line, prog);
 }
 
 static inline void sig_handler(int sig)
 {
-	free_buffers();
+	free_buffers(line, prog);
 	cleanup();
 	raise(sig);
 }
@@ -360,31 +102,8 @@ static inline void reg_handlers(void)
 	}
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
-	if (at_quick_exit(&free_buffers))
-		WARN("at_quick_exit(&free_buffers)");
-}
-
-static inline char *read_line(void)
-{
-	/* cleanup old buffer */
-	if (line) {
-		free(line);
-		line = NULL;
-	}
-	/* use an empty prompt if stdin is a pipe */
-	if (isatty(STDIN_FILENO)) {
-		line = readline("\n>>> ");
-	} else {
-		/* redirect stdout to /dev/null */
-		FILE *null;
-		if (!(null = fopen("/dev/null", "r+b")))
-			ERR("read_line() fopen()");
-		rl_outstream = null;
-		line = readline(NULL);
-		rl_outstream = NULL;
-		fclose(null);
-	}
-	return line;
+	if (at_quick_exit(&free_bufs))
+		WARN("at_quick_exit(&free_bufs)");
 }
 
 int main(int argc, char *argv[])
@@ -412,11 +131,11 @@ int main(int argc, char *argv[])
 	strmv(hist_len, hist_file, hist_name);
 
 	/* initialize source buffers */
-	init_buffers();
+	init_buffers(line, prog);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize prog[0].total and prog[1].total then print version */
-	build_final(argv);
+	build_final(prog, vars, argv);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n", VERSION_STRING);
 	/* enable completion */
@@ -455,7 +174,7 @@ int main(int argc, char *argv[])
 		if ((tok_buf = strpbrk(line, "\f\r\n")))
 			tok_buf[0] = '\0';
 		/* add and dedup history */
-		dedup_history();
+		dedup_history(line);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
@@ -473,7 +192,7 @@ int main(int argc, char *argv[])
 			switch(strip[1]) {
 			/* clean up and exit program */
 			case 'q':
-				free_buffers();
+				free_buffers(line, prog);
 				cleanup();
 				exit(EXIT_SUCCESS);
 				/* unused break */
@@ -485,7 +204,7 @@ int main(int argc, char *argv[])
 				out_flag ^= true;
 				/* if file was open, close it and break early */
 				if (!out_flag) {
-					write_file();
+					write_file(&ofile, prog);
 					break;
 				}
 				tok_buf = strpbrk(strip, " \t");
@@ -499,7 +218,7 @@ int main(int argc, char *argv[])
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
 				if (out_flag && !(ofile = fopen(tok_buf, "wb"))) {
-					free_buffers();
+					free_buffers(line, prog);
 					cleanup();
 					ERR("failed to create output file");
 				}
@@ -507,8 +226,8 @@ int main(int argc, char *argv[])
 
 			/* toggle library parsing */
 			case 'p':
-				free_buffers();
-				init_buffers();
+				free_buffers(line, prog);
+				init_buffers(line, prog);
 				/* toggle global parse flag */
 				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -517,8 +236,8 @@ int main(int argc, char *argv[])
 
 			/* toggle variable tracking */
 			case 't':
-				free_buffers();
-				init_buffers();
+				free_buffers(line, prog);
+				init_buffers(line, prog);
 				/* toggle global parse flag */
 				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -527,8 +246,8 @@ int main(int argc, char *argv[])
 
 			/* toggle warnings */
 			case 'w':
-				free_buffers();
-				init_buffers();
+				free_buffers(line, prog);
+				init_buffers(line, prog);
 				/* toggle global warning flag */
 				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -537,8 +256,8 @@ int main(int argc, char *argv[])
 
 			/* reset state */
 			case 'r':
-				free_buffers();
-				init_buffers();
+				free_buffers(line, prog);
+				init_buffers(line, prog);
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
@@ -557,7 +276,7 @@ int main(int argc, char *argv[])
 				size_t tok_sz = strlen(tok_buf) + 3;
 				for (size_t i = 0; i < 2; i++)
 					resize_buffer(&prog[i].funcs, &prog[i].f_sz, &prog[i].f_max, tok_sz);
-				build_funcs();
+				build_funcs(prog, tok_buf);
 				/* TODO: find a workaround for var tracking getting in the way of functions */
 				/* if (track_flag && find_vars(tok_buf, &ids, &types)) */
 				/*         gen_vlist(&vars, &ids, &types); */
@@ -616,7 +335,7 @@ int main(int argc, char *argv[])
 			for (size_t i = strlen(strip) - 1; i > 0 && (strip[i] == ' ' || strip[i] == '\t'); i--)
 				strip[i] = '\0';
 			/* start building program source */
-			build_body();
+			build_body(prog, line);
 			for (size_t i = 0; i < 2; i++)
 				strmv(CONCAT, prog[i].body, "\n");
 			break;
@@ -630,7 +349,7 @@ int main(int argc, char *argv[])
 			case '}': /* fallthough */
 			case ';': /* fallthough */
 			case '\\':
-				build_body();
+				build_body(prog, line);
 				for (size_t i = 0; i < 2; i++) {
 					/* remove extra trailing ';' */
 					size_t len = strlen(prog[i].body) - 1;
@@ -646,7 +365,7 @@ int main(int argc, char *argv[])
 				break;
 			default:
 				/* append ';' if no trailing '}', ';', or '\' */
-				build_body();
+				build_body(prog, line);
 				for (size_t i = 0; i < 2; i++)
 					strmv(CONCAT, prog[i].body, ";\n");
 				/* extract identifiers and types */
@@ -656,7 +375,7 @@ int main(int argc, char *argv[])
 		}
 
 		/* finalize source */
-		build_final(argv);
+		build_final(prog, vars, argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
 			printf("\n%s:\n==========\n%s\n==========\n", argv[0], prog[0].total);
@@ -666,7 +385,7 @@ int main(int argc, char *argv[])
 			printf("[exit status: %d]\n", ret);
 	}
 
-	free_buffers();
+	free_buffers(line, prog);
 	cleanup();
 	return 0;
 }

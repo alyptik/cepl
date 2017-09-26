@@ -14,8 +14,10 @@ int getopt_long(int ___argc, char *const ___argv[], char const *__shortopts, str
 FILE *fdopen(int __fd, char const *__modes);
 ssize_t getline(char **__lineptr, size_t *__n, FILE *__stream);
 
-/* global toggle flag for warnings and completions */
+/* global toggle flags */
 bool warn_flag = false, parse_flag = true, track_flag = true, out_flag = false;
+/* global compiler arg array */
+char **cc_argv;
 
 static struct option long_opts[] = {
 	{"help", no_argument, 0, 'h'},
