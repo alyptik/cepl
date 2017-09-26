@@ -20,6 +20,7 @@ extern bool track_flag;
 int main (void)
 {
 	struct var_list vars = {0, 0, NULL};
+	struct str_list ids = {0, 0, NULL};
 	enum var_type *types = NULL;
 	char const optstring[] = "hptvwc:l:I:o:";
 	int argc = 0;
@@ -53,18 +54,18 @@ int main (void)
 	strmv(0, line, "int foobar");
 
 	/* initialize source buffers */
-	lives_ok({init_buffers(&vars, &prog, &types, &line);}, "test buffer initialization.");
+	lives_ok({init_buffers(&vars, &types, &ids, &prog, &line);}, "test buffer initialization.");
 	/* initiatalize compiler arg array */
 	ok(cc_args != NULL, "test for non-NULL parse_opts() return.");
 	lives_ok({build_final(&prog, &vars, argv);}, "test initial program build success.");
 
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok(resize_buffer(&prog[0].body, &prog[0].b_sz, &prog[0].b_max, 3) != 0, "test `b_sz[0] != 0`.");
-	ok(resize_buffer(&prog[0].total, &prog[0].t_sz, &prog[0].t_max, 3) != 0, "test `t_sz[0] != 0`.");
+	ok(resize_buffer(&prog[0].body, &prog[0].b_sz, &prog[0].b_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `b_sz[0] != 0`.");
+	ok(resize_buffer(&prog[0].total, &prog[0].t_sz, &prog[0].t_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `t_sz[0] != 0`.");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok(resize_buffer(&prog[1].body, &prog[1].b_sz, &prog[1].b_max, 3) != 0, "test `b_sz[1] != 0`.");
-	ok(resize_buffer(&prog[1].total, &prog[1].t_sz, &prog[1].t_max, 3) != 0, "test `t_sz[1] != 0`.");
-	ok(resize_buffer(&prog[1].funcs, &prog[1].f_sz, &prog[1].f_max, 3) != 0, "test `f_sz != 0`.");
+	ok(resize_buffer(&prog[1].body, &prog[1].b_sz, &prog[1].b_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `b_sz[1] != 0`.");
+	ok(resize_buffer(&prog[1].total, &prog[1].t_sz, &prog[1].t_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `t_sz[1] != 0`.");
+	ok(resize_buffer(&prog[1].funcs, &prog[1].f_sz, &prog[1].f_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `f_sz != 0`.");
 
 	lives_ok({build_body(&prog, line);}, "test program body build success.");
 	/* add line endings */
@@ -78,7 +79,7 @@ int main (void)
 		lives_ok({pop_history(&prog[i]);}, "test pop_history() prog[%zu] call.", i);
 	lives_ok({build_final(&prog, &vars, argv);}, "test secondary program build success.");
 
-	lives_ok({free_buffers(&prog, &types, &line);}, "test successful free_buffers() call.");
+	lives_ok({free_buffers(&vars, &types, &ids, &prog, &line);}, "test successful free_buffers() call.");
 
 	/* redirect stdout to /dev/null */
 	int saved_fd[2], null_fd;

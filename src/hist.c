@@ -18,10 +18,6 @@ extern struct str_list comp_list;
 char *hist_file;
 /* `-o` flag output file */
 FILE volatile *ofile;
-/* line and token buffers */
-char *line, *tok_buf;
-/* global output file */
-FILE volatile *ofile;
 /* program source strucs (prog[0] is truncated for interactive printing) */
 struct prog_src prog[2];
 /* global history file flag */
@@ -63,11 +59,11 @@ void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 	*out_file = NULL;
 }
 
-void free_buffers(struct prog_src (*prgm)[], enum var_type **tlist, char **ln)
+void free_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
-	free_str_list(&ids);
+	free_str_list(ilist);
 	/* clean up user data */
 	if (*ln) {
 		free(*ln);
@@ -80,13 +76,13 @@ void free_buffers(struct prog_src (*prgm)[], enum var_type **tlist, char **ln)
 	/* free vectors */
 	if (cc_argv)
 		free_argv(&cc_argv);
-	if (vars.list) {
-		for (size_t i = 0; i < vars.cnt; i++) {
-			if (vars.list[i].key)
-				free(vars.list[i].key);
+	if (vlist->list) {
+		for (size_t i = 0; i < vlist->cnt; i++) {
+			if (vlist->list[i].key)
+				free(vlist->list[i].key);
 		}
-		free(vars.list);
-		vars.list = NULL;
+		free(vlist->list);
+		vlist->list = NULL;
 	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
@@ -107,7 +103,7 @@ void free_buffers(struct prog_src (*prgm)[], enum var_type **tlist, char **ln)
 	}
 }
 
-void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], enum var_type **tlist, char **ln)
+void init_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* user is truncated source for display */
 	(*prgm)[0].funcs = calloc(1, 1);
@@ -126,7 +122,7 @@ void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], enum var_ty
 	/* sanity check */
 	for (size_t i = 0; i < 2; i++) {
 		if (!(*prgm)[i].funcs || !(*prgm)[i].body || !(*prgm)[i].total) {
-			free_buffers(prgm, tlist, ln);
+			free_buffers(vlist, tlist, ilist, prgm, ln);
 			cleanup();
 			ERR("prgm[2] calloc()");
 		}
@@ -144,17 +140,17 @@ void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], enum var_ty
 	init_vlist(vlist);
 }
 
-size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
+size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* sanity check */
-	if (!buf || !*buf)
+	if (!buf || !*buf || !ln)
 		return 0;
 	char *tmp;
-	size_t alloc_sz = strlen(*buf) + strlen(line) + off + 1;
+	size_t alloc_sz = strlen(*buf) + strlen(*ln) + off + 1;
 	if (!buf_sz || !b_max) {
 		/* current length + line length + extra characters + \0 */
 		if (!(tmp = realloc(*buf, alloc_sz))) {
-			free_buffers(&prog, &types, &line);
+			free_buffers(vlist, tlist, ilist, prgm, ln);
 			cleanup();
 			ERR("resize_buffer()");
 		}
@@ -172,7 +168,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
 	while ((*b_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
 	if (!(tmp = realloc(*buf, *b_max))) {
-		free_buffers(&prog, &types, &line);
+		free_buffers(vlist, tlist, ilist, prgm, ln);
 		cleanup();
 		ERR("resize_buffer()");
 	}
