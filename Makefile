@@ -51,10 +51,12 @@ $(OBJ): %.o: %.c $(HDR)
 $(TOBJ): %.o: %.c $(HDR)
 
 check test: tests
-	printf "test string\n" | ./t/testreadline
 	./t/testcompile
+	./t/testhist
 	./t/testparseopts
+	printf "test string\n" | ./t/testreadline
 	./t/testvars
+
 
 tests: $(TESTS)
 
