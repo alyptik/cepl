@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	("CEPL v4.4.2")
+#define VERSION_STRING	("CEPL v4.4.3")
 #define USAGE_STRING	("[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
@@ -147,8 +147,7 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	if (!dest || !src)
 		ERRX("NULL pointer passed to strmv()");
 	ptrdiff_t src_sz;
-	char *src_ptr = memchr(src, '\0', COUNT);
-	char *dest_ptr;
+	char *dest_ptr = NULL, *src_ptr = memchr(src, '\0', COUNT);
 	if (off >= 0) {
 		dest_ptr = dest + off;
 	} else {
