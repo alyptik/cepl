@@ -9,8 +9,8 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD := $(CC)
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-CFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
-CFLAGS += -Wunused-command-line-argument -Wno-unknown-warning-option
+CFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold
+CFLAGS += -std=c11 -pedantic-errors -Wall -Wextra -Wno-unknown-warning-option
 LDFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -Wl,-O1,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
 DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
@@ -26,7 +26,7 @@ TOBJ := $(patsubst %.c,%.o,$(TSRC))
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
 
-all: $(TARGET) test
+all: check
 
 %:
 	$(LD) $(LDFLAGS) $(filter %.o,$^) $(LIBS) -o $@
@@ -50,9 +50,9 @@ $(OBJ): %.o: %.c $(HDR)
 
 $(TOBJ): %.o: %.c $(HDR)
 
-check: clean
 check: CFLAGS := $(RELEASE) $(CFLAGS)
 check: LDFLAGS := $(RELEASE) $(LDFLAGS)
+check: $(TARGET)
 check: test
 
 test: tests
@@ -62,7 +62,7 @@ test: tests
 	printf "test string\n" | ./t/testreadline
 	./t/testvars
 
-tests: $(OBJ) $(TESTS)
+tests: $(TESTS)
 
 install: $(TARGET)
 	@printf "%s\n" "installing"

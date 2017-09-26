@@ -44,3 +44,4 @@ t/*
 *.dSYM/
 *.su
 .cepl_history
+*.tar.gz
