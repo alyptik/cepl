@@ -66,12 +66,13 @@ static inline char *read_line(void)
 	return line;
 }
 
-/* free_buffers(prog, line) registration */
+/* free_buffers() wrapper for at_quick_exit() registration */
 static inline void free_bufs(void)
 {
 	free_buffers(&prog, line);
 }
 
+/* general signal handling function */
 static inline void sig_handler(int sig)
 {
 	free_buffers(&prog, line);
@@ -79,7 +80,7 @@ static inline void sig_handler(int sig)
 	raise(sig);
 }
 
-/* signal handlers to make sure that history is written out */
+/* register signal handlers to make sure that history is written out */
 static inline void reg_handlers(void)
 {
 	/* signal array */
