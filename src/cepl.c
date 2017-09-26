@@ -308,6 +308,7 @@ int main(int argc, char *argv[])
 							break;
 						tok_buf[i] = '\0';
 					}
+
 					switch(tok_buf[strlen(tok_buf) - 1]) {
 					case '{': /* fallthough */
 					case '}': /* fallthough */
@@ -366,7 +367,6 @@ int main(int argc, char *argv[])
 				/* break early if tracking disabled */
 				if (!track_flag)
 					break;
-
 				/* re-init vars */
 				if (types) {
 					free(types);
@@ -378,7 +378,6 @@ int main(int argc, char *argv[])
 							free(vars.list[i].key);
 							vars.list[i].key = NULL;
 						}
-
 					}
 					free(vars.list);
 					vars.list = NULL;
