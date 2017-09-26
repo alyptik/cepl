@@ -313,19 +313,24 @@ int main(int argc, char *argv[])
 					case '}': /* fallthough */
 					case ';': /* fallthough */
 					case '\\':
-						build_funcs(&prog, tok_buf);
-						for (size_t i = 0; i < 2; i++) {
-							/* remove extra trailing ';' */
-							size_t len = strlen(prog[i].funcs) - 1;
-							for (size_t j = len; i > 0 && prog[i].funcs[j - 1] == ';'; j--) {
-								if (prog[i].funcs[j] == ';')
-									prog[i].funcs[j] = '\0';
-							}
-							strmv(CONCAT, prog[i].funcs, "\n");
+						/* remove extra trailing ';' */
+						for (size_t j = strlen(tok_buf) - 1; j > 0; j--) {
+							if (tok_buf[j] != ';' || tok_buf[j - 1] != ';')
+								break;
+							tok_buf[j] = '\0';
 						}
+						build_funcs(&prog, tok_buf);
+						for (size_t i = 0; i < 2; i++)
+							strmv(CONCAT, prog[i].funcs, "\n");
 						/* extract identifiers and types */
-						if (track_flag && find_vars(strip, &ids, &types))
-							gen_vlist(&vars, &ids, &types);
+						if (track_flag && !strpbrk(tok_buf, "()")) {
+							/* remove final `;` */
+							char *tmp_buf = strchr(tok_buf, ';');
+							if (tmp_buf)
+								tmp_buf[0] = '\0';
+							if (find_vars(tok_buf, &ids, &types))
+								gen_vlist(&vars, &ids, &types);
+						}
 						break;
 
 					default:
@@ -334,13 +339,14 @@ int main(int argc, char *argv[])
 						for (size_t i = 0; i < 2; i++)
 							strmv(CONCAT, prog[i].funcs, ";\n");
 						/* extract identifiers and types */
-						if (track_flag && find_vars(strip, &ids, &types))
-							gen_vlist(&vars, &ids, &types);
-					}
-					/* track variables */
-					if (track_flag && !strpbrk(tok_buf, "()")) {
-						if (find_vars(tok_buf, &ids, &types))
-							gen_vlist(&vars, &ids, &types);
+						if (track_flag && !strpbrk(tok_buf, "()")) {
+							/* remove final `;` */
+							char *tmp_buf = strchr(tok_buf, ';');
+							if (tmp_buf)
+								tmp_buf[0] = '\0';
+							if (find_vars(tok_buf, &ids, &types))
+								gen_vlist(&vars, &ids, &types);
+						}
 					}
 				}
 				break;
@@ -422,9 +428,10 @@ int main(int argc, char *argv[])
 				for (size_t i = 0; i < 2; i++) {
 					/* remove extra trailing ';' */
 					size_t len = strlen(prog[i].body) - 1;
-					for (size_t j = len; i > 0 && prog[i].body[j - 1] == ';'; j--) {
-						if (prog[i].body[j] == ';')
-							prog[i].body[j] = '\0';
+					for (size_t j = len; j > 0; j--) {
+						if (prog[i].body[j] != ';' || prog[i].body[j - 1] != ';')
+							break;
+						prog[i].body[j] = '\0';
 					}
 					strmv(CONCAT, prog[i].body, "\n");
 				}
