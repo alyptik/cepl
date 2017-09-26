@@ -69,13 +69,13 @@ static inline char *read_line(void)
 /* free_buffers() wrapper for at_quick_exit() registration */
 static inline void free_bufs(void)
 {
-	free_buffers(&prog, line);
+	free_buffers(&prog, &line);
 }
 
 /* general signal handling function */
 static inline void sig_handler(int sig)
 {
-	free_buffers(&prog, line);
+	free_buffers(&prog, &line);
 	cleanup();
 	raise(sig);
 }
@@ -132,11 +132,11 @@ int main(int argc, char *argv[])
 	strmv(hist_len, hist_file, hist_name);
 
 	/* initialize source buffers */
-	init_buffers(&vars, &prog, line);
+	init_buffers(&vars, &prog, &line);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize prog[0].total and prog[1].total then print version */
-	build_final(&prog, vars, argv);
+	build_final(&prog, &vars, argv);
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n", VERSION_STRING);
 	/* enable completion */
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 		if ((tok_buf = strpbrk(line, "\f\r\n")))
 			tok_buf[0] = '\0';
 		/* add and dedup history */
-		dedup_history(line);
+		dedup_history(&line);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 			switch(strip[1]) {
 			/* clean up and exit program */
 			case 'q':
-				free_buffers(&prog, line);
+				free_buffers(&prog, &line);
 				cleanup();
 				exit(EXIT_SUCCESS);
 				/* unused break */
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 				tok_buf += strspn(tok_buf, " \t");
 				/* output file flag */
 				if (out_flag && !(ofile = fopen(tok_buf, "wb"))) {
-					free_buffers(&prog, line);
+					free_buffers(&prog, &line);
 					cleanup();
 					ERR("failed to create output file");
 				}
@@ -227,8 +227,8 @@ int main(int argc, char *argv[])
 
 			/* toggle library parsing */
 			case 'p':
-				free_buffers(&prog, line);
-				init_buffers(&vars, &prog, line);
+				free_buffers(&prog, &line);
+				init_buffers(&vars, &prog, &line);
 				/* toggle global parse flag */
 				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -237,8 +237,8 @@ int main(int argc, char *argv[])
 
 			/* toggle variable tracking */
 			case 't':
-				free_buffers(&prog, line);
-				init_buffers(&vars, &prog, line);
+				free_buffers(&prog, &line);
+				init_buffers(&vars, &prog, &line);
 				/* toggle global parse flag */
 				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -247,8 +247,8 @@ int main(int argc, char *argv[])
 
 			/* toggle warnings */
 			case 'w':
-				free_buffers(&prog, line);
-				init_buffers(&vars, &prog, line);
+				free_buffers(&prog, &line);
+				init_buffers(&vars, &prog, &line);
 				/* toggle global warning flag */
 				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -257,8 +257,8 @@ int main(int argc, char *argv[])
 
 			/* reset state */
 			case 'r':
-				free_buffers(&prog, line);
-				init_buffers(&vars, &prog, line);
+				free_buffers(&prog, &line);
+				init_buffers(&vars, &prog, &line);
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
@@ -291,13 +291,14 @@ int main(int argc, char *argv[])
 			/* pop last history statement */
 			case 'u':
 				/* break early if no history to pop */
-				if (prog[0].flags.cnt < 2 || prog[1].flags.cnt < 2)
+				if (prog[0].flags.cnt < 1 || prog[1].flags.cnt < 1)
 					break;
 				for (size_t i = 0; i < 2; i++)
 					pop_history(&prog[i]);
 				/* break early if tracking disabled */
 				if (!track_flag)
 					break;
+
 				/* re-init vars */
 				if (types) {
 					free(types);
@@ -314,7 +315,6 @@ int main(int argc, char *argv[])
 					free(vars.list);
 					vars.list = NULL;
 				}
-				free_buffers(&prog, line);
 				init_vlist(&vars);
 				/* add vars from previous lines */
 				for (size_t i = 1; i < prog[0].lines.cnt; i++) {
@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
 		}
 
 		/* finalize source */
-		build_final(&prog, vars, argv);
+		build_final(&prog, &vars, argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO))
 			printf("\n%s:\n==========\n%s\n==========\n", argv[0], prog[0].total);
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
 			printf("[exit status: %d]\n", ret);
 	}
 
-	free_buffers(&prog, line);
+	free_buffers(&prog, &line);
 	cleanup();
 	return 0;
 }

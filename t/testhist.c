@@ -52,10 +52,10 @@ int main (void)
 	strmv(0, line, "int foobar");
 
 	/* initialize source buffers */
-	lives_ok({init_buffers(&vars, &prog, line);}, "test buffer initialization.");
+	lives_ok({init_buffers(&vars, &prog, &line);}, "test buffer initialization.");
 	/* initiatalize compiler arg array */
 	ok(cc_args != NULL, "test for non-NULL parse_opts() return.");
-	lives_ok({build_final(&prog, vars, argv);}, "test initial program build success.");
+	lives_ok({build_final(&prog, &vars, argv);}, "test initial program build success.");
 
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 	ok(resize_buffer(&prog[0].body, &prog[0].b_sz, &prog[0].b_max, 3) != 0, "test `b_sz[0] != 0`.");
@@ -70,14 +70,14 @@ int main (void)
 	for (size_t i = 0; i < 2; i++)
 		strmv(CONCAT, prog[i].body, ";\n");
 
-	lives_ok({build_final(&prog, vars, argv);}, "test final program build success.");
+	lives_ok({build_final(&prog, &vars, argv);}, "test final program build success.");
 	ok((compile(prog[1].total, cc_args, argv)) == 0, "test successful program compilation.");
 
 	for (size_t i = 0; i < 2; i++)
 		lives_ok({pop_history(&prog[i]);}, "test pop_history() prog[%zu] call.", i);
-	lives_ok({build_final(&prog, vars, argv);}, "test secondary program build success.");
+	lives_ok({build_final(&prog, &vars, argv);}, "test secondary program build success.");
 
-	lives_ok({free_buffers(&prog, line);}, "test successful free_buffers() call.");
+	lives_ok({free_buffers(&prog, &line);}, "test successful free_buffers() call.");
 
 	/* redirect stdout to /dev/null */
 	int saved_fd[2], null_fd;

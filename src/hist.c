@@ -63,15 +63,15 @@ void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 	*out_file = NULL;
 }
 
-void free_buffers(struct prog_src (*prgm)[], char *ln)
+void free_buffers(struct prog_src (*prgm)[], char **ln)
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
 	free_str_list(&ids);
 	/* clean up user data */
-	if (ln) {
-		free(ln);
-		ln = NULL;
+	if (*ln) {
+		free(*ln);
+		*ln = NULL;
 	}
 	if (types) {
 		free(types);
@@ -107,7 +107,7 @@ void free_buffers(struct prog_src (*prgm)[], char *ln)
 	}
 }
 
-void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], char *ln)
+void init_buffers(struct var_list *vlist, struct prog_src (*prgm)[], char **ln)
 {
 	/* user is truncated source for display */
 	(*prgm)[0].funcs = calloc(1, 1);
@@ -154,7 +154,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
 	if (!buf_sz || !b_max) {
 		/* current length + line length + extra characters + \0 */
 		if (!(tmp = realloc(*buf, alloc_sz))) {
-			free_buffers(&prog, line);
+			free_buffers(&prog, &line);
 			cleanup();
 			ERR("resize_buffer()");
 		}
@@ -172,7 +172,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off)
 	while ((*b_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
 	if (!(tmp = realloc(*buf, *b_max))) {
-		free_buffers(&prog, line);
+		free_buffers(&prog, &line);
 		cleanup();
 		ERR("resize_buffer()");
 	}
@@ -205,14 +205,14 @@ void pop_history(struct prog_src *prgm)
 }
 
 /* look for current ln in readln history */
-void dedup_history(char *ln)
+void dedup_history(char **ln)
 {
 	/* return early on empty input */
 	if (!ln || !*ln)
 		return;
 	/* strip leading whitespace */
-	char *strip = ln;
-	strip += strspn(ln, " \t");
+	char *strip = *ln;
+	strip += strspn(strip, " \t");
 	/* search forward and backward in history */
 	int cur_hist = where_history();
 	for (int i = -1; i < 2; i += 2) {
@@ -222,7 +222,7 @@ void dedup_history(char *ln)
 			/* if this ln is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			/* skip if NULL or not a complete match */
-			if (!ent || !ent->line || strcmp(ln, ent->line)) {
+			if (!ent || !ent->line || strcmp(*ln, ent->line)) {
 				/* break if at end of list */
 				if (!seek_hist())
 					break;
@@ -245,8 +245,10 @@ void dedup_history(char *ln)
 void build_body(struct prog_src (*prgm)[], char *ln)
 {
 	/* sanity check */
-	if (!prgm)
+	if (!prgm || !ln) {
+		WARNX("NULL pointer passed to build_body()");
 		return;
+	}
 	for (size_t i = 0; i < 2; i++) {
 		append_str(&(*prgm)[i].lines, ln, 0);
 		append_str(&(*prgm)[i].hist, (*prgm)[i].body, 0);
@@ -259,8 +261,10 @@ void build_body(struct prog_src (*prgm)[], char *ln)
 void build_funcs(struct prog_src (*prgm)[], char *ln)
 {
 	/* sanity check */
-	if (!prgm)
+	if (!prgm || !ln) {
+		WARNX("NULL pointer passed to build_funcs()");
 		return;
+	}
 	for (size_t i = 0; i < 2; i++) {
 		append_str(&(*prgm)[i].lines, ln, 0);
 		append_str(&(*prgm)[i].hist, (*prgm)[i].funcs, 0);
@@ -271,18 +275,20 @@ void build_funcs(struct prog_src (*prgm)[], char *ln)
 	}
 }
 
-void build_final(struct prog_src (*prgm)[], struct var_list vlist, char *argv[])
+void build_final(struct prog_src (*prgm)[], struct var_list *vlist, char *argv[])
 {
 	/* sanity check */
-	if (!prgm)
+	if (!prgm || !argv) {
+		WARNX("NULL pointer passed to build_final()");
 		return;
+	}
 	/* finish building current iteration of source code */
 	for (size_t i = 0; i < 2; i++) {
 		strmv(0, (*prgm)[i].total, (*prgm)[i].funcs);
 		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].body);
 		/* print variable values */
 		if (track_flag && i == 1)
-			print_vars(&vlist, (*prgm)[i].total, cc_argv, argv);
+			print_vars(vlist, (*prgm)[i].total, cc_argv, argv);
 		strmv(CONCAT, (*prgm)[i].total, prog_end);
 	}
 }
