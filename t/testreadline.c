@@ -6,6 +6,7 @@
  */
 
 #include "tap.h"
+#include "../src/errs.h"
 #include "../src/readline.h"
 
 int main (void)
@@ -14,7 +15,13 @@ int main (void)
 
 	plan(1);
 
-	ok((line = readline("> ")) != NULL, "send keyboard input to readline.");
+	FILE *null;
+	if (!(null = fopen("/dev/null", "r+b")))
+		ERR("read_line() fopen()");
+	rl_outstream = null;
+	ok((line = readline(NULL)) != NULL, "send keyboard input to readline.");
+	rl_outstream = NULL;
+	fclose(null);
 	free(line);
 
 	done_testing();

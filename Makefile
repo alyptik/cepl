@@ -35,30 +35,31 @@ all: $(TARGET) check
 
 debug: CFLAGS := $(DEBUG) $(CFLAGS)
 debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
-debug: test
 debug: $(OBJ)
 	$(LD) $(LDFLAGS) $(filter src/%.o,$^) $(LIBS) -o $(TARGET)
+debug: test
 
 $(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
 $(TARGET): LDFLAGS := $(RELEASE) $(LDFLAGS)
-$(TARGET): test
 $(TARGET): $(OBJ)
 
-$(TESTS): CFLAGS := $(RELEASE) $(CFLAGS)
-$(TESTS): LDFLAGS := $(RELEASE) $(LDFLAGS)
 $(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
 
 $(OBJ): %.o: %.c $(HDR)
 
 $(TOBJ): %.o: %.c $(HDR)
 
-check test: tests
+check: clean
+check: CFLAGS := $(RELEASE) $(CFLAGS)
+check: LDFLAGS := $(RELEASE) $(LDFLAGS)
+check: test
+
+test: tests
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts
 	printf "test string\n" | ./t/testreadline
 	./t/testvars
-
 
 tests: $(TESTS)
 
