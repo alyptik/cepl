@@ -293,17 +293,32 @@ int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist)
 
 int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[])
 {
+	char *term = getenv("TERM");
+	bool has_color = true;
+	/* toggle flag to `false` if `TERM` is NULL, empty, or matches `dumb` */
+	if (!term || !strcmp(term, "") || !strcmp(term, "dumb"))
+		has_color = false;
+
 	int mem_fd, status, null;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
-	char print_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\", \", \"";
-	char println_beg[] = "\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
+	char *p_beg = (has_color) ?
+		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\ " RST "\", \", \"" :
+		"\n\tfprintf(stderr, \" __s = \\\"____\\ \", \", \"";
+	char *pln_beg = (has_color) ?
+		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n " RST "\", \"" :
+		"\n\tfprintf(stderr, \" __s = \\\"____\\\"\\n \", \"";
+	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
 	char print_end[] = ");";
 	char *src_tmp, *tmp_ptr;
 	size_t off;
 	/* space for <name>, <name> */
 	size_t psz = sizeof print_beg + sizeof print_end + 16;
 	size_t plnsz = sizeof println_beg + sizeof print_end + 16;
+
+	/* inititalize arrays */
+	strmv(0, print_beg, p_beg);
+	strmv(0, println_beg, pln_beg);
 
 	/* sanity checks */
 	if (!vlist || !src || !cc_args || !exec_args)

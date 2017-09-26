@@ -43,6 +43,11 @@
 #define MAX		(SIZE_MAX / 2 - 1)
 /* page size for buffer count */
 #define COUNT		(sysconf(_SC_PAGESIZE))
+/* color escapes */
+#define	RED	"\\033[31m "
+#define	GREEN	"\\033[32m "
+#define	YELLOW	"\\033[33m "
+#define	RST	"\\033[00m "
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
