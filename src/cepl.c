@@ -324,11 +324,10 @@ static inline void dedup_history(void)
 				free(data);
 		}
 		history_set_pos(cur_hist);
-
+	}
 	/* reset history position and add the line */
 	history_set_pos(cur_hist);
 	add_history(strip);
-	}
 }
 
 static inline void sig_handler(int sig)
