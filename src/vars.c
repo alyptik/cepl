@@ -37,8 +37,9 @@ enum var_type extract_type(char const *line, char const *id)
 	/* first/fourth captures are ignored */
 	char *regex, *type;
 	char const beg[] = "(^|.*[({;[:blank:]]*)"
-		"(bool|_Bool|_Complex|_Imaginary|struct|union|char|double|float|int|long|short|unsigned|void)"
-		"([^&]*)(";
+			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
+			"char|double|float|int|long|short||size_t|unsigned|void)"
+			"([^&]*)(";
 	char const end[] = ")(\\[*)";
 
 	/* append identifier to regex */
@@ -67,7 +68,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string `char[]` */
-	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]*\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]+\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -78,7 +79,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*[[:blank:]]*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -156,7 +157,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	/* second capture is ignored */
 	char const initial_regex[] = "^[^,({;&|]*[^,({;&|[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|=[^=]+)";
+		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=]+=)";
 
 	/* return early if passed NULL pointers */
 	if (!line || !id || !offset)
@@ -172,7 +173,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		char const middle_regex[] =
 			"(^|[^t][^y][^p][^e][^d][^e][^,({;&|'\"f]+[[:blank:]]+)"
 			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
-			"char|double|float|int|long|short|unsigned|void)"
+			"char|double|float|int|long|short||size_t|unsigned|void)"
 			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^(){};&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
@@ -185,7 +186,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			char const final_regex[] =
 				"(^|[^,({;|]+)"
 				"(|bool|_Bool|_Complex|_Imaginary|struct|union|"
-				"char|double|float|int|long|short|unsigned|void)"
+				"char|double|float|int|long|short|size_t|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
 
@@ -315,10 +316,10 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char *p_beg = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\ " RST "\", \", \"" :
-		"\n\tfprintf(stderr, \"__s = \\\"____\\ \", \", \"";
+		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST " \", \"" :
+		"\n\tfprintf(stderr, \"__s = \\\"____\\\", \", \"";
 	char *pln_beg = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n " RST "\", \"" :
+		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n " RST " \", \"" :
 		"\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n \", \"";
 	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
 	char print_end[] = ");";
@@ -345,7 +346,7 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	if (!(src_tmp = calloc(1, strlen(src) + 1)))
 		ERR("src_tmp calloc()");
 	strmv(0, src_tmp, src);
-	off = strlen(src) - 1;
+	off = strlen(src);
 	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
 		free(src_tmp);
 		ERR("src_tmp realloc()");
