@@ -57,13 +57,33 @@ enum var_type extract_type(char const *line, char const *id)
 		regfree(&reg);
 		return T_ERR;
 	}
+
+	/* allocate space for second regex */
 	if (!(type = calloc(1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)))
 		ERR("failed to allocate space for captured type");
-
 	/* copy matched string */
 	memcpy(type, line + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
 	memcpy(type + match[3].rm_eo - match[2].rm_so, line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 	regfree(&reg);
+
+	/* return array type */
+	if (match[5].rm_so != -1) {
+		/* string `char[]` */
+		if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]][^*\\*]*\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+			ERR("failed to compile regex");
+		if (!regexec(&reg, type, 1, 0, 0)) {
+			free(regex);
+			free(type);
+			regfree(&reg);
+			return T_STR;
+		}
+
+		/* not a char array */
+		free(regex);
+		free(type);
+		regfree(&reg);
+		return T_PTR;
+	}
 
 	/* string */
 	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*[[:blank:]]*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
