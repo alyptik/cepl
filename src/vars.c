@@ -29,7 +29,7 @@ void *mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t 
 enum var_type extract_type(char const *line, char const *id)
 {
 	regex_t reg;
-	regmatch_t match[6];
+	regmatch_t match[7];
 	/* return early if passed NULL pointers */
 	if (!line || !id)
 		ERRX("NULL pointer passed to extract_type()");
@@ -66,24 +66,16 @@ enum var_type extract_type(char const *line, char const *id)
 	memcpy(type + match[3].rm_eo - match[2].rm_so, line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 	regfree(&reg);
 
-	/* return array type */
-	if (match[5].rm_so != -1) {
-		/* string `char[]` */
-		if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]][^*\\*]*\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
-			ERR("failed to compile regex");
-		if (!regexec(&reg, type, 1, 0, 0)) {
-			free(regex);
-			free(type);
-			regfree(&reg);
-			return T_STR;
-		}
-
-		/* not a char array */
+	/* string `char[]` */
+	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]*\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+		ERR("failed to compile regex");
+	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
 		free(type);
 		regfree(&reg);
-		return T_PTR;
+		return T_STR;
 	}
+	regfree(&reg);
 
 	/* string */
 	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*[[:blank:]]*", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
