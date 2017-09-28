@@ -322,10 +322,10 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	int mem_fd, status, null;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
-	char *p_beg = (has_color) ?
+	char *p_beg = (has_color && isatty(STDIN_FILENO)) ?
 		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\ " RST "\", \", \"" :
 		"\n\tfprintf(stderr, \"__s = \\\"____\\ \", \", \"";
-	char *pln_beg = (has_color) ?
+	char *pln_beg = (has_color && isatty(STDIN_FILENO)) ?
 		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n " RST "\", \"" :
 		"\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n \", \"";
 	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
