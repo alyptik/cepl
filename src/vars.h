@@ -28,6 +28,15 @@ size_t extract_id(char const *line, char **id, size_t *offset);
 int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist);
 int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[]);
 
+static inline int var_cmp(void const *a, void const *b)
+{
+	char *a_key = ((struct {char *key; enum var_type type;} *)a)->key;
+	char *b_key = ((struct {char *key; enum var_type type;} *)b)->key;
+	enum var_type a_type = ((struct {char *key; enum var_type type;} *)a)->type;
+	enum var_type b_type = ((struct {char *key; enum var_type type;} *)b)->type;
+	return (strcmp(a_key, b_key) + (a_type < b_type)) - (strcmp(b_key, a_key) + (b_type < a_type));
+}
+
 static inline void init_vlist(struct var_list *vlist)
 {
 	vlist->cnt = 0;
@@ -66,17 +75,16 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	/* sanity checks */
 	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
 		ERRX("NULL pointer passed to gen_var_list()");
+	/* initialize list */
+	append_var(vlist, ilist->list[0], tlist[0][0]);
 	/* don't add duplicate keys to vlist */
-	for (size_t i = 0; i < ilist->cnt; i++) {
-		bool uniq = true;
-		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
-			if (!strcmp(ilist->list[i], vlist->list[j].key) && (*tlist)[i] == vlist->list[j].type) {
-				uniq = false;
-				break;
-			}
+	for (size_t i = 1; i < ilist->cnt; i++) {
+		struct {char *key; enum var_type type;} vtmp = {ilist->list[i], tlist[0][i]};
+		if (!bsearch(&vtmp, &vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp)) {
+			append_var(vlist, ilist->list[i], tlist[0][i]);
+			if (vlist->cnt > 1)
+				qsort(&vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp);
 		}
-		if (uniq)
-			append_var(vlist, ilist->list[i], (*tlist)[i]);
 	}
 }
 
