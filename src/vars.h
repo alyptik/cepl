@@ -34,7 +34,16 @@ static inline int var_cmp(void const *a, void const *b)
 	char *b_key = ((struct {char *key; enum var_type type;} *)b)->key;
 	enum var_type a_type = ((struct {char *key; enum var_type type;} *)a)->type;
 	enum var_type b_type = ((struct {char *key; enum var_type type;} *)b)->type;
-	return (strcmp(a_key, b_key) + (a_type < b_type)) - (strcmp(b_key, a_key) + (b_type < a_type));
+	int kres = strcmp(a_key, b_key);
+	int tres = (a_type < b_type) - (a_type > b_type);
+	/* full match */
+	if (!kres && !tres)
+		return 0;
+	/* give key compare higher weight */
+	if (kres)
+		return kres;
+	/* fallback to type compare */
+	return tres;
 }
 
 static inline void init_vlist(struct var_list *vlist)
