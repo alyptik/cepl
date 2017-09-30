@@ -38,7 +38,7 @@ enum var_type extract_type(char const *line, char const *id)
 	char *regex, *type;
 	char const beg[] = "(^|.*[({;[:blank:]]*)"
 			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
-			"char|double|float|int|long|short||size_t|unsigned|void)"
+			"char|double|float|int|long|short|size_t|unsigned|void)"
 			"([^&]*)(";
 	char const end[] = ")(\\[*)";
 
