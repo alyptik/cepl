@@ -37,8 +37,8 @@ enum var_type extract_type(char const *line, char const *id)
 	/* first/fourth captures are ignored */
 	char *regex, *type;
 	char const beg[] = "(^|.*[({;[:blank:]]*)"
-			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
-			"char|double|float|int|long|short|size_t|unsigned|void)"
+			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
+			"char|double|float|int|long|short|unsigned|void)"
 			"([^&]*)(";
 	char const end[] = ")(\\[*)";
 
@@ -123,7 +123,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* unsigned integral */
-	if (regcomp(&reg, "(size_t|unsigned)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(_?[Bb]ool|size_t|uint[0-9]+_t|unsigned)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -134,7 +134,7 @@ enum var_type extract_type(char const *line, char const *id)
 	regfree(&reg);
 
 	/* signed integral */
-	if (regcomp(&reg, "(bool|_Bool|short|int|long|ptrdiff_t)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(short|int|long|int[0-9]+_t|ptrdiff_t|ssize_t)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type, 1, 0, 0)) {
 		free(regex);
@@ -172,8 +172,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
 			"(^|[^t][^y][^p][^e][^d][^e][^,({;&|'\"f]+[[:blank:]]+)"
-			"(bool|_Bool|_Complex|_Imaginary|struct|union|"
-			"char|double|float|int|long|short||size_t|unsigned|void)"
+			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
+			"char|double|float|int|long|short|unsigned|void)"
 			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^(){};&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
@@ -185,8 +185,8 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
 				"(^|[^,({;|]+)"
-				"(|bool|_Bool|_Complex|_Imaginary|struct|union|"
-				"char|double|float|int|long|short|size_t|unsigned|void)"
+				"(|struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
+				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
 

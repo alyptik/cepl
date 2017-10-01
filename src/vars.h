@@ -84,6 +84,9 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	/* sanity checks */
 	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
 		ERRX("NULL pointer passed to gen_var_list()");
+	/* nothing to do */
+	if (!ilist->cnt)
+		return;
 	/* initialize list */
 	append_var(vlist, ilist->list[0], tlist[0][0]);
 	/* don't add duplicate keys to vlist */
