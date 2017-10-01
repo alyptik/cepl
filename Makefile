@@ -10,10 +10,10 @@ CC ?= gcc
 LD := $(CC)
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
 CFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
-LDFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -Wl,-O1,-z,relro,-z,now,--sort-common,--as-needed
+LDFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
-DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
 RELEASE := -O2
+DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
 TARGET := cepl
 MANPAGE := cepl.7
 TAP := t/tap
