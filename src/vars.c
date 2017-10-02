@@ -334,12 +334,12 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	strmv(0, println_beg, pln_beg);
 
 	/* sanity checks */
-	if (!vlist || !src || !cc_args || !exec_args)
-		ERRX("NULL pointer passed to print_vlist()");
+	if (!vlist)
+		ERRX("NULL `var_list *` passed to print_vlist()");
 	if (strlen(src) < 2)
 		ERRX("empty source string passed to print_vlist()");
 	/* return early if nothing to do */
-	if (vlist->cnt == 0)
+	if (!src || !cc_args || !exec_args || vlist->cnt == 0)
 		return -1;
 
 	/* copy source buffer */
