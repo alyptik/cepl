@@ -21,14 +21,12 @@ SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 TESTS := $(filter-out $(TAP),$(TSRC:.c=))
-OBJ := $(SRC:.c=.o)
-TOBJ := $(TSRC:.c=.o)
-DEPS := $(TARGET:=.d) $(SRC:.c=.d) $(TSRC:.c=.d)
+DEPS := $(SRC:.c=.d) $(TSRC:.c=.d)
 BINDIR := $(DESTDIR)$(PREFIX)/bin
 MANDIR := $(DESTDIR)$(PREFIX)/share/man/man7
-
--include $(DEPS)
-.PHONY: all check checks clean debug dist install Makefile test tests uninstall
+OBJ := $(SRC:.c=.o)
+TOBJ := $(TSRC:.c=.o)
+TDEPS := $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
 
 all: $(TARGET)
 	$(MAKE) check
@@ -36,8 +34,8 @@ debug: CFLAGS := $(CFLAGS) $(DEBUG)
 debug: LDFLAGS := $(LDFLAGS) $(DEBUG)
 debug: %: $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) -o $(TARGET) $^
-tests checks: $(TESTS)
-test check: $(OBJ) tests
+	$(MAKE) check
+test check: $(OBJ) $(TESTS)
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts
@@ -65,9 +63,10 @@ dist: clean
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
-$(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
+$(TESTS): %: %.o $(TDEPS)
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
-$(OBJ): %.o: %.c
+%.d %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
-$(TOBJ): %.o: %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+-include $(DEPS)
+.PHONY: all check clean debug dist install Makefile test uninstall $(DEPS)
