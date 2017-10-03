@@ -45,3 +45,4 @@ t/*
 *.su
 .cepl_history
 *.tar.gz
+debug.mk
