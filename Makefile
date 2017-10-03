@@ -4,52 +4,57 @@
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE.md file for copyright and license details.
 
+# optional
 DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
-LD := $(CC)
-CPPFLAGS ?= -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
-CFLAGS ?= -pipe -fstack-protector-strong -fuse-ld=gold
-CFLAGS += -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-LDFLAGS ?= -pipe -fstack-protector-strong
-LDFLAGS += -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 OLVL ?= -O2
-LIBS := -lelf -lhistory -lreadline
+CFLAGS ?= -pipe -fstack-protector-strong -pedantic-errors -Wall -Wextra
+LDFLAGS ?= -pipe -fstack-protector-strong -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
+
+# mandatory
+CFLAGS += -fuse-ld=gold -std=c11
+LDFLAGS += -fuse-ld=gold
+LD := $(CC)
+CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
 DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
+LIBS := -lelf -lhistory -lreadline
 TARGET := cepl
 MANPAGE := cepl.7
+MKFILES := Makefile debug.mk
+BINDIR := /bin
+MANDIR := /share/man/man7
 TAP := t/tap
-BINDIR := $(DESTDIR)$(PREFIX)/bin
-MANDIR := $(DESTDIR)$(PREFIX)/share/man/man7
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 TEST := $(filter-out $(TAP),$(TSRC:.c=))
-DEP := $(SRC:.c=.d) $(TSRC:.c=.d)
-OBJ := $(SRC:.c=.o)
+UTEST := $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
+OBJ := $(SRC:.c=.o) $(TAP).o
 TOBJ := $(TSRC:.c=.o)
-UOBJ := $(filter-out src/$(TARGET).o,$(OBJ))
+DEP := $(SRC:.c=.d) $(TSRC:.c=.d)
 
 all: $(TARGET)
 	$(MAKE) check
 debug:
+	# debug indicator flag file
 	@touch debug.mk
 	$(MAKE) check OLVL="$(DEBUG)"
 
+-include $(DEP)
 # if previously built with `-fsanitize=address` we have to use `DEBUG` flags
 OPT != test -f debug.mk
 ifeq ($(.SHELLSTATUS),0)
 	OLVL = $(DEBUG)
 endif
--include $(DEP)
-.PHONY: all check clean debug dist install test uninstall Makefile debug.mk $(DEP)
+.PHONY: all check clean debug dist install test uninstall $(MKFILES) $(DEP)
 
 $(TARGET): %: $(OBJ)
-	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) -o $@ $^
-$(TEST): %: %.o $(TAP).o $(UOBJ)
-	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) -o $@ $^
+	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
+$(TEST): %: %.o $(TAP).o $(UTEST)
+	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
 %.d %.o: %.c
-	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
 test check: $(TOBJ) $(TEST)
 	./t/testcompile
@@ -62,13 +67,13 @@ clean:
 	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz
 install: $(TARGET)
 	@echo "installing"
-	@mkdir -pv $(DESTDIR)$(PREFIX)/bin
-	@mkdir -pv $(DESTDIR)$(PREFIX)/share/man/man7
-	install -c $(TARGET) $(BINDIR)
-	install -c $(MANPAGE) $(MANDIR)
+	@mkdir -pv $(DESTDIR)$(PREFIX)/$(BINDIR)
+	@mkdir -pv $(DESTDIR)$(PREFIX)/$(MANDIR)
+	install -c $(TARGET) $(DESTDIR)$(PREFIX)/$(BINDIR)
+	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
 uninstall:
-	@rm -fv $(DESTDIR)$(PREFIX)/bin/$(TARGET)
-	@rm -fv $(DESTDIR)$(PREFIX)/share/man/man7/$(MANPAGE)
+	@rm -fv $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
+	@rm -fv $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
 dist: clean
 	@echo "creating dist tarball"
 	@mkdir -pv $(TARGET)/
