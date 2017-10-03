@@ -46,11 +46,9 @@ before_install:
              "#endif /* _LINUX_MEMFD_H */" | sudo tee /usr/include/linux/memfd.h
 
 script:
-    - make
-    - make tests
-    - make clean
+    - make -B
     - make debug
-    - make tests
+    - make clean
     - make install
     - make uninstall
     - make dist
