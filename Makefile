@@ -8,25 +8,25 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 LD := $(CC)
-CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-CFLAGS := -pipe -MMD -MP -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra -O2
-LDFLAGS := -pipe -MMD -MP -fstack-protector-strong -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed -O2
+CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
+CFLAGS := -O2 -pipe -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
+LDFLAGS := -O2 -pipe -fstack-protector-strong -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 LIBS := -lelf -lhistory -lreadline
-DEBUG := -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined -Og
+DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
 TARGET := cepl
 MANPAGE := cepl.7
 TAP := t/tap
+BINDIR := $(DESTDIR)$(PREFIX)/bin
+MANDIR := $(DESTDIR)$(PREFIX)/share/man/man7
 
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-TESTS := $(filter-out $(TAP),$(TSRC:.c=))
-DEPS := $(SRC:.c=.d) $(TSRC:.c=.d)
-BINDIR := $(DESTDIR)$(PREFIX)/bin
-MANDIR := $(DESTDIR)$(PREFIX)/share/man/man7
+TEST := $(filter-out $(TAP),$(TSRC:.c=))
+DEP := $(SRC:.c=.d) $(TSRC:.c=.d)
 OBJ := $(SRC:.c=.o)
 TOBJ := $(TSRC:.c=.o)
-TDEPS := $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
+UOBJ := $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
 
 all: $(TARGET)
 	$(MAKE) check
@@ -35,7 +35,7 @@ debug: LDFLAGS := $(LDFLAGS) $(DEBUG)
 debug: %: $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) -o $(TARGET) $^
 	$(MAKE) check
-test check: $(OBJ) $(TESTS)
+test check: $(OBJ) $(TEST)
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts
@@ -44,7 +44,7 @@ test check: $(OBJ) $(TESTS)
 
 clean:
 	@echo "cleaning"
-	@rm -fv $(DEPS) $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz
+	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz
 install: $(TARGET)
 	@echo "installing"
 	@mkdir -pv $(DESTDIR)$(PREFIX)/bin
@@ -63,10 +63,10 @@ dist: clean
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
-$(TESTS): %: %.o $(TDEPS)
+$(TEST): %: %.o $(UOBJ)
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
 %.d %.o: %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
--include $(DEPS)
-.PHONY: all check clean debug dist install Makefile test uninstall $(DEPS)
+-include $(DEP)
+.PHONY: all check clean debug dist install Makefile test uninstall $(DEP)
