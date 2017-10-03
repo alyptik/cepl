@@ -15,7 +15,7 @@ LDFLAGS ?= -pipe -fstack-protector-strong -Wl,-O2,-z,relro,-z,now,--sort-common,
 # mandatory
 LD = $(CC)
 UTEST = $(TAP).o
-MKETC = $(MKCFG) $(DEP)
+MKALL = $(MKCFG) $(DEP)
 OBJ = $(SRC:.c=.o)
 TOBJ = $(TSRC:.c=.o)
 DEP = $(SRC:.c=.d) $(TSRC:.c=.d)
@@ -32,6 +32,6 @@ MANDIR := share/man/man7
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-MKETC += Makefile debug.mk
+MKALL += Makefile debug.mk
 CFLAGS += -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
 LDFLAGS += -fuse-ld=gold
