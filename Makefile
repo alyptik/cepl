@@ -4,50 +4,23 @@
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE.md file for copyright and license details.
 
-# optional
-DESTDIR ?=
-PREFIX ?= /usr/local
-CC ?= gcc
-OLVL ?= -O2
-CFLAGS ?= -pipe -fstack-protector-strong -pedantic-errors -Wall -Wextra
-LDFLAGS ?= -pipe -fstack-protector-strong -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-
-# mandatory
-CFLAGS += -fuse-ld=gold -std=c11
-LDFLAGS += -fuse-ld=gold
-LD := $(CC)
-CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
-DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
-LIBS := -lelf -lhistory -lreadline
-TARGET := cepl
-MANPAGE := cepl.7
-MKFILES := Makefile debug.mk
-BINDIR := /bin
-MANDIR := /share/man/man7
-TAP := t/tap
-SRC := $(wildcard src/*.c)
-TSRC := $(wildcard t/*.c)
-HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-TEST := $(filter-out $(TAP),$(TSRC:.c=))
-UTEST := $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
-OBJ := $(SRC:.c=.o) $(TAP).o
-TOBJ := $(TSRC:.c=.o)
-DEP := $(SRC:.c=.d) $(TSRC:.c=.d)
-
 all: $(TARGET)
 	$(MAKE) check
-debug:
-	# debug indicator flag file
-	@touch debug.mk
-	$(MAKE) check OLVL="$(DEBUG)"
 
--include $(DEP)
+# user configuration
+MKCFG := config.mk
 # if previously built with `-fsanitize=address` we have to use `DEBUG` flags
 OPT != test -f debug.mk
 ifeq ($(.SHELLSTATUS),0)
 	OLVL = $(DEBUG)
 endif
-.PHONY: all check clean debug dist install test uninstall $(MKFILES) $(DEP)
+-include $(DEP) $(MKCFG)
+.PHONY: all check clean debug dist install test uninstall $(MKALL)
+
+debug:
+	# debug indicator flag
+	@touch debug.mk
+	$(MAKE) check OLVL="$(DEBUG)"
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
@@ -80,4 +53,3 @@ dist: clean
 	@cp -Rv LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
 	@rm -rfv $(TARGET)/
-
