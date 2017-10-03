@@ -9,76 +9,65 @@ PREFIX ?= /usr/local
 CC ?= gcc
 LD := $(CC)
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700
-CFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
-LDFLAGS := -pipe -MMD -fstack-protector-strong -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
+CFLAGS := -pipe -MMD -MP -fstack-protector-strong -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra -O2
+LDFLAGS := -pipe -MMD -MP -fstack-protector-strong -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed -O2
 LIBS := -lelf -lhistory -lreadline
-RELEASE := -O2
-DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
+DEBUG := -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined -Og
 TARGET := cepl
 MANPAGE := cepl.7
 TAP := t/tap
 
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
-OBJ := $(patsubst %.c,%.o,$(SRC))
-TOBJ := $(patsubst %.c,%.o,$(TSRC))
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-TESTS := $(filter-out $(TAP),$(patsubst %.c,%,$(TSRC)))
+TESTS := $(filter-out $(TAP),$(TSRC:.c=))
+OBJ := $(SRC:.c=.o)
+TOBJ := $(TSRC:.c=.o)
+DEPS := $(TARGET:=.d) $(SRC:.c=.d) $(TSRC:.c=.d)
+BINDIR := $(DESTDIR)$(PREFIX)/bin
+MANDIR := $(DESTDIR)$(PREFIX)/share/man/man7
 
-all: check
+-include $(DEPS)
+.PHONY: all check checks clean debug dist install Makefile test tests uninstall
 
-%:
-	$(LD) $(LDFLAGS) $(filter %.o,$^) $(LIBS) -o $@
-
-%.o:
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $(filter %.c,$^) -o $@
-
-debug: CFLAGS := $(DEBUG) $(CFLAGS)
-debug: LDFLAGS := $(DEBUG) $(LDFLAGS)
-debug: $(OBJ)
-	$(LD) $(LDFLAGS) $(filter src/%.o,$^) $(LIBS) -o $(TARGET)
-debug: check
-
-$(TARGET): CFLAGS := $(RELEASE) $(CFLAGS)
-$(TARGET): LDFLAGS := $(RELEASE) $(LDFLAGS)
-$(TARGET): $(OBJ)
-
-$(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
-
-$(OBJ): %.o: %.c $(HDR)
-
-$(TOBJ): %.o: %.c $(HDR)
-
-check test: $(OBJ) tests
+all: $(TARGET)
+	$(MAKE) check
+debug: CFLAGS := $(CFLAGS) $(DEBUG)
+debug: LDFLAGS := $(LDFLAGS) $(DEBUG)
+debug: %: $(OBJ)
+	$(LD) $(LDFLAGS) $(LIBS) -o $(TARGET) $^
+tests checks: $(TESTS)
+test check: $(OBJ) tests
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts
-	printf "test string\n" | ./t/testreadline
+	echo "test string" | ./t/testreadline
 	./t/testvars
 
-tests: $(TESTS)
-
+clean:
+	@echo "cleaning"
+	@rm -fv $(DEPS) $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz
 install: $(TARGET)
-	@printf "%s\n" "installing"
+	@echo "installing"
 	@mkdir -pv $(DESTDIR)$(PREFIX)/bin
 	@mkdir -pv $(DESTDIR)$(PREFIX)/share/man/man7
-	install -c $(TARGET) $(DESTDIR)$(PREFIX)/bin
-	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/share/man/man7
-
+	install -c $(TARGET) $(BINDIR)
+	install -c $(MANPAGE) $(MANDIR)
 uninstall:
 	@rm -fv $(DESTDIR)$(PREFIX)/bin/$(TARGET)
 	@rm -fv $(DESTDIR)$(PREFIX)/share/man/man7/$(MANPAGE)
-
 dist: clean
-	@printf "%s\n" "creating dist tarball"
+	@echo "creating dist tarball"
 	@mkdir -pv $(TARGET)/
 	@cp -Rv LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
 	@rm -rfv $(TARGET)/
 
-clean:
-	@printf "%s\n" "cleaning"
-	@rm -fv $(TARGET) $(TESTS) $(OBJ) $(TOBJ) $(TARGET).tar.gz $(wildcard src/*.d) $(wildcard t/*.d)
-
--include $(wildcard src/*.d) $(wildcard t/*.d)
-.PHONY: all clean install uninstall dist debug check test tests Makefile $(wildcard src/*.d) $(wildcard t/*.d)
+$(TARGET): %: $(OBJ)
+	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
+$(TESTS): %: %.o $(TAP).o $(filter $(subst t/test,src/,%),$(filter-out src/$(TARGET).o,$(OBJ)))
+	$(LD) $(LDFLAGS) $(LIBS) -o $@ $^
+$(OBJ): %.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+$(TOBJ): %.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
