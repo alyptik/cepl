@@ -11,6 +11,11 @@
 /* silence linter */
 int mkstemp(char *__template);
 
+/* global completion list */
+char *comp_arg_list[] = {0};
+/* global linker flags and completions structs */
+struct str_list ld_list, comp_list;
+
 int main (void)
 {
 	char tempfile[] = "/tmp/ceplXXXXXX";

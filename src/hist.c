@@ -140,7 +140,7 @@ void init_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list
 	init_vlist(vlist);
 }
 
-size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* sanity check */
 	if (!buf || !*buf || !ln)
@@ -152,7 +152,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off, stru
 		if (!(tmp = realloc(*buf, alloc_sz))) {
 			free_buffers(vlist, tlist, ilist, prgm, ln);
 			cleanup();
-			ERR("resize_buffer()");
+			ERR("rsz_buf()");
 		}
 		*buf = tmp;
 		return alloc_sz;
@@ -170,7 +170,7 @@ size_t resize_buffer(char **buf, size_t *buf_sz, size_t *b_max, size_t off, stru
 	if (!(tmp = realloc(*buf, *b_max))) {
 		free_buffers(vlist, tlist, ilist, prgm, ln);
 		cleanup();
-		ERR("resize_buffer()");
+		ERR("rsz_buf()");
 	}
 	*buf = tmp;
 	return *buf_sz;

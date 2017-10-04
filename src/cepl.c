@@ -184,8 +184,8 @@ int main(int argc, char *argv[])
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
-			resize_buffer(&prog[i].body, &prog[i].b_sz, &prog[i].b_max, 3, &vars, &types, &ids, &prog, &line);
-			resize_buffer(&prog[i].total, &prog[i].t_sz, &prog[i].t_max, 3, &vars, &types, &ids, &prog, &line);
+			rsz_buf(&prog[i].body, &prog[i].b_sz, &prog[i].b_max, 3, &vars, &types, &ids, &prog, &line);
+			rsz_buf(&prog[i].total, &prog[i].t_sz, &prog[i].t_max, 3, &vars, &types, &ids, &prog, &line);
 		}
 
 		/* strip leading whitespace */
@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
 				/* re-allocate enough memory for strip + '\n' + '\n' + '\0' */
 				size_t tok_sz = strlen(tok_buf) + 3;
 				for (size_t i = 0; i < 2; i++)
-					resize_buffer(&prog[i].funcs, &prog[i].f_sz, &prog[i].f_max, tok_sz, &vars, &types, &ids, &prog, &tok_buf);
+					rsz_buf(&prog[i].funcs, &prog[i].f_sz, &prog[i].f_max, tok_sz, &vars, &types, &ids, &prog, &tok_buf);
 				switch (tok_buf[0]) {
 				/* dont append ';' for preprocessor directives */
 				case '#':

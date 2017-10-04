@@ -8,6 +8,9 @@
 #include "tap.h"
 #include "../src/vars.h"
 
+/* global linker arguments struct */
+struct str_list ld_list;
+
 int main(void)
 {
 	char *const src = "int main(void)\n{\nint i = 0;\n";

@@ -12,103 +12,87 @@
 /* silence linter */
 int mkstemp(char *__template);
 
+/* global linker arguments struct */
+char *const cc_arg_list[] = {
+	"-O0", "-pipe",
+	"-fPIC", "-std=c11",
+	"-Wno-unused-parameter",
+	"-S", "-xc", "/dev/stdin",
+	"-o", "/dev/stdout", NULL
+};
+char *const ld_arg_list[] = {
+	"-O0", "-pipe",
+	"-fPIC", "-std=c11",
+	"-Wno-unused-parameter",
+	"-xassembler", "/dev/stdin",
+	"-o", "/dev/stdout", NULL
+};
+char *const warn_list[] = {
+	"-pedantic-errors", "-Wall", "-Wextra", NULL
+};
+/* global compiler arg array */
+char *argv[] = {"cepl", NULL}, **cc_argv;
+bool track_flag = false;
+/* global completion list struct */
+struct str_list comp_list;
+struct prog_src prg[2];
+
 /* test line */
-char *line;
-struct prog_src prog[2];
-extern bool track_flag;
+static char *ln;
+/* static lists */
+static enum var_type *tl;
+static struct var_list vl;
+static struct str_list il;
+
+/* print_vars() shim */
+int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[])
+{
+	(void)vlist, (void)src, (void)cc_args, (void)exec_args;
+	return 0;
+}
 
 int main (void)
 {
-	struct var_list vars = {0, 0, NULL};
-	struct str_list ids = {0, 0, NULL};
-	enum var_type *types = NULL;
-	char const optstring[] = "hptvwc:l:I:o:";
-	int argc = 0;
-	FILE volatile *output = NULL;
-	char tempfile[] = "/tmp/ceplXXXXXX";
-
-	int tmp_fd;
-	if ((tmp_fd = mkstemp(tempfile)) == -1) {
-		WARN("mkstemp()");
-		memset(tempfile, 0, sizeof tempfile);
-		memcpy(tempfile, "./ceplXXXXXX", strlen("./ceplXXXXXX") + 1);
-		WARNX("attempting to create a tmpfile in ./ instead");
-		if ((tmp_fd = mkstemp(tempfile)) == -1)
-			ERR("mkstemp()");
-	}
-	char *argv[] = {
-		"cepl", "-lssl", "-I.",
-		"-c", "gcc", "-o", tempfile, NULL
-	};
-	track_flag = false;
-	/* increment argument count */
-	for (argc = 0; argv[argc]; argc++);
-
-	plan(16);
-
-	if (!(line = calloc(1, COUNT)))
-		ERR("line calloc()");
 	using_history();
+	if (!(ln = calloc(1, COUNT)))
+		ERR("ln calloc()");
 	/* compiler arg array */
-	char **cc_args = parse_opts(argc, argv, optstring, &output);
-	strmv(0, line, "int foobar");
+	strmv(0, ln, "int foobar");
+
+	plan(14);
 
 	/* initialize source buffers */
-	lives_ok({init_buffers(&vars, &types, &ids, &prog, &line);}, "test buffer initialization.");
+	lives_ok({init_buffers(&vl, &tl, &il, &prg, &ln);}, "test buffer initialization.");
 	/* initiatalize compiler arg array */
-	ok(cc_args != NULL, "test for non-NULL parse_opts() return.");
-	lives_ok({build_final(&prog, &vars, argv);}, "test initial program build success.");
-
+	lives_ok({build_final(&prg, &vl, argv);}, "test initial program build success.");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok(resize_buffer(&prog[0].body, &prog[0].b_sz, &prog[0].b_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `b_sz[0] != 0`.");
-	ok(resize_buffer(&prog[0].total, &prog[0].t_sz, &prog[0].t_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `t_sz[0] != 0`.");
+	ok((rsz_buf(&prg[0].body, &prg[0].b_sz, &prg[0].b_max, 3, &vl, &tl, &il, &prg, &ln)), "b_sz[0] != 0");
+	ok((rsz_buf(&prg[0].total, &prg[0].t_sz, &prg[0].t_max, 3, &vl, &tl, &il, &prg, &ln)), "t_sz[0] != 0");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok(resize_buffer(&prog[1].body, &prog[1].b_sz, &prog[1].b_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `b_sz[1] != 0`.");
-	ok(resize_buffer(&prog[1].total, &prog[1].t_sz, &prog[1].t_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `t_sz[1] != 0`.");
-	ok(resize_buffer(&prog[1].funcs, &prog[1].f_sz, &prog[1].f_max, 3, &vars, &types, &ids, &prog, &line) != 0, "test `f_sz != 0`.");
+	ok((rsz_buf(&prg[1].body, &prg[1].b_sz, &prg[1].b_max, 3, &vl, &tl, &il, &prg, &ln)), "gb_sz[1] != 0");
+	ok((rsz_buf(&prg[1].total, &prg[1].t_sz, &prg[1].t_max, 3, &vl, &tl, &il, &prg, &ln)), "gt_sz[1] != 0");
+	ok((rsz_buf(&prg[1].funcs, &prg[1].f_sz, &prg[1].f_max, 3, &vl, &tl, &il, &prg, &ln)), "gf_sz != 0");
+	lives_ok({build_body(&prg, ln);}, "test program body build success.");
 
-	lives_ok({build_body(&prog, line);}, "test program body build success.");
-	/* add line endings */
+	/* add ln endings */
 	for (size_t i = 0; i < 2; i++)
-		strmv(CONCAT, prog[i].body, ";\n");
-
-	lives_ok({build_final(&prog, &vars, argv);}, "test final program build success.");
-	ok((compile(prog[1].total, cc_args, argv)) == 0, "test successful program compilation.");
-
+		strmv(CONCAT, prg[i].body, ";\n");
+	lives_ok({build_final(&prg, &vl, argv);}, "test final program build success.");
 	for (size_t i = 0; i < 2; i++)
-		lives_ok({pop_history(&prog[i]);}, "test pop_history() prog[%zu] call.", i);
-	lives_ok({build_final(&prog, &vars, argv);}, "test secondary program build success.");
-
-	lives_ok({free_buffers(&vars, &types, &ids, &prog, &line);}, "test successful free_buffers() call.");
-
-	/* redirect stdout to /dev/null */
-	int saved_fd[2], null_fd;
-	if (!(null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
-		ERR("/dev/null open()");
-	saved_fd[0] = dup(STDOUT_FILENO);
-	saved_fd[1] = dup(STDERR_FILENO);
-	dup2(null_fd, STDOUT_FILENO);
-	dup2(null_fd, STDERR_FILENO);
-	lives_ok({cleanup();}, "test successful cleanup() call.");
-	dup2(saved_fd[0], STDOUT_FILENO);
-	dup2(saved_fd[1], STDERR_FILENO);
-	close(null_fd);
+		lives_ok({pop_history(&prg[i]);}, "test pop_history() prog[%zu] call.", i);
+	lives_ok({build_final(&prg, &vl, argv);}, "test secondary program build success.");
+	lives_ok({free_buffers(&vl, &tl, &il, &prg, &ln);}, "test successful free_buffers() call.");
 
 	/* cleanup */
-	if (vars.list) {
-		for (size_t i = 0; i < vars.cnt; i++) {
-			if (vars.list[i].key) {
-				free(vars.list[i].key);
-				vars.list[i].key = NULL;
-			}
-		}
-		free(vars.list);
-		vars.list = NULL;
+	int saved_fd = dup(STDIN_FILENO);
+	close(STDIN_FILENO);
+	lives_ok({cleanup();}, "test successful cleanup() call.");
+	if (vl.list) {
+		for (size_t i = 0; i < vl.cnt; i++)
+			if (vl.list[i].key) free(vl.list[i].key);
+		free(vl.list);
 	}
-	free_argv(&cc_args);
-	close(tmp_fd);
-	if (remove(tempfile) == -1)
-		WARN("remove(tempfile)");
+	dup2(saved_fd, STDIN_FILENO);
 
 	done_testing();
 }
