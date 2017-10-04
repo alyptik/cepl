@@ -37,9 +37,9 @@ bool track_flag = false;
 struct str_list comp_list;
 struct prog_src prg[2];
 
-/* test line */
+/* static line buffer */
 static char *ln;
-/* static lists */
+/* static var lists */
 static enum var_type *tl;
 static struct var_list vl;
 static struct str_list il;
@@ -56,7 +56,6 @@ int main (void)
 	using_history();
 	if (!(ln = calloc(1, COUNT)))
 		ERR("ln calloc()");
-	/* compiler arg array */
 	strmv(0, ln, "int foobar");
 
 	plan(14);
@@ -66,17 +65,17 @@ int main (void)
 	/* initiatalize compiler arg array */
 	lives_ok({build_final(&prg, &vl, argv);}, "test initial program build success.");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok((rsz_buf(&prg[0].body, &prg[0].b_sz, &prg[0].b_max, 3, &vl, &tl, &il, &prg, &ln)), "b_sz[0] != 0");
+	ok((rsz_buf(&prg[0].b, &prg[0].b_sz, &prg[0].b_max, 3, &vl, &tl, &il, &prg, &ln)), "b_sz[0] != 0");
 	ok((rsz_buf(&prg[0].total, &prg[0].t_sz, &prg[0].t_max, 3, &vl, &tl, &il, &prg, &ln)), "t_sz[0] != 0");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok((rsz_buf(&prg[1].body, &prg[1].b_sz, &prg[1].b_max, 3, &vl, &tl, &il, &prg, &ln)), "gb_sz[1] != 0");
+	ok((rsz_buf(&prg[1].b, &prg[1].b_sz, &prg[1].b_max, 3, &vl, &tl, &il, &prg, &ln)), "gb_sz[1] != 0");
 	ok((rsz_buf(&prg[1].total, &prg[1].t_sz, &prg[1].t_max, 3, &vl, &tl, &il, &prg, &ln)), "gt_sz[1] != 0");
-	ok((rsz_buf(&prg[1].funcs, &prg[1].f_sz, &prg[1].f_max, 3, &vl, &tl, &il, &prg, &ln)), "gf_sz != 0");
+	ok((rsz_buf(&prg[1].f, &prg[1].f_sz, &prg[1].f_max, 3, &vl, &tl, &il, &prg, &ln)), "gf_sz != 0");
 	lives_ok({build_body(&prg, ln);}, "test program body build success.");
 
 	/* add ln endings */
 	for (size_t i = 0; i < 2; i++)
-		strmv(CONCAT, prg[i].body, ";\n");
+		strmv(CONCAT, prg[i].b, ";\n");
 	lives_ok({build_final(&prg, &vl, argv);}, "test final program build success.");
 	for (size_t i = 0; i < 2; i++)
 		lives_ok({pop_history(&prg[i]);}, "test pop_history() prog[%zu] call.", i);
