@@ -88,21 +88,38 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
 		ERRX("NULL pointer passed to gen_var_list()");
 	/* nothing to do */
-	if (!ilist->cnt || !ilist->list[0] || !tlist[0] || !tlist[0][0])
+	if (!ilist->cnt)
 		return;
-	/* initialize list */
-	append_var(vlist, ilist->list[0], tlist[0][0]);
+
 	/* don't add duplicate keys to vlist */
-	for (size_t i = 1; i < ilist->cnt; i++) {
-		if (!ilist->list[i] || !tlist[0][i])
-			break;
-		struct {char *key; enum var_type type;} vtmp = {ilist->list[i], tlist[0][i]};
-		if (!bsearch(&vtmp, &vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp)) {
-			append_var(vlist, ilist->list[i], tlist[0][i]);
-			if (vlist->cnt > 1)
-				qsort(&vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp);
+	for (size_t i = 0; i < ilist->cnt; i++) {
+		bool uniq = true;
+		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
+			if (!strcmp(ilist->list[i], vlist->list[j].key) && (*tlist)[i] == vlist->list[j].type) {
+				uniq = false;
+				break;
+			}
 		}
+		if (uniq)
+		append_var(vlist, ilist->list[i], (*tlist)[i]);
 	}
+
+	/* TODO: fix buggy binary search algorithm */
+	/* append_var(vlist, ilist->list[0], (*tlist)[0]); */
+	/* for (size_t i = 1; i < ilist->cnt; i++) { */
+	/*         if (!ilist->list[i]) */
+	/*                 break; */
+	/*         static struct {char *key; enum var_type type;} vtmp = {0}; */
+	/*         vtmp.key = calloc(1, COUNT); */
+	/*         strmv(0, vtmp.key, ilist->list[i]); */
+	/*         vtmp.type = (*tlist)[i]; */
+	/*         if (!bsearch(&vtmp, &vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp)) { */
+	/*                 append_var(vlist, ilist->list[i], (*tlist)[i]); */
+	/*                 if (vlist->cnt > 1) */
+	/*                         qsort(&vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp); */
+	/*         } */
+	/* } */
 }
 
 #endif
+
