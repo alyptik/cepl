@@ -358,7 +358,7 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {
 		/* skip unknown types */
-		if (!vlist->list[i].key || vlist->list[i].type == T_ERR)
+		if (vlist->list[i].type == T_ERR)
 			continue;
 
 		/* populate buffers */

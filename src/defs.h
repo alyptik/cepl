@@ -161,8 +161,6 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	if (!src_ptr || !dest_ptr)
 		ERRX("strmv() string not null-terminated");
 	src_sz = src_ptr - src;
-	if (src_sz < 1)
-		return;
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 

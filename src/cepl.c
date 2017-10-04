@@ -182,13 +182,13 @@ int main(int argc, char *argv[])
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
-			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &vl, &tl, &il, &prg, &lbuf);
-			rsz_buf(&prg[i].total, &prg[i].t_sz, &prg[i].t_max, 3, &vl, &tl, &il, &prg, &lbuf);
+			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &vl, &tl, &il, &prg, &lptr);
+			rsz_buf(&prg[i].total, &prg[i].t_sz, &prg[i].t_max, 3, &vl, &tl, &il, &prg, &lptr);
 		}
 
 		/* strip leading whitespace */
-		char *strip = lbuf;
-		strip += strspn(lbuf, " \t");
+		char *strip = lptr;
+		strip += strspn(lptr, " \t");
 		/* control sequence and preprocessor directive parsing */
 		switch (strip[0]) {
 		case ';':
@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 				strip[i] = '\0';
 			}
 			/* start building program source */
-			build_body(&prg, lbuf);
+			build_body(&prg, lptr);
 			for (size_t i = 0; i < 2; i++)
 				strmv(CONCAT, prg[i].b, "\n");
 			break;
@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
 			case '}': /* fallthough */
 			case ';': /* fallthough */
 			case '\\':
-				build_body(&prg, lbuf);
+				build_body(&prg, lptr);
 				for (size_t i = 0; i < 2; i++) {
 					/* remove extra trailing ';' */
 					size_t b_len = strlen(prg[i].b) - 1;
@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
 				break;
 
 			default:
-				build_body(&prg, lbuf);
+				build_body(&prg, lptr);
 				/* append ';' if no trailing '}', ';', or '\' */
 				for (size_t i = 0; i < 2; i++)
 					strmv(CONCAT, prg[i].b, ";\n");
