@@ -28,27 +28,6 @@ size_t extract_id(char const *line, char **id, size_t *offset);
 int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist);
 int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[]);
 
-static inline int var_cmp(void const *a, void const *b)
-{
-	/* sanity check */
-	if (!a || !b)
-		ERR("NULL pointer passed to var_cmp()");
-	char *a_key = ((struct {char *key; enum var_type type;} *)a)->key;
-	char *b_key = ((struct {char *key; enum var_type type;} *)b)->key;
-	enum var_type a_type = ((struct {char *key; enum var_type type;} *)a)->type;
-	enum var_type b_type = ((struct {char *key; enum var_type type;} *)b)->type;
-	int kres = strcmp(a_key, b_key);
-	int tres = (a_type < b_type) - (a_type > b_type);
-	/* full match */
-	if (!kres && !tres)
-		return 0;
-	/* give key compare higher weight */
-	if (kres)
-		return kres;
-	/* fallback to type compare */
-	return tres;
-}
-
 static inline void init_vlist(struct var_list *vlist)
 {
 	vlist->cnt = 0;
@@ -90,7 +69,6 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	/* nothing to do */
 	if (!ilist->cnt)
 		return;
-
 	/* don't add duplicate keys to vlist */
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;
@@ -103,20 +81,6 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 		if (uniq)
 		append_var(vlist, ilist->list[i], (*tlist)[i]);
 	}
-
-	/* TODO: fix buggy binary search algorithm */
-	/* append_var(vlist, ilist->list[0], (*tlist)[0]); */
-	/* for (size_t i = 1; i < ilist->cnt; i++) { */
-	/*         struct {char *key; enum var_type type;} vtmp = {NULL, 0}; */
-	/*         vtmp.key = calloc(1, COUNT); */
-	/*         strmv(0, vtmp.key, ilist->list[i]); */
-	/*         vtmp.type = (*tlist)[i]; */
-	/*         if (!bsearch(&vtmp, &vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp)) { */
-	/*                 append_var(vlist, ilist->list[i], (*tlist)[i]); */
-	/*                 if (vlist->cnt > 1) */
-	/*                         qsort(&vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp); */
-	/*         } */
-	/* } */
 }
 
 #endif
