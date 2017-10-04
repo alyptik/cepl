@@ -212,7 +212,7 @@ void dedup_history(char **ln)
 	HIST_ENTRY *(*seek_hist[])() = {&previous_history, &next_history};
 	/* save current position */
 	int hpos = where_history();
-	for (int i = 0; i < 2; i++) {
+	for (size_t i = 0; i < 2; i++) {
 		while (history_search_prefix(strip, i - 1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
