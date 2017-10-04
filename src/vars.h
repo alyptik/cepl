@@ -107,9 +107,7 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	/* TODO: fix buggy binary search algorithm */
 	/* append_var(vlist, ilist->list[0], (*tlist)[0]); */
 	/* for (size_t i = 1; i < ilist->cnt; i++) { */
-	/*         if (!ilist->list[i]) */
-	/*                 break; */
-	/*         static struct {char *key; enum var_type type;} vtmp = {0}; */
+	/*         struct {char *key; enum var_type type;} vtmp = {NULL, 0}; */
 	/*         vtmp.key = calloc(1, COUNT); */
 	/*         strmv(0, vtmp.key, ilist->list[i]); */
 	/*         vtmp.type = (*tlist)[i]; */
