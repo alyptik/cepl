@@ -51,11 +51,10 @@ void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
 		return;
 	/* write out program to file */
-	FILE *output = (FILE *)*out_file;
-	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, output);
-	fputc('\n', output);
+	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, (FILE *)*out_file);
+	fputc('\n', (FILE *)*out_file);
 	fflush(NULL);
-	fclose(output);
+	fclose((FILE *)*out_file);
 	*out_file = NULL;
 }
 
@@ -86,10 +85,10 @@ void free_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list
 	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
-		if ((*prgm)[i].funcs)
-			free((*prgm)[i].funcs);
-		if ((*prgm)[i].body)
-			free((*prgm)[i].body);
+		if ((*prgm)[i].f)
+			free((*prgm)[i].f);
+		if ((*prgm)[i].b)
+			free((*prgm)[i].b);
 		if ((*prgm)[i].total)
 			free((*prgm)[i].total);
 		if ((*prgm)[i].flags.list)
@@ -99,38 +98,38 @@ void free_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list
 		(*prgm)[i].b_sz = (*prgm)[i].f_sz = (*prgm)[i].t_sz = 0;
 		(*prgm)[i].b_max = (*prgm)[i].f_max = (*prgm)[i].t_max = 1;
 		/* `(void *)` casts needed to chain diff ptr types */
-		(*prgm)[i].body = (*prgm)[i].funcs = (*prgm)[i].total = (void *)((*prgm)[i].flags.list = NULL);
+		(*prgm)[i].b = (*prgm)[i].f = (*prgm)[i].total = (void *)((*prgm)[i].flags.list = NULL);
 	}
 }
 
 void init_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* user is truncated source for display */
-	(*prgm)[0].funcs = calloc(1, 1);
-	(*prgm)[0].body = calloc(1, strlen(prog_start_user) + 1);
+	(*prgm)[0].f = calloc(1, 1);
+	(*prgm)[0].b = calloc(1, strlen(prog_start_user) + 1);
 	(*prgm)[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
 	(*prgm)[0].f_sz = (*prgm)[0].f_max = 1;
 	(*prgm)[0].b_sz = (*prgm)[0].b_max = strlen(prog_start_user) + 1;
 	(*prgm)[0].t_sz = (*prgm)[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	(*prgm)[1].funcs = calloc(1, strlen(prelude) + 1);
-	(*prgm)[1].body = calloc(1, strlen(prog_start) + 1);
+	(*prgm)[1].f = calloc(1, strlen(prelude) + 1);
+	(*prgm)[1].b = calloc(1, strlen(prog_start) + 1);
 	(*prgm)[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
 	(*prgm)[1].f_sz = (*prgm)[1].f_max = strlen(prelude) + 1;
 	(*prgm)[1].b_sz = (*prgm)[1].b_max = strlen(prog_start) + 1;
 	(*prgm)[1].t_sz = (*prgm)[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
 	/* sanity check */
 	for (size_t i = 0; i < 2; i++) {
-		if (!(*prgm)[i].funcs || !(*prgm)[i].body || !(*prgm)[i].total) {
+		if (!(*prgm)[i].f || !(*prgm)[i].b || !(*prgm)[i].total) {
 			free_buffers(vlist, tlist, ilist, prgm, ln);
 			cleanup();
 			ERR("prgm[2] calloc()");
 		}
 	}
-	/* no memcpy for prgm[0].funcs */
-	strmv(0, (*prgm)[0].body, prog_start_user);
-	strmv(0, (*prgm)[1].funcs, prelude);
-	strmv(0, (*prgm)[1].body, prog_start);
+	/* no memcpy for prgm[0].f */
+	strmv(0, (*prgm)[0].b, prog_start_user);
+	strmv(0, (*prgm)[1].f, prelude);
+	strmv(0, (*prgm)[1].b, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
 		init_list(&(*prgm)[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -181,14 +180,14 @@ void pop_history(struct prog_src *prgm)
 	switch(prgm->flags.list[--prgm->flags.cnt]) {
 	case NOT_IN_MAIN:
 		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
-		strmv(0, prgm->funcs, prgm->hist.list[prgm->hist.cnt]);
+		strmv(0, prgm->f, prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
 		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
-		strmv(0, prgm->body, prgm->hist.list[prgm->hist.cnt]);
+		strmv(0, prgm->b, prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->hist.list[prgm->hist.cnt]);
 		free(prgm->lines.list[prgm->lines.cnt]);
 		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
@@ -247,10 +246,10 @@ void build_body(struct prog_src (*prgm)[], char *ln)
 	}
 	for (size_t i = 0; i < 2; i++) {
 		append_str(&(*prgm)[i].lines, ln, 0);
-		append_str(&(*prgm)[i].hist, (*prgm)[i].body, 0);
+		append_str(&(*prgm)[i].hist, (*prgm)[i].b, 0);
 		append_flag(&(*prgm)[i].flags, IN_MAIN);
-		strmv(CONCAT, (*prgm)[i].body, "\t");
-		strmv(CONCAT, (*prgm)[i].body, ln);
+		strmv(CONCAT, (*prgm)[i].b, "\t");
+		strmv(CONCAT, (*prgm)[i].b, ln);
 	}
 }
 
@@ -263,10 +262,10 @@ void build_funcs(struct prog_src (*prgm)[], char *ln)
 	}
 	for (size_t i = 0; i < 2; i++) {
 		append_str(&(*prgm)[i].lines, ln, 0);
-		append_str(&(*prgm)[i].hist, (*prgm)[i].funcs, 0);
+		append_str(&(*prgm)[i].hist, (*prgm)[i].f, 0);
 		append_flag(&(*prgm)[i].flags, NOT_IN_MAIN);
 		/* generate function buffers */
-		strmv(CONCAT, (*prgm)[i].funcs, ln);
+		strmv(CONCAT, (*prgm)[i].f, ln);
 	}
 }
 
@@ -279,8 +278,8 @@ void build_final(struct prog_src (*prgm)[], struct var_list *vlist, char *argv[]
 	}
 	/* finish building current iteration of source code */
 	for (size_t i = 0; i < 2; i++) {
-		strmv(0, (*prgm)[i].total, (*prgm)[i].funcs);
-		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].body);
+		strmv(0, (*prgm)[i].total, (*prgm)[i].f);
+		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].b);
 		/* print variable values */
 		if (track_flag && i == 1)
 			print_vars(vlist, (*prgm)[i].total, cc_argv, argv);
