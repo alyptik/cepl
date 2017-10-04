@@ -24,8 +24,8 @@ debug:
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
-$(TEST): %: %.o $(TAP).o $(UTEST)
-	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
+$(TEST): %:  %.o $(OBJ)
+	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
 %.d %.o: %.c
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
