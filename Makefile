@@ -4,8 +4,8 @@
 # AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
 # See LICENSE.md file for copyright and license details.
 
-all: $(TARGET)
-	$(MAKE) check
+all:
+	$(MAKE) $(TARGET) check
 
 # user configuration
 MKCFG := config.mk
@@ -37,7 +37,7 @@ test check: $(TOBJ) $(TEST)
 	./t/testvars
 clean:
 	@echo "cleaning"
-	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz
+	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz debug.mk
 install: $(TARGET)
 	@echo "installing"
 	@mkdir -pv $(DESTDIR)$(PREFIX)/$(BINDIR)

@@ -19,13 +19,13 @@ char *hist_file;
 /* `-o` flag output file */
 FILE volatile *ofile;
 /* program source strucs (prog[0] is truncated for interactive printing) */
-struct prog_src prog[2];
+struct prog_src prg[2];
 /* global history file flag */
 bool has_hist = false;
 /* type, identifier, and var lists */
-enum var_type *types;
-struct str_list ids;
-struct var_list vars;
+enum var_type *tl;
+struct str_list il;
+struct var_list vl;
 
 void cleanup(void)
 {
@@ -203,20 +203,20 @@ void pop_history(struct prog_src *prgm)
 void dedup_history(char **ln)
 {
 	/* return early on empty input */
-	if (!ln || !*ln || !**ln)
+	if (!ln || !*ln)
 		return;
 	/* strip leading whitespace */
 	char *strip = *ln;
 	strip += strspn(strip, " \t");
 	/* current entry and forward/backward function pointers  */
-	HIST_ENTRY *(*seek_hist[2])() = {&previous_history, &next_history};
+	HIST_ENTRY *(*seek_hist[])() = {&previous_history, &next_history};
 	/* save current position */
-	int hpos[2] = {0};
-	hpos[0] = where_history();
-	for (size_t i = 0; i < 2; i++) {
-		while ((hpos[1] = history_search_prefix(strip, i - 1)) != -1) {
+	int hpos = where_history();
+	for (int i = 0; i < 2; i++) {
+		while (history_search_prefix(strip, i - 1) != -1) {
 			/* if this line is already in the history, remove the earlier entry */
-			HIST_ENTRY *ent = history_get(hpos[1]);
+			HIST_ENTRY *ent = current_history();
+			/* HIST_ENTRY *ent = history_get(hpos[1]); */
 			if (!ent || !ent->line || strcmp(*ln, ent->line)) {
 				/* break if at end of list */
 				if (!seek_hist[i]())
@@ -224,14 +224,14 @@ void dedup_history(char **ln)
 				continue;
 			}
 			/* free application data */
+			ent = remove_history(where_history());
 			histdata_t data = free_history_entry(ent);
-			if (data) {
+			if (data)
 				free(data);
-				data = NULL;
-			}
 		}
-		history_set_pos(hpos[0]);
+		history_set_pos(hpos);
 	}
+	history_set_pos(hpos);
 	add_history(strip);
 }
 
