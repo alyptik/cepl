@@ -128,7 +128,7 @@ struct var_list {
 struct prog_src {
 	size_t b_sz, f_sz, t_sz;
 	size_t b_max, f_max, t_max;
-	char *body, *funcs, *total;
+	char *b, *f, *total;
 	struct str_list hist, lines;
 	struct flag_list flags;
 };
