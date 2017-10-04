@@ -18,7 +18,7 @@ extern struct str_list comp_list;
 char *hist_file;
 /* `-o` flag output file */
 FILE volatile *ofile;
-/* program source strucs (prog[0] is truncated for interactive printing) */
+/* program source strucs (prg[0] is truncated for interactive printing) */
 struct prog_src prg[2];
 /* global history file flag */
 bool has_hist = false;
@@ -51,10 +51,11 @@ void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
 		return;
 	/* write out program to file */
-	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, (FILE *)*out_file);
-	fputc('\n', (FILE *)*out_file);
+	FILE *output = (FILE *)*out_file;
+	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, output);
+	fputc('\n', output);
 	fflush(NULL);
-	fclose((FILE *)*out_file);
+	fclose(output);
 	*out_file = NULL;
 }
 

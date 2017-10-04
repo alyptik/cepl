@@ -14,7 +14,7 @@ struct str_list ld_list;
 int main(void)
 {
 	char *const src = "int main(void)\n{\nint i = 0;\n";
-	struct str_list ids = {.cnt = 0, .max = 1, .list = NULL};
+	struct str_list ids = {0,1,NULL};
 	enum var_type *types = NULL;
 
 	plan(4);

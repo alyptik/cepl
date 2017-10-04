@@ -22,7 +22,7 @@
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
 /* static line buffer */
-static char *lptr;
+char *lptr;
 
 /* `-o` flag output file */
 extern FILE volatile *ofile;
@@ -107,15 +107,14 @@ static inline void reg_handlers(void)
 
 int main(int argc, char *argv[])
 {
-	/* token buffer */
-	static char *tbuf;
-
 	struct stat hist_stat;
 	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
 	char const optstring[] = "hptvwc:l:I:o:";
 	char const *const home_env = getenv("HOME");
+	/* token buffers */
+	char *lbuf = NULL, *tbuf = NULL;
 
 	/* add hist_length of “$HOME/” if home_env is non-NULL */
 	if (home_env && strcmp(home_env, ""))
@@ -133,7 +132,7 @@ int main(int argc, char *argv[])
 	strmv(hist_len, hist_file, hist_name);
 
 	/* initialize source buffers */
-	init_buffers(&vl, &tl, &il, &prg, &lptr);
+	init_buffers(&vl, &tl, &il, &prg, &lbuf);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile);
 	/* initialize prg[0].total and prg[1].total then print version */
@@ -171,30 +170,32 @@ int main(int argc, char *argv[])
 	reg_handlers();
 
 	/* loop readline() until EOF is read */
-	while (read_line(&lptr) && *lptr) {
+	while (read_line(&lbuf) && *lbuf) {
+		/* point global at line */
+		lptr = lbuf;
 		/* strip newlines */
 		if ((tbuf = strpbrk(lptr, "\f\r\n")))
 			tbuf[0] = '\0';
 		/* add and dedup history */
-		dedup_history(&lptr);
+		dedup_history(&lbuf);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
-			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &vl, &tl, &il, &prg, &lptr);
-			rsz_buf(&prg[i].total, &prg[i].t_sz, &prg[i].t_max, 3, &vl, &tl, &il, &prg, &lptr);
+			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &vl, &tl, &il, &prg, &lbuf);
+			rsz_buf(&prg[i].total, &prg[i].t_sz, &prg[i].t_max, 3, &vl, &tl, &il, &prg, &lbuf);
 		}
 
 		/* strip leading whitespace */
-		char *strip = lptr;
-		strip += strspn(lptr, " \t");
+		char *strip = lbuf;
+		strip += strspn(lbuf, " \t");
 		/* control sequence and preprocessor directive parsing */
 		switch (strip[0]) {
 		case ';':
 			switch(strip[1]) {
 			/* clean up and exit program */
 			case 'q':
-				free_buffers(&vl, &tl, &il, &prg, &lptr);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				cleanup();
 				exit(EXIT_SUCCESS);
 				/* unused break */
@@ -220,7 +221,7 @@ int main(int argc, char *argv[])
 				tbuf += strspn(tbuf, " \t");
 				/* output file flag */
 				if (out_flag && !(ofile = fopen(tbuf, "wb"))) {
-					free_buffers(&vl, &tl, &il, &prg, &lptr);
+					free_buffers(&vl, &tl, &il, &prg, &lbuf);
 					cleanup();
 					ERR("failed to create output file");
 				}
@@ -228,8 +229,8 @@ int main(int argc, char *argv[])
 
 			/* toggle library parsing */
 			case 'p':
-				free_buffers(&vl, &tl, &il, &prg, &lptr);
-				init_buffers(&vl, &tl, &il, &prg, &lptr);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* toggle global parse flag */
 				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -238,8 +239,8 @@ int main(int argc, char *argv[])
 
 			/* toggle variable tracking */
 			case 't':
-				free_buffers(&vl, &tl, &il, &prg, &lptr);
-				init_buffers(&vl, &tl, &il, &prg, &lptr);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* toggle global parse flag */
 				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -248,8 +249,8 @@ int main(int argc, char *argv[])
 
 			/* toggle warnings */
 			case 'w':
-				free_buffers(&vl, &tl, &il, &prg, &lptr);
-				init_buffers(&vl, &tl, &il, &prg, &lptr);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* toggle global warning flag */
 				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
@@ -258,8 +259,8 @@ int main(int argc, char *argv[])
 
 			/* reset state */
 			case 'r':
-				free_buffers(&vl, &tl, &il, &prg, &lptr);
-				init_buffers(&vl, &tl, &il, &prg, &lptr);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile);
 				break;
@@ -405,7 +406,7 @@ int main(int argc, char *argv[])
 				strip[i] = '\0';
 			}
 			/* start building program source */
-			build_body(&prg, lptr);
+			build_body(&prg, lbuf);
 			for (size_t i = 0; i < 2; i++)
 				strmv(CONCAT, prg[i].b, "\n");
 			break;
@@ -422,7 +423,7 @@ int main(int argc, char *argv[])
 			case '}': /* fallthough */
 			case ';': /* fallthough */
 			case '\\':
-				build_body(&prg, lptr);
+				build_body(&prg, lbuf);
 				for (size_t i = 0; i < 2; i++) {
 					/* remove extra trailing ';' */
 					size_t b_len = strlen(prg[i].b) - 1;
@@ -439,7 +440,7 @@ int main(int argc, char *argv[])
 				break;
 
 			default:
-				build_body(&prg, lptr);
+				build_body(&prg, lbuf);
 				/* append ';' if no trailing '}', ';', or '\' */
 				for (size_t i = 0; i < 2; i++)
 					strmv(CONCAT, prg[i].b, ";\n");
@@ -460,7 +461,7 @@ int main(int argc, char *argv[])
 			printf("[exit status: %d]\n", ret);
 	}
 
-	free_buffers(&vl, &tl, &il, &prg, &lptr);
+	free_buffers(&vl, &tl, &il, &prg, &lbuf);
 	cleanup();
 	return 0;
 }

@@ -30,6 +30,9 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 
 static inline int var_cmp(void const *a, void const *b)
 {
+	/* sanity check */
+	if (!a || !b)
+		ERR("NULL pointer passed to var_cmp()");
 	char *a_key = ((struct {char *key; enum var_type type;} *)a)->key;
 	char *b_key = ((struct {char *key; enum var_type type;} *)b)->key;
 	enum var_type a_type = ((struct {char *key; enum var_type type;} *)a)->type;
@@ -85,12 +88,14 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	if (!vlist || !vlist->list || !ilist || !ilist->list || !tlist)
 		ERRX("NULL pointer passed to gen_var_list()");
 	/* nothing to do */
-	if (!ilist->cnt)
+	if (!ilist->cnt || !ilist->list[0] || !tlist[0] || !tlist[0][0])
 		return;
 	/* initialize list */
 	append_var(vlist, ilist->list[0], tlist[0][0]);
 	/* don't add duplicate keys to vlist */
 	for (size_t i = 1; i < ilist->cnt; i++) {
+		if (!ilist->list[i] || !tlist[0][i])
+			break;
 		struct {char *key; enum var_type type;} vtmp = {ilist->list[i], tlist[0][i]};
 		if (!bsearch(&vtmp, &vlist->list, vlist->cnt, sizeof *vlist->list, &var_cmp)) {
 			append_var(vlist, ilist->list[i], tlist[0][i]);

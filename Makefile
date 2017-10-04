@@ -20,7 +20,7 @@ endif
 debug:
 	# debug indicator flag
 	@touch debug.mk
-	$(MAKE) check OLVL="$(DEBUG)"
+	$(MAKE) $(TARGET) check OLVL="$(DEBUG)"
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
