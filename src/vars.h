@@ -73,13 +73,13 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, enu
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;
 		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
-			if (!strcmp(ilist->list[i], vlist->list[j].key) && (*tlist)[i] == vlist->list[j].type) {
+			if ((*tlist)[i] == vlist->list[j].type && !strcmp(ilist->list[i], vlist->list[j].key)) {
 				uniq = false;
 				break;
 			}
 		}
 		if (uniq)
-		append_var(vlist, ilist->list[i], (*tlist)[i]);
+			append_var(vlist, ilist->list[i], (*tlist)[i]);
 	}
 }
 
