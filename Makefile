@@ -11,7 +11,7 @@ all:
 MKCFG := config.mk
 # if previously built with `-fsanitize=address` we have to use `DEBUG` flags
 OPT != test -f debug.mk
-ifeq ($(.SHELLSTATUS),0)
+ifeq ($(.SHELLSTATUS), 0)
 	OLVL = $(DEBUG)
 endif
 -include $(DEP) $(MKCFG)
@@ -20,11 +20,12 @@ endif
 debug:
 	# debug indicator flag
 	@touch debug.mk
-	$(MAKE) $(TARGET) check OLVL="$(DEBUG)"
+	@rm -f $(TARGET)
+	$(MAKE) $(TARGET) check
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
-$(TEST): %:  %.o $(OBJ)
+$(TEST): %: %.o $(TAP).o $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
 %.d %.o: %.c
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
