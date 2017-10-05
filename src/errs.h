@@ -16,33 +16,20 @@
 #include <string.h>
 #include <unistd.h>
 
+/* errno, file, and lineno macros */
+#define ESTR		strerror(errno), __FILE__, __LINE__
+#define FLSTR		__FILE__, __LINE__
 
 /* warning macros */
-#define WARN(X)		fprintf(stderr, "%s: \"%s\" %s:%u\n", strerror(errno), (X), __FILE__, __LINE__)
-#define WARNX(X)	fprintf(stderr, "\"%s\" %s:%u\n", (X), __FILE__, __LINE__)
-#define WARNARR(X, Y)	fprintf(stderr, "%s: \"%s[%zu]\" %s:%u\n", strerror(errno), (X), (Y), __FILE__, __LINE__)
-#define WARNXARR(X, Y)	fprintf(stderr, "\"%s[%zu]\" %s:%u\n", (X), (Y), __FILE__, __LINE__)
+#define WARN(X)		fprintf(stderr, "%s %s:%u: \"%s\"\n", ESTR, (X))
+#define WARNX(X)	fprintf(stderr, "%s:%u \"%s\"\n", FLSTR, (X))
+#define WARNARR(X, Y)	fprintf(stderr, "%s %s:%u: \"%s[%zu]\"\n", ESTR, (X), (Y))
+#define WARNXARR(X, Y)	fprintf(stderr, "%s:%u \"%s[%zu]\"\n", FLSTR, (X), (Y))
 
 /* error macros */
-#define ERR(X)		do { \
-				fprintf(stderr, "%s: \"%s\" %s:%u\n", \
-						strerror(errno), (X), __FILE__, __LINE__); \
-				exit(EXIT_FAILURE); \
-			} while (0)
-#define ERRX(X)		do { \
-				fprintf(stderr, "\"%s\" %s:%u\n", \
-						(X), __FILE__, __LINE__); \
-				exit(EXIT_FAILURE); \
-			} while (0)
-#define ERRARR(X, Y)	do { \
-				fprintf(stderr, "%s: \"%s[%zu]\" %s:%u\n", \
-						strerror(errno), (X), (Y), __FILE__, __LINE__); \
-				exit(EXIT_FAILURE); \
-			} while (0)
-#define ERRXARR(X, Y)	do { \
-				fprintf(stderr, "\"%s[%zu]\" %s:%u\n", \
-						(X), (Y), __FILE__, __LINE__); \
-				exit(EXIT_FAILURE); \
-			} while (0)
+#define ERR(X)		do { fprintf(stderr, "%s %s:%u: \"%s\"\n", ESTR, (X)); exit(EXIT_FAILURE); } while (0)
+#define ERRX(X)		do { fprintf(stderr, "%s:%u \"%s\"\n", FLSTR, (X)); exit(EXIT_FAILURE); } while (0)
+#define ERRARR(X, Y)	do { fprintf(stderr, "%s %s:%u: \"%s[%zu]\"\n", ESTR, (X), (Y)); exit(EXIT_FAILURE); } while (0)
+#define ERRXARR(X, Y)	do { fprintf(stderr, "%s:%u \"%s[%zu]\"\n", FLSTR, (X), (Y)); exit(EXIT_FAILURE); } while (0)
 
 #endif
