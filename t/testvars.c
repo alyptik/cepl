@@ -14,8 +14,8 @@ struct str_list ld_list;
 int main(void)
 {
 	char *const src = "int main(void)\n{\nint i = 0;\n";
-	struct str_list ids = {0,1,NULL};
-	enum var_type *types = NULL;
+	struct str_list ids = {0, 1, NULL};
+	struct type_list types = {0, 1, NULL};
 
 	plan(4);
 
@@ -24,7 +24,8 @@ int main(void)
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned int type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
-	free(types);
 	free_str_list(&ids);
+	if (types.list)
+	free(types.list);
 	done_testing();
 }

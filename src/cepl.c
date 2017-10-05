@@ -37,7 +37,7 @@ extern bool warn_flag, parse_flag, track_flag, out_flag;
 /* history file flag */
 extern bool has_hist;
 /* type, identifier, and var lists */
-extern enum var_type *tl;
+extern struct type_list tl;
 extern struct str_list il;
 extern struct var_list vl;
 
@@ -368,20 +368,12 @@ int main(int argc, char *argv[])
 				if (!track_flag)
 					break;
 				/* re-init vars */
-				if (tl) {
-					free(tl);
-					tl = NULL;
+				if (tl.list) {
+					free(tl.list);
+					tl.list = NULL;
 				}
-				if (vl.list) {
-					for (size_t i = 0; i < vl.cnt; i++) {
-						if (vl.list[i].key) {
-							free(vl.list[i].key);
-							vl.list[i].key = NULL;
-						}
-					}
-					free(vl.list);
-					vl.list = NULL;
-				}
+				for (size_t i = 0; i < TNUM; i++)
+					free_str_list(&vl.list[i]);
 				init_vlist(&vl);
 				/* add vars from previous lines */
 				for (size_t i = 1; i < prg[0].lines.cnt; i++) {

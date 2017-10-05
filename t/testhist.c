@@ -40,7 +40,7 @@ struct prog_src prg[2];
 /* static line buffer */
 static char *ln;
 /* static var lists */
-static enum var_type *tl;
+static struct type_list tl;
 static struct var_list vl;
 static struct str_list il;
 
@@ -86,12 +86,15 @@ int main (void)
 	int saved_fd = dup(STDIN_FILENO);
 	close(STDIN_FILENO);
 	lives_ok({cleanup();}, "test successful cleanup() call.");
-	if (vl.list) {
-		for (size_t i = 0; i < vl.cnt; i++)
-			if (vl.list[i].key) free(vl.list[i].key);
-		free(vl.list);
-	}
 	dup2(saved_fd, STDIN_FILENO);
+
+	/* if (tl.list) { */
+	/*         free(tl.list); */
+	/*         tl.list = NULL; */
+	/* } */
+	/* free_str_list(&il.list); */
+	/* for (size_t i = 0; i < TNUM; i++) */
+	/*         free_str_list(vl.list[i]); */
 
 	done_testing();
 }

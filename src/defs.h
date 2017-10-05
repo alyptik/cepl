@@ -37,17 +37,18 @@
 	";t[racking]:\t\tToggle variable tracking.\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]:\t\tToggle -w (warnings) flag"
-/* color escapes */
-#define	RED	"\\033[31m"
-#define	GREEN	"\\033[32m"
-#define	YELLOW	"\\033[33m"
-#define	RST	"\\033[00m"
-/* page size for buffer count */
-#define COUNT		sysconf(_SC_PAGESIZE)
-/* `malloc()` size ceiling */
-#define MAX		(SIZE_MAX / 2 - 1)
+#define	RED		"\\033[31m"
+#define	GREEN		"\\033[32m"
+#define	YELLOW		"\\033[33m"
+#define	RST		"\\033[00m"
 /* `strmv() `concat constant */
 #define CONCAT		(-1)
+/* number of possible types */
+#define TNUM		(7)
+/* `malloc()` size ceiling */
+#define MAX		(SIZE_MAX / 2 - 1)
+/* page size for buffer count */
+#define COUNT		sysconf(_SC_PAGESIZE)
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
@@ -116,13 +117,16 @@ struct flag_list {
 	size_t cnt, max;
 	enum src_flag *list;
 };
-/* struct definition for var-tracking dynamic array */
-struct var_list {
+/* struct definition for type dynamic array */
+struct type_list {
 	size_t cnt, max;
-	struct {
-		char *key;
-		enum var_type type;
-	} *list;
+	enum var_type *list;
+};
+/* struct definition for var-tracking array */
+struct var_list {
+	size_t cnt, off[TNUM];
+	struct str_list list[TNUM];
+	struct type_list tlist;
 };
 /* struct definition for generated program sources */
 struct prog_src {
@@ -201,7 +205,7 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
 
-static inline void append_str(struct str_list *list_struct, char *str, size_t padding)
+static inline void append_str(struct str_list *list_struct, char const *string, size_t padding)
 {
 	char **tmp;
 	list_struct->cnt++;
@@ -216,13 +220,43 @@ static inline void append_str(struct str_list *list_struct, char *str, size_t pa
 			ERRARR("list_ptr", list_struct->cnt - 1);
 		list_struct->list = tmp;
 	}
-	if (!str) {
+	if (!string) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 	} else {
-		if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(str) + padding + 1)))
+		if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(string) + padding + 1)))
 			ERRARR("list_ptr", list_struct->cnt - 1);
-		memcpy(list_struct->list[list_struct->cnt - 1] + padding, str, strlen(str) + 1);
+		memcpy(list_struct->list[list_struct->cnt - 1] + padding, string, strlen(string) + 1);
 	}
+}
+
+static inline void init_tlist(struct type_list *list_struct)
+{
+	list_struct->cnt = 1;
+	list_struct->max = 1;
+	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
+		ERR("error during initial type_list calloc()");
+	list_struct->cnt++;
+	list_struct->list[list_struct->cnt - 1] = T_ERR;
+}
+
+static inline void append_type(struct type_list *list_struct, enum var_type type)
+{
+	if (type == T_ERR)
+		return;
+	enum var_type *tmp;
+	list_struct->cnt++;
+	/* realloc if cnt reaches current size */
+	if (list_struct->cnt >= list_struct->max) {
+		/* check if size too large */
+		if (list_struct->cnt > MAX)
+			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
+		/* double until size is reached */
+		while ((list_struct->max *= 2) < list_struct->cnt);
+		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
+			ERRARR("type_list", list_struct->cnt);
+		list_struct->list = tmp;
+	}
+	list_struct->list[list_struct->cnt - 1] = type;
 }
 
 static inline void init_flag_list(struct flag_list *list_struct)
@@ -252,5 +286,4 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
 }
-
 #endif

@@ -26,34 +26,34 @@ long syscall(long __sysno, ...);
 int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 void *mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset);
 
-enum var_type extract_type(char const *line, char const *id)
+enum var_type extract_type(char const *ln, char const *id)
 {
 	regex_t reg;
 	regmatch_t match[7];
 	/* return early if passed NULL pointers */
-	if (!line || !id)
+	if (!ln || !id)
 		ERRX("NULL pointer passed to extract_type()");
 
 	/* first/fourth captures are ignored */
 	char *regex, *type;
-	char const beg[] = "(^|.*[({;[:blank:]]*)"
+	char const beg_regex[] = "(^|.*[({;[:blank:]]*)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
 			"char|double|float|int|long|short|unsigned|void)"
 			"([^&]*)(";
-	char const end[] = ")(\\[*)";
+	char const end_regex[] = ")(\\[*)";
 
 	/* append identifier to regex */
-	if (!(regex = calloc(1, strlen(id) + sizeof beg + sizeof end - 1)))
+	if (!(regex = calloc(1, strlen(id) + sizeof beg_regex + sizeof end_regex - 1)))
 		ERR("failed to allocate space for regex");
-	strmv(0, regex, beg);
+	strmv(0, regex, beg_regex);
 	strmv(CONCAT, regex, id);
-	strmv(CONCAT, regex, end);
+	strmv(CONCAT, regex, end_regex);
 
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 6, match, 0) || match[2].rm_so == -1) {
+	if (regexec(&reg, ln, 6, match, 0) || match[2].rm_so == -1) {
 		free(regex);
 		regfree(&reg);
 		return T_ERR;
@@ -63,8 +63,8 @@ enum var_type extract_type(char const *line, char const *id)
 	if (!(type = calloc(1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)))
 		ERR("failed to allocate space for captured type");
 	/* copy matched string */
-	memcpy(type, line + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
-	memcpy(type + match[3].rm_eo - match[2].rm_so, line + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
+	memcpy(type, ln + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
+	memcpy(type + match[3].rm_eo - match[2].rm_so, ln + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 	regfree(&reg);
 
 	/* string `char[]` */
@@ -150,7 +150,7 @@ enum var_type extract_type(char const *line, char const *id)
 	return T_OTHER;
 }
 
-size_t extract_id(char const *line, char **id, size_t *offset)
+size_t extract_id(char const *ln, char **id, size_t *offset)
 {
 	regex_t reg;
 	regmatch_t match[4];
@@ -160,13 +160,13 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=]+=)";
 
 	/* return early if passed NULL pointers */
-	if (!line || !id || !offset)
+	if (!ln || !id || !offset)
 		ERRX("NULL pointer passed to extract_id()");
 
 	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, line, 3, match, 0) || match[1].rm_so == -1) {
+	if (regexec(&reg, ln, 3, match, 0) || match[1].rm_so == -1) {
 		/* fallback branch */
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
@@ -180,7 +180,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
-		if (regexec(&reg, line, 5, match, 0) || match[3].rm_so == -1) {
+		if (regexec(&reg, ln, 5, match, 0) || match[3].rm_so == -1) {
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
@@ -192,7 +192,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 
 			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_NEWLINE))
 				ERR("failed to compile regex");
-			if (regexec(&reg, line, 4, match, 0) || match[3].rm_so == -1) {
+			if (regexec(&reg, ln, 4, match, 0) || match[3].rm_so == -1) {
 				regfree(&reg);
 				return 0;
 			}
@@ -200,7 +200,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 			if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
 				ERR("failed to allocate space for captured id");
 			/* set the output parameter and return the offset */
-			memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+			memcpy(*id, ln + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 			regfree(&reg);
 			*offset = match[3].rm_eo;
 			return match[3].rm_eo;
@@ -209,7 +209,7 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 		if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
 			ERR("failed to allocate space for captured id");
 		/* set the output parameter and return the offset */
-		memcpy(*id, line + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+		memcpy(*id, ln + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 		regfree(&reg);
 		*offset = match[3].rm_eo;
 		return match[3].rm_eo;
@@ -219,34 +219,34 @@ size_t extract_id(char const *line, char **id, size_t *offset)
 	if (!(*id = calloc(1, match[1].rm_eo - match[1].rm_so + 1)))
 		ERR("failed to allocate space for captured id");
 	/* set the output parameter and return the offset */
-	memcpy(*id, line + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
+	memcpy(*id, ln + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
 	regfree(&reg);
 	*offset = match[1].rm_eo;
 	return match[1].rm_eo;
 }
 
-int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist)
+int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
 {
 	size_t off;
 	char *line_tmp[2], *id_tmp = NULL;
 
 	/* sanity checks */
-	if (!line || !ilist || !tlist)
+	if (!ln || !ilist || !tlist)
 		return 0;
-	if (!(line_tmp[0] = calloc(1, strlen(line) + 1)))
+	if (!(line_tmp[0] = calloc(1, strlen(ln) + 1)))
 		ERR("error allocating line_tmp");
 	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
-	if (*tlist)
-		free(*tlist);
-	*tlist = NULL;
+	if (tlist->list)
+		free(tlist->list);
 	if (ilist->list)
 		free_str_list(ilist);
-	init_list(ilist, NULL);
+	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_tlist(tlist);
 
 	size_t count = ilist->cnt;
-	strmv(0, line_tmp[1], line);
+	strmv(0, line_tmp[1], ln);
 	/* extract all identifiers from the line */
 	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 		append_str(ilist, id_tmp, 0);
@@ -289,14 +289,13 @@ int find_vars(char const *line, struct str_list *ilist, enum var_type **tlist)
 	/* if no keys found return early */
 	if (ilist->cnt < 1)
 		return 0;
-	enum var_type type_tmp[ilist->cnt];
-	for (size_t i = 0; i < ilist->cnt; i++)
-		type_tmp[i] = extract_type(line_tmp[1], ilist->list[i]);
-
-	/* copy it into the output parameter */
-	if (!(*tlist = calloc(1, sizeof type_tmp)))
-		ERR("failed to allocate memory for tlist");
-	memcpy(*tlist, type_tmp, sizeof type_tmp);
+	for (size_t i = 0; i < ilist->cnt; i++) {
+		enum var_type type_tmp;
+		type_tmp = extract_type(line_tmp[1], ilist->list[i]);
+		if (type_tmp == T_ERR)
+			continue;
+		append_type(tlist, type_tmp);
+	}
 	if (id_tmp)
 		free(id_tmp);
 	if (line_tmp[0])
@@ -360,15 +359,18 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {
-		/* skip unknown types */
-		if (vlist->list[i].type == T_ERR)
-			continue;
 
+		enum var_type cur_type = vlist->tlist.list[i];
+		/* skip erroneous types */
+		if (cur_type == T_ERR || vlist->off[cur_type] < 1)
+			continue;
+		size_t toff = vlist->off[cur_type] - 1;
 		/* populate buffers */
 		size_t printf_sz = (i < vlist->cnt - 1) ? psz : plnsz;
 		size_t arr_sz = (i < vlist->cnt - 1) ? sizeof print_beg : sizeof println_beg;
-		size_t cur_sz = strlen(vlist->list[i].key) * 2;
+		size_t cur_sz = strlen(vlist->list[cur_type].list[toff]) * 2;
 		char (*arr_ptr)[printf_sz] = (i < vlist->cnt - 1) ? &print_beg : &println_beg;
+
 		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
 			free(src_tmp);
 			ERR("src_tmp realloc()");
@@ -378,10 +380,10 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		strmv(0, print_tmp, *arr_ptr);
 
 		/* build format string */
-		switch (vlist->list[i].type) {
+		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[i].key);
+			ERR(vlist->list[cur_type].list[toff]);
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
@@ -444,14 +446,14 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		/* copy format string */
 		strmv(off, src_tmp, print_tmp);
 		off += arr_sz - 1;
-		strmv(off, src_tmp, vlist->list[i].key);
-		off += strlen(vlist->list[i].key);
+		strmv(off, src_tmp, vlist->list[cur_type].list[toff]);
+		off += strlen(vlist->list[cur_type].list[toff]);
 
 		/* handle other variable types */
-		switch (vlist->list[i].type) {
+		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[i].key);
+			ERR(vlist->list[cur_type].list[toff]);
 			break;
 		case T_INT:
 			/* cast integral type to long long */
@@ -478,8 +480,8 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		}
 
 		/* copy final part of printf */
-		strmv(off, src_tmp, vlist->list[i].key);
-		off += strlen(vlist->list[i].key);
+		strmv(off, src_tmp, vlist->list[cur_type].list[toff]);
+		off += strlen(vlist->list[cur_type].list[toff]);
 		strmv(off, src_tmp, print_end);
 		off += sizeof print_end - 1;
 	}

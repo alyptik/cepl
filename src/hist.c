@@ -23,7 +23,7 @@ struct prog_src prg[2];
 /* global history file flag */
 bool has_hist = false;
 /* type, identifier, and var lists */
-enum var_type *tl;
+struct type_list tl;
 struct str_list il;
 struct var_list vl;
 
@@ -59,7 +59,7 @@ void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
 	*out_file = NULL;
 }
 
-void free_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+void free_buffers(struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
@@ -69,21 +69,15 @@ void free_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list
 		free(*ln);
 		*ln = NULL;
 	}
-	if (*tlist) {
-		free(*tlist);
-		*tlist = NULL;
+	if (tlist) {
+		free(tlist->list);
+		tlist->list = NULL;
 	}
 	/* free vectors */
 	if (cc_argv)
 		free_argv(&cc_argv);
-	if (vlist->list) {
-		for (size_t i = 0; i < vlist->cnt; i++) {
-			if (vlist->list[i].key)
-				free(vlist->list[i].key);
-		}
-		free(vlist->list);
-		vlist->list = NULL;
-	}
+	for (size_t i = 0; i < TNUM; i++)
+		free_str_list(&vlist->list[i]);
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
 		if ((*prgm)[i].f)
@@ -103,7 +97,7 @@ void free_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list
 	}
 }
 
-void init_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+void init_buffers(struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* user is truncated source for display */
 	(*prgm)[0].f = calloc(1, 1);
@@ -138,9 +132,11 @@ void init_buffers(struct var_list *vlist, enum var_type **tlist, struct str_list
 		init_flag_list(&(*prgm)[i].flags);
 	}
 	init_vlist(vlist);
+	init_tlist(tlist);
+	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, enum var_type **tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
 {
 	/* sanity check */
 	if (!buf || !*buf || !ln)

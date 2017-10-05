@@ -11,7 +11,7 @@
 
 int main (void)
 {
-	char *line = "foobar";
+	char *ln = "foobar";
 
 	plan(1);
 
@@ -19,10 +19,10 @@ int main (void)
 	if (!(null = fopen("/dev/null", "r+b")))
 		ERR("read_line() fopen()");
 	rl_outstream = null;
-	ok((line = readline(NULL)) != NULL, "send keyboard input to readline.");
+	ok((ln = readline(NULL)) != NULL, "send keyboard input to readline.");
 	rl_outstream = NULL;
 	fclose(null);
-	free(line);
+	free(ln);
 
 	done_testing();
 }
