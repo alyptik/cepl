@@ -8,6 +8,7 @@
 #ifndef ERRS_H
 #define ERRS_H
 
+#include <assert.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -15,36 +16,33 @@
 #include <string.h>
 #include <unistd.h>
 
-/* error macros */
-#define ERR(X)		do { \
-	fprintf(stderr, "%s: \"%s\" %s:%d\n", strerror(errno), (X), __FILE__, __LINE__); \
-	exit(EXIT_FAILURE); \
-			} while (0)
-#define ERRX(X)		do { \
-	fprintf(stderr, "\"%s\" %s:%d\n", (X), __FILE__, __LINE__); \
-	exit(EXIT_FAILURE); \
-			} while (0)
-#define ERRARR(X, Y)	do { \
-	fprintf(stderr, "%s: \"%s[%zu]\" %s:%d\n", strerror(errno), (X), (Y), __FILE__, __LINE__); \
-	exit(EXIT_FAILURE); \
-			} while (0)
-#define ERRXARR(X, Y)	do { \
-	fprintf(stderr, "\"%s[%zu]\" %s:%d\n", (X), (Y), __FILE__, __LINE__); \
-	exit(EXIT_FAILURE); \
-			} while (0)
 
 /* warning macros */
-#define WARN(X)		do { \
-	fprintf(stderr, "%s: \"%s\" %s:%d\n", strerror(errno), (X), __FILE__, __LINE__); \
+#define WARN(X)		fprintf(stderr, "%s: \"%s\" %s:%u\n", strerror(errno), (X), __FILE__, __LINE__)
+#define WARNX(X)	fprintf(stderr, "\"%s\" %s:%u\n", (X), __FILE__, __LINE__)
+#define WARNARR(X, Y)	fprintf(stderr, "%s: \"%s[%zu]\" %s:%u\n", strerror(errno), (X), (Y), __FILE__, __LINE__)
+#define WARNXARR(X, Y)	fprintf(stderr, "\"%s[%zu]\" %s:%u\n", (X), (Y), __FILE__, __LINE__)
+
+/* error macros */
+#define ERR(X)		do { \
+				fprintf(stderr, "%s: \"%s\" %s:%u\n", \
+						strerror(errno), (X), __FILE__, __LINE__); \
+				exit(EXIT_FAILURE); \
 			} while (0)
-#define WARNX(X)	do { \
-	fprintf(stderr, "\"%s\" %s:%d\n", (X), __FILE__, __LINE__); \
+#define ERRX(X)		do { \
+				fprintf(stderr, "\"%s\" %s:%u\n", \
+						(X), __FILE__, __LINE__); \
+				exit(EXIT_FAILURE); \
 			} while (0)
-#define WARNARR(X, Y)	do { \
-	fprintf(stderr, "%s: \"%s[%zu]\" %s:%d\n", strerror(errno), (X), (Y), __FILE__, __LINE__); \
+#define ERRARR(X, Y)	do { \
+				fprintf(stderr, "%s: \"%s[%zu]\" %s:%u\n", \
+						strerror(errno), (X), (Y), __FILE__, __LINE__); \
+				exit(EXIT_FAILURE); \
 			} while (0)
-#define WARNXARR(X, Y)	do { \
-	fprintf(stderr, "\"%s[%zu]\" %s:%d\n", (X), (Y), __FILE__, __LINE__); \
-		} while (0)
+#define ERRXARR(X, Y)	do { \
+				fprintf(stderr, "\"%s[%zu]\" %s:%u\n", \
+						(X), (Y), __FILE__, __LINE__); \
+				exit(EXIT_FAILURE); \
+			} while (0)
 
 #endif

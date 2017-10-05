@@ -14,8 +14,8 @@
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	("CEPL v4.5.2")
-#define USAGE_STRING	("[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
+#define VERSION_STRING	"CEPL v4.5.3"
+#define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
 	"-t,--tracking:\t\tToggle variable tracking.\n\t" \
@@ -36,18 +36,18 @@
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
 	";t[racking]:\t\tToggle variable tracking.\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
-	";w[arnings]:\t\tToggle -w (warnings) flag")
-/* `strmv() `concat constant */
-#define CONCAT		(-1)
-/* `malloc()` size ceiling */
-#define MAX		(SIZE_MAX / 2 - 1)
-/* page size for buffer count */
-#define COUNT		(sysconf(_SC_PAGESIZE))
+	";w[arnings]:\t\tToggle -w (warnings) flag"
 /* color escapes */
 #define	RED	"\\033[31m"
 #define	GREEN	"\\033[32m"
 #define	YELLOW	"\\033[33m"
 #define	RST	"\\033[00m"
+/* page size for buffer count */
+#define COUNT		sysconf(_SC_PAGESIZE)
+/* `malloc()` size ceiling */
+#define MAX		(SIZE_MAX / 2 - 1)
+/* `strmv() `concat constant */
+#define CONCAT		(-1)
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"

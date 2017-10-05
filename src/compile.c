@@ -88,9 +88,9 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 			ERR("error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
+		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("compiler returned non-zero exit code");
-			/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -122,9 +122,9 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 		close(pipe_ld[0]);
 		close(pipe_exec[1]);
 		wait(&status);
+		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("linker returned non-zero exit code");
-			/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -151,10 +151,9 @@ int compile(char const *src, char *const cc_args[], char *const exec_args[])
 	default:
 		close(pipe_exec[0]);
 		wait(&status);
-		/* don't overwrite non-zero exit status from compiler */
+		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("executable returned non-zero exit code");
-			/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
