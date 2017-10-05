@@ -155,9 +155,11 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 	regex_t reg;
 	regmatch_t match[4];
 	/* second capture is ignored */
-	char const initial_regex[] = "^[^,({;&|]*[^,({;&|[:alnum:]_]+"
+	char const initial_regex[] =
+		"^[^,({;&|=]+[^,({;&|=[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=]+=)";
+		/* "(=)"; */
 
 	/* return early if passed NULL pointers */
 	if (!ln || !id || !offset)
@@ -171,12 +173,13 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
-			"(^|[^t][^y][^p][^e][^d][^e][^,({;&|'\"f]+[[:blank:]]+)"
+			/* "(^[[:blank:]]*|[^t][^y][^p][^e][^d][^e][^,({;&|'\"f]+)" */
+			"(^[[:blank:]]*|^[^,({;&|'\"f]+)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-			"([^(){};&|'\"[:alnum:][:blank:]]+$|$|\\[|,)";
+			"([^(){};&|'\"[:alnum:][:blank:]]+$|;*$|\\[|,)";
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
@@ -197,6 +200,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 				return 0;
 			}
 
+			puts("three");
 			if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
 				ERR("failed to allocate space for captured id");
 			/* set the output parameter and return the offset */
@@ -206,6 +210,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 			return match[3].rm_eo;
 		}
 
+		puts("two");
 		if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
 			ERR("failed to allocate space for captured id");
 		/* set the output parameter and return the offset */
@@ -215,6 +220,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 		return match[3].rm_eo;
 	}
 
+	puts("one");
 	/* normal branch */
 	if (!(*id = calloc(1, match[1].rm_eo - match[1].rm_so + 1)))
 		ERR("failed to allocate space for captured id");

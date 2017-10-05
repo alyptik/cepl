@@ -86,8 +86,10 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, str
 			break;
 		}
 		/* no matches found */
-		if (uniq)
+		if (uniq) {
+			printf("%s %d\n", ilist->list[i], tlist->list[i]);
 			append_var(vlist, ilist->list[i], tlist->list[i]);
+		}
 	}
 }
 
