@@ -118,22 +118,17 @@ struct flag_list {
 	enum src_flag *list;
 };
 /* struct definition for type dynamic array */
-/* struct type_list { */
-/*         size_t cnt, max; */
-/*         enum var_type *list; */
-/* }; */
 struct type_list {
-	char *key;
-	enum var_type type;
 	size_t cnt, max;
 	enum var_type *list;
 };
 /* struct definition for var-tracking array */
 struct var_list {
-	/* size_t cnt, off[TNUM]; */
-	/* struct str_list list[TNUM]; */
 	size_t cnt, max;
-	struct type_list *list;
+	struct {
+		char *key;
+		enum var_type type;
+	} *list;
 };
 /* struct definition for generated program sources */
 struct prog_src {
@@ -214,7 +209,7 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 
 static inline void append_str(struct str_list *list_struct, char const *string, size_t padding)
 {
-	char **tmp;
+	void *tmp;
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
@@ -248,7 +243,7 @@ static inline void append_type(struct type_list *list_struct, enum var_type type
 {
 	if (type == T_ERR)
 		return;
-	enum var_type *tmp;
+	void *tmp;
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
@@ -276,7 +271,7 @@ static inline void init_flag_list(struct flag_list *list_struct)
 
 static inline void append_flag(struct flag_list *list_struct, enum src_flag flag)
 {
-	enum src_flag *tmp;
+	void *tmp;
 	list_struct->cnt++;
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
@@ -291,4 +286,5 @@ static inline void append_flag(struct flag_list *list_struct, enum src_flag flag
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
 }
+
 #endif

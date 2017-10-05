@@ -13,12 +13,14 @@ struct str_list ld_list;
 
 int main(void)
 {
+	struct str_list ids = {0};
+	struct type_list types = {0};
 	char *const src = "int main(void)\n{\nint i = 0;\n";
-	struct str_list ids = {0, 1, NULL};
-	struct type_list types = {NULL, 0, 0, 1, NULL};
 
 	plan(4);
 
+	init_list(&ids, NULL);
+	init_tlist(&types);
 	ok(find_vars(src, &ids, &types) > 0, "succeed finding variable values.");
 	ok(extract_type(src, "i") == T_INT, "succeed extracting int type.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned int type.");

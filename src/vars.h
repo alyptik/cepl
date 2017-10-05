@@ -28,22 +28,6 @@ size_t extract_id(char const *ln, char **id, size_t *offset);
 int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist);
 int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[]);
 
-/* static inline void init_vlist(struct var_list *vlist) */
-/* { */
-/*         vlist->cnt = 1; */
-/*         for (size_t i = 0; i < TNUM; i++) { */
-/*                 vlist->off[i] = 0; */
-/*                 free_str_list(&vlist->list[i]); */
-/*                 init_list(&vlist->list[i], NULL); */
-/*         } */
-/*         if (vlist->tlist.list) { */
-/*                 free(vlist->tlist.list); */
-/*                 vlist->tlist.list = NULL; */
-/*         } */
-/*         append_str(&vlist->list[T_ERR], "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL", 0); */
-/*         init_tlist(&vlist->tlist); */
-/* } */
-
 static inline void init_vlist(struct var_list *vlist)
 {
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
@@ -62,7 +46,7 @@ static inline void append_var(struct var_list *vlist, char const *key, enum var_
 {
 	if (type == T_ERR || !key)
 		return;
-	struct type_list *tmp;
+	void *tmp;
 	vlist->cnt++;
 	assert(vlist->max != 0);
 	/* realloc if cnt reaches current size */
