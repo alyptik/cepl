@@ -159,7 +159,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 	char const initial_regex[] =
 		"^[^,({;&|=]+[^,({;&|=[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=]+=)";
+		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
 
 	/* return early if passed NULL pointers */
 	if (!ln || !id || !offset)

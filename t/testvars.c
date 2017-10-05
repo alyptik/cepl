@@ -17,12 +17,15 @@ int main(void)
 	struct type_list types = {0};
 	char *const src =
 		"int main(void)\n{\n\t"
-		"int a = 1; int b = 456; double res = a + (double)b / 1000;\n";
+		"int a = 1; int b = 456; double res = a + (double)b / 1000;\n\t"
+		"return 0;\n}";
 
 	plan(6);
 
+	/* initialize lists */
 	init_list(&ids, NULL);
 	init_tlist(&types);
+
 	ok(find_vars(src, &ids, &types) == 3, "succeed finding three variable values.");
 	ok(extract_type(src, "a") == T_INT, "succeed extracting integral type from `a`.");
 	ok(extract_type(src, "b") == T_INT, "succeed extracting integral type from `b`.");
@@ -30,8 +33,10 @@ int main(void)
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned int type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
+	/* cleanup */
 	free_str_list(&ids);
 	if (types.list)
-	free(types.list);
+		free(types.list);
+
 	done_testing();
 }
