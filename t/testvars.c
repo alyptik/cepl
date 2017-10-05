@@ -15,7 +15,7 @@ int main(void)
 {
 	char *const src = "int main(void)\n{\nint i = 0;\n";
 	struct str_list ids = {0, 1, NULL};
-	struct type_list types = {0, 1, NULL};
+	struct type_list types = {NULL, 0, 0, 1, NULL};
 
 	plan(4);
 

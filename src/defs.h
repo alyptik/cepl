@@ -118,15 +118,22 @@ struct flag_list {
 	enum src_flag *list;
 };
 /* struct definition for type dynamic array */
+/* struct type_list { */
+/*         size_t cnt, max; */
+/*         enum var_type *list; */
+/* }; */
 struct type_list {
+	char *key;
+	enum var_type type;
 	size_t cnt, max;
 	enum var_type *list;
 };
 /* struct definition for var-tracking array */
 struct var_list {
-	size_t cnt, off[TNUM];
-	struct str_list list[TNUM];
-	struct type_list tlist;
+	/* size_t cnt, off[TNUM]; */
+	/* struct str_list list[TNUM]; */
+	size_t cnt, max;
+	struct type_list *list;
 };
 /* struct definition for generated program sources */
 struct prog_src {
@@ -231,12 +238,10 @@ static inline void append_str(struct str_list *list_struct, char const *string, 
 
 static inline void init_tlist(struct type_list *list_struct)
 {
-	list_struct->cnt = 1;
+	list_struct->cnt = 0;
 	list_struct->max = 1;
 	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
 		ERR("error during initial type_list calloc()");
-	list_struct->cnt++;
-	list_struct->list[list_struct->cnt - 1] = T_ERR;
 }
 
 static inline void append_type(struct type_list *list_struct, enum var_type type)

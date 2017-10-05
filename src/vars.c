@@ -289,6 +289,9 @@ int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
 	/* if no keys found return early */
 	if (ilist->cnt < 1)
 		return 0;
+
+
+	/* copy it into the output parameter */
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		enum var_type type_tmp;
 		type_tmp = extract_type(line_tmp[1], ilist->list[i]);
@@ -360,15 +363,14 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {
 
-		enum var_type cur_type = vlist->tlist.list[i];
+		enum var_type cur_type = vlist->list[i].type;
 		/* skip erroneous types */
-		if (cur_type == T_ERR || vlist->off[cur_type] < 1)
+		if (cur_type == T_ERR)
 			continue;
-		size_t toff = vlist->off[cur_type] - 1;
 		/* populate buffers */
 		size_t printf_sz = (i < vlist->cnt - 1) ? psz : plnsz;
 		size_t arr_sz = (i < vlist->cnt - 1) ? sizeof print_beg : sizeof println_beg;
-		size_t cur_sz = strlen(vlist->list[cur_type].list[toff]) * 2;
+		size_t cur_sz = strlen(vlist->list[i].key) * 2;
 		char (*arr_ptr)[printf_sz] = (i < vlist->cnt - 1) ? &print_beg : &println_beg;
 
 		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
@@ -383,7 +385,7 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[cur_type].list[toff]);
+			ERR(vlist->list[i].key);
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
@@ -446,14 +448,14 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		/* copy format string */
 		strmv(off, src_tmp, print_tmp);
 		off += arr_sz - 1;
-		strmv(off, src_tmp, vlist->list[cur_type].list[toff]);
-		off += strlen(vlist->list[cur_type].list[toff]);
+		strmv(off, src_tmp, vlist->list[i].key);
+		off += strlen(vlist->list[i].key);
 
 		/* handle other variable types */
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[cur_type].list[toff]);
+			ERR(vlist->list[i].key);
 			break;
 		case T_INT:
 			/* cast integral type to long long */
@@ -480,8 +482,8 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		}
 
 		/* copy final part of printf */
-		strmv(off, src_tmp, vlist->list[cur_type].list[toff]);
-		off += strlen(vlist->list[cur_type].list[toff]);
+		strmv(off, src_tmp, vlist->list[i].key);
+		off += strlen(vlist->list[i].key);
 		strmv(off, src_tmp, print_end);
 		off += sizeof print_end - 1;
 	}

@@ -372,8 +372,13 @@ int main(int argc, char *argv[])
 					free(tl.list);
 					tl.list = NULL;
 				}
-				for (size_t i = 0; i < TNUM; i++)
-					free_str_list(&vl.list[i]);
+				if (vl.list) {
+					for (size_t i = 0; i < vl.cnt; i++) {
+						if (vl.list[i].key)
+							free(vl.list[i].key);
+					}
+					free(vl.list);
+				}
 				init_vlist(&vl);
 				/* add vars from previous lines */
 				for (size_t i = 1; i < prg[0].lines.cnt; i++) {
