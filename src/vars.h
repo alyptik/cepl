@@ -64,6 +64,7 @@ static inline void append_var(struct var_list *vlist, char const *key, enum var_
 		return;
 	struct type_list *tmp;
 	vlist->cnt++;
+	assert(vlist->max != 0);
 	/* realloc if cnt reaches current size */
 	if (vlist->cnt >= vlist->max) {
 		/* check if size too large */
@@ -75,6 +76,8 @@ static inline void append_var(struct var_list *vlist, char const *key, enum var_
 			ERRARR("type_list", vlist->cnt);
 		vlist->list = tmp;
 	}
+	if (!(vlist->list[vlist->cnt - 1].key = calloc(1, strlen(key) + 1)))
+		ERRARR("list_ptr", vlist->cnt - 1);
 	strmv(0, vlist->list[vlist->cnt - 1].key, key);
 	vlist->list[vlist->cnt - 1].type = type;
 }
@@ -87,9 +90,6 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, str
 	/* nothing to do */
 	if (!ilist->cnt || !tlist->cnt)
 		return;
-	/* printf("%zu %zu\n", ilist->cnt, tlist->cnt); */
-	/* for (size_t i = 0; i < tlist->cnt; i++) */
-	/*         printf("%zu %u\n", vlist->off[tlist->list[i]], tlist->list[i]); */
 	assert(ilist->cnt == tlist->cnt);
 	/* don't add duplicate keys to vlist */
 	for (size_t i = 0; i < ilist->cnt; i++) {
@@ -97,57 +97,14 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, str
 		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
 			if (tlist->list[i] != vlist->list[j].type || strcmp(ilist->list[i], vlist->list[j].key))
 				continue;
+			/* break early if type or id match */
 			uniq = false;
 			break;
 		}
 		/* no matches found */
 		if (uniq)
-			/* append_var(vlist, ilist->list[i], (*tlist)[i]); */
 			append_var(vlist, ilist->list[i], tlist->list[i]);
-		/* printf("%s %zu %u\n", ilist->list[i], vlist->off[tlist->list[i]], tlist->list[i]); */
-		/* for (size_t j = 0; j < vlist->list[tlist->list[i]].cnt; j++) { */
-		/*         if (strcmp(vlist->list[tlist->list[i]].list[j], ilist->list[i])) { */
-		/*                 uniq = false; */
-		/*                 break; */
-		/*         } */
-		/* } */
 	}
 }
-
-/* static inline void append_var(struct var_list *vlist, char const *key, enum var_type type) */
-/* { */
-/*         if (!vlist || !key) */
-/*                 ERRX("invalid arguments passed to append_var()"); */
-/*         vlist->cnt++; */
-/*         vlist->off[type] = vlist->list[type].cnt; */
-/*         append_str(&vlist->list[type], key, 0); */
-/*         append_type(&vlist->tlist, type); */
-/* } */
-
-/* static inline void append_var(struct var_list *vlist, char const *key, enum var_type type) */
-/* { */
-	/* void *tmp; */
-	/* if (!vlist || !vlist->list[type] || !key) */
-	/*         ERRX("invalid arguments passed to append_var()"); */
-	/* vlist->cnt++; */
-	/* append_str(vlist->list[type], key, 0); */
-	/* realloc if cnt reaches current size */
-	/* if (vlist->cnt >= vlist->max) { */
-		/* check if size too large */
-		/* if (vlist->cnt > MAX) */
-		/*         ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)"); */
-		/* double until size is reached */
-	/*         while ((vlist->max *= 2) < vlist->cnt); */
-	/*         if (!(tmp = realloc(vlist->list, sizeof *vlist->list * vlist->max))) { */
-	/*                 free(vlist->list); */
-	/*                 ERRARR("var_list", vlist->cnt); */
-	/*         } */
-	/*         vlist->list = tmp; */
-	/* } */
-	/* if (!(vlist->list[vlist->cnt - 1].key = calloc(1, strlen(key) + 1))) */
-	/*         ERR("append_var()"); */
-	/* memcpy(vlist->list[vlist->cnt - 1].key, key, strlen(key) + 1); */
-	/* vlist->list[vlist->cnt - 1].type = type; */
-/* } */
 
 #endif

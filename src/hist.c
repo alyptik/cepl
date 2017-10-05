@@ -136,9 +136,9 @@ void init_buffers(struct var_list *vlist, struct type_list *tlist, struct str_li
 		init_list(&(*prgm)[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 		init_flag_list(&(*prgm)[i].flags);
 	}
-	/* init_vlist(vlist); */
-	/* init_tlist(tlist); */
-	/* init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL"); */
+	init_vlist(vlist);
+	init_tlist(tlist);
+	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
 size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)

@@ -34,7 +34,7 @@ enum var_type extract_type(char const *ln, char const *id)
 	if (!ln || !id)
 		ERRX("NULL pointer passed to extract_type()");
 
-	/* first/fourth captures are ignored */
+	/* first/third/fourth captures are ignored */
 	char *regex, *type;
 	char const beg_regex[] = "(^|.*[({;[:blank:]]*)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
@@ -242,8 +242,8 @@ int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
 		free(tlist->list);
 	if (ilist->list)
 		free_str_list(ilist);
-	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_tlist(tlist);
+	init_list(ilist, NULL);
 
 	size_t count = ilist->cnt;
 	strmv(0, line_tmp[1], ln);
@@ -289,14 +289,10 @@ int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
 	/* if no keys found return early */
 	if (ilist->cnt < 1)
 		return 0;
-
-
 	/* copy it into the output parameter */
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		enum var_type type_tmp;
 		type_tmp = extract_type(line_tmp[1], ilist->list[i]);
-		if (type_tmp == T_ERR)
-			continue;
 		append_type(tlist, type_tmp);
 	}
 	if (id_tmp)
@@ -362,7 +358,6 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {
-
 		enum var_type cur_type = vlist->list[i].type;
 		/* skip erroneous types */
 		if (cur_type == T_ERR)
