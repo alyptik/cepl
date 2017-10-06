@@ -88,11 +88,11 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"extern char **environ;\n"
 	"#line 1\n";
 /* compiler pre-program */
-static char const prog_start[] = "\n\nint main(int argc, char *argv[]) "
+static char const prog_start[] = "\nint main(int argc, char *argv[]) "
 	"{(void)argc; (void)argv;\n"
 	"\n";
 /* pre-program shown to user */
-static char const prog_start_user[] = "\n\nint main(int argc, char *argv[])\n"
+static char const prog_start_user[] = "\nint main(int argc, char *argv[])\n"
 	"{\n";
 static char const prog_end[] = "\n\treturn 0;\n}\n";
 
