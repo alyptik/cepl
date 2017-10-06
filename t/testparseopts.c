@@ -18,36 +18,34 @@ struct str_list ld_list, comp_list;
 
 int main (void)
 {
-	char tempfile[] = "/tmp/ceplXXXXXX";
+	char hist_tmp[] = "/tmp/ceplXXXXXX";
+	char hist_fallback[] = "./ceplXXXXXX";
 	int tmp_fd;
-	if ((tmp_fd = mkstemp(tempfile)) == -1) {
-		WARN("mkstemp()");
-		memset(tempfile, 0, sizeof tempfile);
-		memcpy(tempfile, "./ceplXXXXXX", strlen("./ceplXXXXXX") + 1);
-		WARNX("attempting to create a tmpfile in ./ instead");
-		if ((tmp_fd = mkstemp(tempfile)) == -1)
+	if ((tmp_fd = mkstemp(hist_tmp)) == -1) {
+		memset(hist_tmp, 0, sizeof hist_tmp);
+		memcpy(hist_tmp, hist_fallback, sizeof hist_fallback);
+		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
+		if ((tmp_fd = mkstemp(hist_tmp)) == -1)
 			ERR("mkstemp()");
 	}
 	FILE volatile *ofile = NULL;
-	int argc;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
-		"-c", "gcc", "-o", tempfile, NULL
+		"-c", "gcc", "-o", hist_tmp, NULL
 	};
+	int argc = sizeof argv / sizeof argv[0] - 1;
 	char const optstring[] = "hptvwc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
+	struct str_list symbols = {0};
 	char **result;
 	ptrdiff_t ret;
-	struct str_list symbols = {.cnt = 0, .list = NULL};
 
 	/* print argument strings */
-	for (argc = 0; argv[argc]; argc++);
 	result = parse_opts(argc, argv, optstring, &ofile);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
 	for (int i = 0; result[i]; i++)
 		printf("%s ", result[i]);
-	putchar('\n');
-	printf("%s\n%s", "# using argv string: ", "# ");
+	printf("\n%s\n%s", "# using argv string: ", "# ");
 	for (int i = 0; i < argc; i++)
 		printf("%s ", argv[i]);
 	putchar('\n');
@@ -66,7 +64,7 @@ int main (void)
 	/* cleanup */
 	free_argv(&result);
 	close(tmp_fd);
-	if (remove(tempfile) == -1)
+	if (remove(hist_tmp) == -1)
 		WARN("remove()");
 
 	done_testing();

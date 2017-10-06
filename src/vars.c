@@ -315,7 +315,7 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	if (!term || !strcmp(term, "") || !strcmp(term, "dumb"))
 		has_color = false;
 
-	int mem_fd, status, null;
+	int mem_fd, status, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
 	char *p_beg = (has_color && isatty(STDIN_FILENO)) ?
@@ -345,7 +345,7 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	if (!src || !cc_args || !exec_args || vlist->cnt == 0)
 		return -1;
 	/* bit bucket */
-	if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
+	if (!(null_fd = open("/dev/null_fd", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
 		ERR("open()");
 
 	/* copy source buffer */
@@ -525,8 +525,8 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 
 	/* child */
 	case 0:
-		/* redirect stderr to /dev/null */
-		dup2(null, STDERR_FILENO);
+		/* redirect stderr to /dev/null_fd */
+		dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_ld[1], STDOUT_FILENO);
 		dup2(pipe_cc[0], STDIN_FILENO);
 		execvp(cc_args[0], cc_args);
@@ -561,8 +561,8 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 
 	/* child */
 	case 0:
-		/* redirect stderr to /dev/null */
-		dup2(null, STDERR_FILENO);
+		/* redirect stderr to /dev/null_fd */
+		dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_exec[1], STDOUT_FILENO);
 		dup2(pipe_ld[0], STDIN_FILENO);
 		if (ld_list.list)
@@ -598,11 +598,11 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
 			ERR("error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
-		/* redirect stdout/stdin to /dev/null */
-		if (!(null = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
+		/* redirect stdout/stdin to /dev/null_fd */
+		if (!(null_fd = open("/dev/null_fd", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
 			ERR("open()");
-		dup2(null, STDIN_FILENO);
-		dup2(null, STDOUT_FILENO);
+		dup2(null_fd, STDIN_FILENO);
+		dup2(null_fd, STDOUT_FILENO);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
 		ERR("error forking executable");
@@ -611,7 +611,7 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 	/* parent */
 	default:
 		close(pipe_exec[0]);
-		close(null);
+		close(null_fd);
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {

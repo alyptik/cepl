@@ -88,13 +88,5 @@ int main (void)
 	lives_ok({cleanup();}, "test successful cleanup() call.");
 	dup2(saved_fd, STDIN_FILENO);
 
-	/* if (tl.list) { */
-	/*         free(tl.list); */
-	/*         tl.list = NULL; */
-	/* } */
-	/* free_str_list(&il.list); */
-	/* for (size_t i = 0; i < TNUM; i++) */
-	/*         free_str_list(vl.list[i]); */
-
 	done_testing();
 }

@@ -53,13 +53,13 @@ static inline char *read_line(char **ln)
 		*ln = readline("\n>>> ");
 	} else {
 		/* redirect stdout to /dev/null */
-		FILE *null;
-		if (!(null = fopen("/dev/null", "r+b")))
+		FILE *bitbucket;
+		if (!(bitbucket = fopen("/dev/null", "r+b")))
 			ERR("read_line() fopen()");
-		rl_outstream = null;
+		rl_outstream = bitbucket;
 		*ln = readline(NULL);
 		rl_outstream = NULL;
-		fclose(null);
+		fclose(bitbucket);
 	}
 	return *ln;
 }

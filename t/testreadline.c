@@ -15,13 +15,13 @@ int main (void)
 
 	plan(1);
 
-	FILE *null;
-	if (!(null = fopen("/dev/null", "r+b")))
+	FILE *bitbucket;
+	if (!(bitbucket = fopen("/dev/null", "r+b")))
 		ERR("read_line() fopen()");
-	rl_outstream = null;
+	rl_outstream = bitbucket;
 	ok((ln = readline(NULL)) != NULL, "send keyboard input to readline.");
 	rl_outstream = NULL;
-	fclose(null);
+	fclose(bitbucket);
 	free(ln);
 
 	done_testing();
