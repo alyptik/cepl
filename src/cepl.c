@@ -81,23 +81,30 @@ static inline void sig_handler(int sig)
 /* register signal handlers to make sure that history is written out */
 static inline void reg_handlers(void)
 {
-	/* signal array */
-	int sigs[] = {
-		SIGHUP, SIGINT, SIGQUIT,
-		SIGABRT, SIGFPE, SIGSEGV,
-		SIGPIPE, SIGALRM, SIGTERM,
-		SIGUSR1, SIGUSR2, SIGBUS,
-		SIGPOLL, SIGPROF, SIGSYS,
-		SIGVTALRM, SIGXCPU, SIGXFSZ,
+	/* signals to trap */
+	struct {
+		int sig;
+		char *sig_name;
+	} sigs[] = {
+		{SIGHUP, "SIGHUP"}, {SIGINT, "SIGINT"},
+		{SIGQUIT, "SIGQUIT"}, {SIGILL, "SIGILL"},
+		{SIGABRT, "SIGABRT"}, {SIGFPE, "SIGFPE"},
+		{SIGSEGV, "SIGSEGV"}, {SIGPIPE, "SIGPIPE"},
+		{SIGALRM, "SIGALRM"}, {SIGTERM, "SIGTERM"},
+		{SIGUSR1, "SIGUSR1"}, {SIGUSR2, "SIGUSR2"},
+		{SIGBUS, "SIGBUS"}, {SIGPOLL, "SIGPOLL"},
+		{SIGPROF, "SIGPROF"}, {SIGSYS, "SIGSYS"},
+		{SIGVTALRM, "SIGVTALRM"}, {SIGXCPU, "SIGXCPU"},
+		{SIGXFSZ, "SIGXFSZ"},
 	};
 	struct sigaction sa[sizeof sigs / sizeof sigs[0]];
 	for (size_t i = 0; i < sizeof sigs / sizeof sigs[0]; i++) {
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
-		/* Restart functions if interrupted by handler and reset disposition */
+		/* Restart functions if interrupted by handler/reset signal disposition */
 		sa[i].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
-		if (sigaction(sigs[i], &sa[i], NULL) == -1)
-			ERRARR("sigaction() sig", i);
+		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
+			ERRMSG(sigs[i].sig_name, "sigaction()");
 	}
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
