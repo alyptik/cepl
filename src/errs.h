@@ -21,15 +21,19 @@
 #define FSTR		__FILE__, __LINE__
 
 /* warning macros */
-#define WARN(X)		fprintf(stderr, "%s %s:%u: \"%s\"\n", ESTR, (X))
-#define WARNX(X)	fprintf(stderr, "%s:%u \"%s\"\n", FSTR, (X))
-#define WARNARR(X, Y)	fprintf(stderr, "%s %s:%u: \"%s[%zu]\"\n", ESTR, (X), (Y))
-#define WARNXARR(X, Y)	fprintf(stderr, "%s:%u \"%s[%zu]\"\n", FSTR, (X), (Y))
+#define WARN(X)		fprintf(stderr, "`%s`: [%s:%u] %s\n", ESTR, (X))
+#define WARNX(X)	fprintf(stderr, "[%s:%u] %s\n", FSTR, (X))
+#define WARNMSG(X, M)	fprintf(stderr, "`%s`: [%s:%u] %s %s\n", ESTR, (X), (M))
+#define WARNXMSG(X, M)	fprintf(stderr, "[%s:%u] %s %s\n", FSTR, (X), (M))
+#define WARNARR(X, Y)	fprintf(stderr, "`%s`: [%s:%u] %s[%zu]\n", ESTR, (X), (Y))
+#define WARNXARR(X, Y)	fprintf(stderr, "[%s:%u] %s[%zu]\n", FSTR, (X), (Y))
 
 /* error macros */
-#define ERR(X)		do { fprintf(stderr, "%s %s:%u: \"%s\"\n", ESTR, (X)); exit(EXIT_FAILURE); } while (0)
-#define ERRX(X)		do { fprintf(stderr, "%s:%u \"%s\"\n", FSTR, (X)); exit(EXIT_FAILURE); } while (0)
-#define ERRARR(X, Y)	do { fprintf(stderr, "%s %s:%u: \"%s[%zu]\"\n", ESTR, (X), (Y)); exit(EXIT_FAILURE); } while (0)
-#define ERRXARR(X, Y)	do { fprintf(stderr, "%s:%u \"%s[%zu]\"\n", FSTR, (X), (Y)); exit(EXIT_FAILURE); } while (0)
+#define ERR(X)		do { fprintf(stderr, "`%s`: [%s:%u] %s\n", ESTR, (X)); exit(EXIT_FAILURE); } while (0)
+#define ERRX(X)		do { fprintf(stderr, "[%s:%u] %s\n", FSTR, (X)); exit(EXIT_FAILURE); } while (0)
+#define ERRMSG(X, M)	do { fprintf(stderr, "`%s`: [%s:%u] %s %s\n", ESTR, (X), (M)); exit(EXIT_FAILURE); } while (0)
+#define ERRXMSG(X, M)	do { fprintf(stderr, "%s:%u %s %s\"\n", FSTR, (X), (M)); exit(EXIT_FAILURE); } while (0)
+#define ERRARR(X, Y)	do { fprintf(stderr, "`%s`: [%s:%u] %s[%zu]\n", ESTR, (X), (Y)); exit(EXIT_FAILURE); } while (0)
+#define ERRXARR(X, Y)	do { fprintf(stderr, "[%s:%u] %s[%zu]\n", FSTR, (X), (Y)); exit(EXIT_FAILURE); } while (0)
 
 #endif
