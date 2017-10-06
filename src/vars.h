@@ -74,7 +74,7 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, str
 	/* nothing to do */
 	if (!ilist->cnt || !tlist->cnt)
 		return;
-	assert(ilist->cnt == tlist->cnt);
+	assert(ilist->cnt >= tlist->cnt);
 	/* don't add duplicate keys to vlist */
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;

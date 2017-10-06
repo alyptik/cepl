@@ -37,10 +37,10 @@ enum var_type extract_type(char const *ln, char const *id)
 	/* first/third/fourth captures are ignored */
 	char *regex, *type;
 	char const beg_regex[] =
-			"(^|.*[({;[:blank:]]*)"
+			"(^[[:blank:]]*|[^,;]*[({;[:blank:]]*)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
 			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
-			"([^&;=]*)(";
+			"([^,;]*,[^&,;]*|[^&;=]*)(";
 	char const end_regex[] = ")(\\[*)";
 
 	/* append identifier to regex */
@@ -178,7 +178,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-			"([^(){};&|'\"[:alnum:][:blank:]]+$|;*$|\\[|,)";
+			"([^,(){};&|'\"[:alnum:][:blank:]]+$|;*$|\\[|,)";
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
@@ -304,7 +304,7 @@ int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
 		free(id_tmp);
 	if (line_tmp[0])
 		free(line_tmp[0]);
-	return ilist->cnt;
+	return count;
 }
 
 int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[])
