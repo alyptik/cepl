@@ -102,7 +102,7 @@ static inline void reg_handlers(void)
 	if (at_quick_exit(&cleanup))
 		WARN("at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_bufs))
-		WARN("at_quick_exit(&free_bufs(prog, line)");
+		WARN("at_quick_exit(&free_bufs)");
 }
 
 int main(int argc, char *argv[])
