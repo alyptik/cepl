@@ -66,20 +66,20 @@ static inline void append_var(struct var_list *restrict vlist, char const *restr
 	vlist->list[vlist->cnt - 1].type = type;
 }
 
-static inline void gen_vlist(struct var_list *restrict vl, struct str_list *restrict il, struct type_list *restrict tl)
+static inline void gen_vlist(struct var_list *restrict vlist, struct str_list *restrict ilist, struct type_list *restrict tlist)
 {
 	/* sanity checks */
-	if (!vl || !il || !il->list || !tl || !tl->list)
+	if (!vlist || !ilist || !ilist->list || !tlist || !tlist->list)
 		ERRX("NULL pointer passed to gen_var_list()");
 	/* nothing to do */
-	if (!il->cnt || !tl->cnt)
+	if (!ilist->cnt || !tlist->cnt)
 		return;
-	assert(il->cnt >= tl->cnt);
-	/* don't add duplicate keys to vl */
-	for (size_t i = 0; i < il->cnt; i++) {
+	assert(ilist->cnt >= tlist->cnt);
+	/* don't add duplicate keys to vlist */
+	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;
-		for (ptrdiff_t j = vl->cnt - 1; j >= 0; j--) {
-			if (tl->list[i] != vl->list[j].type || strcmp(il->list[i], vl->list[j].key))
+		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
+			if (tlist->list[i] != vlist->list[j].type || strcmp(ilist->list[i], vlist->list[j].key))
 				continue;
 			/* break early if type or id match */
 			uniq = false;
@@ -87,7 +87,7 @@ static inline void gen_vlist(struct var_list *restrict vl, struct str_list *rest
 		}
 		/* no matches found */
 		if (uniq)
-			append_var(vl, il->list[i], tl->list[i]);
+			append_var(vlist, ilist->list[i], tlist->list[i]);
 	}
 }
 
