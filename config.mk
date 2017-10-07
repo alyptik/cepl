@@ -26,7 +26,7 @@ SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
-DEBUG := -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
+DEBUG := -Og -ggdb3 -no-pie -Werror -Wfloat-equal -Wrestrict -Wshadow -fsanitize=address,alignment,leak,undefined
 LIBS := -lelf -lhistory -lreadline
 TARGET := cepl
 MANPAGE := cepl.7
