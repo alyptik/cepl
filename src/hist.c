@@ -42,6 +42,10 @@ void cleanup(void)
 		free(hist_file);
 		hist_file = NULL;
 	}
+	if (out_filename) {
+		free(out_filename);
+		out_filename = NULL;
+	}
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
 }
@@ -65,10 +69,6 @@ void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 	write_file(&ofile, prgm);
 	/* clean up user data */
 	free_str_list(ilist);
-	if (out_filename) {
-		free(out_filename);
-		out_filename = NULL;
-	}
 	if (*ln) {
 		free(*ln);
 		*ln = NULL;

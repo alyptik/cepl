@@ -235,12 +235,10 @@ int main(int argc, char *argv[])
 				if (!(out_filename = calloc(1, strlen(tbuf) + 1)))
 					ERR("error during out_filename calloc()");
 				strmv(0, out_filename, tbuf);
-				/* output file flag */
-				if (out_flag && !(ofile = fopen(out_filename, "wb"))) {
-					free_buffers(&vl, &tl, &il, &prg, &lbuf);
-					cleanup();
-					ERR("failed to create output file");
-				}
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 				break;
 
 			/* toggle library parsing */
