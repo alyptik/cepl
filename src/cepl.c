@@ -25,7 +25,7 @@ static char hist_name[] = "./.cepl_history";
 char *lptr;
 
 /* `-o` flag output file */
-extern FILE volatile *ofile;
+extern FILE *volatile ofile;
 /* output file buffer and cc args */
 extern char *hist_file, **cc_argv;
 /* program source strucs (prg[0] is truncated for interactive printing) */
@@ -40,8 +40,10 @@ extern bool has_hist;
 extern struct type_list tl;
 extern struct str_list il;
 extern struct var_list vl;
+/* `-o` flag filename */
+extern char *out_filename;
 
-static inline char *read_line(char **ln)
+static inline char *read_line(char **restrict ln)
 {
 	/* cleanup old buffer */
 	if (ln && *ln) {
@@ -141,7 +143,7 @@ int main(int argc, char *argv[])
 	/* initialize source buffers */
 	init_buffers(&vl, &tl, &il, &prg, &lbuf);
 	/* initiatalize compiler arg array */
-	cc_argv = parse_opts(argc, argv, optstring, &ofile);
+	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
 	if (isatty(STDIN_FILENO))
@@ -226,8 +228,15 @@ int main(int argc, char *argv[])
 				}
 				/* increment pointer to start of definition */
 				tbuf += strspn(tbuf, " \t");
+				if (out_filename) {
+					free(out_filename);
+					out_filename = NULL;
+				}
+				if (!(out_filename = calloc(1, strlen(tbuf) + 1)))
+					ERR("error during out_filename calloc()");
+				strmv(0, out_filename, tbuf);
 				/* output file flag */
-				if (out_flag && !(ofile = fopen(tbuf, "wb"))) {
+				if (out_flag && !(ofile = fopen(out_filename, "wb"))) {
 					free_buffers(&vl, &tl, &il, &prg, &lbuf);
 					cleanup();
 					ERR("failed to create output file");
@@ -241,7 +250,7 @@ int main(int argc, char *argv[])
 				/* toggle global parse flag */
 				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 				break;
 
 			/* toggle variable tracking */
@@ -251,7 +260,7 @@ int main(int argc, char *argv[])
 				/* toggle global parse flag */
 				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 				break;
 
 			/* toggle warnings */
@@ -261,7 +270,7 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 				break;
 
 			/* reset state */
@@ -269,7 +278,7 @@ int main(int argc, char *argv[])
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 				break;
 
 			/* define an include/macro/function */

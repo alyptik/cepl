@@ -23,10 +23,10 @@
 #include <sys/wait.h>
 
 /* prototypes */
-enum var_type extract_type(char const *ln, char const *id);
-size_t extract_id(char const *ln, char **id, size_t *offset);
-int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist);
-int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[]);
+enum var_type extract_type(char const *restrict ln, char const *restrict id);
+size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict offset);
+int find_vars(char const *restrict ln, struct str_list *restrict ilist, struct type_list *restrict tlist);
+int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[]);
 
 static inline void init_vlist(struct var_list *restrict vlist)
 {

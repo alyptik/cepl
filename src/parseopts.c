@@ -58,7 +58,7 @@ extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile)
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE *volatile *restrict ofile, char **restrict out_filename)
 {
 	int opt;
 	char *out_file = NULL;
@@ -73,6 +73,10 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	/* reset option indices to reuse argv */
 	option_index = 0;
 	optind = 1;
+
+	/* sanity check */
+	if (!out_filename)
+		ERRX("out_filename NULL");
 
 	/* initilize argument lists */
 	init_list(&cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -161,11 +165,17 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	}
 
 	/* output file flag */
-	if (out_flag && out_file) {
+	if (out_flag) {
+		if (out_file && !*out_filename) {
+			if (!(*out_filename = calloc(1, strlen(out_file) + 1)))
+				ERR("error during out_filename calloc()");
+			strmv(0, *out_filename, out_file);
+		}
 		if (*ofile)
-			fclose((FILE *)*ofile);
-		if (!(*ofile = fopen(out_file, "wb")))
+			fclose(*ofile);
+		if (!(*ofile = fopen(*out_filename, "wb")))
 			ERR("failed to create output file");
+		out_flag ^= true;
 	}
 	/* append warning flags */
 	if (warn_flag) {
@@ -203,7 +213,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile 
 	return cc_list.list;
 }
 
-void read_syms(struct str_list *tokens, char const *elf_file)
+void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
 {
 	int elf_fd;
 	GElf_Shdr shdr;
@@ -245,7 +255,7 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 	close(elf_fd);
 }
 
-void parse_libs(struct str_list *symbols, char *libs[])
+void parse_libs(struct str_list *restrict symbols, char *restrict libs[])
 {
 	for (size_t i = 0; libs[i]; i++) {
 		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};

@@ -15,13 +15,14 @@ extern char **cc_argv;
 extern struct str_list comp_list;
 
 /* globals */
+bool has_hist = false;
+/* filenames */
+char *out_filename;
 char *hist_file;
 /* `-o` flag output file */
-FILE volatile *ofile;
+FILE *volatile ofile;
 /* program source strucs (prg[0] is truncated for interactive printing) */
 struct prog_src prg[2];
-/* global history file flag */
-bool has_hist = false;
 /* type, identifier, and var lists */
 struct type_list tl;
 struct str_list il;
@@ -45,24 +46,27 @@ void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-void write_file(FILE volatile **out_file, struct prog_src (*prgm)[])
+void write_file(FILE *volatile *out_file, struct prog_src (*restrict prgm)[])
 {
 	/* return early if no file open */
 	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
 		return;
 	/* write out program to file */
-	FILE *output = (FILE *)*out_file;
-	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, output);
-	fputc('\n', output);
+	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, *out_file);
+	fputc('\n', *out_file);
 	fflush(NULL);
-	fclose(output);
+	fclose(*out_file);
 	*out_file = NULL;
 }
 
-void free_buffers(struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
+	if (out_filename) {
+		free(out_filename);
+		out_filename = NULL;
+	}
 	free_str_list(ilist);
 	/* clean up user data */
 	if (*ln) {
@@ -102,7 +106,7 @@ void free_buffers(struct var_list *vlist, struct type_list *tlist, struct str_li
 	}
 }
 
-void init_buffers(struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
 {
 	/* user is truncated source for display */
 	(*prgm)[0].f = calloc(1, 1);
@@ -141,7 +145,7 @@ void init_buffers(struct var_list *vlist, struct type_list *tlist, struct str_li
 	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln)
+size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
 {
 	/* sanity check */
 	if (!buf || !*buf || !ln)
@@ -177,7 +181,7 @@ size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var
 	return *buf_sz;
 }
 
-void pop_history(struct prog_src *prgm)
+void pop_history(struct prog_src *restrict prgm)
 {
 	switch(prgm->flags.list[--prgm->flags.cnt]) {
 	case NOT_IN_MAIN:
@@ -202,7 +206,7 @@ void pop_history(struct prog_src *prgm)
 }
 
 /* look for current ln in readln history */
-void dedup_history(char **ln)
+void dedup_history(char **restrict ln)
 {
 	/* return early on empty input */
 	if (!ln || !*ln)
@@ -237,7 +241,7 @@ void dedup_history(char **ln)
 	add_history(strip);
 }
 
-void build_body(struct prog_src (*prgm)[], char *ln)
+void build_body(struct prog_src (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
@@ -253,7 +257,7 @@ void build_body(struct prog_src (*prgm)[], char *ln)
 	}
 }
 
-void build_funcs(struct prog_src (*prgm)[], char *ln)
+void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
@@ -269,7 +273,7 @@ void build_funcs(struct prog_src (*prgm)[], char *ln)
 	}
 }
 
-void build_final(struct prog_src (*prgm)[], struct var_list *vlist, char *argv[])
+void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict vlist, char *argv[])
 {
 	/* sanity check */
 	if (!prgm || !argv) {

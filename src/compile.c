@@ -31,7 +31,7 @@ extern char **environ;
 long syscall(long __sysno, ...);
 int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 
-int compile(char const *src, char *const cc_args[], char *const exec_args[])
+int compile(char const *restrict src, char *const cc_args[], char *const exec_args[])
 {
 	if (!src || !cc_args || !exec_args)
 		ERRX("NULL pointer passed to compile()");

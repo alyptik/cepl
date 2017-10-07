@@ -28,7 +28,7 @@ int main (void)
 		if ((tmp_fd = mkstemp(hist_tmp)) == -1)
 			ERR("mkstemp()");
 	}
-	FILE volatile *ofile = NULL;
+	FILE *volatile ofile = NULL;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
 		"-c", "gcc", "-o", hist_tmp, NULL
@@ -37,11 +37,11 @@ int main (void)
 	char const optstring[] = "hptvwc:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	struct str_list symbols = {0};
-	char **result;
+	char **result, *out_filename = NULL;
 	ptrdiff_t ret;
 
 	/* print argument strings */
-	result = parse_opts(argc, argv, optstring, &ofile);
+	result = parse_opts(argc, argv, optstring, &ofile, &out_filename);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
 	for (int i = 0; result[i]; i++)
 		printf("%s ", result[i]);
@@ -66,6 +66,8 @@ int main (void)
 	close(tmp_fd);
 	if (remove(hist_tmp) == -1)
 		WARN("remove()");
+	if (out_filename)
+		free(out_filename);
 
 	done_testing();
 }

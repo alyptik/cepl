@@ -14,14 +14,14 @@
 
 /* prototypes */
 void cleanup(void);
-void write_file(FILE volatile **out_file, struct prog_src (*prgm)[]);
-void free_buffers(struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln);
-void init_buffers(struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln);
-size_t rsz_buf(char **buf, size_t *buf_sz, size_t *b_max, size_t off, struct var_list *vlist, struct type_list *tlist, struct str_list *ilist, struct prog_src (*prgm)[], char **ln);
-void dedup_history(char **ln);
-void pop_history(struct prog_src *prgm);
-void build_body(struct prog_src (*prgm)[], char *ln);
-void build_funcs(struct prog_src (*prgm)[], char *ln);
-void build_final(struct prog_src (*prgm)[], struct var_list *vlist, char *argv[]);
+void write_file(FILE *volatile *out_file, struct prog_src (*restrict prgm)[]);
+void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
+void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
+size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
+void dedup_history(char **restrict ln);
+void pop_history(struct prog_src *restrict prgm);
+void build_body(struct prog_src (*restrict prgm)[], char *restrict ln);
+void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln);
+void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict vlist, char *argv[]);
 
 #endif

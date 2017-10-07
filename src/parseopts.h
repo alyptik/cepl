@@ -22,8 +22,8 @@
 #include <unistd.h>
 
 /* prototypes */
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE volatile **ofile);
-void read_syms(struct str_list *tokens, char const *elf_file);
-void parse_libs(struct str_list *symbols, char *libs[]);
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE *volatile *restrict ofile, char **restrict out_filename);
+void read_syms(struct str_list *restrict tokens, char const *restrict elf_file);
+void parse_libs(struct str_list *restrict symbols, char *restrict libs[]);
 
 #endif

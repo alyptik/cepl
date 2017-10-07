@@ -26,7 +26,7 @@ long syscall(long __sysno, ...);
 int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 void *mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset);
 
-enum var_type extract_type(char const *ln, char const *id)
+enum var_type extract_type(char const *restrict ln, char const *restrict id)
 {
 	regex_t reg;
 	regmatch_t match[7];
@@ -151,7 +151,7 @@ enum var_type extract_type(char const *ln, char const *id)
 	return T_OTHER;
 }
 
-size_t extract_id(char const *ln, char **id, size_t *offset)
+size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict offset)
 {
 	regex_t reg;
 	regmatch_t match[4];
@@ -230,7 +230,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset)
 	return match[1].rm_eo;
 }
 
-int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
+int find_vars(char const *restrict ln, struct str_list *restrict ilist, struct type_list *restrict tlist)
 {
 	size_t off;
 	char *line_tmp[2], *id_tmp = NULL;
@@ -307,7 +307,7 @@ int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist)
 	return count;
 }
 
-int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[])
+int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
 {
 	char *term = getenv("TERM");
 	bool has_color = true;
