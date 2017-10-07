@@ -139,10 +139,10 @@ struct prog_src {
 };
 
 /* recursive free */
-static inline ptrdiff_t free_argv(char ***argv)
+static inline ptrdiff_t free_argv(char ***restrict argv)
 {
 	size_t cnt;
-	if (!argv || !*argv || !(*argv)[0])
+	if (!argv || !*argv || !**argv)
 		return -1;
 	for (cnt = 0; (*argv)[cnt]; cnt++)
 		free((*argv)[cnt]);
@@ -169,7 +169,7 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
-static inline ptrdiff_t free_str_list(struct str_list *plist)
+static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
 {
 	size_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
@@ -191,7 +191,7 @@ static inline ptrdiff_t free_str_list(struct str_list *plist)
 	return null_cnt;
 }
 
-static inline void init_list(struct str_list *list_struct, char *init_str)
+static inline void init_list(struct str_list *restrict list_struct, char *restrict init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -206,7 +206,7 @@ static inline void init_list(struct str_list *list_struct, char *init_str)
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
 
-static inline void append_str(struct str_list *list_struct, char const *string, size_t padding)
+static inline void append_str(struct str_list *restrict list_struct, char const *restrict string, size_t padding)
 {
 	void *tmp;
 	list_struct->cnt++;
@@ -230,7 +230,7 @@ static inline void append_str(struct str_list *list_struct, char const *string, 
 	}
 }
 
-static inline void init_tlist(struct type_list *list_struct)
+static inline void init_tlist(struct type_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -238,7 +238,7 @@ static inline void init_tlist(struct type_list *list_struct)
 		ERR("error during initial type_list calloc()");
 }
 
-static inline void append_type(struct type_list *list_struct, enum var_type type)
+static inline void append_type(struct type_list *restrict list_struct, enum var_type type)
 {
 	if (type == T_ERR)
 		return;
@@ -258,7 +258,7 @@ static inline void append_type(struct type_list *list_struct, enum var_type type
 	list_struct->list[list_struct->cnt - 1] = type;
 }
 
-static inline void init_flag_list(struct flag_list *list_struct)
+static inline void init_flag_list(struct flag_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -268,7 +268,7 @@ static inline void init_flag_list(struct flag_list *list_struct)
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
 
-static inline void append_flag(struct flag_list *list_struct, enum src_flag flag)
+static inline void append_flag(struct flag_list *restrict list_struct, enum src_flag flag)
 {
 	void *tmp;
 	list_struct->cnt++;

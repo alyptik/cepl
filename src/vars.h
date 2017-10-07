@@ -28,7 +28,7 @@ size_t extract_id(char const *ln, char **id, size_t *offset);
 int find_vars(char const *ln, struct str_list *ilist, struct type_list *tlist);
 int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[]);
 
-static inline void init_vlist(struct var_list *vlist)
+static inline void init_vlist(struct var_list *restrict vlist)
 {
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
 	vlist->cnt = 0;
@@ -42,7 +42,7 @@ static inline void init_vlist(struct var_list *vlist)
 	vlist->list[vlist->cnt - 1].type = T_ERR;
 }
 
-static inline void append_var(struct var_list *vlist, char const *key, enum var_type type)
+static inline void append_var(struct var_list *restrict vlist, char const *restrict key, enum var_type type)
 {
 	if (type == T_ERR || !key)
 		return;
@@ -66,20 +66,20 @@ static inline void append_var(struct var_list *vlist, char const *key, enum var_
 	vlist->list[vlist->cnt - 1].type = type;
 }
 
-static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, struct type_list *tlist)
+static inline void gen_vlist(struct var_list *restrict vl, struct str_list *restrict il, struct type_list *restrict tl)
 {
 	/* sanity checks */
-	if (!vlist || !ilist || !ilist->list || !tlist || !tlist->list)
+	if (!vl || !il || !il->list || !tl || !tl->list)
 		ERRX("NULL pointer passed to gen_var_list()");
 	/* nothing to do */
-	if (!ilist->cnt || !tlist->cnt)
+	if (!il->cnt || !tl->cnt)
 		return;
-	assert(ilist->cnt >= tlist->cnt);
-	/* don't add duplicate keys to vlist */
-	for (size_t i = 0; i < ilist->cnt; i++) {
+	assert(il->cnt >= tl->cnt);
+	/* don't add duplicate keys to vl */
+	for (size_t i = 0; i < il->cnt; i++) {
 		bool uniq = true;
-		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
-			if (tlist->list[i] != vlist->list[j].type || strcmp(ilist->list[i], vlist->list[j].key))
+		for (ptrdiff_t j = vl->cnt - 1; j >= 0; j--) {
+			if (tl->list[i] != vl->list[j].type || strcmp(il->list[i], vl->list[j].key))
 				continue;
 			/* break early if type or id match */
 			uniq = false;
@@ -87,7 +87,7 @@ static inline void gen_vlist(struct var_list *vlist, struct str_list *ilist, str
 		}
 		/* no matches found */
 		if (uniq)
-			append_var(vlist, ilist->list[i], tlist->list[i]);
+			append_var(vl, il->list[i], tl->list[i]);
 	}
 }
 
