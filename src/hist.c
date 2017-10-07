@@ -63,12 +63,12 @@ void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 {
 	/* write out history before freeing buffers */
 	write_file(&ofile, prgm);
+	/* clean up user data */
+	free_str_list(ilist);
 	if (out_filename) {
 		free(out_filename);
 		out_filename = NULL;
 	}
-	free_str_list(ilist);
-	/* clean up user data */
 	if (*ln) {
 		free(*ln);
 		*ln = NULL;
