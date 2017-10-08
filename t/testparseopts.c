@@ -18,31 +18,44 @@ struct str_list ld_list, comp_list;
 
 int main (void)
 {
-	char hist_tmp[] = "/tmp/ceplXXXXXX";
-	char hist_fallback[] = "./ceplXXXXXX";
-	char *asm_file = NULL;
-	int tmp_fd;
-	if ((tmp_fd = mkstemp(hist_tmp)) == -1) {
-		memset(hist_tmp, 0, sizeof hist_tmp);
-		memcpy(hist_tmp, hist_fallback, sizeof hist_fallback);
-		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
-		if ((tmp_fd = mkstemp(hist_tmp)) == -1)
-			ERR("mkstemp()");
-	}
 	FILE *ofile = NULL;
-	char *argv[] = {
-		"cepl", "-lssl", "-I.",
-		"-c", "gcc", "-o", hist_tmp, NULL
-	};
-	int argc = sizeof argv / sizeof argv[0] - 1;
-	char const optstring[] = "hptvwc:l:I:o:";
+	char const optstring[] = "hptvwc:a:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	struct str_list symbols = {0};
-	char **result, *out_filename = NULL;
+	char **result, *out_filename = NULL, *asm_filename = NULL;
 	ptrdiff_t ret;
+	char out_tmp[] = "/tmp/ceplXXXXXX";
+	char out_fallback[] = "./ceplXXXXXX";
+	char asm_tmp[] = "/tmp/cepl_asmXXXXXX";
+	char asm_fallback[] = "./cepl_asmXXXXXX";
+	int tmp_fd[2];
+
+	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1) {
+		memset(out_tmp, 0, sizeof out_tmp);
+		memcpy(out_tmp, out_fallback, sizeof out_fallback);
+		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
+		if ((tmp_fd[0] = mkstemp(out_tmp)) == -1)
+			ERR("mkstemp() out file");
+	}
+	if ((tmp_fd[1] = mkstemp(asm_tmp)) == -1) {
+		memset(asm_tmp, 0, sizeof asm_tmp);
+		memcpy(asm_tmp, asm_fallback, sizeof asm_fallback);
+		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
+		if ((tmp_fd[1] = mkstemp(asm_tmp)) == -1)
+			ERR("mkstemp() asm file");
+	}
+
+	char *argv[] = {
+		"cepl", "-lssl", "-I.",
+		"-c", "gcc", "-o", out_tmp,
+		"-s", asm_tmp, NULL
+	};
+	int argc = sizeof argv / sizeof argv[0] - 1;
+
+	plan(7);
 
 	/* print argument strings */
-	result = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_file);
+	result = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
 	for (int i = 0; result[i]; i++)
 		printf("%s ", result[i]);
@@ -51,8 +64,6 @@ int main (void)
 		printf("%s ", argv[i]);
 	putchar('\n');
 	init_list(&symbols, "cepl");
-
-	plan(7);
 
 	ok(result != NULL, "test option parsing.");
 	like(result[0], "^(gcc|clang)$", "test generation of compiler string.");
@@ -64,11 +75,16 @@ int main (void)
 
 	/* cleanup */
 	free_argv(&result);
-	close(tmp_fd);
-	if (remove(hist_tmp) == -1)
-		WARN("remove()");
+	for (size_t i = 0; i < sizeof tmp_fd; i++)
+		close(tmp_fd[i]);
+	if (remove(out_tmp) == -1)
+		WARN("remove() out_tmp");
+	if (remove(asm_tmp) == -1)
+		WARN("remove() asm_tmp");
 	if (out_filename)
 		free(out_filename);
+	if (asm_filename)
+		free(asm_filename);
 
 	done_testing();
 }
