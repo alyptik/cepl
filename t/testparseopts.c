@@ -20,6 +20,7 @@ int main (void)
 {
 	char hist_tmp[] = "/tmp/ceplXXXXXX";
 	char hist_fallback[] = "./ceplXXXXXX";
+	char *asm_file = NULL;
 	int tmp_fd;
 	if ((tmp_fd = mkstemp(hist_tmp)) == -1) {
 		memset(hist_tmp, 0, sizeof hist_tmp);
@@ -41,7 +42,7 @@ int main (void)
 	ptrdiff_t ret;
 
 	/* print argument strings */
-	result = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+	result = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_file);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
 	for (int i = 0; result[i]; i++)
 		printf("%s ", result[i]);
