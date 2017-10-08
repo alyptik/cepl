@@ -210,6 +210,34 @@ int main(int argc, char *argv[])
 				/* unused break */
 				break;
 
+			case 's':
+				/* toggle asm flag flag */
+				asm_flag ^= true;
+				/* if file was open, close it and break early */
+				if (asm_flag)
+					break;
+				tbuf = strpbrk(strip, " \t");
+				/* break if file name empty */
+				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
+					/* reset flag */
+					asm_flag ^= true;
+					break;
+				}
+				/* increment pointer to start of definition */
+				tbuf += strspn(tbuf, " \t");
+				if (asm_filename) {
+					free(asm_filename);
+					asm_filename = NULL;
+				}
+				if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
+					ERR("error during asm_filename calloc()");
+				strmv(0, asm_filename, tbuf);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+				break;
+
 			/* toggle output file writing */
 			case 'o':
 				/* toggle global warning flag */
