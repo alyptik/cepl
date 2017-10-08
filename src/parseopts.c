@@ -20,14 +20,14 @@ bool asm_flag = false, out_flag = false, parse_flag = true, track_flag = true, w
 char **cc_argv;
 
 static struct option long_opts[] = {
+	{"asm", required_argument, 0, 'a'},
+	{"compiler", required_argument, 0, 'c'},
 	{"help", no_argument, 0, 'h'},
+	{"output", required_argument, 0, 'o'},
 	{"parse", no_argument, 0, 'p'},
 	{"tracking", no_argument, 0, 't'},
 	{"version", no_argument, 0, 'v'},
 	{"warnings", no_argument, 0, 'w'},
-	{"compiler", required_argument, 0, 'c'},
-	{"output", required_argument, 0, 'o'},
-	{"source", required_argument, 0, 's'},
 	{0}
 };
 static char *const cc_arg_list[] = {
@@ -92,6 +92,15 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
+
+		/* asm flag */
+		case 'a':
+			if (asm_file)
+				ERRX("too many output files specified");
+			asm_file = optarg;
+			asm_flag ^= true;
+			break;
+
 		/* switch compiler */
 		case 'c':
 			if (!cc_list.list[0][0]) {
@@ -139,14 +148,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		/* parse flag */
 		case 'p':
 			parse_flag ^= true;
-			break;
-
-		/* asm flag */
-		case 's':
-			if (asm_file)
-				ERRX("too many output files specified");
-			asm_file = optarg;
-			asm_flag ^= true;
 			break;
 
 		/* track flag */
