@@ -48,7 +48,7 @@ int main (void)
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
 		"-c", "gcc", "-o", out_tmp,
-		"-s", asm_tmp, NULL
+		"-a", asm_tmp, NULL
 	};
 	int argc = sizeof argv / sizeof argv[0] - 1;
 
@@ -75,7 +75,7 @@ int main (void)
 
 	/* cleanup */
 	free_argv(&result);
-	for (size_t i = 0; i < sizeof tmp_fd; i++)
+	for (size_t i = 0; i < sizeof tmp_fd / sizeof tmp_fd[0]; i++)
 		close(tmp_fd[i]);
 	if (remove(out_tmp) == -1)
 		WARN("remove() out_tmp");

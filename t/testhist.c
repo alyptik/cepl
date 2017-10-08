@@ -31,7 +31,9 @@ char *const warn_list[] = {
 	"-pedantic-errors", "-Wall", "-Wextra", NULL
 };
 /* global compiler arg array */
-char *argv[] = {"cepl", NULL}, **cc_argv;
+char asm_error[] = "/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/s/y/z";
+char *argv[] = {"cepl", NULL};
+char **cc_argv, *asm_filename = asm_error;
 bool track_flag = false;
 /* global completion list struct */
 struct str_list comp_list;
@@ -58,7 +60,7 @@ int main (void)
 		ERR("ln calloc()");
 	strmv(0, ln, "int foobar");
 
-	plan(14);
+	plan(15);
 
 	/* initialize source buffers */
 	lives_ok({init_buffers(&vl, &tl, &il, &prg, &ln);}, "test buffer initialization.");
@@ -80,10 +82,15 @@ int main (void)
 	for (size_t i = 0; i < 2; i++)
 		lives_ok({pop_history(&prg[i]);}, "test pop_history() prog[%zu] call.", i);
 	lives_ok({build_final(&prg, &vl, argv);}, "test secondary program build success.");
-	lives_ok({free_buffers(&vl, &tl, &il, &prg, &ln);}, "test successful free_buffers() call.");
 
 	/* cleanup */
-	int saved_fd = dup(STDIN_FILENO);
+	int saved_fd = dup(STDERR_FILENO);
+	close(STDERR_FILENO);
+	ok(write_asm(&prg, cc_arg_list) == -1, "test return of -1 on failed `write_asm()`.");
+	dup2(saved_fd, STDERR_FILENO);
+	asm_filename = NULL;
+	lives_ok({free_buffers(&vl, &tl, &il, &prg, &ln);}, "test successful free_buffers() call.");
+	saved_fd = dup(STDIN_FILENO);
 	close(STDIN_FILENO);
 	lives_ok({cleanup();}, "test successful cleanup() call.");
 	dup2(saved_fd, STDIN_FILENO);

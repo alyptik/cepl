@@ -25,18 +25,13 @@ int main(void)
 
 	plan(3);
 
-	/* redirect stdout to /dev/null */
-	int saved_fd, bitbucket;
-	if (!(bitbucket = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
-		ERR("/dev/null open()");
+	int saved_fd;
 	saved_fd = dup(STDERR_FILENO);
-	dup2(bitbucket, STDOUT_FILENO);
-	dup2(bitbucket, STDERR_FILENO);
+	close(STDERR_FILENO);
 	lives_ok({pipe_fd(-1, -1);}, "test living through pipe_fd() call with invalid fds.");
 	dies_ok({compile(NULL, NULL, argv);}, "die passing a NULL pointer to compile().");
 	ok(compile(src, cc_args, argv) == 0, "succeed compiling program.");
 	dup2(saved_fd, STDERR_FILENO);
-	close(bitbucket);
 
 	done_testing();
 }

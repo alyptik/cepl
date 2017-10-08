@@ -11,7 +11,7 @@ all:
 MKCFG := config.mk
 # if previously built with `-fsanitize=address` we have to use `DEBUG` flags
 OPT != test -f debug.mk
-ifeq ($(.SHELLSTATUS), 0)
+ifeq ($(.SHELLSTATUS),0)
 	OLVL = $(DEBUG)
 endif
 -include $(DEP) $(MKCFG)
