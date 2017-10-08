@@ -28,7 +28,7 @@ int main (void)
 		if ((tmp_fd = mkstemp(hist_tmp)) == -1)
 			ERR("mkstemp()");
 	}
-	FILE *volatile ofile = NULL;
+	FILE *ofile = NULL;
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
 		"-c", "gcc", "-o", hist_tmp, NULL

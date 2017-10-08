@@ -25,7 +25,7 @@ static char hist_name[] = "./.cepl_history";
 char *lptr;
 
 /* `-o` flag output file */
-extern FILE *volatile ofile;
+extern FILE *ofile;
 /* output file buffer and cc args */
 extern char *hist_file, **cc_argv;
 /* program source strucs (prg[0] is truncated for interactive printing) */

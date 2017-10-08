@@ -20,7 +20,7 @@ bool has_hist = false;
 char *out_filename;
 char *hist_file;
 /* `-o` flag output file */
-FILE *volatile ofile;
+FILE *ofile;
 /* program source strucs (prg[0] is truncated for interactive printing) */
 struct prog_src prg[2];
 /* type, identifier, and var lists */
@@ -50,7 +50,7 @@ void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-void write_file(FILE *volatile *out_file, struct prog_src (*restrict prgm)[])
+void write_file(FILE **out_file, struct prog_src (*restrict prgm)[])
 {
 	/* return early if no file open */
 	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)

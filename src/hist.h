@@ -14,7 +14,7 @@
 
 /* prototypes */
 void cleanup(void);
-void write_file(FILE *volatile *out_file, struct prog_src (*restrict prgm)[]);
+void write_file(FILE **out_file, struct prog_src (*restrict prgm)[]);
 void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
 void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
 size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
