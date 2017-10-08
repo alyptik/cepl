@@ -32,8 +32,8 @@ extern char *hist_file, **cc_argv;
 extern struct prog_src prg[2];
 /* completion list of generated symbols */
 extern struct str_list comp_list;
-/* toggle flag for warnings and completions */
-extern bool warn_flag, parse_flag, track_flag, out_flag;
+/* toggle flags */
+extern bool asm_flag, out_flag, parse_flag, track_flag, warn_flag;
 /* history file flag */
 extern bool has_hist;
 /* type, identifier, and var lists */

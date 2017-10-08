@@ -11,9 +11,13 @@
 #include "parseopts.h"
 #include "readline.h"
 #include "vars.h"
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 /* prototypes */
 void cleanup(void);
+int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[], char *const exec_args[]);
 void write_file(FILE **out_file, struct prog_src (*restrict prgm)[]);
 void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
 void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);

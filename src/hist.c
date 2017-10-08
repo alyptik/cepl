@@ -8,7 +8,7 @@
 #include "hist.h"
 
 /* externs */
-extern bool track_flag;
+extern bool asm_flag, track_flag;
 /* compiler argument list */
 extern char **cc_argv;
 /* completion list of generated symbols */
@@ -16,8 +16,9 @@ extern struct str_list comp_list;
 
 /* globals */
 bool has_hist = false;
-/* filenames */
-char *out_filename;
+/* output filenames */
+char *out_filename, *asm_filename;
+/* name of REPL history file */
 char *hist_file;
 /* `-o` flag output file */
 FILE *ofile;
@@ -50,7 +51,73 @@ void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-void write_file(FILE **out_file, struct prog_src (*restrict prgm)[])
+int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[], char *const exec_args[])
+{
+	/* return early if no file open */
+	if (!asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
+		return -1;
+
+	int pipe_cc[2], asm_fd, status;
+	char src_buffer[strlen((*prgm)[1].total) + 1];
+
+	if (sizeof src_buffer < 2)
+		ERRX("empty source passed to write_asm()");
+	/* add trailing '\n' */
+	memcpy(src_buffer, (*prgm)[1].total, sizeof src_buffer);
+	src_buffer[sizeof src_buffer - 1] = '\n';
+	/* create pipe */
+	if (pipe(pipe_cc) == -1)
+		ERR("error making pipe_cc pipe");
+	/* set close-on-exec for pipe fds */
+	set_cloexec(pipe_cc);
+
+	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC)) == -1) {
+		close(pipe_cc[0]);
+		close(pipe_cc[1]);
+		WARN("error opening asm output file");
+		return -1;
+	}
+
+	/* fork compiler */
+	switch (fork()) {
+	/* error */
+	case -1:
+		close(pipe_cc[0]);
+		close(pipe_cc[1]);
+		close(asm_fd);
+		ERR("error forking compiler");
+		break;
+
+	/* child */
+	case 0:
+		dup2(pipe_cc[0], STDIN_FILENO);
+		dup2(asm_fd, STDOUT_FILENO);
+		execvp(cc_args[0], cc_args);
+		/* execvp() should never return */
+		ERR("error forking compiler");
+		break;
+
+	/* parent */
+	default:
+		close(pipe_cc[0]);
+		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
+			ERR("error writing to pipe_cc[1]");
+		close(pipe_cc[1]);
+		wait(&status);
+		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
+		if (WIFEXITED(status) && WEXITSTATUS(status)) {
+			WARNX("compiler returned non-zero exit code");
+			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
+		}
+	}
+
+	fsync(asm_fd);
+	close(asm_fd);
+	/* program returned success */
+	return 0;
+}
+
+void write_file(FILE **restrict out_file, struct prog_src (*restrict prgm)[])
 {
 	/* return early if no file open */
 	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
