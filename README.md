@@ -37,15 +37,15 @@ Input lines prefixed with a `;` are used to control internal state.
 #### CEPL understands the following options:
 
 	-h,--help:		Show help/usage information
+	-o,--output:		Name of the file to write C code to
 	-p,--parse:		Disable addition of dynamic library symbols to readline completion
+	-s,--source:		Name of the file to write assembler code to
 	-t,--tracking:		Toggle variable tracking
 	-v,--version:		Show version information
 	-w,--warnings:		Compile with “-pedantic-errors -Wall -Wextra” flags
 	-c,--compiler:		Specify alternate compiler
 	-l:			Link against specified library (flag can be repeated)
 	-I:			Search directory for header files (flag can be repeated)
-	-o:			Name of the file to write C code to
-	-s:			Name of the file to write assembler code to
 
 ## Libraries used:
 

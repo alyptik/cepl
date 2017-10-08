@@ -26,7 +26,9 @@ static struct option long_opts[] = {
 	{"version", no_argument, 0, 'v'},
 	{"warnings", no_argument, 0, 'w'},
 	{"compiler", required_argument, 0, 'c'},
-	{0, 0, 0, 0}
+	{"output", required_argument, 0, 'o'},
+	{"source", required_argument, 0, 's'},
+	{0}
 };
 static char *const cc_arg_list[] = {
 	"-O0", "-pipe",
