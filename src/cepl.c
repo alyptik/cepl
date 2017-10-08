@@ -40,8 +40,8 @@ extern bool has_hist;
 extern struct type_list tl;
 extern struct str_list il;
 extern struct var_list vl;
-/* `-o` flag filename */
-extern char *out_filename;
+/* output filenames */
+extern char *out_filename, *asm_filename;
 
 static inline char *read_line(char **restrict ln)
 {
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:l:I:o:";
+	char const optstring[] = "hptvwc:l:I:o:s:";
 	char const *const home_env = getenv("HOME");
 	/* token buffers */
 	char *lbuf = NULL, *tbuf = NULL;
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 	/* initialize source buffers */
 	init_buffers(&vl, &tl, &il, &prg, &lbuf);
 	/* initiatalize compiler arg array */
-	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
 	if (isatty(STDIN_FILENO))
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle library parsing */
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 				/* toggle global parse flag */
 				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle variable tracking */
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
 				/* toggle global parse flag */
 				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle warnings */
@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* reset state */
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename);
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* define an include/macro/function */

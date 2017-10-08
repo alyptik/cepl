@@ -47,11 +47,15 @@ void cleanup(void)
 		free(out_filename);
 		out_filename = NULL;
 	}
+	if (asm_filename) {
+		free(asm_filename);
+		asm_filename = NULL;
+	}
 	if (isatty(STDIN_FILENO))
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[], char *const exec_args[])
+int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
 {
 	/* return early if no file open */
 	if (!asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
@@ -132,8 +136,9 @@ void write_file(FILE **restrict out_file, struct prog_src (*restrict prgm)[])
 
 void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
 {
-	/* write out history before freeing buffers */
+	/* write out history/asm before freeing buffers */
 	write_file(&ofile, prgm);
+	write_asm(prgm, cc_argv);
 	/* clean up user data */
 	free_str_list(ilist);
 	if (*ln) {

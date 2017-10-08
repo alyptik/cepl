@@ -57,11 +57,12 @@ extern int optind, opterr, optopt;
 extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
+/* asm output filename */
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restrict ofile, char **restrict out_filename)
+char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restrict ofile, char **restrict out_filename, char **restrict asm_filename)
 {
 	int opt;
-	char *out_file = NULL;
+	char *out_file = NULL, *asm_file = NULL;
 	/* cleanup previous allocations */
 	free_str_list(&ld_list);
 	free_str_list(&lib_list);
@@ -75,8 +76,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 	optind = 1;
 
 	/* sanity check */
-	if (!out_filename)
-		ERRX("out_filename NULL");
+	if (!out_filename || !asm_filename)
+		ERRX("output filename NULL");
 
 	/* initilize argument lists */
 	init_list(&cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -138,6 +139,14 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 			parse_flag ^= true;
 			break;
 
+		/* asm flag */
+		case 's':
+			if (asm_file)
+				ERRX("too many output files specified");
+			asm_file = optarg;
+			asm_flag ^= true;
+			break;
+
 		/* track flag */
 		case 't':
 			track_flag ^= true;
@@ -161,6 +170,15 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		default:
 			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 			exit(0);
+		}
+	}
+
+	/* asm output flag */
+	if (asm_flag) {
+		if (asm_file && !*asm_filename) {
+			if (!(*asm_filename = calloc(1, strlen(asm_file) + 1)))
+				ERR("error during asm_filename calloc()");
+			strmv(0, *asm_filename, asm_file);
 		}
 	}
 
