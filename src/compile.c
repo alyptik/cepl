@@ -38,7 +38,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 
 	int mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	char src_buffer[strlen(src)+1];
+	char src_buffer[strlen(src) + 1];
 
 	if (sizeof src_buffer < 2)
 		ERRX("empty source string passed to compile()");
