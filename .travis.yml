@@ -37,9 +37,12 @@ before_install:
                 "#ifndef _LINUX_MEMFD_H" \
                 "#define _LINUX_MEMFD_H" \
                 "" \
+                "#define __NR_memfd_create 319" \
+                "#define SYS_memfd_create __NR_memfd_create" \
+                "" \
                 "/* flags for memfd_create(2) (unsigned int) */" \
-                "#define MFD_CLOEXEC		0x0001U" \
-                "#define MFD_ALLOW_SEALING	0x0002U" \
+                "#define MFD_CLOEXEC 0x0001U" \
+                "#define MFD_ALLOW_SEALING 0x0002U" \
                 "" \
                 "#endif /* _LINUX_MEMFD_H */" \
                 | sudo tee /usr/include/linux/memfd.h
