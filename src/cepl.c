@@ -215,10 +215,8 @@ int main(int argc, char *argv[])
 				/* toggle global warning flag */
 				out_flag ^= true;
 				/* if file was open, close it and break early */
-				if (!out_flag) {
-					write_file(&ofile, &prg);
+				if (out_flag)
 					break;
-				}
 				tbuf = strpbrk(strip, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
