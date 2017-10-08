@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:l:I:o:s:";
+	char const optstring[] = "hptvwc:a:l:I:o:";
 	char const *const home_env = getenv("HOME");
 	/* token buffers */
 	char *lbuf = NULL, *tbuf = NULL;
@@ -202,16 +202,41 @@ int main(int argc, char *argv[])
 		switch (strip[0]) {
 		case ';':
 			switch(strip[1]) {
-			/* clean up and exit program */
-			case 'q':
-				free_buffers(&vl, &tl, &il, &prg, &lbuf);
-				cleanup();
-				exit(EXIT_SUCCESS);
-				/* unused break */
+
+			/* pop last history statement */
+			case 'u':
+				/* break early if no history to pop */
+				if (prg[0].flags.cnt < 1 || prg[1].flags.cnt < 1)
+					break;
+				for (size_t i = 0; i < 2; i++)
+					pop_history(&prg[i]);
+				/* break early if tracking disabled */
+				if (!track_flag)
+					break;
+				/* re-init vars */
+				if (tl.list) {
+					free(tl.list);
+					tl.list = NULL;
+				}
+				if (vl.list) {
+					for (size_t i = 0; i < vl.cnt; i++) {
+						if (vl.list[i].key)
+							free(vl.list[i].key);
+					}
+					free(vl.list);
+				}
+				init_vlist(&vl);
+				/* add vars from previous lines */
+				for (size_t i = 1; i < prg[0].lines.cnt; i++) {
+					if (prg[0].lines.list[i] && prg[0].flags.list[i] == IN_MAIN) {
+						if (find_vars(prg[0].lines.list[i], &il, &tl))
+							gen_vlist(&vl, &il, &tl);
+					}
+				}
 				break;
 
-			case 's':
-				/* toggle writing asm output */
+			/* toggle writing asm output */
+			case 'a':
 				asm_flag ^= true;
 				/* if file was open, close it and break early */
 				if (asm_flag)
@@ -397,36 +422,12 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 				break;
 
-			/* pop last history statement */
-			case 'u':
-				/* break early if no history to pop */
-				if (prg[0].flags.cnt < 1 || prg[1].flags.cnt < 1)
-					break;
-				for (size_t i = 0; i < 2; i++)
-					pop_history(&prg[i]);
-				/* break early if tracking disabled */
-				if (!track_flag)
-					break;
-				/* re-init vars */
-				if (tl.list) {
-					free(tl.list);
-					tl.list = NULL;
-				}
-				if (vl.list) {
-					for (size_t i = 0; i < vl.cnt; i++) {
-						if (vl.list[i].key)
-							free(vl.list[i].key);
-					}
-					free(vl.list);
-				}
-				init_vlist(&vl);
-				/* add vars from previous lines */
-				for (size_t i = 1; i < prg[0].lines.cnt; i++) {
-					if (prg[0].lines.list[i] && prg[0].flags.list[i] == IN_MAIN) {
-						if (find_vars(prg[0].lines.list[i], &il, &tl))
-							gen_vlist(&vl, &il, &tl);
-					}
-				}
+			/* clean up and exit program */
+			case 'q':
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				cleanup();
+				exit(EXIT_SUCCESS);
+				/* unused break */
 				break;
 
 			/* unknown command becomes a noop */
