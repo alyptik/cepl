@@ -10,7 +10,7 @@ An interactive C (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently s
 
 ## Usage
 ```bash
-./cepl [-hptvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>]
+./cepl [-hptvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>] [-s<assembler.s>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.

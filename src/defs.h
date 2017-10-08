@@ -15,17 +15,18 @@
 
 /* global version and usage strings */
 #define VERSION_STRING	"CEPL v4.6.0"
-#define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
+#define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] " \
+	"[-I<include dir>] [-o<output.c>] [-s<assembler.s>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
-	"-o,--output:\t\t\tName of the file to write C code to.\n\t" \
+	"-o,--output:\t\tName of the file to write C code to.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
-	"-s,--source:\t\t\tName of the file to write assembler code to.\n\n" \
+	"-s,--source:\t\tName of the file to write assembler code to.\n\t" \
 	"-t,--tracking:\t\tToggle variable tracking.\n\t" \
 	"-v,--version:\t\tShow version information.\n\t" \
 	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
 	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
 	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
-	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t" \
+	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\n" \
 	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
 	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
