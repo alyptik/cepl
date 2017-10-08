@@ -75,7 +75,7 @@ int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 
-	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IWGRP|S_IWOTH)) == -1) {
+	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
 		WARN("error opening asm output file");

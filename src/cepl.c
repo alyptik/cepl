@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case 's':
-				/* toggle asm flag flag */
+				/* toggle writing asm output */
 				asm_flag ^= true;
 				/* if file was open, close it and break early */
 				if (asm_flag)
