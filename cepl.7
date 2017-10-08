@@ -1,4 +1,4 @@
-.TH CEPL: "7" "June 2017" "cepl: CEPL v4.6.0" "User Commands"
+.TH CEPL: "7" "June 2017" "cepl: CEPL v4\&.6\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C11 Read-Eval-Print Loop
@@ -6,61 +6,32 @@ cepl \- a C11 Read-Eval-Print Loop
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-l\fI<library name>\fR] [\-I\fI<include dir>\fR] [\-o\fI<output.c>\fR] [\-s\fI<assembler.s\fR>]
+\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-l\fI<library name>\fR] [\-I\fI<include dir>\fR] [\-o\fI<output\&.c>\fR] [\-a\fI<assembler\&.s\fR>]
 .fi
 
 .SH "DESCRIPTION"
 .sp
-C11 (\fBISO/IEC 9899:2011\fR) read–eval–print loop (\fBREPL\fR) currently supporting multiple compilers, readline key-bindings/tab-completion, variable tracking, and incremental undo.
+C11 (\fBISO/IEC 9899:2011\fR) read–eval–print loop (\fBREPL\fR) currently supporting multiple compilers, readline key-bindings/tab-completion, variable tracking, and incremental undo\&.
+.fi
 
 .SH "USAGE"
 .sp
-Command history is read from and saved to \fI~/.cepl_history\fR.
-
-.sp
-Completions for \fB-l\fR library functions can be generated on-demand with the \fB-p\fR switch.
-
-.SS "COMMANDS"
-.sp
-Input lines prefixed with a \fB;\fR are used to control internal state.
-
-.HP
-\fB;f[unction]\fR:	Define a function (e.g. \fB;f void foo(void) { … }\fR)
-.HP
-\fB;h[elp]\fR:		Show help
-.HP
-\fB;i[nclude]\fR:	Define an include (e.g. \fB;i #include <crypt.h>\fR)
-.HP
-\fB;m[acro]\fR:		Define a macro (e.g. \fB;m #define ZERO(x) (x ^ x)\fR)
-.HP
-\fB;o[utput]\fR:	Toggle -o (C code file) flag
-.HP
-\fB;p[arse]\fR:		Toggle -p (shared library parsing) flag
-.HP
-\fB;q[uit]\fR:		Exit CEPL
-.HP
-\fB;r[eset]\fR:		Reset CEPL to its initial program state
-.HP
-\fB;s[ource]\fR:	Toggle -s (assembler code file) flag
-.HP
-\fB;t[racking]\fR:	Toggle variable tracking
-.HP
-\fB;u[ndo]\fR:		Incremental undo (can be repeated)
-.HP
-\fB;w[arnings]\fR:	Toggle -w (warnings) flag
+Command history is read from and saved to \fI~/\&.cepl_history\fR\&.
+.fi
 
 .SS "OPTIONS"
 .sp
 Command line options:
+.fi
 
+.HP
+\fB\-a\fR,\fB\-\-asm\fR:		Name of the file to output assembler code to
 .HP
 \fB\-h\fR,\fB\-\-help\fR:	Show help/usage information
 .HP
 \fB\-o\fR,\fB\-\-output\fR:	Name of the file to write C code to
 .HP
 \fB\-p\fR,\fB\-\-parse\fR:	Disable addition of dynamic library symbols to readline completion
-.HP
-\fB\-s\fR,\fB\-\-source\fR:	Name of the file to write assembler code to
 .HP
 \fB\-t\fR,\fB\-\-tracking\fR:	Toggle variable tracking
 .HP
@@ -73,11 +44,50 @@ Command line options:
 \fB\-l\fR:			Link against specified library (flag can be repeated)
 .HP
 \fB\-I\fR:			Search directory for header files (flag can be repeated)
+.fi
 
-.SH "AUTHOR"
+.SS "COMMANDS"
 .sp
-Joey Pabalinas <alyptik@protonmail.org>
+Input lines prefixed with a \fB;\fR are used to control internal state\&.
+.fi
+
+.HP
+\fB;a[sm]\fR:		Toggle -a (output assembler code) flag
+.HP
+\fB;f[unction]\fR:	Define a function (e\&.g\&. \fB;f void bork(void) { puts("wark"); }\fR)
+.HP
+\fB;h[elp]\fR:		Show help
+.HP
+\fB;i[nclude]\fR:	Define an include (e\&.g\&. \fB;i #include <pthread\&.h>\fR)
+.HP
+\fB;m[acro]\fR:		Define a macro (e\&.g\&. \fB;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))\fR)
+.HP
+\fB;o[utput]\fR:	Toggle -o (output C source code) flag
+.HP
+\fB;p[arse]\fR:		Toggle -p (shared library parsing) flag
+.HP
+\fB;q[uit]\fR:		Exit CEPL
+.HP
+\fB;r[eset]\fR:		Reset CEPL to its initial program state
+.HP
+\fB;t[racking]\fR:	Toggle variable tracking
+.HP
+\fB;u[ndo]\fR:		Incremental undo (can be repeated)
+.HP
+\fB;w[arnings]\fR:	Toggle -w (pedantic warnings) flag
+.fi
 
 .SH "NOTES"
 .sp
-https://github.com/alyptik/cepl
+Please direct any bug/issue reports, as well as any feature requests, to <\fIhttps://github\&.com/alyptik/cepl\fR>
+.fi
+
+.SH "AUTHORS"
+.ie n \{\
+ \h'-04'\(bu\h'+03'\c \&.\}
+.el \{\
+.sp -1
+.IP \(bu 2\&.3
+.\}
+Joey Pabalinas <\fIalyptik@protonmail\&\&.com\fR>
+.fi

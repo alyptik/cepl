@@ -14,32 +14,35 @@
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.6.0"
+#define VERSION_STRING	"CEPL v4.6.1"
 #define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] " \
-	"[-I<include dir>] [-o<output.c>] [-s<assembler.s>]\n\n\t" \
-	"-h,--help:\t\tShow help/usage information.\n\t" \
-	"-o,--output:\t\tName of the file to write C code to.\n\t" \
-	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
-	"-s,--source:\t\tName of the file to write assembler code to.\n\t" \
-	"-t,--tracking:\t\tToggle variable tracking.\n\t" \
-	"-v,--version:\t\tShow version information.\n\t" \
-	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags.\n\t" \
-	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
-	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
-	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\n" \
-	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
-	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
+	"[-I<include dir>] [-o<output.c>] [-a<assembler.s>]\n\n\t" \
+	"-a,--asm:\t\tName of the file to output assembler code to\n\t" \
+	"-h,--help:\t\tShow help/usage information\n\t" \
+	"-o,--output:\t\tName of the file to output C source code to\n\t" \
+	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
+	"-t,--tracking:\t\tToggle variable tracking\n\t" \
+	"-v,--version:\t\tShow version information\n\t" \
+	"-w,--warnings:\t\tCompile with ”-pedantic-errors -Wall -Wextra” flags\n\t" \
+	"-c,--compiler:\t\tSpecify alternate compiler\n\t" \
+	"-l:\t\t\tLink against specified library (flag can be repeated)\n\t" \
+	"-I:\t\t\tSearch directory for header files (flag can be repeated)\n\n" \
+	"Input lines prefixed with a “;” are used to control internal state\n\n\t" \
+	";a[sm]:\t\t\tToggle -a (output assembler code) flag\n\t" \
+	";f[unction]:\t\tDefine a function (e.g. “;f void bork(void) { puts(\"wark\"); }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
-	";i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t" \
-	";m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t" \
-	";o[utput]:\t\tToggle -o (C code file) flag\n\t" \
+	";i[nclude]:\t\tDefine an include (e.g. “;i #include <pthread.h>”)\n\t" \
+	";m[acro]:\t\tDefine a macro (e.g. “;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))”)\n\t" \
+	";o[utput]:\t\tToggle -o (output C source code) flag\n\t" \
 	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]:\t\tExit CEPL\n\t" \
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
-	";s[ource]:\t\tToggle -s (assembler code file) flag\n\t" \
 	";t[racking]:\t\tToggle variable tracking\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
-	";w[arnings]:\t\tToggle -w (warnings) flag"
+	";w[arnings]:\t\tToggle -w (pedantic warnings) flag\n\n" \
+	"Please direct any bug/issue reports, as well as any feature requests,\n" \
+	"to <https://github.com/alyptik/cepl> or email me (Joey Pabalinas)\n" \
+	"directly at <alyptik@protonmail.com>"
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
 #define	YELLOW		"\\033[33m"
