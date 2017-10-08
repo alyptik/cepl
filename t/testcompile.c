@@ -11,6 +11,7 @@
 
 int main(void)
 {
+	int saved_fd = dup(STDERR_FILENO);
 	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *argv[] = {"cepl", NULL};
 	char *const cc_args[] = {
@@ -25,8 +26,6 @@ int main(void)
 
 	plan(3);
 
-	int saved_fd;
-	saved_fd = dup(STDERR_FILENO);
 	close(STDERR_FILENO);
 	lives_ok({pipe_fd(-1, -1);}, "test living through pipe_fd() call with invalid fds.");
 	dies_ok({compile(NULL, NULL, argv);}, "die passing a NULL pointer to compile().");

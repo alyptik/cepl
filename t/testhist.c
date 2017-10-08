@@ -55,6 +55,8 @@ int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], c
 
 int main (void)
 {
+	int saved_fd = dup(STDERR_FILENO);
+
 	using_history();
 	if (!(ln = calloc(1, COUNT)))
 		ERR("ln calloc()");
@@ -84,7 +86,6 @@ int main (void)
 	lives_ok({build_final(&prg, &vl, argv);}, "test secondary program build success.");
 
 	/* cleanup */
-	int saved_fd = dup(STDERR_FILENO);
 	close(STDERR_FILENO);
 	ok(write_asm(&prg, cc_arg_list) == -1, "test return of -1 on failed `write_asm()`.");
 	dup2(saved_fd, STDERR_FILENO);

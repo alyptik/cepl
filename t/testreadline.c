@@ -11,11 +11,11 @@
 
 int main (void)
 {
+	FILE *bitbucket;
 	char *ln = "foobar";
 
 	plan(1);
 
-	FILE *bitbucket;
 	if (!(bitbucket = fopen("/dev/null", "r+b")))
 		ERR("read_line() fopen()");
 	rl_outstream = bitbucket;
