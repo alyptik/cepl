@@ -24,19 +24,19 @@
 	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
 	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
 	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t" \
-	"-o:\t\t\tName of the file to write C code to.\n\n" \
-	"-s:\t\t\tName of the file to write assembler code to.\n\t" \
+	"-o:\t\t\tName of the file to write C code to.\n\t" \
+	"-s:\t\t\tName of the file to write assembler code to.\n\n" \
 	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
 	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
 	";i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t" \
 	";m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t" \
 	";o[utput]:\t\tToggle -o (C code file) flag\n\t" \
-	";s[ource]:\t\tToggle -s (assembler code file) flag\n\t" \
 	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]:\t\tExit CEPL\n\t" \
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
-	";t[racking]:\t\tToggle variable tracking.\n\t" \
+	";s[ource]:\t\tToggle -s (assembler code file) flag\n\t" \
+	";t[racking]:\t\tToggle variable tracking\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]:\t\tToggle -w (warnings) flag"
 #define	RED		"\\033[31m"

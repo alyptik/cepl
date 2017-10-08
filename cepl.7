@@ -33,7 +33,7 @@ Input lines prefixed with a \fB;\fR are used to control internal state.
 .HP
 \fB;m[acro]\fR:		Define a macro (e.g. \fB;m #define ZERO(x) (x ^ x)\fR)
 .HP
-\fB;o[utput]\fR:	Toggle -o (output file) flag
+\fB;o[utput]\fR:	Toggle -o (C code file) flag
 .HP
 \fB;p[arse]\fR:		Toggle -p (shared library parsing) flag
 .HP
@@ -41,7 +41,9 @@ Input lines prefixed with a \fB;\fR are used to control internal state.
 .HP
 \fB;r[eset]\fR:		Reset CEPL to its initial program state
 .HP
-\fB;t[racking]\fR:	Toggle variable tracking.
+\fB;s[ource]\fR:	Toggle -s (assembler code file) flag
+.HP
+\fB;t[racking]\fR:	Toggle variable tracking
 .HP
 \fB;u[ndo]\fR:		Incremental undo (can be repeated)
 .HP
@@ -52,25 +54,25 @@ Input lines prefixed with a \fB;\fR are used to control internal state.
 Command line options:
 
 .HP
-\fB\-h\fR,\fB\-\-help\fR:	Show help/usage information.
+\fB\-h\fR,\fB\-\-help\fR:	Show help/usage information
 .HP
-\fB\-p\fR,\fB\-\-parse\fR:	Disable addition of dynamic library symbols to readline completion.
+\fB\-p\fR,\fB\-\-parse\fR:	Disable addition of dynamic library symbols to readline completion
 .HP
-\fB\-t\fR,\fB\-\-tracking\fR:	Toggle variable tracking.
+\fB\-t\fR,\fB\-\-tracking\fR:	Toggle variable tracking
 .HP
-\fB\-v\fR,\fB\-\-version\fR:	Show version information.
+\fB\-v\fR,\fB\-\-version\fR:	Show version information
 .HP
-\fB\-w\fR,\fB\-\-warnings\fR:	Compile with \fB\-pedantic\-errors\fR \fB\-Wall\fR \fB\-Wextra\fR flags.
+\fB\-w\fR,\fB\-\-warnings\fR:	Compile with \fB\-pedantic\-errors\fR \fB\-Wall\fR \fB\-Wextra\fR flags
 .HP
-\fB\-c\fR,\fB\-\-compiler\fR:	Specify alternate compiler.
+\fB\-c\fR,\fB\-\-compiler\fR:	Specify alternate compiler
 .HP
-\fB\-l\fR:			Link against specified library (flag can be repeated).
+\fB\-l\fR:			Link against specified library (flag can be repeated)
 .HP
-\fB\-I\fR:			Search directory for header files (flag can be repeated).
+\fB\-I\fR:			Search directory for header files (flag can be repeated)
 .HP
-\fB\-o\fR:			Name of the file to write C code to.
+\fB\-o\fR:			Name of the file to write C code to
 .HP
-\fB\-s\fR:			Name of the file to write assembler code to.
+\fB\-s\fR:			Name of the file to write assembler code to
 
 .SH "AUTHOR"
 .sp
