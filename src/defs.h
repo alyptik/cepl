@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.5.6"
+#define VERSION_STRING	"CEPL v4.6.0"
 #define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] [-I<include dir>] [-o<output.c>]\n\n\t" \
 	"-h,--help:\t\tShow help/usage information.\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion.\n\t" \
@@ -24,13 +24,15 @@
 	"-c,--compiler:\t\tSpecify alternate compiler.\n\t" \
 	"-l:\t\t\tLink against specified library (flag can be repeated).\n\t" \
 	"-I:\t\t\tSearch directory for header files (flag can be repeated).\n\t" \
-	"-o:\t\t\tName of the file to output source to.\n\n" \
+	"-o:\t\t\tName of the file to write C code to.\n\n" \
+	"-s:\t\t\tName of the file to write assembler code to.\n\t" \
 	"Input lines prefixed with a “;” are used to control internal state.\n\n\t" \
 	";f[unction]:\t\tDefine a function (e.g. “;f void foo(void) { … }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
 	";i[nclude]:\t\tDefine an include (e.g. “;i #include <crypt.h>”)\n\t" \
 	";m[acro]:\t\tDefine a macro (e.g. “;m #define ZERO(x) (x ^ x)”)\n\t" \
-	";o[utput]:\t\tToggle -o (output file) flag\n\t" \
+	";o[utput]:\t\tToggle -o (C code file) flag\n\t" \
+	";s[ource]:\t\tToggle -s (assembler code file) flag\n\t" \
 	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]:\t\tExit CEPL\n\t" \
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
