@@ -598,8 +598,8 @@ int print_vars(struct var_list *restrict vlist, char const *restrict src, char *
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
 			ERR("error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
-		/* redirect stdout/stdin to /dev/null_fd */
-		if (!(null_fd = open("/dev/null_fd", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
+		/* redirect stdout/stdin to /dev/null */
+		if (!(null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
 			ERR("open()");
 		dup2(null_fd, STDIN_FILENO);
 		dup2(null_fd, STDOUT_FILENO);
