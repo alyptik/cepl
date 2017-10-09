@@ -15,8 +15,7 @@ int main(void)
 	char *argv[] = {"cepl", NULL};
 	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *const cc_args[] = {
-		"gcc",
-		"-O0", "-pipe",
+		"gcc", "-O0", "-pipe",
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
 		"-std=c11", "-S", "-xc",

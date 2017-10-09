@@ -16,14 +16,12 @@ int mkstemp(char *__template);
 char *const cc_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-std=c11",
-	"-Wno-unused-parameter",
 	"-S", "-xc", "/dev/stdin",
 	"-o", "/dev/stdout", NULL
 };
 char *const ld_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-std=c11",
-	"-Wno-unused-parameter",
 	"-xassembler", "/dev/stdin",
 	"-o", "/dev/stdout", NULL
 };
