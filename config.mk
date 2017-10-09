@@ -36,6 +36,6 @@ MANDIR := share/man/man7
 MKALL += Makefile debug.mk
 DEBUG += -fno-common -fsanitize=address,alignment,leak,undefined -fverbose-asm
 CFLAGS += -flto -fPIC -fuse-linker-plugin -fuse-ld=gold -std=c11 -pedantic-errors -Wall -Wextra
-LDFLAGS += -flto -fno-plt -fPIC -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
+LDFLAGS += -flto -fPIC -fuse-linker-plugin -fuse-ld=gold -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 
 # vi:ft=make:
