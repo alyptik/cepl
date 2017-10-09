@@ -31,21 +31,22 @@ static struct option long_opts[] = {
 	{0}
 };
 static char *const cc_arg_list[] = {
-	"-O0", "-pipe",
-	"-fPIC", "-std=c11",
+	"-O0", "-pipe", "-std=c11",
+	"-fPIC", "-fverbose-asm",
 	"-S", "-xc", "/dev/stdin",
-	"-o", "/dev/stdout", NULL
+	"-o", "/dev/stdout",
+	NULL
 };
 static char *const ld_arg_list[] = {
-	"-O0", "-pipe",
-	"-fPIC", "-std=c11",
+	"-O0", "-pipe", "-fPIC",
 	"-xassembler", "/dev/stdin",
-	"-o", "/dev/stdout", NULL
+	"-o", "/dev/stdout",
+	NULL
 };
 static char *const warn_list[] = {
-	"-pedantic-errors",
 	"-Wall", "-Wextra",
 	"-Wno-unused",
+	"-pedantic-errors",
 	NULL
 };
 static int option_index;

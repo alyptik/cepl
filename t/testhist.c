@@ -12,30 +12,31 @@
 /* silence linter */
 int mkstemp(char *__template);
 
-/* global linker arguments struct */
-char *const cc_arg_list[] = {
-	"-O0", "-pipe",
-	"-fPIC", "-std=c11",
-	"-S", "-xc", "/dev/stdin",
-	"-o", "/dev/stdout", NULL
-};
-char *const ld_arg_list[] = {
-	"-O0", "-pipe",
-	"-fPIC", "-std=c11",
-	"-xassembler", "/dev/stdin",
-	"-o", "/dev/stdout", NULL
-};
-char *const warn_list[] = {
-	"-pedantic-errors", "-Wall", "-Wextra", NULL
-};
 /* global compiler arg array */
-char asm_error[] = "/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/s/y/z";
-char *argv[] = {"cepl", NULL};
-char **cc_argv, *asm_filename = asm_error;
+char **cc_argv;
 bool track_flag = false;
 /* global completion list struct */
 struct str_list comp_list;
-struct prog_src prg[2];
+char *const cc_arg_list[] = {
+	"--sysroot=/usr/include",
+	"-O0", "-pipe", "-std=c11",
+	"-fPIC", "-fverbose-asm",
+	"-S", "-xc", "/dev/stdin",
+	"-o", "/dev/stdout",
+	NULL
+};
+char *const ld_arg_list[] = {
+	"-O0", "-pipe", "-fPIC",
+	"-xassembler", "/dev/stdin",
+	"-o", "/dev/stdout",
+	NULL
+};
+char *const warn_list[] = {
+	"-Wall", "-Wextra",
+	"-Wno-unused",
+	"-pedantic-errors",
+	NULL
+};
 
 /* static line buffer */
 static char *ln;
@@ -43,6 +44,12 @@ static char *ln;
 static struct type_list tl;
 static struct var_list vl;
 static struct str_list il;
+static char asm_error[] = "/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/s/y/z";
+static char *argv[] = {"cepl", NULL};
+
+/* externs */
+extern struct prog_src prg[2];
+extern char *asm_filename;
 
 /* print_vars() shim */
 int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
@@ -55,12 +62,13 @@ int main (void)
 {
 	int saved_fd = dup(STDERR_FILENO);
 
+	plan(15);
+
 	using_history();
 	if (!(ln = calloc(1, COUNT)))
 		ERR("ln calloc()");
 	strmv(0, ln, "int foobar");
-
-	plan(15);
+	asm_filename = asm_error;
 
 	/* initialize source buffers */
 	lives_ok({init_buffers(&vl, &tl, &il, &prg, &ln);}, "test buffer initialization.");
