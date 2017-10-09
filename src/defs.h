@@ -153,7 +153,7 @@ struct prog_src {
 static inline ptrdiff_t free_argv(char ***restrict argv)
 {
 	size_t cnt;
-	if (!argv || !*argv || !**argv)
+	if (!argv || !*argv)
 		return -1;
 	for (cnt = 0; (*argv)[cnt]; cnt++)
 		free((*argv)[cnt]);
