@@ -12,8 +12,8 @@
 int main(void)
 {
 	int saved_fd = dup(STDERR_FILENO);
-	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *argv[] = {"cepl", NULL};
+	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *const cc_args[] = {
 		"gcc",
 		"-O0", "-pipe",

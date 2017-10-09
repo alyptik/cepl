@@ -47,7 +47,7 @@ static struct var_list vl;
 static struct str_list il;
 
 /* print_vars() shim */
-int print_vars(struct var_list *vlist, char const *src, char *const cc_args[], char *const exec_args[])
+int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
 {
 	(void)vlist, (void)src, (void)cc_args, (void)exec_args;
 	return 0;

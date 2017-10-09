@@ -12,7 +12,7 @@
 int main (void)
 {
 	FILE *bitbucket;
-	char *ln = "foobar";
+	char *ln;
 
 	plan(1);
 
