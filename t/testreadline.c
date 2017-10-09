@@ -17,7 +17,7 @@ int main (void)
 	plan(1);
 
 	if (!(bitbucket = fopen("/dev/null", "r+b")))
-		ERR("read_line() fopen()");
+		WARN("read_line() fopen()");
 	rl_outstream = bitbucket;
 	ok((ln = readline(NULL)) != NULL, "send keyboard input to readline.");
 	rl_outstream = NULL;
