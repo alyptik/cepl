@@ -8,6 +8,11 @@ cepl
 t/*
 !t/*.c
 !t/*.h
+*.out
+
+# Profiling
+*.gcda
+*.gcno
 
 # Object files
 *.o
@@ -46,3 +51,5 @@ t/*
 .cepl_history
 *.tar.gz
 debug.mk
+
+# vi:ft=cfg:
