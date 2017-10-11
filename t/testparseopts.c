@@ -22,7 +22,8 @@ int main (void)
 	char const optstring[] = "hptvwc:a:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	struct str_list symbols = {0};
-	char **result, *out_filename = NULL, *asm_filename = NULL;
+	char *out_filename = NULL, *asm_filename = NULL;
+	char **result;
 	ptrdiff_t ret;
 	char out_tmp[] = "/tmp/ceplXXXXXX";
 	char out_fallback[] = "./ceplXXXXXX";
