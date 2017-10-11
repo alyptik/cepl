@@ -18,11 +18,13 @@ ssize_t getline(char **__lineptr, size_t *__n, FILE *__stream);
 bool asm_flag = false, out_flag = false, parse_flag = true, track_flag = true, warn_flag = false;
 /* global compiler arg array */
 char **cc_argv;
+enum asm_type volatile asm_dialect = NONE;
 
 static struct option long_opts[] = {
-	{"asm", required_argument, 0, 'a'},
+	{"att", required_argument, 0, 'a'},
 	{"compiler", required_argument, 0, 'c'},
 	{"help", no_argument, 0, 'h'},
+	{"intel", required_argument, 0, 'i'},
 	{"output", required_argument, 0, 'o'},
 	{"parse", no_argument, 0, 'p'},
 	{"tracking", no_argument, 0, 't'},
@@ -31,14 +33,14 @@ static struct option long_opts[] = {
 	{0}
 };
 static char *const cc_arg_list[] = {
-	"-O0", "-pipe", "-no-pie", "-fPIC",
+	"-O0", "-pipe", "-fPIC",
 	"-fverbose-asm", "-std=c11",
 	"-S", "-xc", "/dev/stdin",
 	"-o", "/dev/stdout",
 	NULL
 };
 static char *const ld_arg_list[] = {
-	"-O0", "-pipe", "-no-pie", "-fPIC",
+	"-O0", "-pipe", "-no-pie",
 	"-xassembler", "/dev/stdin",
 	"-o", "/dev/stdout",
 	NULL
@@ -47,6 +49,10 @@ static char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
 	"-pedantic-errors",
+	NULL
+};
+static char *const asm_list[] = {
+	"ERROR", "-masm=att", "-masm=intel",
 	NULL
 };
 static int option_index;
@@ -61,11 +67,11 @@ extern int optind, opterr, optopt;
 extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern struct str_list ld_list, comp_list;
-/* asm output filename */
 
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restrict ofile, char **restrict out_filename, char **restrict asm_filename)
 {
 	int opt;
+	enum asm_type asm_choice = NONE;
 	char *out_file = NULL, *asm_file = NULL;
 	/* cleanup previous allocations */
 	free_str_list(&ld_list);
@@ -95,10 +101,13 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
 
-		/* asm flag */
+		/* at&t asm style */
 		case 'a':
 			if (asm_file)
 				ERRX("too many output files specified");
+			if (asm_choice)
+				ERRX("more than one assembler dialect specified");
+			asm_choice = ATT;
 			asm_file = optarg;
 			asm_flag ^= true;
 			break;
@@ -118,6 +127,17 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 				}
 				strmv(0, cc_list.list[0], optarg);
 			}
+			break;
+
+		/* intel asm style */
+		case 'i':
+			if (asm_file)
+				ERRX("too many output files specified");
+			if (asm_choice)
+				ERRX("more than one assembler dialect specified");
+			asm_choice = INTEL;
+			asm_file = optarg;
+			asm_flag ^= true;
 			break;
 
 		/* header directory flag */
@@ -184,6 +204,11 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 			if (!(*asm_filename = calloc(1, strlen(asm_file) + 1)))
 				ERR("error during asm_filename calloc()");
 			strmv(0, *asm_filename, asm_file);
+			if (!strcmp(cc_list.list[0], "icc"))
+				asm_choice = ATT;
+			if (!asm_dialect)
+				asm_dialect = asm_choice;
+			append_str(&cc_list, asm_list[asm_choice], 0);
 		}
 	}
 
