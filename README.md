@@ -12,7 +12,7 @@ incremental undo, and assembler source code output.
 
 ## Usage
 ```bash
-./cepl [-hptvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>] [-a<assembler.s>]
+./cepl [-hptvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>] [(-a|-i)<assembler.s>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -28,7 +28,7 @@ Command history is read from and saved to `~/.cepl_history`.
 	-p,--parse:		Disable addition of dynamic library symbols to readline completion
 	-t,--tracking:		Toggle variable tracking
 	-v,--version:		Show version information
-	-w,--warnings:		Compile with “-pedantic-errors -Wall -Wextra” flags
+	-w,--warnings:		Compile with “-pedantic -Wall -Wextra” flags
 	-c,--compiler:		Specify alternate compiler
 	-l:			Link against specified library (flag can be repeated)
 	-I:			Search directory for header files (flag can be repeated)
