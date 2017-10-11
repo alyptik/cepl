@@ -14,11 +14,12 @@
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.6.1"
+#define VERSION_STRING	"CEPL v4.7.0"
 #define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] " \
-	"[-I<include dir>] [-o<output.c>] [-a<assembler.s>]\n\n\t" \
-	"-a,--asm:\t\tName of the file to output assembler code to\n\t" \
+	"[-I<include dir>] [-o<output.c>] [-(a|i)<assembler.s>]\n\n\t" \
+	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
 	"-h,--help:\t\tShow help/usage information\n\t" \
+	"-i,--intel:\t\tName of the file to output Intel-dialect assembler code to\n\t" \
 	"-o,--output:\t\tName of the file to output C source code to\n\t" \
 	"-p,--parse:\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
 	"-t,--tracking:\t\tToggle variable tracking\n\t" \
@@ -28,10 +29,10 @@
 	"-l:\t\t\tLink against specified library (flag can be repeated)\n\t" \
 	"-I:\t\t\tSearch directory for header files (flag can be repeated)\n\n" \
 	"Input lines prefixed with a “;” are used to control internal state\n\n\t" \
-	";a[sm]:\t\t\tToggle -a (output assembler code) flag\n\t" \
+	";a[tt]:\t\t\tToggle -a (output AT&T-dialect assembler code) flag\n\t" \
 	";f[unction]:\t\tDefine a function (e.g. “;f void bork(void) { puts(\"wark\"); }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
-	";i[nclude]:\t\tDefine an include (e.g. “;i #include <pthread.h>”)\n\t" \
+	";i[ntel]:\t\tToggle -a (output Intel-dialect assembler code) flag\n\t" \
 	";m[acro]:\t\tDefine a macro (e.g. “;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))”)\n\t" \
 	";o[utput]:\t\tToggle -o (output C source code) flag\n\t" \
 	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
@@ -109,6 +110,10 @@ static char const prog_end[] = "\n\treturn 0;\n}\n";
 /* enumerations */
 enum src_flag {
 	NOT_IN_MAIN, IN_MAIN, EMPTY,
+};
+/* asm dialect */
+enum asm_type {
+	NONE, ATT, INTEL,
 };
 /* possible types of tracked variable */
 enum var_type {
