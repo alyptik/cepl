@@ -42,6 +42,7 @@ extern struct str_list il;
 extern struct var_list vl;
 /* output filenames */
 extern char *out_filename, *asm_filename;
+extern enum asm_type volatile asm_dialect;
 
 static inline char *read_line(char **restrict ln)
 {
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
 	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:a:l:I:o:";
+	char const optstring[] = "hptvwc:a:i:l:I:o:";
 	char const *const home_env = getenv("HOME");
 	/* token buffers */
 	char *lbuf = NULL, *tbuf = NULL;
@@ -233,7 +234,7 @@ int main(int argc, char *argv[])
 				}
 				break;
 
-			/* toggle writing asm output */
+			/* toggle writing at&t-dialect asm output */
 			case 'a':
 				asm_flag ^= true;
 				/* if file was open, close it and break early */
@@ -257,6 +258,36 @@ int main(int argc, char *argv[])
 				strmv(0, asm_filename, tbuf);
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				asm_dialect = ATT;
+				/* re-initiatalize compiler arg array */
+				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+				break;
+
+			/* toggle writing intel-dialect asm output */
+			case 'i':
+				asm_flag ^= true;
+				/* if file was open, close it and break early */
+				if (asm_flag)
+					break;
+				tbuf = strpbrk(strip, " \t");
+				/* break if file name empty */
+				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
+					/* reset flag */
+					asm_flag ^= true;
+					break;
+				}
+				/* increment pointer to start of definition */
+				tbuf += strspn(tbuf, " \t");
+				if (asm_filename) {
+					free(asm_filename);
+					asm_filename = NULL;
+				}
+				if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
+					ERR("error during asm_filename calloc()");
+				strmv(0, asm_filename, tbuf);
+				free_buffers(&vl, &tl, &il, &prg, &lbuf);
+				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				asm_dialect = INTEL;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
@@ -329,7 +360,6 @@ int main(int argc, char *argv[])
 				break;
 
 			/* define an include/macro/function */
-			case 'i': /* fallthrough */
 			case 'm': /* fallthrough */
 			case 'f':
 				/* remove trailing ' ' and '\t' */
