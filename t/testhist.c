@@ -18,15 +18,14 @@ bool track_flag = false;
 /* global completion list struct */
 struct str_list comp_list;
 char *const cc_arg_list[] = {
-	"--sysroot=/usr/include",
-	"-O0", "-pipe", "-std=c11",
-	"-fPIC", "-fverbose-asm",
+	"-O0", "-pipe", "-fPIC",
+	"-fverbose-asm", "-std=c11",
 	"-S", "-xc", "/dev/stdin",
 	"-o", "/dev/stdout",
 	NULL
 };
 char *const ld_arg_list[] = {
-	"-O0", "-pipe", "-fPIC",
+	"-O0", "-pipe", "-no-pie",
 	"-xassembler", "/dev/stdin",
 	"-o", "/dev/stdout",
 	NULL
@@ -34,7 +33,7 @@ char *const ld_arg_list[] = {
 char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
-	"-pedantic-errors",
+	"-pedantic",
 	NULL
 };
 

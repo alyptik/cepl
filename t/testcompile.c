@@ -16,10 +16,10 @@ int main(void)
 	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *const cc_args[] = {
 		"gcc",
-		"-O0", "-pipe", "-std=c11",
+		"-O0", "-pipe", "-no-pie",
+		"-fPIC", "-std=c11",
 		"-Wall", "-Wextra",
-		"-Wno-unused",
-		"-pedantic-errors",
+		"-pedantic",
 		"-S", "-xc", "/dev/stdin",
 		"-o", "/dev/stdout",
 		NULL

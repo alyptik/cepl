@@ -48,7 +48,7 @@ static char *const ld_arg_list[] = {
 static char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
-	"-pedantic-errors",
+	"-pedantic",
 	NULL
 };
 static char *const asm_list[] = {
