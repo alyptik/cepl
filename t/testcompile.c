@@ -16,7 +16,8 @@ int main(void)
 	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *const cc_args[] = {
 		"gcc", "-O0", "-pipe",
-		"-std=c11", "-fverbose-asm",
+		"-fPIC", "-std=c11",
+		"-fverbose-asm",
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
 		"-S", "-xc", "/dev/stdin",
@@ -26,7 +27,7 @@ int main(void)
 
 	plan(3);
 
-	close(STDERR_FILENO);
+	/* close(STDERR_FILENO); */
 	lives_ok({pipe_fd(-1, -1);}, "test living through pipe_fd() call with invalid fds.");
 	dies_ok({compile(NULL, NULL, argv);}, "die passing a NULL pointer to compile().");
 	ok(compile(src, cc_args, argv) == 0, "succeed compiling program.");
