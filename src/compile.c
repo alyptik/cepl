@@ -18,8 +18,8 @@ struct str_list ld_list;
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {
 	"gcc",
-	"-O0", "-pipe", "-no-pie",
-	"-fPIC", "-std=c11",
+	"-O0", "-pipe",
+	"-no-pie", "-std=c11",
 	"-xassembler", "/dev/stdin",
 	"-o/dev/stdout",
 	NULL
