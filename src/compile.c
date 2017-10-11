@@ -32,12 +32,15 @@ int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 
 int compile(char const *restrict src, char *const cc_args[], char *const exec_args[])
 {
-	if (!src || !cc_args || !exec_args)
-		ERRX("NULL pointer passed to compile()");
-
-	int mem_fd, status;
+	int null_fd, mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	char src_buffer[strlen(src) + 1];
+
+	if (!src || !cc_args || !exec_args)
+		ERRX("NULL pointer passed to compile()");
+	/* bit bucket */
+	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
+		ERR("open()");
 
 	if (sizeof src_buffer < 2)
 		ERRX("empty source string passed to compile()");
@@ -106,6 +109,9 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 
 	/* child */
 	case 0:
+		/* redirect stderr to /dev/null */
+		if (dup2(null_fd, STDERR_FILENO) == -1)
+			ERR("redirecting stderr");
 		dup2(pipe_ld[0], STDIN_FILENO);
 		dup2(pipe_exec[1], STDOUT_FILENO);
 		if (ld_list.list)
@@ -149,6 +155,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	/* parent */
 	default:
 		close(pipe_exec[0]);
+		close(null_fd);
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
