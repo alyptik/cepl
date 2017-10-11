@@ -19,7 +19,7 @@ struct str_list ld_list, comp_list;
 int main (void)
 {
 	FILE *ofile = NULL;
-	char const optstring[] = "hptvwc:a:l:I:o:";
+	char const optstring[] = "hptvwc:a:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	struct str_list symbols = {0};
 	char **result, *out_filename = NULL, *asm_filename = NULL;
