@@ -33,7 +33,7 @@ char *const ld_arg_list[] = {
 char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
-	"-pedantic",
+	"-pedantic-errors",
 	NULL
 };
 

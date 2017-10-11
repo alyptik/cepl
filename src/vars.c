@@ -10,10 +10,10 @@
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {
 	"gcc",
-	"-O0", "-pipe",
-	"-no-pie", "-std=c11",
+	"-O0", "-pipe", "-no-pie",
 	"-xassembler", "/dev/stdin",
-	"-o/dev/stdout", NULL
+	"-o", "/dev/stdout",
+	NULL
 };
 
 /* global linker arguments struct */
