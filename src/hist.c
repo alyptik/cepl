@@ -7,13 +7,6 @@
 
 #include "hist.h"
 
-/* externs */
-extern bool asm_flag, track_flag;
-/* compiler argument list */
-extern char **cc_argv;
-/* completion list of generated symbols */
-extern struct str_list comp_list;
-
 /* globals */
 bool has_hist = false;
 /* output filenames */
@@ -28,6 +21,13 @@ struct prog_src prg[2];
 struct type_list tl;
 struct str_list il;
 struct var_list vl;
+
+/* externs */
+extern bool asm_flag, track_flag;
+/* compiler argument list */
+extern char **cc_argv;
+/* completion list of generated symbols */
+extern struct str_list comp_list;
 
 void cleanup(void)
 {
