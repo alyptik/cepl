@@ -40,7 +40,8 @@ static char *const cc_arg_list[] = {
 	NULL
 };
 static char *const ld_arg_list[] = {
-	"-O0", "-pipe", "-no-pie",
+	"-O0", "-pipe",
+	"-fPIC", "-no-pie",
 	"-xassembler", "/dev/stdin",
 	"-o", "/dev/stdout",
 	NULL
