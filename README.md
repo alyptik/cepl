@@ -21,8 +21,9 @@ Command history is read from and saved to `~/.cepl_history`.
 
 #### CEPL understands the following options:
 
-	-a,--asm:		Name of the file to output assembler code to
+	-a,--att:		Name of the file to output AT&T-dialect assembler code to
 	-h,--help:		Show help/usage information
+	-i,--intel:		Name of the file to output Intel-dialect assembler code to
 	-o,--output:		Name of the file to output C source code to
 	-p,--parse:		Disable addition of dynamic library symbols to readline completion
 	-t,--tracking:		Toggle variable tracking
@@ -36,10 +37,10 @@ Command history is read from and saved to `~/.cepl_history`.
 
 Input lines prefixed with a `;` are used to control internal state.
 
-	;a[sm]:			Toggle -a (output assembler code) flag
+	;a[tt]:			Toggle -a (output AT&T-dialect assembler code) flag
 	;f[unction]:		Define a function (e.g. “;f void bork(void) { puts("wark"); }”)
 	;h[elp]:		Show help
-	;i[nclude]:		Define an include (e.g. “;i #include <pthread.h>”)
+	;i[ntel]:		Toggle -i (output Intel-dialect assembler code) flag
 	;m[acro]:		Define a macro (e.g. “;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))”)
 	;o[utput]:		Toggle -o (output C source code) flag
 	;p[arse]:		Toggle -p (shared library parsing) flag
