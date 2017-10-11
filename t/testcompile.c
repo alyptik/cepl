@@ -15,9 +15,8 @@ int main(void)
 	char *argv[] = {"cepl", NULL};
 	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *const cc_args[] = {
-		"gcc",
-		"-O0", "-pipe", "-fPIC",
-		"-fverbose-asm", "-std=c11",
+		"gcc", "-O0", "-pipe",
+		"-std=c11", "-fverbose-asm",
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
 		"-S", "-xc", "/dev/stdin",
