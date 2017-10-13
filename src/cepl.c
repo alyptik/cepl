@@ -85,10 +85,7 @@ static inline void sig_handler(int sig)
 static inline void reg_handlers(void)
 {
 	/* signals to trap */
-	struct {
-		int sig;
-		char *sig_name;
-	} sigs[] = {
+	struct { int sig; char *sig_name; } sigs[] = {
 		{SIGHUP, "SIGHUP"}, {SIGINT, "SIGINT"},
 		{SIGQUIT, "SIGQUIT"}, {SIGILL, "SIGILL"},
 		{SIGABRT, "SIGABRT"}, {SIGFPE, "SIGFPE"},
