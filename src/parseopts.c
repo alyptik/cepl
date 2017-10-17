@@ -22,7 +22,7 @@ enum asm_type volatile asm_dialect = NONE;
 
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
-	{"compiler", required_argument, 0, 'c'},
+	{"cc", required_argument, 0, 'c'},
 	{"help", no_argument, 0, 'h'},
 	{"intel", required_argument, 0, 'i'},
 	{"output", required_argument, 0, 'o'},

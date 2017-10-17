@@ -25,7 +25,7 @@
 	"-t,--tracking:\t\tToggle variable tracking\n\t" \
 	"-v,--version:\t\tShow version information\n\t" \
 	"-w,--warnings:\t\tCompile with ”-pedantic -Wall -Wextra” flags\n\t" \
-	"-c,--compiler:\t\tSpecify alternate compiler\n\t" \
+	"-c,--cc:\t\t\tSpecify alternate compiler\n\t" \
 	"-l:\t\t\tLink against specified library (flag can be repeated)\n\t" \
 	"-I:\t\t\tSearch directory for header files (flag can be repeated)\n\n" \
 	"Input lines prefixed with a “;” are used to control internal state\n\n\t" \

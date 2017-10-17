@@ -29,7 +29,7 @@ Command history is read from and saved to `~/.cepl_history`.
 	-t,--tracking:		Toggle variable tracking
 	-v,--version:		Show version information
 	-w,--warnings:		Compile with “-pedantic -Wall -Wextra” flags
-	-c,--compiler:		Specify alternate compiler
+	-c,--cc:		Specify alternate compiler
 	-l:			Link against specified library (flag can be repeated)
 	-I:			Search directory for header files (flag can be repeated)
 
