@@ -134,6 +134,14 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 			}
 			break;
 
+		/* eval string */
+		case 'e':
+			if (strlen(optarg) > sizeof eval_flag)
+				ERRX("eval string too long");
+			strmv(0, eval_arg, optarg);
+			eval_flag ^= true;
+			break;
+
 		/* intel asm style */
 		case 'i':
 			if (asm_file)
