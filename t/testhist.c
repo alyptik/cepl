@@ -14,7 +14,7 @@ int mkstemp(char *__template);
 
 /* global compiler arg array */
 char **cc_argv;
-bool track_flag = false;
+bool eval_flag = false, track_flag = false;
 /* global completion list struct */
 struct str_list comp_list;
 char *const cc_arg_list[] = {

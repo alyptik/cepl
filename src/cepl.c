@@ -48,15 +48,15 @@ extern enum asm_type volatile asm_dialect;
 
 static inline char *read_line(char **restrict ln)
 {
-	/* cleanup old buffer */
-	if (ln && *ln) {
-		free(*ln);
-		*ln = NULL;
-	}
 	/* return early if executed with `-e` argument */
 	if (eval_flag) {
 		*ln = eval_arg;
 		return *ln;
+	}
+	/* cleanup old buffer */
+	if (ln && *ln) {
+		free(*ln);
+		*ln = NULL;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
-	if (isatty(STDIN_FILENO))
+	if (isatty(STDIN_FILENO) && !eval_flag)
 		printf("\n%s\n", VERSION_STRING);
 	/* enable completion */
 	rl_completion_entry_function = &generator;
@@ -530,8 +530,10 @@ int main(int argc, char *argv[])
 		if (ret || (isatty(STDIN_FILENO) && !eval_flag))
 			printf("[exit status: %d]\n", ret);
 		/* exit if executed with `-e` argument */
-		if (eval_flag)
+		if (eval_flag) {
+			lbuf = NULL;
 			break;
+		}
 	}
 
 	free_buffers(&vl, &tl, &il, &prg, &lbuf);

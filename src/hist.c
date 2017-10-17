@@ -23,7 +23,7 @@ struct str_list il;
 struct var_list vl;
 
 /* externs */
-extern bool asm_flag, track_flag;
+extern bool asm_flag, eval_flag, track_flag;
 /* compiler argument list */
 extern char **cc_argv;
 /* completion list of generated symbols */
@@ -51,7 +51,7 @@ void cleanup(void)
 		free(asm_filename);
 		asm_filename = NULL;
 	}
-	if (isatty(STDIN_FILENO))
+	if (isatty(STDIN_FILENO) && !eval_flag)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
@@ -357,7 +357,7 @@ void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict v
 		strmv(0, (*prgm)[i].total, (*prgm)[i].f);
 		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].b);
 		/* print variable values */
-		if (track_flag && i == 1)
+		if (!eval_flag && track_flag && i == 1)
 			print_vars(vlist, (*prgm)[i].total, cc_argv, argv);
 		strmv(CONCAT, (*prgm)[i].total, prog_end);
 	}
