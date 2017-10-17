@@ -14,10 +14,12 @@
 #include <unistd.h>
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.7.0"
-#define USAGE_STRING	"[-hptvw] [-c<compiler>] [-l<library>] " \
-	"[-I<include dir>] [-o<output.c>] [(-a|-i)<assembler.s>]\n\n\t" \
+#define VERSION_STRING	"CEPL v4.8.0"
+#define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
+	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
+	"-c,--cc:\t\tSpecify alternate compiler\n\t" \
+	"-e,--eval:\t\tEvaluate the following argument as C code\n\t" \
 	"-h,--help:\t\tShow help/usage information\n\t" \
 	"-i,--intel:\t\tName of the file to output Intel-dialect assembler code to\n\t" \
 	"-o,--output:\t\tName of the file to output C source code to\n\t" \
@@ -25,10 +27,9 @@
 	"-t,--tracking:\t\tToggle variable tracking\n\t" \
 	"-v,--version:\t\tShow version information\n\t" \
 	"-w,--warnings:\t\tCompile with ”-pedantic -Wall -Wextra” flags\n\t" \
-	"-c,--cc:\t\t\tSpecify alternate compiler\n\t" \
 	"-l:\t\t\tLink against specified library (flag can be repeated)\n\t" \
-	"-I:\t\t\tSearch directory for header files (flag can be repeated)\n\n" \
-	"Input lines prefixed with a “;” are used to control internal state\n\n\t" \
+	"-I:\t\t\tSearch directory for header files (flag can be repeated)\n" \
+	"Input lines prefixed with a “;” are used to control internal state\n\t" \
 	";a[tt]:\t\t\tToggle -a (output AT&T-dialect assembler code) flag\n\t" \
 	";f[unction]:\t\tDefine a function (e.g. “;f void bork(void) { puts(\"wark\"); }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
@@ -40,9 +41,7 @@
 	";r[eset]:\t\tReset CEPL to its initial program state\n\t" \
 	";t[racking]:\t\tToggle variable tracking\n\t" \
 	";u[ndo]:\t\tIncremental pop_history (can be repeated)\n\t" \
-	";w[arnings]:\t\tToggle -w (pedantic warnings) flag\n\n" \
-	"Please direct any bug/issue reports, as well as any feature requests, to <https://github.com/alyptik/cepl>\n" \
-	"or email me (Joey Pabalinas) directly at <alyptik@protonmail.com>"
+	";w[arnings]:\t\tToggle -w (pedantic warnings) flag"
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
 #define	YELLOW		"\\033[33m"

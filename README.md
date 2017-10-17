@@ -12,7 +12,7 @@ incremental undo, and assembler source code output.
 
 ## Usage
 ```bash
-./cepl [-hptvw] [-c<compiler>] [-l<library name>] [-I<include dir>] [-o<output.c>] [(-a|-i)<assembler.s>]
+./cepl [-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] [-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
@@ -22,6 +22,8 @@ Command history is read from and saved to `~/.cepl_history`.
 #### CEPL understands the following options:
 
 	-a,--att:		Name of the file to output AT&T-dialect assembler code to
+	-c,--cc:		Specify alternate compiler
+	-e,--eval:		Evaluate the following argument as C code
 	-h,--help:		Show help/usage information
 	-i,--intel:		Name of the file to output Intel-dialect assembler code to
 	-o,--output:		Name of the file to output C source code to
@@ -29,7 +31,6 @@ Command history is read from and saved to `~/.cepl_history`.
 	-t,--tracking:		Toggle variable tracking
 	-v,--version:		Show version information
 	-w,--warnings:		Compile with “-pedantic -Wall -Wextra” flags
-	-c,--cc:		Specify alternate compiler
 	-l:			Link against specified library (flag can be repeated)
 	-I:			Search directory for header files (flag can be repeated)
 
