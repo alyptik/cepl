@@ -28,12 +28,14 @@ char *lptr;
 extern FILE *ofile;
 /* output file buffer and cc args */
 extern char *hist_file, **cc_argv;
+/* string to compile */
+extern char eval_arg[];
 /* program source strucs (prg[0] is truncated for interactive printing) */
 extern struct prog_src prg[2];
 /* completion list of generated symbols */
 extern struct str_list comp_list;
 /* toggle flags */
-extern bool asm_flag, out_flag, parse_flag, track_flag, warn_flag;
+extern bool asm_flag, eval_flag, out_flag, parse_flag, track_flag, warn_flag;
 /* history file flag */
 extern bool has_hist;
 /* type, identifier, and var lists */
@@ -50,6 +52,11 @@ static inline char *read_line(char **restrict ln)
 	if (ln && *ln) {
 		free(*ln);
 		*ln = NULL;
+	}
+	/* return early if executed with `-e` argument */
+	if (eval_flag) {
+		*ln = eval_arg;
+		return *ln;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
@@ -116,7 +123,7 @@ int main(int argc, char *argv[])
 	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:a:i:l:I:o:";
+	char const optstring[] = "hptvwc:a:e:i:l:I:o:";
 	char const *const home_env = getenv("HOME");
 	/* token buffers */
 	char *lbuf = NULL, *tbuf = NULL;
@@ -516,12 +523,15 @@ int main(int argc, char *argv[])
 		/* finalize source */
 		build_final(&prg, &vl, argv);
 		/* print generated source code unless stdin is a pipe */
-		if (isatty(STDIN_FILENO))
+		if (isatty(STDIN_FILENO) && !eval_flag)
 			printf("\n%s:\n==========\n%s\n==========\n", argv[0], prg[0].total);
 		int ret = compile(prg[1].total, cc_argv, argv);
 		/* print output and exit code if non-zero */
-		if (ret || isatty(STDIN_FILENO))
+		if (ret || (isatty(STDIN_FILENO) && !eval_flag))
 			printf("[exit status: %d]\n", ret);
+		/* exit if executed with `-e` argument */
+		if (eval_flag)
+			break;
 	}
 
 	free_buffers(&vl, &tl, &il, &prg, &lbuf);

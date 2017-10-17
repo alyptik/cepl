@@ -20,6 +20,7 @@ bool asm_flag = false, eval_flag = false, out_flag = false;
 bool parse_flag = true, track_flag = true, warn_flag = false;
 /* global compiler arg array */
 char **cc_argv;
+/* string to compile */
 char eval_arg[ELIMIT];
 enum asm_type volatile asm_dialect = NONE;
 
@@ -136,7 +137,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 
 		/* eval string */
 		case 'e':
-			if (strlen(optarg) > sizeof eval_flag)
+			if (strlen(optarg) > sizeof eval_arg)
 				ERRX("eval string too long");
 			strmv(0, eval_arg, optarg);
 			eval_flag ^= true;
