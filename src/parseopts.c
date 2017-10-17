@@ -8,6 +8,7 @@
 #include "parseopts.h"
 #include "readline.h"
 #include <getopt.h>
+#include <limits.h>
 
 /* silence linter */
 int getopt_long(int ___argc, char *const ___argv[], char const *__shortopts, struct option const *__longopts, int *__longind);
@@ -15,14 +16,17 @@ FILE *fdopen(int __fd, char const *__modes);
 ssize_t getline(char **__lineptr, size_t *__n, FILE *__stream);
 
 /* global toggle flags */
-bool asm_flag = false, out_flag = false, parse_flag = true, track_flag = true, warn_flag = false;
+bool asm_flag = false, eval_flag = false, out_flag = false;
+bool parse_flag = true, track_flag = true, warn_flag = false;
 /* global compiler arg array */
 char **cc_argv;
+char eval_arg[ELIMIT];
 enum asm_type volatile asm_dialect = NONE;
 
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
 	{"cc", required_argument, 0, 'c'},
+	{"eval", required_argument, 0, 'e'},
 	{"help", no_argument, 0, 'h'},
 	{"intel", required_argument, 0, 'i'},
 	{"output", required_argument, 0, 'o'},

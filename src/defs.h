@@ -51,10 +51,13 @@
 #define CONCAT		(-1)
 /* number of possible types */
 #define TNUM		(7)
+/* max eval string length */
+#define ELIMIT		(4096)
 /* `malloc()` size ceiling */
 #define MAX		(SIZE_MAX / 2 - 1)
 /* page size for buffer count */
 #define COUNT		sysconf(_SC_PAGESIZE)
+
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
