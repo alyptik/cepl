@@ -150,25 +150,18 @@ void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 		tlist->list = NULL;
 	}
 	/* free vectors */
-	if (cc_argv)
-		free_argv(&cc_argv);
+	free_argv(&cc_argv);
 	if (vlist->list) {
-		for (size_t i = 0; i < vlist->cnt; i++) {
-			if (vlist->list[i].key)
-				free(vlist->list[i].key);
-		}
+		for (size_t i = 0; i < vlist->cnt; i++)
+			free(vlist->list[i].key);
 		free(vlist->list);
 	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
-		if ((*prgm)[i].f)
-			free((*prgm)[i].f);
-		if ((*prgm)[i].b)
-			free((*prgm)[i].b);
-		if ((*prgm)[i].total)
-			free((*prgm)[i].total);
-		if ((*prgm)[i].flags.list)
-			free((*prgm)[i].flags.list);
+		free((*prgm)[i].f);
+		free((*prgm)[i].b);
+		free((*prgm)[i].total);
+		free((*prgm)[i].flags.list);
 		free_str_list(&(*prgm)[i].hist);
 		free_str_list(&(*prgm)[i].lines);
 		(*prgm)[i].b_sz = (*prgm)[i].f_sz = (*prgm)[i].t_sz = 0;

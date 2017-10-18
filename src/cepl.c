@@ -222,10 +222,8 @@ int main(int argc, char *argv[])
 					tl.list = NULL;
 				}
 				if (vl.list) {
-					for (size_t i = 0; i < vl.cnt; i++) {
-						if (vl.list[i].key)
-							free(vl.list[i].key);
-					}
+					for (size_t i = 0; i < vl.cnt; i++)
+						free(vl.list[i].key);
 					free(vl.list);
 				}
 				init_vlist(&vl);

@@ -82,10 +82,8 @@ int main (void)
 		WARN("remove() out_tmp");
 	if (remove(asm_tmp) == -1)
 		WARN("remove() asm_tmp");
-	if (out_filename)
-		free(out_filename);
-	if (asm_filename)
-		free(asm_filename);
+	free(out_filename);
+	free(asm_filename);
 
 	done_testing();
 }

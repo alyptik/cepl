@@ -40,8 +40,7 @@ int main(void)
 
 	/* cleanup */
 	free_str_list(&ids);
-	if (types.list)
-		free(types.list);
+	free(types.list);
 
 	done_testing();
 }
