@@ -57,7 +57,6 @@
 /* page size for buffer count */
 #define COUNT		sysconf(_SC_PAGESIZE)
 
-
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#define _DEFAULT_SOURCE\n"
