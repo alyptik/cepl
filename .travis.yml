@@ -16,16 +16,16 @@ matrix:
         - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-7 CXX=g++-7"
 
     # works on Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            # - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
-          packages:
-            - clang-5.0 lldb-5.0 lld-5.0
-      env:
-        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
+    # - os: linux
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+    #         - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
+    #       packages:
+    #         - clang-5.0 lldb-5.0 lld-5.0
+    #   env:
+    #     - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
 
 before_install:
     - eval "${MATRIX_EVAL}"
