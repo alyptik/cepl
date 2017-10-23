@@ -319,7 +319,6 @@ int print_vars(struct var_list *restrict vlist, char const *restrict src, char *
 	char *newline = (has_color && isatty(STDIN_FILENO)) ?
 		"\n\tfprintf(stderr, \"\\n\");"  :
 		"";
-
 	char *p_beg = (has_color && isatty(STDIN_FILENO)) ?
 		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST "\", \"" :
 		"\n\tfprintf(stderr, \"__s = \\\"____\\\", \",\"";
