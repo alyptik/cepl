@@ -316,13 +316,16 @@ int print_vars(struct var_list *restrict vlist, char const *restrict src, char *
 
 	int mem_fd, status, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	char newline[] = "\n\tfprintf(stderr, \"\\n\");";
+	char *newline = (has_color && isatty(STDIN_FILENO)) ?
+		"\n\tfprintf(stderr, \"\\n\");"  :
+		"";
+
 	char *p_beg = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST " \", \"" :
-		"\n\tfprintf(stderr, \"__s = \\\"____\\\", \", \"";
+		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST "\", \"" :
+		"\n\tfprintf(stderr, \"__s = \\\"____\\\", \",\"";
 	char *pln_beg = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n " RST " \", \"" :
-		"\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n \", \"";
+		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n" RST "\", \"" :
+		"\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
 	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
 	char print_end[] = ");";
 	char *src_tmp, *tmp_ptr;
@@ -352,13 +355,13 @@ int print_vars(struct var_list *restrict vlist, char const *restrict src, char *
 		ERR("src_tmp calloc()");
 	strmv(0, src_tmp, src);
 	off = strlen(src);
-	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + sizeof newline))) {
+	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + strlen(newline) + 1))) {
 		free(src_tmp);
 		ERR("src_tmp realloc()");
 	}
 	src_tmp = tmp_ptr;
 	strmv(off, src_tmp, newline);
-	off += sizeof newline - 1;
+	off += strlen(newline);
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {

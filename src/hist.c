@@ -350,7 +350,7 @@ void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict v
 		strmv(0, (*prgm)[i].total, (*prgm)[i].f);
 		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].b);
 		/* print variable values */
-		if (!eval_flag && track_flag && i == 1)
+		if (track_flag && i == 1)
 			print_vars(vlist, (*prgm)[i].total, cc_argv, argv);
 		strmv(CONCAT, (*prgm)[i].total, prog_end);
 	}
