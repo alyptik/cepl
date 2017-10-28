@@ -55,7 +55,7 @@
 /* `malloc()` size ceiling */
 #define ARRAY_MAX		(SIZE_MAX / 2 - 1)
 /* page size for buffer count */
-#define COUNT		sysconf(_SC_PAGESIZE)
+#define PAGE_SZ		sysconf(_SC_PAGESIZE)
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
