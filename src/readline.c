@@ -19,14 +19,14 @@ char *comp_arg_list[] = {
 	"_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
 	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local", "__asm__",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
-	"bool", "true", "false", "free(", "malloc(", "realloc(", "calloc(",
-	"system(", "fork(", "pipe(", "execl(", "execv(", "kill(",
-	"signal(", "printf(", "fprintf(", "dprintf(", "sprintf(",
-	"open(", "close(", "read(", "write(", "fopen(", "fclose(",
-	"scanf(", "fscanf(", "mmap(", "munmap(", "syscall(",
-	"fread(", "fwrite(", "memcpy(", "memset(", "memcmp(",
-	"puts(", "strspn(", "strlen(", "strcat(", "strtok(",
-	";function", ";parse", ";quit", ";reset", ";tracking", ";warnings", NULL
+	"bool", "true", "false", "uint8_t", "uint16_t", "uint32_t",
+	"free(", "malloc(", "realloc(", "calloc(", "system(",
+	"fork(", "kill(", "puts(", "printf(", "fprintf(", "sprintf(",
+	"open(", "close(", "read(", "write(", "scanf(", "mmap(",
+	"fopen(", "fclose(", "fread(", "fwrite(", "memcpy(", "memmove(",
+	"memset(", "memcmp(", "strlen(", "strcat(", "strtok(",
+	";att", ";function", ";help", ";intel", ";macro", ";output",
+	";parse", ";quit", ";reset", ";tracking", ";undo", ";warnings", NULL
 };
 /* global completion list struct */
 struct str_list comp_list;
