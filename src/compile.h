@@ -6,7 +6,7 @@
  */
 
 #ifndef COMPILE_H
-#define COMPILE_H
+#define COMPILE_H 1
 
 #include "defs.h"
 #include "errs.h"

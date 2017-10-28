@@ -6,7 +6,7 @@
  */
 
 #ifndef HIST_H
-#define HIST_H
+#define HIST_H 1
 
 #include "parseopts.h"
 #include "readline.h"

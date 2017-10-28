@@ -6,7 +6,7 @@
  */
 
 #ifndef DEFS_H
-#define DEFS_H
+#define DEFS_H 1
 
 #include "errs.h"
 #include <limits.h>

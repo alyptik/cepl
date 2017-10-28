@@ -6,7 +6,7 @@
  */
 
 #ifndef VARS_H
-#define VARS_H
+#define VARS_H 1
 
 #include "compile.h"
 #include "parseopts.h"

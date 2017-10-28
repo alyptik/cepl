@@ -6,7 +6,7 @@
  */
 
 #ifndef ERRS_H
-#define ERRS_H
+#define ERRS_H 1
 
 #include <assert.h>
 #include <errno.h>

@@ -6,7 +6,7 @@
  */
 
 #ifndef PARSEOPTS_H
-#define PARSEOPTS_H
+#define PARSEOPTS_H 1
 
 #include "defs.h"
 #include "errs.h"
