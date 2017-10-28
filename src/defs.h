@@ -53,7 +53,7 @@
 /* max eval string length */
 #define ELIMIT		(4096)
 /* `malloc()` size ceiling */
-#define MAX		(SIZE_MAX / 2 - 1)
+#define ARRAY_MAX		(SIZE_MAX / 2 - 1)
 /* page size for buffer count */
 #define COUNT		sysconf(_SC_PAGESIZE)
 
@@ -229,7 +229,7 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		/* check if size too large */
-		if (list_struct->cnt > MAX)
+		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((list_struct->max *= 2) < list_struct->cnt);
@@ -263,7 +263,7 @@ static inline void append_type(struct type_list *restrict list_struct, enum var_
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		/* check if size too large */
-		if (list_struct->cnt > MAX)
+		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((list_struct->max *= 2) < list_struct->cnt);
@@ -291,7 +291,7 @@ static inline void append_flag(struct flag_list *restrict list_struct, enum src_
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		/* check if size too large */
-		if (list_struct->cnt > MAX)
+		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		/* double until size is reached */
 		while ((list_struct->max *= 2) < list_struct->cnt);

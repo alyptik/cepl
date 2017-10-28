@@ -232,7 +232,7 @@ size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_
 	if (*buf_sz < *b_max)
 		return 0;
 	/* check if size too large */
-	if (*buf_sz > MAX)
+	if (*buf_sz > ARRAY_MAX)
 		ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
 	/* double until size is reached */
 	while ((*b_max *= 2) < *buf_sz);
