@@ -65,7 +65,7 @@ int main (void)
 	plan(15);
 
 	using_history();
-	if (!(ln = calloc(1, ELIMIT)))
+	if (!(ln = calloc(1, EVAL_LIMIT)))
 		ERR("ln calloc()");
 	strmv(0, ln, "int foobar");
 	asm_filename = asm_error;

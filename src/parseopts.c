@@ -21,7 +21,7 @@ bool parse_flag = true, track_flag = true, warn_flag = false;
 /* global compiler arg array */
 char **cc_argv;
 /* string to compile */
-char eval_arg[ELIMIT];
+char eval_arg[EVAL_LIMIT];
 enum asm_type volatile asm_dialect = NONE;
 
 static struct option long_opts[] = {
