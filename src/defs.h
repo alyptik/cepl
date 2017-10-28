@@ -46,16 +46,16 @@
 #define	GREEN		"\\033[32m"
 #define	YELLOW		"\\033[33m"
 #define	RST		"\\033[00m"
-/* `strmv() `concat constant */
-#define CONCAT		(-1)
-/* number of possible types */
-#define TNUM		(7)
-/* max eval string length */
-#define EVAL_LIMIT	(4096)
-/* `malloc()` size ceiling */
-#define ARRAY_MAX	(SIZE_MAX / 2 - 1)
 /* page size for buffer count */
 #define PAGE_SZ		sysconf(_SC_PAGESIZE)
+/* max possible types */
+#define TNUM		7
+/* max eval string length */
+#define EVAL_LIMIT	4096
+/* `strmv() `concat constant */
+#define CONCAT		(-1)
+/* `malloc()` size ceiling */
+#define ARRAY_MAX	(SIZE_MAX / 2 - 1)
 
 /* source file includes template */
 static char const prelude[] = "#define _BSD_SOURCE\n"
