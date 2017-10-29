@@ -13,6 +13,9 @@
 #include <stdint.h>
 #include <unistd.h>
 
+/* macros */
+#define FALLBACK(ARG, DEF) ((ARG) ? (ARG) : (DEF))
+
 /* global version and usage strings */
 #define VERSION_STRING	"CEPL v4.8.2"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \

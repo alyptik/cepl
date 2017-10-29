@@ -11,20 +11,20 @@
 
 /* default completion list */
 char *comp_arg_list[] = {
-	"auto", "break", "case", "char", "const", "continue", "default",
+	"auto", "bool", "break", "case", "char", "const", "continue", "default",
 	"do", "double", "else", "enum", "extern", "float", "for", "goto",
 	"if", "inline", "int", "long", "register", "restrict", "return",
 	"short", "signed", "size_t", "sizeof", "static", "struct", "switch",
 	"ptrdiff_t", "typedef", "union", "unsigned", "void", "volatile", "while",
 	"_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic",
-	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local", "__asm__",
+	"_Imaginary", "_Noreturn", "_Static_assert", "_Thread_local",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
-	"bool", "true", "false", "uint8_t", "uint16_t", "uint32_t",
-	"free(", "malloc(", "realloc(", "calloc(", "system(",
-	"fork(", "kill(", "puts(", "printf(", "fprintf(", "sprintf(",
-	"open(", "close(", "read(", "write(", "scanf(", "mmap(",
-	"fopen(", "fclose(", "fread(", "fwrite(", "memcpy(", "memmove(",
-	"memset(", "memcmp(", "strlen(", "strcat(", "strtok(",
+	"uint8_t", "uint16_t", "uint32_t", "uint64_t", "__asm__(",
+	"__attribute__(", "true", "false", "malloc(", "calloc(", "free(",
+	"fork(", "execvp(", "fopen(", "fclose(", "open(", "close(",
+	"strcat(", "strtok(", "fread(", "fwrite(", "read(", "write(",
+	"memcpy(", "memmove(", "memset(", "memcmp(", "strcpy(", "strlen(",
+	"printf(", "sprintf(", "snprintf(", "scanf(", "puts(",
 	";att", ";function", ";help", ";intel", ";macro", ";output",
 	";parse", ";quit", ";reset", ";tracking", ";undo", ";warnings", NULL
 };
@@ -36,7 +36,7 @@ char *generator(char const *text, int state)
 	static size_t list_index, len;
 	char *name, *buf;
 	/* if no generated completions use the defaults */
-	char **completions = comp_list.list ? comp_list.list : comp_arg_list;
+	char **completions = FALLBACK(comp_list.list, comp_arg_list);
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);
