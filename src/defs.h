@@ -242,11 +242,11 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	}
 	if (!string) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
-	} else {
-		if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(string) + padding + 1)))
-			ERRARR("list_ptr", list_struct->cnt - 1);
-		memcpy(list_struct->list[list_struct->cnt - 1] + padding, string, strlen(string) + 1);
+		return;
 	}
+	if (!(list_struct->list[list_struct->cnt - 1] = calloc(1, strlen(string) + padding + 1)))
+		ERRARR("list_ptr", list_struct->cnt - 1);
+	memcpy(list_struct->list[list_struct->cnt - 1] + padding, string, strlen(string) + 1);
 }
 
 static inline void init_tlist(struct type_list *restrict list_struct)
