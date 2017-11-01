@@ -39,18 +39,12 @@ void cleanup(void)
 			WARN("write_history()");
 		}
 	}
-	if (hist_file) {
-		free(hist_file);
-		hist_file = NULL;
-	}
-	if (out_filename) {
-		free(out_filename);
-		out_filename = NULL;
-	}
-	if (asm_filename) {
-		free(asm_filename);
-		asm_filename = NULL;
-	}
+	free(hist_file);
+	hist_file = NULL;
+	free(out_filename);
+	out_filename = NULL;
+	free(asm_filename);
+	asm_filename = NULL;
 	if (isatty(STDIN_FILENO) && !eval_flag)
 		printf("\n%s\n\n", "Terminating program.");
 }
@@ -141,15 +135,10 @@ void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 	write_asm(prgm, cc_argv);
 	/* clean up user data */
 	free_str_list(ilist);
-	if (*ln) {
-		free(*ln);
-		*ln = NULL;
-	}
-	if (tlist) {
-		free(tlist->list);
-		tlist->list = NULL;
-	}
-	/* free vectors */
+	free(*ln);
+	*ln = NULL;
+	free(tlist->list);
+	tlist->list = NULL;
 	free_argv(&cc_argv);
 	if (vlist->list) {
 		for (size_t i = 0; i < vlist->cnt; i++)
