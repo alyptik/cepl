@@ -53,24 +53,20 @@ static inline char *read_line(char **restrict ln)
 		*ln = eval_arg;
 		return *ln;
 	}
-	/* cleanup old buffer */
-	if (ln && *ln) {
-		free(*ln);
-		*ln = NULL;
-	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
 		*ln = readline("\n>>> ");
-	} else {
-		/* redirect stdout to /dev/null */
-		FILE *bitbucket;
-		if (!(bitbucket = fopen("/dev/null", "r+b")))
-			ERR("read_line() fopen()");
-		rl_outstream = bitbucket;
-		*ln = readline(NULL);
-		rl_outstream = NULL;
-		fclose(bitbucket);
+		return *ln;
 	}
+
+	/* redirect stdout to /dev/null */
+	FILE *bitbucket;
+	if (!(bitbucket = fopen("/dev/null", "r+b")))
+		ERR("read_line() fopen()");
+	rl_outstream = bitbucket;
+	*ln = readline(NULL);
+	rl_outstream = NULL;
+	fclose(bitbucket);
 	return *ln;
 }
 
@@ -532,6 +528,9 @@ int main(int argc, char *argv[])
 			lbuf = NULL;
 			break;
 		}
+		/* cleanup old buffer */
+		free(lptr);
+		lptr = NULL;
 	}
 
 	free_buffers(&vl, &tl, &il, &prg, &lbuf);
