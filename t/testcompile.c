@@ -21,7 +21,7 @@ int main(void)
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
 		"-S", "-xc", "/dev/stdin",
-		"-o", "/dev/stdout",
+		"-lm", "-o", "/dev/stdout",
 		NULL
 	};
 

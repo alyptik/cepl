@@ -28,7 +28,7 @@ char *const ld_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-no-pie",
 	"-xassembler", "/dev/stdin",
-	"-o", "/dev/stdout",
+	"-lm", "-o", "/dev/stdout",
 	NULL
 };
 char *const warn_list[] = {
