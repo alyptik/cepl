@@ -37,9 +37,9 @@ char *const warn_list[] = {
 	"-pedantic-errors",
 	NULL
 };
-
 /* static line buffer */
-static char *ln;
+char *lptr;
+
 /* static var lists */
 static struct type_list tl;
 static struct var_list vl;
@@ -65,25 +65,25 @@ int main (void)
 	plan(15);
 
 	using_history();
-	if (!(ln = calloc(1, EVAL_LIMIT)))
-		ERR("ln calloc()");
-	strmv(0, ln, "int foobar");
+	if (!(lptr = calloc(1, EVAL_LIMIT)))
+		ERR("lptr calloc()");
+	strmv(0, lptr, "int foobar");
 	asm_filename = asm_error;
 
 	/* initialize source buffers */
-	lives_ok({init_buffers(&vl, &tl, &il, &prg, &ln);}, "test buffer initialization.");
+	lives_ok({init_buffers(&vl, &tl, &il, &prg, &lptr);}, "test buffer initialization.");
 	/* initiatalize compiler arg array */
 	lives_ok({build_final(&prg, &vl, argv);}, "test initial program build success.");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok((rsz_buf(&prg[0].b, &prg[0].b_sz, &prg[0].b_max, 3, &vl, &tl, &il, &prg, &ln)), "b_sz[0] != 0");
-	ok((rsz_buf(&prg[0].total, &prg[0].t_sz, &prg[0].t_max, 3, &vl, &tl, &il, &prg, &ln)), "t_sz[0] != 0");
+	ok((rsz_buf(&prg[0].b, &prg[0].b_sz, &prg[0].b_max, 3, &vl, &tl, &il, &prg, &lptr)), "b_sz[0] != 0");
+	ok((rsz_buf(&prg[0].total, &prg[0].t_sz, &prg[0].t_max, 3, &vl, &tl, &il, &prg, &lptr)), "t_sz[0] != 0");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok((rsz_buf(&prg[1].b, &prg[1].b_sz, &prg[1].b_max, 3, &vl, &tl, &il, &prg, &ln)), "gb_sz[1] != 0");
-	ok((rsz_buf(&prg[1].total, &prg[1].t_sz, &prg[1].t_max, 3, &vl, &tl, &il, &prg, &ln)), "gt_sz[1] != 0");
-	ok((rsz_buf(&prg[1].f, &prg[1].f_sz, &prg[1].f_max, 3, &vl, &tl, &il, &prg, &ln)), "gf_sz != 0");
-	lives_ok({build_body(&prg, ln);}, "test program body build success.");
+	ok((rsz_buf(&prg[1].b, &prg[1].b_sz, &prg[1].b_max, 3, &vl, &tl, &il, &prg, &lptr)), "gb_sz[1] != 0");
+	ok((rsz_buf(&prg[1].total, &prg[1].t_sz, &prg[1].t_max, 3, &vl, &tl, &il, &prg, &lptr)), "gt_sz[1] != 0");
+	ok((rsz_buf(&prg[1].f, &prg[1].f_sz, &prg[1].f_max, 3, &vl, &tl, &il, &prg, &lptr)), "gf_sz != 0");
+	lives_ok({build_body(&prg, lptr);}, "test program body build success.");
 
-	/* add ln endings */
+	/* add lptr endings */
 	for (size_t i = 0; i < 2; i++)
 		strmv(CONCAT, prg[i].b, ";\n");
 	lives_ok({build_final(&prg, &vl, argv);}, "test final program build success.");
@@ -96,7 +96,7 @@ int main (void)
 	ok(write_asm(&prg, cc_arg_list) == -1, "test return of -1 on failed `write_asm()`.");
 	dup2(saved_fd, STDERR_FILENO);
 	asm_filename = NULL;
-	lives_ok({free_buffers(&vl, &tl, &il, &prg, &ln);}, "test successful free_buffers() call.");
+	lives_ok({free_buffers(&vl, &tl, &il, &prg, &lptr);}, "test successful free_buffers() call.");
 	saved_fd = dup(STDIN_FILENO);
 	close(STDIN_FILENO);
 	lives_ok({cleanup();}, "test successful cleanup() call.");

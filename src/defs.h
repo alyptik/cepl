@@ -17,7 +17,7 @@
 #define FALLBACK(ARG, DEF) ((ARG) ? (ARG) : (DEF))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.8.3"
+#define VERSION_STRING	"CEPL v4.8.4"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -234,8 +234,7 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 		/* check if size too large */
 		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
-		/* double until size is reached */
-		while ((list_struct->max *= 2) < list_struct->cnt);
+		list_struct->max *= 2;
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
 			ERRARR("list_ptr", list_struct->cnt - 1);
 		list_struct->list = tmp;
@@ -268,8 +267,7 @@ static inline void append_type(struct type_list *restrict list_struct, enum var_
 		/* check if size too large */
 		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
-		/* double until size is reached */
-		while ((list_struct->max *= 2) < list_struct->cnt);
+		list_struct->max *= 2;
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
 			ERRARR("type_list", list_struct->cnt);
 		list_struct->list = tmp;
@@ -296,8 +294,7 @@ static inline void append_flag(struct flag_list *restrict list_struct, enum src_
 		/* check if size too large */
 		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
-		/* double until size is reached */
-		while ((list_struct->max *= 2) < list_struct->cnt);
+		list_struct->max *= 2;
 		if (!(tmp = realloc(list_struct->list, sizeof *list_struct->list * list_struct->max)))
 			ERRARR("flag_list", list_struct->cnt);
 		list_struct->list = tmp;

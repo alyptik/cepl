@@ -28,6 +28,8 @@ extern bool asm_flag, eval_flag, track_flag;
 extern char **cc_argv;
 /* completion list of generated symbols */
 extern struct str_list comp_list;
+/* line buffer */
+extern char *lptr;
 
 void cleanup(void)
 {
@@ -137,6 +139,7 @@ void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 	free_str_list(ilist);
 	free(*ln);
 	*ln = NULL;
+	lptr = NULL;
 	free(tlist->list);
 	tlist->list = NULL;
 	free_argv(&cc_argv);

@@ -54,8 +54,7 @@ static inline void append_var(struct var_list *restrict vlist, char const *restr
 		/* check if size too large */
 		if (vlist->cnt > ARRAY_MAX)
 			ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
-		/* double until size is reached */
-		while ((vlist->max *= 2) < vlist->cnt);
+		vlist->max *= 2;
 		if (!(tmp = realloc(vlist->list, sizeof *vlist->list * vlist->max)))
 			ERRARR("type_list", vlist->cnt);
 		vlist->list = tmp;
