@@ -28,8 +28,8 @@ static inline void pipe_fd(int in_fd, int out_fd)
 	/* pipe data in a loop */
 	for (;;) {
 		ptrdiff_t buf_len;
-		char buf[PAGE_SZ];
-		if ((buf_len = read(in_fd, buf, PAGE_SZ)) == -1) {
+		char buf[PAGE_SIZE];
+		if ((buf_len = read(in_fd, buf, PAGE_SIZE)) == -1) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 			WARN("error reading from input fd");

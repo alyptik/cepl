@@ -50,7 +50,7 @@
 #define	YELLOW		"\\033[33m"
 #define	RST		"\\033[00m"
 /* page size for buffer count */
-#define PAGE_SZ		sysconf(_SC_PAGESIZE)
+#define PAGE_SIZE	sysconf(_SC_PAGESIZE)
 /* max possible types */
 #define TNUM		7
 /* max eval string length */
