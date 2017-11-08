@@ -34,7 +34,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 		ERRX("NULL pointer passed to extract_type()");
 
 	/* first/third/fourth captures are ignored */
-	char *regex, *type;
+	char *regex, *type_str;
 	char const beg_regex[] =
 			"(^[[:blank:]]*|[^,;]*[({;[:blank:]]*)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
@@ -43,8 +43,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	char const end_regex[] = ")(\\[*)";
 
 	/* append identifier to regex */
-	if (!(regex = calloc(1, strlen(id) + sizeof beg_regex + sizeof end_regex - 1)))
-		ERR("failed to allocate space for regex");
+	xcalloc(&regex, 1, strlen(id) + sizeof beg_regex + sizeof end_regex - 1, "extract_type()");
 	strmv(0, regex, beg_regex);
 	strmv(CONCAT, regex, id);
 	strmv(CONCAT, regex, end_regex);
@@ -60,19 +59,18 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	}
 
 	/* allocate space for second regex */
-	if (!(type = calloc(1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1)))
-		ERR("failed to allocate space for captured type");
+	xcalloc(&type_str, 1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1, "extract_type()");
 	/* copy matched string */
-	memcpy(type, ln + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
-	memcpy(type + match[3].rm_eo - match[2].rm_so, ln + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
+	memcpy(type_str, ln + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
+	memcpy(type_str + match[3].rm_eo - match[2].rm_so, ln + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
 	regfree(&reg);
 
 	/* string `char[]` */
 	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]+\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_STR;
 	}
@@ -81,9 +79,9 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* string */
 	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_STR;
 	}
@@ -92,9 +90,9 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* pointer */
 	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_PTR;
 	}
@@ -103,9 +101,9 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* char */
 	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_CHR;
 	}
@@ -114,9 +112,9 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* double */
 	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_DBL;
 	}
@@ -125,9 +123,9 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* unsigned integral */
 	if (regcomp(&reg, "(_?[Bb]ool|size_t|uint[0-9]+_t|unsigned)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_UINT;
 	}
@@ -136,9 +134,9 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* signed integral */
 	if (regcomp(&reg, "(short|int|long|int[0-9]+_t|ptrdiff_t|ssize_t)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
 		ERR("failed to compile regex");
-	if (!regexec(&reg, type, 1, 0, 0)) {
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
-		free(type);
+		free(type_str);
 		regfree(&reg);
 		return T_INT;
 	}
@@ -146,11 +144,11 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* return fallback type */
 	free(regex);
-	free(type);
+	free(type_str);
 	return T_OTHER;
 }
 
-size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict offset)
+size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off)
 {
 	regex_t reg;
 	regmatch_t match[4];
@@ -161,7 +159,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
 
 	/* return early if passed NULL pointers */
-	if (!ln || !id || !offset)
+	if (!ln || !id || !off)
 		ERRX("NULL pointer passed to extract_id()");
 
 	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
@@ -199,33 +197,30 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			}
 
 			/* puts("match three"); */
-			if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
-				ERR("failed to allocate space for captured id");
+			xcalloc(id, 1, match[3].rm_eo - match[3].rm_so + 1, "extract_id()");
 			/* set the output parameter and return the offset */
 			memcpy(*id, ln + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 			regfree(&reg);
-			*offset = match[3].rm_eo;
+			*off = match[3].rm_eo;
 			return match[3].rm_eo;
 		}
 
 		/* puts("match two"); */
-		if (!(*id = calloc(1, match[3].rm_eo - match[3].rm_so + 1)))
-			ERR("failed to allocate space for captured id");
+		xcalloc(id, 1, match[3].rm_eo - match[3].rm_so + 1, "extract_id()");
 		/* set the output parameter and return the offset */
 		memcpy(*id, ln + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
 		regfree(&reg);
-		*offset = match[3].rm_eo;
+		*off = match[3].rm_eo;
 		return match[3].rm_eo;
 	}
 
 	/* puts("match one"); */
 	/* normal branch */
-	if (!(*id = calloc(1, match[1].rm_eo - match[1].rm_so + 1)))
-		ERR("failed to allocate space for captured id");
+	xcalloc(id, 1, match[1].rm_eo - match[1].rm_so + 1, "extract_id()");
 	/* set the output parameter and return the offset */
 	memcpy(*id, ln + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
 	regfree(&reg);
-	*offset = match[1].rm_eo;
+	*off = match[1].rm_eo;
 	return match[1].rm_eo;
 }
 
@@ -327,7 +322,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		"\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
 	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
 	char print_end[] = ");";
-	char *src_tmp, *tmp_ptr;
+	char *src_tmp;
 	size_t off;
 	/* space for <name>, <name> */
 	size_t psz = sizeof print_beg + sizeof print_end + 16;
@@ -354,11 +349,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		ERR("src_tmp calloc()");
 	strmv(0, src_tmp, src);
 	off = strlen(src);
-	if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + strlen(newline) + 1))) {
-		free(src_tmp);
-		ERR("src_tmp realloc()");
-	}
-	src_tmp = tmp_ptr;
+	xrealloc(&src_tmp, strlen(src_tmp) + strlen(newline) + 1, "src_tmp realloc()");
 	strmv(off, src_tmp, newline);
 	off += strlen(newline);
 
@@ -374,11 +365,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		size_t cur_sz = strlen(vlist->list[i].id) * 2;
 		char (*arr_ptr)[printf_sz] = (i < vlist->cnt - 1) ? &print_beg : &println_beg;
 
-		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
-			free(src_tmp);
-			ERR("src_tmp realloc()");
-		}
-		src_tmp = tmp_ptr;
+		xrealloc(&src_tmp, strlen(src_tmp) + cur_sz + printf_sz, "src_tmp realloc()");
 		char print_tmp[arr_sz];
 		strmv(0, print_tmp, *arr_ptr);
 
