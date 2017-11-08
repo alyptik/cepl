@@ -14,10 +14,13 @@
 #include <unistd.h>
 
 /* macros */
-#define FALLBACK(ARG, DEF) ((ARG) ? (ARG) : (DEF))
+#define FALLBACK(ARG, DEF)	((ARG) ? (ARG) : (DEF))
+#define BETOH16(DATA)		(((DATA)[1]) | ((DATA)[0] << 0x08))
+#define BETOH32(DATA)		(((DATA)[3]) | ((DATA)[2] << 0x08) | ((DATA)[1] << 0x10) | ((DATA)[0] << 0x18))
+#define HPRINT(VAL)		printf("[%#x] ", (VAL))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.8.5"
+#define VERSION_STRING	"CEPL v4.9.0"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
