@@ -144,8 +144,8 @@ typedef struct _type_list {
 typedef struct _var_list {
 	size_t cnt, max;
 	struct {
-		char *key;
-		enum var_type type;
+		char *id;
+		enum var_type type_spec;
 	} *list;
 } VAR_LIST;
 /* struct definition for generated program sources */

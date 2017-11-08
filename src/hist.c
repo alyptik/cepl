@@ -145,7 +145,7 @@ void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 	free_argv(&cc_argv);
 	if (vlist->list) {
 		for (size_t i = 0; i < vlist->cnt; i++)
-			free(vlist->list[i].key);
+			free(vlist->list[i].id);
 		free(vlist->list);
 	}
 	/* free program structs */

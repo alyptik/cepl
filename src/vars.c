@@ -364,14 +364,14 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {
-		enum var_type cur_type = vlist->list[i].type;
+		enum var_type cur_type = vlist->list[i].type_spec;
 		/* skip erroneous types */
 		if (cur_type == T_ERR)
 			continue;
 		/* populate buffers */
 		size_t printf_sz = (i < vlist->cnt - 1) ? psz : plnsz;
 		size_t arr_sz = (i < vlist->cnt - 1) ? sizeof print_beg : sizeof println_beg;
-		size_t cur_sz = strlen(vlist->list[i].key) * 2;
+		size_t cur_sz = strlen(vlist->list[i].id) * 2;
 		char (*arr_ptr)[printf_sz] = (i < vlist->cnt - 1) ? &print_beg : &println_beg;
 
 		if (!(tmp_ptr = realloc(src_tmp, strlen(src_tmp) + cur_sz + printf_sz))) {
@@ -386,7 +386,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[i].key);
+			ERR(vlist->list[i].id);
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
@@ -449,14 +449,14 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		/* copy format string */
 		strmv(off, src_tmp, print_tmp);
 		off += arr_sz - 1;
-		strmv(off, src_tmp, vlist->list[i].key);
-		off += strlen(vlist->list[i].key);
+		strmv(off, src_tmp, vlist->list[i].id);
+		off += strlen(vlist->list[i].id);
 
 		/* handle other variable types */
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[i].key);
+			ERR(vlist->list[i].id);
 			break;
 		case T_INT:
 			/* cast integral type to long long */
@@ -483,8 +483,8 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		}
 
 		/* copy final part of printf */
-		strmv(off, src_tmp, vlist->list[i].key);
-		off += strlen(vlist->list[i].key);
+		strmv(off, src_tmp, vlist->list[i].id);
+		off += strlen(vlist->list[i].id);
 		strmv(off, src_tmp, print_end);
 		off += sizeof print_end - 1;
 	}

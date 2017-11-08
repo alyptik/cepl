@@ -33,20 +33,17 @@ static inline void init_vlist(VAR_LIST *restrict vlist)
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
 	vlist->cnt = 0;
 	vlist->max = 1;
-	if (!(vlist->list = calloc(1, sizeof *vlist->list)))
-		ERR("error during initial list_ptr calloc()");
+	xcalloc(&vlist->list, 1, sizeof *vlist->list, "init_vlist()");
 	vlist->cnt++;
-	if (!(vlist->list[vlist->cnt - 1].key = calloc(1, strlen(init_str) + 1)))
-		ERR("error during initial list_ptr[0] calloc()");
-	strmv(0, vlist->list[vlist->cnt - 1].key, init_str);
-	vlist->list[vlist->cnt - 1].type = T_ERR;
+	xcalloc(&vlist->list[vlist->cnt - 1].id, 1, strlen(init_str) + 1, "init_vlist");
+	strmv(0, vlist->list[vlist->cnt - 1].id, init_str);
+	vlist->list[vlist->cnt - 1].type_spec = T_ERR;
 }
 
-static inline void append_var(VAR_LIST *restrict vlist, char const *restrict key, enum var_type type)
+static inline void append_var(VAR_LIST *restrict vlist, char const *restrict id, enum var_type type_spec)
 {
-	if (type == T_ERR || !key)
+	if (type_spec == T_ERR || !id)
 		return;
-	void *tmp;
 	vlist->cnt++;
 	assert(vlist->max != 0);
 	/* realloc if cnt reaches current size */
@@ -55,14 +52,11 @@ static inline void append_var(VAR_LIST *restrict vlist, char const *restrict key
 		if (vlist->cnt > ARRAY_MAX)
 			ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
 		vlist->max *= 2;
-		if (!(tmp = realloc(vlist->list, sizeof *vlist->list * vlist->max)))
-			ERRARR("type_list", vlist->cnt);
-		vlist->list = tmp;
+		xrealloc(&vlist->list, sizeof *vlist->list * vlist->max, "append_var()");
 	}
-	if (!(vlist->list[vlist->cnt - 1].key = calloc(1, strlen(key) + 1)))
-		ERRARR("list_ptr", vlist->cnt - 1);
-	strmv(0, vlist->list[vlist->cnt - 1].key, key);
-	vlist->list[vlist->cnt - 1].type = type;
+	xcalloc(&vlist->list[vlist->cnt - 1].id, 1, strlen(id) + 1, "append_var()");
+	strmv(0, vlist->list[vlist->cnt - 1].id, id);
+	vlist->list[vlist->cnt - 1].type_spec = type_spec;
 }
 
 static inline void gen_vlist(VAR_LIST *restrict vlist, STR_LIST *restrict ilist, TYPE_LIST *restrict tlist)
@@ -78,7 +72,7 @@ static inline void gen_vlist(VAR_LIST *restrict vlist, STR_LIST *restrict ilist,
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;
 		for (ptrdiff_t j = vlist->cnt - 1; j >= 0; j--) {
-			if (tlist->list[i] != vlist->list[j].type || strcmp(ilist->list[i], vlist->list[j].key))
+			if (tlist->list[i] != vlist->list[j].type_spec || strcmp(ilist->list[i], vlist->list[j].id))
 				continue;
 			/* break early if type or id match */
 			uniq = false;

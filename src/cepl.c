@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 				}
 				if (vl.list) {
 					for (size_t i = 0; i < vl.cnt; i++)
-						free(vl.list[i].key);
+						free(vl.list[i].id);
 					free(vl.list);
 				}
 				init_vlist(&vl);
