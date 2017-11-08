@@ -12,8 +12,6 @@
 
 /* silence linter */
 int getopt_long(int ___argc, char *const ___argv[], char const *__shortopts, struct option const *__longopts, int *__longind);
-FILE *fdopen(int __fd, char const *__modes);
-ssize_t getline(char **__lineptr, size_t *__n, FILE *__stream);
 
 /* global toggle flags */
 bool asm_flag = false, eval_flag = false, out_flag = false;
