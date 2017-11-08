@@ -14,14 +14,14 @@ int mkstemp(char *__template);
 /* global completion list */
 char *comp_arg_list[] = {0};
 /* global linker flags and completions structs */
-struct str_list ld_list, comp_list;
+STR_LIST ld_list, comp_list;
 
 int main (void)
 {
 	FILE *ofile = NULL;
 	char const optstring[] = "hptvwc:a:e:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
-	struct str_list symbols = {0};
+	STR_LIST symbols = {0};
 	char *out_filename = NULL, *asm_filename = NULL;
 	char **result;
 	ptrdiff_t ret;

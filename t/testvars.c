@@ -9,12 +9,12 @@
 #include "../src/vars.h"
 
 /* global linker arguments struct */
-struct str_list ld_list;
+STR_LIST ld_list;
 
 int main(void)
 {
-	struct str_list ids = {0};
-	struct type_list types = {0};
+	STR_LIST ids = {0};
+	TYPE_LIST types = {0};
 	char *const src =
 		"char wark[] = \"wark\", *ptr = wark;"
 		"long foo = 1, bar = 456;"

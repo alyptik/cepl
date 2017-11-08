@@ -25,10 +25,10 @@
 /* prototypes */
 enum var_type extract_type(char const *restrict ln, char const *restrict id);
 size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict offset);
-int find_vars(char const *restrict ln, struct str_list *restrict ilist, struct type_list *restrict tlist);
-int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[]);
+int find_vars(char const *restrict ln, STR_LIST *restrict ilist, TYPE_LIST *restrict tlist);
+int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[]);
 
-static inline void init_vlist(struct var_list *restrict vlist)
+static inline void init_vlist(VAR_LIST *restrict vlist)
 {
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
 	vlist->cnt = 0;
@@ -42,7 +42,7 @@ static inline void init_vlist(struct var_list *restrict vlist)
 	vlist->list[vlist->cnt - 1].type = T_ERR;
 }
 
-static inline void append_var(struct var_list *restrict vlist, char const *restrict key, enum var_type type)
+static inline void append_var(VAR_LIST *restrict vlist, char const *restrict key, enum var_type type)
 {
 	if (type == T_ERR || !key)
 		return;
@@ -65,7 +65,7 @@ static inline void append_var(struct var_list *restrict vlist, char const *restr
 	vlist->list[vlist->cnt - 1].type = type;
 }
 
-static inline void gen_vlist(struct var_list *restrict vlist, struct str_list *restrict ilist, struct type_list *restrict tlist)
+static inline void gen_vlist(VAR_LIST *restrict vlist, STR_LIST *restrict ilist, TYPE_LIST *restrict tlist)
 {
 	/* sanity checks */
 	if (!vlist || !ilist || !ilist->list || !tlist || !tlist->list)

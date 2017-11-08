@@ -126,36 +126,36 @@ enum var_type {
 };
 
 /* struct definition for NULL-terminated string dynamic array */
-struct str_list {
+typedef struct _str_list {
 	size_t cnt, max;
 	char **list;
-};
+} STR_LIST;
 /* struct definition for flag dynamic array */
-struct flag_list {
+typedef struct _flag_list {
 	size_t cnt, max;
 	enum src_flag *list;
-};
+} FLAG_LIST;
 /* struct definition for type dynamic array */
-struct type_list {
+typedef struct _type_list {
 	size_t cnt, max;
 	enum var_type *list;
-};
+} TYPE_LIST;
 /* struct definition for var-tracking array */
-struct var_list {
+typedef struct _var_list {
 	size_t cnt, max;
 	struct {
 		char *key;
 		enum var_type type;
 	} *list;
-};
+} VAR_LIST;
 /* struct definition for generated program sources */
-struct prog_src {
+typedef struct _prog_src {
 	size_t b_sz, f_sz, t_sz;
 	size_t b_max, f_max, t_max;
 	char *b, *f, *total;
-	struct str_list hist, lines;
-	struct flag_list flags;
-};
+	STR_LIST hist, lines;
+	FLAG_LIST flags;
+} PROG_SRC;
 
 /* recursive free */
 static inline ptrdiff_t free_argv(char ***restrict argv)
@@ -188,7 +188,7 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
-static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
+static inline ptrdiff_t free_str_list(STR_LIST *restrict plist)
 {
 	size_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
@@ -210,7 +210,7 @@ static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
 	return null_cnt;
 }
 
-static inline void init_list(struct str_list *restrict list_struct, char *restrict init_str)
+static inline void init_list(STR_LIST *restrict list_struct, char *restrict init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -225,7 +225,7 @@ static inline void init_list(struct str_list *restrict list_struct, char *restri
 	memcpy(list_struct->list[list_struct->cnt - 1], init_str, strlen(init_str) + 1);
 }
 
-static inline void append_str(struct str_list *restrict list_struct, char const *restrict string, size_t padding)
+static inline void append_str(STR_LIST *restrict list_struct, char const *restrict string, size_t padding)
 {
 	void *tmp;
 	list_struct->cnt++;
@@ -248,7 +248,7 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	memcpy(list_struct->list[list_struct->cnt - 1] + padding, string, strlen(string) + 1);
 }
 
-static inline void init_tlist(struct type_list *restrict list_struct)
+static inline void init_tlist(TYPE_LIST *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -256,7 +256,7 @@ static inline void init_tlist(struct type_list *restrict list_struct)
 		ERR("error during initial type_list calloc()");
 }
 
-static inline void append_type(struct type_list *restrict list_struct, enum var_type type)
+static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type type)
 {
 	if (type == T_ERR)
 		return;
@@ -275,7 +275,7 @@ static inline void append_type(struct type_list *restrict list_struct, enum var_
 	list_struct->list[list_struct->cnt - 1] = type;
 }
 
-static inline void init_flag_list(struct flag_list *restrict list_struct)
+static inline void init_flag_list(FLAG_LIST *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -285,7 +285,7 @@ static inline void init_flag_list(struct flag_list *restrict list_struct)
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
 
-static inline void append_flag(struct flag_list *restrict list_struct, enum src_flag flag)
+static inline void append_flag(FLAG_LIST *restrict list_struct, enum src_flag flag)
 {
 	void *tmp;
 	list_struct->cnt++;

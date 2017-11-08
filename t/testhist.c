@@ -16,7 +16,7 @@ int mkstemp(char *__template);
 char **cc_argv;
 bool eval_flag = false, track_flag = false;
 /* global completion list struct */
-struct str_list comp_list;
+STR_LIST comp_list;
 char *const cc_arg_list[] = {
 	"-O0", "-pipe", "-fPIC",
 	"-fverbose-asm", "-std=c11",
@@ -41,18 +41,18 @@ char *const warn_list[] = {
 char *lptr;
 
 /* static var lists */
-static struct type_list tl;
-static struct var_list vl;
-static struct str_list il;
+static TYPE_LIST tl;
+static VAR_LIST vl;
+static STR_LIST il;
 static char asm_error[] = "/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/s/y/z";
 static char *argv[] = {"cepl", NULL};
 
 /* externs */
-extern struct prog_src prg[2];
+extern PROG_SRC prg[2];
 extern char *asm_filename;
 
 /* print_vars() shim */
-int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
+int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
 {
 	(void)vlist, (void)src, (void)cc_args, (void)exec_args;
 	return 0;

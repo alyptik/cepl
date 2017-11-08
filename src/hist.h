@@ -17,15 +17,15 @@
 
 /* prototypes */
 void cleanup(void);
-int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[]);
-void write_file(FILE **out_file, struct prog_src (*restrict prgm)[]);
-void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
-void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
-size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln);
+int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[]);
+void write_file(FILE **out_file, PROG_SRC (*restrict prgm)[]);
+void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln);
+void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln);
+size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln);
 void dedup_history(char **restrict ln);
-void pop_history(struct prog_src *restrict prgm);
-void build_body(struct prog_src (*restrict prgm)[], char *restrict ln);
-void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln);
-void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict vlist, char *argv[]);
+void pop_history(PROG_SRC *restrict prgm);
+void build_body(PROG_SRC (*restrict prgm)[], char *restrict ln);
+void build_funcs(PROG_SRC (*restrict prgm)[], char *restrict ln);
+void build_final(PROG_SRC (*restrict prgm)[], VAR_LIST *restrict vlist, char *argv[]);
 
 #endif

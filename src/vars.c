@@ -17,7 +17,7 @@ static char *const ld_alt_list[] = {
 };
 
 /* global linker arguments struct */
-extern struct str_list ld_list;
+extern STR_LIST ld_list;
 extern char **environ;
 
 /* silence linter */
@@ -229,7 +229,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	return match[1].rm_eo;
 }
 
-int find_vars(char const *restrict ln, struct str_list *restrict ilist, struct type_list *restrict tlist)
+int find_vars(char const *restrict ln, STR_LIST *restrict ilist, TYPE_LIST *restrict tlist)
 {
 	size_t off;
 	char *line_tmp[2], *id_tmp = NULL;
@@ -306,7 +306,7 @@ int find_vars(char const *restrict ln, struct str_list *restrict ilist, struct t
 	return count;
 }
 
-int print_vars(struct var_list *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
+int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
 {
 	char *term = getenv("TERM");
 	bool has_color = true;

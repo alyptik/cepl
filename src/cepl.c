@@ -31,17 +31,17 @@ extern char *hist_file, **cc_argv;
 /* string to compile */
 extern char eval_arg[];
 /* program source strucs (prg[0] is truncated for interactive printing) */
-extern struct prog_src prg[2];
+extern PROG_SRC prg[2];
 /* completion list of generated symbols */
-extern struct str_list comp_list;
+extern STR_LIST comp_list;
 /* toggle flags */
 extern bool asm_flag, eval_flag, out_flag, parse_flag, track_flag, warn_flag;
 /* history file flag */
 extern bool has_hist;
 /* type, identifier, and var lists */
-extern struct type_list tl;
-extern struct str_list il;
-extern struct var_list vl;
+extern TYPE_LIST tl;
+extern STR_LIST il;
+extern VAR_LIST vl;
 /* output filenames */
 extern char *out_filename, *asm_filename;
 extern enum asm_type volatile asm_dialect;

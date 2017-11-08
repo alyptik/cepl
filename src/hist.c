@@ -16,18 +16,18 @@ char *hist_file;
 /* `-o` flag output file */
 FILE *ofile;
 /* program source strucs (prg[0] is truncated for interactive printing) */
-struct prog_src prg[2];
+PROG_SRC prg[2];
 /* type, identifier, and var lists */
-struct type_list tl;
-struct str_list il;
-struct var_list vl;
+TYPE_LIST tl;
+STR_LIST il;
+VAR_LIST vl;
 
 /* externs */
 extern bool asm_flag, eval_flag, track_flag;
 /* compiler argument list */
 extern char **cc_argv;
 /* completion list of generated symbols */
-extern struct str_list comp_list;
+extern STR_LIST comp_list;
 /* line buffer */
 extern char *lptr;
 
@@ -51,7 +51,7 @@ void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
+int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 {
 	/* return early if no file open */
 	if (!asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
@@ -117,7 +117,7 @@ int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
 	return 0;
 }
 
-void write_file(FILE **restrict out_file, struct prog_src (*restrict prgm)[])
+void write_file(FILE **restrict out_file, PROG_SRC (*restrict prgm)[])
 {
 	/* return early if no file open */
 	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
@@ -130,7 +130,7 @@ void write_file(FILE **restrict out_file, struct prog_src (*restrict prgm)[])
 	*out_file = NULL;
 }
 
-void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
+void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
 	/* write out history/asm before freeing buffers */
 	write_file(&ofile, prgm);
@@ -163,7 +163,7 @@ void free_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 	}
 }
 
-void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
+void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
 	/* user is truncated source for display */
 	(*prgm)[0].f = calloc(1, 1);
@@ -202,7 +202,7 @@ void init_buffers(struct var_list *restrict vlist, struct type_list *restrict tl
 	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, struct var_list *restrict vlist, struct type_list *restrict tlist, struct str_list *restrict ilist, struct prog_src (*restrict prgm)[], char **restrict ln)
+size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
 	/* sanity check */
 	if (!buf || !*buf || !ln)
@@ -238,7 +238,7 @@ size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_
 	return *buf_sz;
 }
 
-void pop_history(struct prog_src *restrict prgm)
+void pop_history(PROG_SRC *restrict prgm)
 {
 	switch(prgm->flags.list[--prgm->flags.cnt]) {
 	case NOT_IN_MAIN:
@@ -298,7 +298,7 @@ void dedup_history(char **restrict ln)
 	add_history(strip);
 }
 
-void build_body(struct prog_src (*restrict prgm)[], char *restrict ln)
+void build_body(PROG_SRC (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
@@ -314,7 +314,7 @@ void build_body(struct prog_src (*restrict prgm)[], char *restrict ln)
 	}
 }
 
-void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln)
+void build_funcs(PROG_SRC (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
@@ -330,7 +330,7 @@ void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln)
 	}
 }
 
-void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict vlist, char *argv[])
+void build_final(PROG_SRC (*restrict prgm)[], VAR_LIST *restrict vlist, char *argv[])
 {
 	/* sanity check */
 	if (!prgm || !argv) {
