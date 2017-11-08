@@ -232,8 +232,7 @@ int find_vars(char const *restrict ln, STR_LIST *restrict ilist, TYPE_LIST *rest
 	/* sanity checks */
 	if (!ln || !ilist || !tlist)
 		return 0;
-	if (!(line_tmp[0] = calloc(1, strlen(ln) + 1)))
-		ERR("error allocating line_tmp");
+	xcalloc(&line_tmp[0], 1, strlen(ln) + 1, "find_vars()");
 	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
@@ -345,8 +344,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		ERR("open()");
 
 	/* copy source buffer */
-	if (!(src_tmp = calloc(1, strlen(src) + 1)))
-		ERR("src_tmp calloc()");
+	xcalloc(&src_tmp, 1, strlen(src) + 1, "src_tmp realloc()");
 	strmv(0, src_tmp, src);
 	off = strlen(src);
 	xrealloc(&src_tmp, strlen(src_tmp) + strlen(newline) + 1, "src_tmp realloc()");

@@ -166,16 +166,16 @@ void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
 	/* user is truncated source for display */
-	(*prgm)[0].f = calloc(1, 1);
-	(*prgm)[0].b = calloc(1, strlen(prog_start_user) + 1);
-	(*prgm)[0].total = calloc(1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3);
+	xcalloc(&(*prgm)[0].f, 1, 1, "init");
+	xcalloc(&(*prgm)[0].b, 1, strlen(prog_start_user) + 1, "init");
+	xcalloc(&(*prgm)[0].total, 1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3, "init");
 	(*prgm)[0].f_sz = (*prgm)[0].f_max = 1;
 	(*prgm)[0].b_sz = (*prgm)[0].b_max = strlen(prog_start_user) + 1;
 	(*prgm)[0].t_sz = (*prgm)[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	(*prgm)[1].f = calloc(1, strlen(prelude) + 1);
-	(*prgm)[1].b = calloc(1, strlen(prog_start) + 1);
-	(*prgm)[1].total = calloc(1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3);
+	xcalloc(&(*prgm)[1].f, 1, strlen(prelude) + 1, "init");
+	xcalloc(&(*prgm)[1].b, 1, strlen(prog_start) + 1, "init");
+	xcalloc(&(*prgm)[1].total, 1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3, "init");
 	(*prgm)[1].f_sz = (*prgm)[1].f_max = strlen(prelude) + 1;
 	(*prgm)[1].b_sz = (*prgm)[1].b_max = strlen(prog_start) + 1;
 	(*prgm)[1].t_sz = (*prgm)[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
@@ -202,21 +202,15 @@ void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
+size_t rsz_buf(char **restrict buf_str, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
 	/* sanity check */
-	if (!buf || !*buf || !ln)
+	if (!buf_str || !*buf_str || !ln)
 		return 0;
-	char *tmp;
-	size_t alloc_sz = strlen(*buf) + strlen(*ln) + off + 1;
+	size_t alloc_sz = strlen(*buf_str) + strlen(*ln) + off + 1;
 	if (!buf_sz || !b_max) {
 		/* current length + line length + extra characters + \0 */
-		if (!(tmp = realloc(*buf, alloc_sz))) {
-			free_buffers(vlist, tlist, ilist, prgm, ln);
-			cleanup();
-			ERR("rsz_buf()");
-		}
-		*buf = tmp;
+		xrealloc(buf_str, alloc_sz, "rsz_buf()");
 		return alloc_sz;
 	}
 	*buf_sz += alloc_sz;
@@ -224,17 +218,14 @@ size_t rsz_buf(char **restrict buf, size_t *restrict buf_sz, size_t *restrict b_
 	if (*buf_sz < *b_max)
 		return 0;
 	/* check if size too large */
-	if (*buf_sz > ARRAY_MAX)
+	if (*buf_sz > ARRAY_MAX) {
 		ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
+		free_buffers(vlist, tlist, ilist, prgm, ln);
+	}
 	/* double until size is reached */
 	while ((*b_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
-	if (!(tmp = realloc(*buf, *b_max))) {
-		free_buffers(vlist, tlist, ilist, prgm, ln);
-		cleanup();
-		ERR("rsz_buf()");
-	}
-	*buf = tmp;
+	xrealloc(buf_str, *b_max, "rsz_buf()");
 	return *buf_sz;
 }
 
