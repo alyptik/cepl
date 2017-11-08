@@ -157,10 +157,51 @@ typedef struct _prog_src {
 	FLAG_LIST flags;
 } PROG_SRC;
 
+/* `malloc()` wrapper */
+inline void xmalloc(void *restrict ptr, size_t sz, char const *msg)
+{
+	/* sanity check */
+	if (!ptr)
+		return;
+	if (!(*(void **)ptr = malloc(sz)))
+		ERR(msg ? msg : "(nil)");
+}
+
+/* `calloc()` wrapper */
+inline void xcalloc(void *restrict ptr, size_t nmemb, size_t sz, char const *msg)
+{
+	/* sanity check */
+	if (!ptr)
+		return;
+	if (!(*(void **)ptr = calloc(nmemb, sz)))
+		ERR(msg ? msg : "(nil)");
+}
+
+/* `realloc()` wrapper */
+inline void xrealloc(void *restrict ptr, size_t sz, char const *msg)
+{
+	void *tmp;
+	/* sanity check */
+	if (!ptr)
+		return;
+	if (!(tmp = realloc(*(void **)ptr, sz)))
+		ERR(msg ? msg : "(nil)");
+	*(void **)ptr = tmp;
+}
+
+/* `fread()` wrapper */
+inline size_t xfread(void *restrict ptr, size_t sz, size_t nmemb, FILE *restrict stream)
+{
+	size_t cnt;
+	if ((cnt = fread(ptr, sz, nmemb, stream)) < nmemb)
+		return 0;
+	return cnt;
+}
+
 /* recursive free */
 static inline ptrdiff_t free_argv(char ***restrict argv)
 {
-	size_t cnt;
+	ptrdiff_t cnt;
 	if (!argv || !*argv)
 		return -1;
 	for (cnt = 0; (*argv)[cnt]; cnt++)
