@@ -20,7 +20,7 @@
 #define HPRINT(VAL)		printf("[%#x] ", (VAL))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.9.0"
+#define VERSION_STRING	"CEPL v4.9.1"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -79,6 +79,7 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#include <ctype.h>\n"
 	"#include <error.h>\n"
 	"#include <errno.h>\n"
+	"#include <float.h>\n"
 	"#include <fcntl.h>\n"
 	"#include <limits.h>\n"
 	"#include <linux/memfd.h>\n"
