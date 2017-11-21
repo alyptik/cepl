@@ -12,7 +12,7 @@
 int mkstemp(char *__template);
 
 /* global completion list */
-char *comp_arg_list[] = {0};
+char *comp_arg_list[1];
 /* global linker flags and completions structs */
 STR_LIST ld_list, comp_list;
 
@@ -22,39 +22,31 @@ int main (void)
 	char const optstring[] = "hptvwc:a:e:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	STR_LIST symbols = {0};
-	char *out_filename = NULL, *asm_filename = NULL;
-	char **result;
+	char *out_filename = NULL, *asm_filename = NULL, **result;
 	ptrdiff_t ret;
 	char out_tmp[] = "/tmp/ceplXXXXXX";
 	char out_fallback[] = "./ceplXXXXXX";
 	char asm_tmp[] = "/tmp/cepl_asmXXXXXX";
 	char asm_fallback[] = "./cepl_asmXXXXXX";
 	int tmp_fd[2];
-
-	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1) {
+	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1 || (tmp_fd[1] = mkstemp(asm_tmp)) == -1) {
 		memset(out_tmp, 0, sizeof out_tmp);
 		memcpy(out_tmp, out_fallback, sizeof out_fallback);
 		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
 		if ((tmp_fd[0] = mkstemp(out_tmp)) == -1)
 			ERR("mkstemp() out file");
-	}
-	if ((tmp_fd[1] = mkstemp(asm_tmp)) == -1) {
 		memset(asm_tmp, 0, sizeof asm_tmp);
 		memcpy(asm_tmp, asm_fallback, sizeof asm_fallback);
 		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
 		if ((tmp_fd[1] = mkstemp(asm_tmp)) == -1)
 			ERR("mkstemp() asm file");
 	}
-
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
 		"-c", "gcc", "-o", out_tmp,
 		"-a", asm_tmp, NULL
 	};
 	int argc = sizeof argv / sizeof argv[0] - 1;
-
-	plan(7);
-
 	/* print argument strings */
 	result = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	printf("%s\n%s", "# generated compiler string: ", "# ");
@@ -62,9 +54,10 @@ int main (void)
 		printf("%s ", result[i]);
 	printf("\n%s\n%s", "# using argv string: ", "# ");
 	for (int i = 0; i < argc; i++)
-		printf("%s ", argv[i]);
-	putchar('\n');
+		printf("%s %s", argv[i], (i == argc - 1) ? "\n" : "");
 	init_list(&symbols, "cepl");
+
+	plan(7);
 
 	ok(result != NULL, "test option parsing.");
 	like(result[0], "^(gcc|clang)$", "test generation of compiler string.");
@@ -76,8 +69,8 @@ int main (void)
 
 	/* cleanup */
 	free_argv(&result);
-	for (size_t i = 0; i < sizeof tmp_fd / sizeof tmp_fd[0]; i++)
-		close(tmp_fd[i]);
+	close(tmp_fd[0]);
+	close(tmp_fd[1]);
 	if (remove(out_tmp) == -1)
 		WARN("remove() out_tmp");
 	if (remove(asm_tmp) == -1)
