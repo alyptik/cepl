@@ -36,7 +36,7 @@ char *generator(char const *text, int state)
 	static size_t list_index, len;
 	char *name, *buf;
 	/* if no generated completions use the defaults */
-	char **completions = FALLBACK(comp_list.list, comp_arg_list);
+	char **completions = DEFAULT(comp_list.list, comp_arg_list);
 	if (!state) {
 		list_index = 0;
 		len = strlen(text);

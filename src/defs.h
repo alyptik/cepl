@@ -14,13 +14,11 @@
 #include <unistd.h>
 
 /* macros */
-#define FALLBACK(ARG, DEF)	((ARG) ? (ARG) : (DEF))
-#define BETOH16(DATA)		(((DATA)[1]) | ((DATA)[0] << 0x08))
-#define BETOH32(DATA)		(((DATA)[3]) | ((DATA)[2] << 0x08) | ((DATA)[1] << 0x10) | ((DATA)[0] << 0x18))
+#define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
 #define HPRINT(VAL)		printf("[%#x] ", (VAL))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.9.1"
+#define VERSION_STRING	"CEPL v4.9.2"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -82,7 +80,7 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#include <float.h>\n"
 	"#include <fcntl.h>\n"
 	"#include <limits.h>\n"
-	"#include <linux/memfd.h>\n"
+	"#include <locale.h>\n"
 	"#include <math.h>\n"
 	"#include <regex.h>\n"
 	"#include <signal.h>\n"
