@@ -7,11 +7,9 @@
 
 #include "tap.h"
 #include "../src/compile.h"
-#include <sys/stat.h>
 
 int main(void)
 {
-	int saved_fd = dup(STDERR_FILENO);
 	char *argv[] = {"cepl", NULL};
 	char *const src = "int main(void)\n{\nreturn 0;\n}";
 	char *const cc_args[] = {
@@ -27,11 +25,9 @@ int main(void)
 
 	plan(3);
 
-	/* close(STDERR_FILENO); */
 	lives_ok({pipe_fd(-1, -1);}, "test living through pipe_fd() call with invalid fds.");
 	dies_ok({compile(NULL, NULL, argv);}, "die passing a NULL pointer to compile().");
 	ok(compile(src, cc_args, argv) == 0, "succeed compiling program.");
-	dup2(saved_fd, STDERR_FILENO);
 
 	done_testing();
 }
