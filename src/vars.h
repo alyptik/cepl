@@ -51,7 +51,7 @@ static inline void append_var(VAR_LIST *restrict vlist, char const *restrict id,
 		/* check if size too large */
 		if (vlist->cnt > ARRAY_MAX)
 			ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
-		vlist->max *= 2;
+		vlist->max <<= 1;
 		xrealloc(&vlist->list, sizeof *vlist->list * vlist->max, "append_var()");
 	}
 	xcalloc(&vlist->list[vlist->cnt - 1].id, 1, strlen(id) + 1, "append_var()");

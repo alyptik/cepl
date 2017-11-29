@@ -305,7 +305,7 @@ static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type ty
 		/* check if size too large */
 		if (list_struct->cnt > ARRAY_MAX)
 			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
-		list_struct->max *= 2;
+		list_struct->max <<= 1;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
 	}
 	list_struct->list[list_struct->cnt - 1] = type_spec;
