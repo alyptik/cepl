@@ -36,7 +36,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	/* first/third/fourth captures are ignored */
 	char *regex, *type_str;
 	char const beg_regex[] =
-			"(^[[:blank:]]*|[^,;]*[({;[:blank:]]*)"
+			"(^[[:blank:]]*|[^,;]*[(){};[:blank:]]*)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
 			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
 			"([^,;]*,[^&,;]*|[^&;=]*)(";
@@ -148,15 +148,15 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	return T_OTHER;
 }
 
-size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off)
+size_t extract_id(char const *ln, char **id, size_t *off)
 {
 	regex_t reg;
 	regmatch_t match[4];
 	/* second capture is ignored */
 	char const initial_regex[] =
-		"^[^,({;&|=]+[^,({;&|=[:alnum:]_]+"
+		"^[^,(){};&|=]+[^,({;&|=[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-		"(=[^,({;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
+		"(=[^,(){;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
 
 	/* return early if passed NULL pointers */
 	if (!ln || !id || !off)
@@ -170,7 +170,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
-			"(^[[:blank:]]*|^[^,({;&|'\"]+)"
+			"(^[[:blank:]]*|^[^,(){};&|'\"]+)"
 			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
@@ -183,7 +183,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
-				"(^|[^,({;|]+)"
+				"(^|[^,(){};|]+)"
 				"(|struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
