@@ -28,7 +28,7 @@ void *mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t 
 enum var_type extract_type(char const *restrict ln, char const *restrict id)
 {
 	regex_t reg;
-	regmatch_t match[7];
+	regmatch_t matches[7];
 	/* return early if passed NULL pointers */
 	if (!ln || !id)
 		ERRX("NULL pointer passed to extract_type()");
@@ -41,9 +41,13 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
 			"([^,;]*,[^&,;]*|[^&;=]*)(";
 	char const end_regex[] = ")(\\[*)";
+	size_t regex_sz[2] = {
+		strlen(id) + sizeof beg_regex + sizeof end_regex - 1,
+		0,
+	};
 
 	/* append identifier to regex */
-	xcalloc(&regex, 1, strlen(id) + sizeof beg_regex + sizeof end_regex - 1, "extract_type()");
+	xcalloc(&regex, 1, regex_sz[0], "extract_type()");
 	strmv(0, regex, beg_regex);
 	strmv(CONCAT, regex, id);
 	strmv(CONCAT, regex, end_regex);
@@ -52,17 +56,27 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 		ERR("failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, ln, 6, match, 0) || match[2].rm_so == -1) {
+	if (regexec(&reg, ln, 6, matches, 0) || matches[2].rm_so == -1) {
 		free(regex);
 		regfree(&reg);
 		return T_ERR;
 	}
 
+	/* regex capture offsets */
+	size_t match_sz[2] = {
+		/* from beginning of second capture to end of third capture */
+		matches[3].rm_eo - matches[2].rm_so,
+		/* from beginning of fifth capture to end of fifth capture */
+		matches[5].rm_eo - matches[5].rm_so,
+	};
+	/* sum length of relevant capture lengths */
+	regex_sz[1] = matches[3].rm_eo - matches[2].rm_so + matches[5].rm_eo - matches[5].rm_so + 1;
+
 	/* allocate space for second regex */
-	xcalloc(&type_str, 1, match[3].rm_eo - match[2].rm_so + match[5].rm_eo - match[5].rm_so + 1, "extract_type()");
+	xcalloc(&type_str, 1, regex_sz[1], "extract_type()");
 	/* copy matched string */
-	memcpy(type_str, ln + match[2].rm_so, match[3].rm_eo - match[2].rm_so);
-	memcpy(type_str + match[3].rm_eo - match[2].rm_so, ln + match[5].rm_so, match[5].rm_eo - match[5].rm_so);
+	memcpy(type_str, ln + matches[2].rm_so, match_sz[0]);
+	memcpy(type_str + match_sz[0], ln + matches[5].rm_so, match_sz[1]);
 	regfree(&reg);
 
 	/* string `char[]` */
@@ -151,7 +165,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off)
 {
 	regex_t reg;
-	regmatch_t match[4];
+	regmatch_t matches[4];
 	/* second capture is ignored */
 	char const initial_regex[] =
 		"^[^,(){};&|=]+[^,({;&|=[:alnum:]_]+"
@@ -165,7 +179,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
-	if (regexec(&reg, ln, 3, match, 0) || match[1].rm_so == -1) {
+	if (regexec(&reg, ln, 3, matches, 0) || matches[1].rm_so == -1) {
 		/* fallback branch */
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
@@ -179,7 +193,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("failed to compile regex");
-		if (regexec(&reg, ln, 5, match, 0) || match[3].rm_so == -1) {
+		if (regexec(&reg, ln, 5, matches, 0) || matches[3].rm_so == -1) {
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
@@ -191,37 +205,37 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 
 			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_NEWLINE))
 				ERR("failed to compile regex");
-			if (regexec(&reg, ln, 4, match, 0) || match[3].rm_so == -1) {
+			if (regexec(&reg, ln, 4, matches, 0) || matches[3].rm_so == -1) {
 				regfree(&reg);
 				return 0;
 			}
 
 			/* puts("match three"); */
-			xcalloc(id, 1, match[3].rm_eo - match[3].rm_so + 1, "extract_id()");
+			xcalloc(id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
 			/* set the output parameter and return the offset */
-			memcpy(*id, ln + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+			memcpy(*id, ln + matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 			regfree(&reg);
-			*off = match[3].rm_eo;
-			return match[3].rm_eo;
+			*off = matches[3].rm_eo;
+			return matches[3].rm_eo;
 		}
 
 		/* puts("match two"); */
-		xcalloc(id, 1, match[3].rm_eo - match[3].rm_so + 1, "extract_id()");
+		xcalloc(id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
 		/* set the output parameter and return the offset */
-		memcpy(*id, ln + match[3].rm_so, match[3].rm_eo - match[3].rm_so);
+		memcpy(*id, ln + matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 		regfree(&reg);
-		*off = match[3].rm_eo;
-		return match[3].rm_eo;
+		*off = matches[3].rm_eo;
+		return matches[3].rm_eo;
 	}
 
 	/* puts("match one"); */
 	/* normal branch */
-	xcalloc(id, 1, match[1].rm_eo - match[1].rm_so + 1, "extract_id()");
+	xcalloc(id, 1, matches[1].rm_eo - matches[1].rm_so + 1, "extract_id()");
 	/* set the output parameter and return the offset */
-	memcpy(*id, ln + match[1].rm_so, match[1].rm_eo - match[1].rm_so);
+	memcpy(*id, ln + matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
 	regfree(&reg);
-	*off = match[1].rm_eo;
-	return match[1].rm_eo;
+	*off = matches[1].rm_eo;
+	return matches[1].rm_eo;
 }
 
 int find_vars(char const *restrict ln, STR_LIST *restrict ilist, TYPE_LIST *restrict tlist)
