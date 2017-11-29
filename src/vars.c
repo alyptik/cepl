@@ -148,7 +148,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	return T_OTHER;
 }
 
-size_t extract_id(char const *ln, char **id, size_t *off)
+size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off)
 {
 	regex_t reg;
 	regmatch_t match[4];
