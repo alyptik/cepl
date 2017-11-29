@@ -18,7 +18,7 @@
 #define HPRINT(VAL)		printf("[%#x] ", (VAL))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v4.9.2"
+#define VERSION_STRING	"CEPL v4.9.3"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -82,7 +82,9 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#include <limits.h>\n"
 	"#include <locale.h>\n"
 	"#include <math.h>\n"
+	"#include <pthread.h>\n"
 	"#include <regex.h>\n"
+	"#include <setjmp.h>\n"
 	"#include <signal.h>\n"
 	"#include <stdalign.h>\n"
 	"#include <stdarg.h>\n"
@@ -96,11 +98,13 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#include <strings.h>\n"
 	"#include <sys/mman.h>\n"
 	"#include <sys/types.h>\n"
+	"#include <sys/socket.h>\n"
 	"#include <sys/syscall.h>\n"
 	"#include <sys/wait.h>\n"
 	"#include <time.h>\n"
 	"#include <uchar.h>\n"
 	"#include <wchar.h>\n"
+	"#include <wctype.h>\n"
 	"#include <unistd.h>\n\n"
 	"extern char **environ;\n\n"
 	"#line 1\n";
@@ -116,10 +120,12 @@ static char const prog_end[] = "\n\treturn 0;\n}\n";
 enum src_flag {
 	NOT_IN_MAIN, IN_MAIN, EMPTY,
 };
+
 /* asm dialect */
 enum asm_type {
 	NONE, ATT, INTEL,
 };
+
 /* possible types of tracked variable */
 enum var_type {
 	T_ERR, T_CHR, T_STR,
@@ -132,16 +138,19 @@ typedef struct _str_list {
 	size_t cnt, max;
 	char **list;
 } STR_LIST;
+
 /* struct definition for flag dynamic array */
 typedef struct _flag_list {
 	size_t cnt, max;
 	enum src_flag *list;
 } FLAG_LIST;
+
 /* struct definition for type dynamic array */
 typedef struct _type_list {
 	size_t cnt, max;
 	enum var_type *list;
 } TYPE_LIST;
+
 /* struct definition for var-tracking array */
 typedef struct _var_list {
 	size_t cnt, max;
@@ -150,6 +159,7 @@ typedef struct _var_list {
 		enum var_type type_spec;
 	} *list;
 } VAR_LIST;
+
 /* struct definition for generated program sources */
 typedef struct _prog_src {
 	size_t b_sz, f_sz, t_sz;
