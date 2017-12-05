@@ -37,7 +37,8 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	char *regex, *type_str;
 	char const beg_regex[] =
 			"(^[[:blank:]]*|[^,;]*[(){};[:blank:]]*)"
-			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
+			"(struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
+			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
 			"([^,;]*,[^&,;]*|[^&;=]*)(";
 	char const end_regex[] = ")(\\[*)";
@@ -80,7 +81,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* string `char[]` */
-	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]+\\[", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]+\\[", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -91,7 +92,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* string */
-	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*$", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*$", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -102,7 +103,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* pointer */
-	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -113,7 +114,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* char */
-	if (regcomp(&reg, "char", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "^char([[:blank:]]+|)$", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -124,7 +125,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* double */
-	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -135,7 +136,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* unsigned integral */
-	if (regcomp(&reg, "(_?[Bb]ool|size_t|uint[0-9]+_t|unsigned)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "^(_?[Bb]ool|r?size|w?char[0-9]+|uintmax|uint[0-9]+|unsigned)(_t|)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -146,7 +147,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* signed integral */
-	if (regcomp(&reg, "(short|int|long|int[0-9]+_t|ptrdiff_t|ssize_t)", REG_EXTENDED|REG_NOSUB|REG_NEWLINE))
+	if (regcomp(&reg, "(short|int|long|intmax|intptr|int[0-9]+|ptrdiff|ssize)(_t|)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -185,7 +186,8 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
 			"(^[[:blank:]]*|^[^,(){};&|'\"]+)"
-			"(struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
+			"(struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
+			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
@@ -198,7 +200,8 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
 				"(^|[^,(){};|]+)"
-				"(|struct|union|bool|_Bool|s?size_t|u?int[0-9]|ptrdiff_t|"
+				"(|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
+				"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
