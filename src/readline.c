@@ -21,10 +21,10 @@ char *comp_arg_list[] = {
 	"wchar_t", "alignas", "alignof", "_Atomic", "_Complex", "_Imaginary",
 	"_Generic", "_Noreturn", "_Static_assert", "_Thread_local",
 	"#pragma", "#include", "#define", "#if", "#ifdef", "#else", "#endif",
-	"__asm__(", "__attribute__(", "malloc(", "calloc(", "free(",
-	"system(", "fopen(", "fclose(", "open(", "close(", "puts(",
+	"__asm__((", "__attribute__((", "malloc(", "calloc(", "free(",
 	"memcpy(", "memmove(", "memset(", "memcmp(", "fread(", "fwrite(",
-	"strcat(", "strtok(", "strcpy(", "strlen(", "printf(", "scanf(",
+	"strcat(", "strtok(", "strcpy(", "strlen(", "puts(",
+	"system(", "fopen(", "fclose(", "sprintf(", "printf(", "scanf(",
 	";att", ";function", ";help", ";intel", ";macro", ";output",
 	";parse", ";quit", ";reset", ";tracking", ";undo", ";warnings", NULL
 };
