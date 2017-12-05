@@ -319,20 +319,17 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 	char *term = getenv("TERM");
 	bool has_color = true;
 	/* toggle flag to `false` if `TERM` is NULL, empty, or matches `dumb` */
-	if (!term || !strcmp(term, "") || !strcmp(term, "dumb"))
+	if (!isatty(STDOUT_FILENO) || !isatty(STDERR_FILENO) || !term || !strcmp(term, "") || !strcmp(term, "dumb"))
 		has_color = false;
 
-	int mem_fd, status, null_fd;
+	int status, mem_fd, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	char *newline = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"\\n\");"  :
-		"";
-	char *p_beg = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST "\", \"" :
-		"\n\tfprintf(stderr, \"__s = \\\"____\\\", \",\"";
-	char *pln_beg = (has_color && isatty(STDIN_FILENO)) ?
-		"\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n" RST "\", \"" :
-		"\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
+	char *p_beg = has_color
+		? "\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST "\", \""
+		: "\n\tfprintf(stderr, \"__s = \\\"____\\\", \",\"";
+	char *pln_beg = has_color
+		? "\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\"\\n" RST "\", \""
+		: "\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
 	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
 	char print_end[] = ");";
 	char *src_tmp;
@@ -361,9 +358,6 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 	xcalloc(&src_tmp, 1, strlen(src) + 1, "src_tmp realloc()");
 	strmv(0, src_tmp, src);
 	off = strlen(src);
-	xrealloc(&src_tmp, strlen(src_tmp) + strlen(newline) + 1, "src_tmp realloc()");
-	strmv(off, src_tmp, newline);
-	off += strlen(newline);
 
 	/* build var-tracking source */
 	for (size_t i = 0; i < vlist->cnt; i++) {
@@ -389,23 +383,23 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '-';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = 'c';
 			break;
 		case T_STR:
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '-';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = 's';
 			break;
 		case T_INT:
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'l';
@@ -413,7 +407,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 			break;
 		case T_UINT:
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = 'l';
 			strchr(print_tmp, '_')[0] = 'l';
@@ -421,9 +415,9 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 			break;
 		case T_DBL:
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = 'L';
 			strchr(print_tmp, '_')[0] = 'f';
 			break;
@@ -431,8 +425,8 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 			strchr(print_tmp, '_')[0] = '*';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '-';
+			strchr(print_tmp, '_')[0] = '-';
 			strchr(print_tmp, '_')[0] = 'p';
 			break;
 		case T_OTHER: /* fallthrough */
@@ -440,8 +434,8 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 			strchr(print_tmp, '_')[0] = '&';
 			strchr(print_tmp, '_')[0] = '%';
 			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '0';
-			strchr(print_tmp, '_')[0] = '0';
+			strchr(print_tmp, '_')[0] = '-';
+			strchr(print_tmp, '_')[0] = '1';
 			strchr(print_tmp, '_')[0] = 'p';
 		}
 
