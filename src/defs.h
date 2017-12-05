@@ -267,8 +267,7 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	if (!(list_struct->list = calloc(1, sizeof *list_struct->list)))
-		ERR("error during initial list_ptr calloc()");
+	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
 	/* exit early if NULL */
 	if (!init_str)
 		return;
