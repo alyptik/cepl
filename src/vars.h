@@ -44,13 +44,11 @@ static inline void append_var(VAR_LIST *restrict vlist, char const *restrict id,
 {
 	if (type_spec == T_ERR || !id)
 		return;
-	vlist->cnt++;
-	assert(vlist->max != 0);
+	/* check if size too large */
+	if (++vlist->cnt > ARRAY_MAX)
+		ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
 	if (vlist->cnt >= vlist->max) {
-		/* check if size too large */
-		if (vlist->cnt > ARRAY_MAX)
-			ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
 		vlist->max *= 2;
 		xrealloc(&vlist->list, sizeof *vlist->list * vlist->max, "append_var()");
 	}
@@ -67,7 +65,6 @@ static inline void gen_vlist(VAR_LIST *restrict vlist, STR_LIST *restrict ilist,
 	/* nothing to do */
 	if (!ilist->cnt || !tlist->cnt)
 		return;
-	assert(ilist->cnt >= tlist->cnt);
 	/* don't add duplicate keys to vlist */
 	for (size_t i = 0; i < ilist->cnt; i++) {
 		bool uniq = true;

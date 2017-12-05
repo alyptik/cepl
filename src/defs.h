@@ -18,7 +18,7 @@
 #define HPRINT(VAL)		printf("[%#x] ", (VAL))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.0.0"
+#define VERSION_STRING	"CEPL v5.0.1"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -268,6 +268,8 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 	list_struct->cnt = 0;
 	list_struct->max = 1;
 	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
+	if (!init_str)
+		return;
 	list_struct->cnt++;
 	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_list()");
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
@@ -275,9 +277,11 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 
 static inline void append_str(STR_LIST *restrict list_struct, char const *restrict string, size_t pad)
 {
-	/* check if size too large */
+	/* sanity checks */
 	if (++list_struct->cnt > ARRAY_MAX)
 		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
+	if (!list_struct->list)
+		ERRX("NULL list_struct->list passed to append_str()");
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
