@@ -136,7 +136,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* unsigned integral */
-	if (regcomp(&reg, "^(_?[Bb]ool|r?size|w?char[0-9]+|uintmax|uint[0-9]+|unsigned)(_t|)", REG_EXTENDED|REG_NOSUB))
+	if (regcomp(&reg, "^(_?[Bb]ool|unsigned|char[0-9]+|wchar|uint|r?size)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
@@ -147,7 +147,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* signed integral */
-	if (regcomp(&reg, "(short|int|long|intmax|intptr|int[0-9]+|ptrdiff|ssize)(_t|)", REG_EXTENDED|REG_NOSUB))
+	if (regcomp(&reg, "(short|int|long|ptrdiff|ssize)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
