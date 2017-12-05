@@ -518,7 +518,7 @@ int main(int argc, char *argv[])
 		build_final(&prg, &vl, argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !eval_flag)
-			printf("\n%s:\n==========\n%s\n==========\n", argv[0], prg[0].total);
+			printf("%s:\n==========\n%s\n==========\n", argv[0], prg[0].total);
 		int ret = compile(prg[1].total, cc_argv, argv);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !eval_flag))
