@@ -268,9 +268,6 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 	list_struct->cnt = 0;
 	list_struct->max = 1;
 	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
-	/* exit early if NULL */
-	if (!init_str)
-		return;
 	list_struct->cnt++;
 	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_list()");
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
@@ -278,12 +275,11 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 
 static inline void append_str(STR_LIST *restrict list_struct, char const *restrict string, size_t pad)
 {
-	list_struct->cnt++;
+	/* check if size too large */
+	if (++list_struct->cnt > ARRAY_MAX)
+		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
-		/* check if size too large */
-		if (list_struct->cnt > ARRAY_MAX)
-			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		list_struct->max *= 2;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_str()");
 	}
@@ -292,8 +288,6 @@ static inline void append_str(STR_LIST *restrict list_struct, char const *restri
 		return;
 	}
 	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(string) + pad + 1, "append_str()");
-	if (!list_struct->list)
-		ERR("append_str()");
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
 }
 
@@ -308,12 +302,11 @@ static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type ty
 {
 	if (type_spec == T_ERR)
 		return;
-	list_struct->cnt++;
+	/* check if size too large */
+	if (++list_struct->cnt > ARRAY_MAX)
+		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
-		/* check if size too large */
-		if (list_struct->cnt > ARRAY_MAX)
-			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		list_struct->max *= 2;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
 	}
@@ -331,12 +324,11 @@ static inline void init_flag_list(FLAG_LIST *restrict list_struct)
 
 static inline void append_flag(FLAG_LIST *restrict list_struct, enum src_flag flag)
 {
-	list_struct->cnt++;
+	/* check if size too large */
+	if (++list_struct->cnt > ARRAY_MAX)
+		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
 	if (list_struct->cnt >= list_struct->max) {
-		/* check if size too large */
-		if (list_struct->cnt > ARRAY_MAX)
-			ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 		list_struct->max *= 2;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
 	}
