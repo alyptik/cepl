@@ -55,7 +55,7 @@ static inline char *read_line(char **restrict ln)
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
-		*ln = readline("\n>>> ");
+		*ln = readline(">>> ");
 		return *ln;
 	}
 
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
 	if (isatty(STDIN_FILENO) && !eval_flag)
-		printf("\n%s\n", VERSION_STRING);
+		printf("%s\n", VERSION_STRING);
 	/* enable completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
