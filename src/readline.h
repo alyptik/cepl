@@ -14,7 +14,6 @@
 
 /* prototypes */
 char *generator(char const *text, int state);
-int rl_clear_visible_line(void);
 
 static inline char **completer(char const *text, int start, int end)
 {

@@ -12,6 +12,7 @@ matrix:
           packages:
             - gcc-7
             - g++-7
+            - libreadline7
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-7 CXX=g++-7"
 
@@ -24,6 +25,7 @@ matrix:
             - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
           packages:
             - clang-5.0 lldb-5.0 lld-5.0
+            - libreadline7
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
 
