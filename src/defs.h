@@ -16,6 +16,7 @@
 /* macros */
 #define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
 #define HPRINT(VAL)		printf("[%#x] ", (VAL))
+#define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 
 /* global version and usage strings */
 #define VERSION_STRING	"CEPL v5.0.2"

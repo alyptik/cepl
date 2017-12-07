@@ -111,8 +111,8 @@ static inline void reg_handlers(void)
 		{SIGVTALRM, "SIGVTALRM"}, {SIGXCPU, "SIGXCPU"},
 		{SIGXFSZ, "SIGXFSZ"},
 	};
-	struct sigaction sa[sizeof sigs / sizeof sigs[0]];
-	for (size_t i = 0; i < sizeof sigs / sizeof sigs[0]; i++) {
+	struct sigaction sa[ARRLEN(sigs)];
+	for (size_t i = 0; i < ARRLEN(sigs); i++) {
 		/* don't reset `SIGINT` handler */
 		if (sigs[i].sig == SIGINT) {
 			sa[i].sa_handler = &sig_handler;
