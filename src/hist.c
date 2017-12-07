@@ -33,14 +33,12 @@ extern char *lptr;
 
 void cleanup(void)
 {
+	rl_free_line_state();
 	/* free generated completions */
 	free_str_list(&comp_list);
 	/* append history to history file */
-	if (has_hist) {
-		if (write_history(hist_file)) {
-			WARN("write_history()");
-		}
-	}
+	if (has_hist && write_history(hist_file))
+		WARN("write_history()");
 	free(hist_file);
 	hist_file = NULL;
 	free(out_filename);
