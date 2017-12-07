@@ -50,6 +50,7 @@ script:
     - make -B
     - make debug
     - make clean
+    - make test
     - make install
     - make uninstall
     - make dist
