@@ -16,11 +16,15 @@
 #include "parseopts.h"
 #include "readline.h"
 #include "vars.h"
+#include <setjmp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* SIGINT buffer for non-local goto */
+static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
+
 /* static line buffer */
 char *lptr;
 
@@ -79,6 +83,15 @@ static inline void free_bufs(void)
 /* general signal handling function */
 static inline void sig_handler(int sig)
 {
+	/* abort current input line */
+	if (sig == SIGINT) {
+		rl_clear_visible_line();
+		rl_reset_line_state();
+		rl_free_line_state();
+		rl_reset_after_signal();
+		putchar('\n');
+		siglongjmp(jmp_env, 1);
+	}
 	free_buffers(&vl, &tl, &il, &prg, &lptr);
 	cleanup();
 	raise(sig);
@@ -100,6 +113,16 @@ static inline void reg_handlers(void)
 	};
 	struct sigaction sa[sizeof sigs / sizeof sigs[0]];
 	for (size_t i = 0; i < sizeof sigs / sizeof sigs[0]; i++) {
+		/* don't reset `SIGINT` handler */
+		if (sigs[i].sig == SIGINT) {
+			sa[i].sa_handler = &sig_handler;
+			sigemptyset(&sa[i].sa_mask);
+			/* Restart functions if interrupted by handler */
+			sa[i].sa_flags = SA_RESTART|SA_NODEFER;
+			if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
+				ERRMSG(sigs[i].sig_name, "sigaction()");
+			continue;
+		}
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
 		/* Restart functions if interrupted by handler/reset signal disposition */
@@ -176,6 +199,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	reg_handlers();
+	rl_set_signals();
+	sigsetjmp(jmp_env, 1);
 
 	/* loop readline() until EOF is read */
 	while (read_line(&lbuf) && *lbuf) {
