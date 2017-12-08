@@ -85,7 +85,7 @@ static inline void sig_handler(int sig)
 {
 	/* abort current input line */
 	if (sig == SIGINT) {
-		xrl_clear_visible_line();
+		rl_clear_visible_line();
 		rl_reset_line_state();
 		rl_free_line_state();
 		rl_reset_after_signal();
