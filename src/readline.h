@@ -13,7 +13,7 @@
 #include <readline/readline.h>
 
 #if RL_VERSION_MAJOR < 7
-	#define xrl_clear_visible_line() do {} while(0)
+	#define xrl_clear_visible_line() do; while(0)
 #else
 	#define xrl_clear_visible_line() rl_clear_visible_line()
 #endif
