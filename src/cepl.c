@@ -113,20 +113,13 @@ static inline void reg_handlers(void)
 	};
 	struct sigaction sa[ARRLEN(sigs)];
 	for (size_t i = 0; i < ARRLEN(sigs); i++) {
-		/* don't reset `SIGINT` handler */
-		if (sigs[i].sig == SIGINT) {
-			sa[i].sa_handler = &sig_handler;
-			sigemptyset(&sa[i].sa_mask);
-			/* Restart functions if interrupted by handler */
-			sa[i].sa_flags = SA_RESTART|SA_NODEFER;
-			if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
-				ERRMSG(sigs[i].sig_name, "sigaction()");
-			continue;
-		}
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
 		/* Restart functions if interrupted by handler/reset signal disposition */
 		sa[i].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
+		/* don't reset `SIGINT` handler */
+		if (sigs[i].sig == SIGINT)
+			sa[i].sa_flags ^= SA_RESETHAND;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
 			ERRMSG(sigs[i].sig_name, "sigaction()");
 	}
