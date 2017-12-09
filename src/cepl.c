@@ -59,13 +59,11 @@ static inline char *read_line(char **restrict ln)
 	/* return early if executed with `-e` argument */
 	if (eval_flag) {
 		*ln = eval_arg;
-		exec_flag = true;
 		return *ln;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
 		*ln = readline(">>> ");
-		exec_flag = true;
 		return *ln;
 	}
 
@@ -77,7 +75,6 @@ static inline char *read_line(char **restrict ln)
 	*ln = readline(NULL);
 	rl_outstream = NULL;
 	fclose(bitbucket);
-	exec_flag = true;
 	return *ln;
 }
 
@@ -548,6 +545,8 @@ int main(int argc, char *argv[])
 			}
 		}
 
+		/* set to true before compiling */
+		exec_flag = true;
 		/* finalize source */
 		build_final(&prg, &vl, argv);
 		/* print generated source code unless stdin is a pipe */
