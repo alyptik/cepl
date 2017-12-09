@@ -54,14 +54,18 @@ extern enum asm_type volatile asm_dialect;
 
 static inline char *read_line(char **restrict ln)
 {
+	/* false while waiting for input */
+	exec_flag = false;
 	/* return early if executed with `-e` argument */
 	if (eval_flag) {
 		*ln = eval_arg;
+		exec_flag = true;
 		return *ln;
 	}
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO)) {
 		*ln = readline(">>> ");
+		exec_flag = true;
 		return *ln;
 	}
 
@@ -123,6 +127,10 @@ static inline void sig_handler(int sig)
 		rl_free_line_state();
 		rl_reset_after_signal();
 		putchar('\n');
+		if (exec_flag) {
+			undo_last_line();
+			exec_flag = false;
+		}
 		siglongjmp(jmp_env, 1);
 	}
 	free_buffers(&vl, &tl, &il, &prg, &lptr);
