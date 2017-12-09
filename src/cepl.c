@@ -20,12 +20,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* "currently executing" flag */
+static bool exec_flag = true;
 /* SIGINT buffer for non-local goto */
 static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
 
-/* static line buffer */
+/* line buffer */
 char *lptr;
 
 /* `-o` flag output file */
@@ -71,7 +73,38 @@ static inline char *read_line(char **restrict ln)
 	*ln = readline(NULL);
 	rl_outstream = NULL;
 	fclose(bitbucket);
+	exec_flag = true;
 	return *ln;
+}
+
+static inline void undo_last_line(void)
+{
+	/* break early if no history to pop */
+	if (prg[0].flags.cnt < 1 || prg[1].flags.cnt < 1)
+		return;
+	for (size_t i = 0; i < 2; i++)
+		pop_history(&prg[i]);
+	/* break early if tracking disabled */
+	if (!track_flag)
+		return;
+	/* re-init vars */
+	if (tl.list) {
+		free(tl.list);
+		tl.list = NULL;
+	}
+	if (vl.list) {
+		for (size_t i = 0; i < vl.cnt; i++)
+			free(vl.list[i].id);
+		free(vl.list);
+	}
+	init_vlist(&vl);
+	/* add vars from previous lines */
+	for (size_t i = 1; i < prg[0].lines.cnt; i++) {
+		if (prg[0].lines.list[i] && prg[0].flags.list[i] == IN_MAIN) {
+			if (find_vars(prg[0].lines.list[i], &il, &tl))
+				gen_vlist(&vl, &il, &tl);
+		}
+	}
 }
 
 /* free_buffers() wrapper for at_quick_exit() registration */
@@ -222,32 +255,7 @@ int main(int argc, char *argv[])
 
 			/* pop last history statement */
 			case 'u':
-				/* break early if no history to pop */
-				if (prg[0].flags.cnt < 1 || prg[1].flags.cnt < 1)
-					break;
-				for (size_t i = 0; i < 2; i++)
-					pop_history(&prg[i]);
-				/* break early if tracking disabled */
-				if (!track_flag)
-					break;
-				/* re-init vars */
-				if (tl.list) {
-					free(tl.list);
-					tl.list = NULL;
-				}
-				if (vl.list) {
-					for (size_t i = 0; i < vl.cnt; i++)
-						free(vl.list[i].id);
-					free(vl.list);
-				}
-				init_vlist(&vl);
-				/* add vars from previous lines */
-				for (size_t i = 1; i < prg[0].lines.cnt; i++) {
-					if (prg[0].lines.list[i] && prg[0].flags.list[i] == IN_MAIN) {
-						if (find_vars(prg[0].lines.list[i], &il, &tl))
-							gen_vlist(&vl, &il, &tl);
-					}
-				}
+				undo_last_line();
 				break;
 
 			/* toggle writing at&t-dialect asm output */
