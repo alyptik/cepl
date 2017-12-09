@@ -157,7 +157,7 @@ static inline void reg_handlers(void)
 		sa[i].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
 		/* don't reset `SIGINT` handler */
 		if (sigs[i].sig == SIGINT)
-			sa[i].sa_flags ^= SA_RESETHAND;
+			sa[i].sa_flags &= ~SA_RESETHAND;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
 			ERRMSG(sigs[i].sig_name, "sigaction()");
 	}
