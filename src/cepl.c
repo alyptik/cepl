@@ -117,7 +117,6 @@ static inline void free_bufs(void)
 /* general signal handling function */
 static inline void sig_handler(int sig)
 {
-	fflush(NULL);
 	/* abort current input line */
 	if (sig == SIGINT) {
 		rl_clear_visible_line();
@@ -550,6 +549,8 @@ int main(int argc, char *argv[])
 		exec_flag = true;
 		/* finalize source */
 		build_final(&prg, &vl, argv);
+		/* fix buffering issues */
+		sync();
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !eval_flag)
 			printf("%s:\n==========\n%s\n==========\n", argv[0], prg[0].total);
