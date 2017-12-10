@@ -63,12 +63,25 @@
 #define ARRAY_MAX	(SIZE_MAX / 2 - 1)
 
 /* source file includes template */
-static char const prelude[] = "#define _BSD_SOURCE\n"
-	"#define _DEFAULT_SOURCE\n"
-	"#define _GNU_SOURCE\n"
-	"#define _POSIX_C_SOURCE 200809L\n"
-	"#define _SVID_SOURCE\n"
-	"#define _XOPEN_SOURCE 700\n\n"
+static char const prelude[] =
+	"#ifndef _BSD_SOURCE\n"
+	"#  define _BSD_SOURCE\n"
+	"#endif\n"
+	"#ifndef _DEFAULT_SOURCE\n"
+	"#  define _DEFAULT_SOURCE\n"
+	"#endif\n"
+	"#ifndef _GNU_SOURCE\n"
+	"#  define _GNU_SOURCE\n"
+	"#endif\n"
+	"#ifndef _POSIX_C_SOURCE\n"
+	"#  define _POSIX_C_SOURCE 200809L\n"
+	"#endif\n"
+	"#ifndef _SVID_SOURCE\n"
+	"#  define _SVID_SOURCE\n"
+	"#endif\n"
+	"#ifndef _XOPEN_SOURCE\n"
+	"#  define _XOPEN_SOURCE 700\n"
+	"#endif\n\n"
 	"#ifdef __INTEL_COMPILER\n"
 	"#  define _Float128 float_t\n"
 	"#else\n"
@@ -109,13 +122,19 @@ static char const prelude[] = "#define _BSD_SOURCE\n"
 	"#include <unistd.h>\n\n"
 	"extern char **environ;\n\n"
 	"#line 1\n";
+
 /* compiler pre-program */
-static char const prog_start[] = "\nint main(int argc, char *argv[]) "
-	"{\n\t(void)argc, (void)argv;\n";
+static char const prog_start[] =
+	"\nint main(int argc, char *argv[]) "
+	"{"
+		"\n\t(void)argc, (void)argv;\n";
 /* pre-program shown to user */
-static char const prog_start_user[] = "\nint main(int argc, char *argv[])\n"
+static char const prog_start_user[] =
+	"\nint main(int argc, char *argv[])\n"
 	"{\n";
-static char const prog_end[] = "\n\treturn 0;\n}\n";
+static char const prog_end[] =
+		"\n\treturn 0;"
+	"\n}\n";
 
 /* enumerations */
 enum src_flag {
