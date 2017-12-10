@@ -14,7 +14,7 @@ OPT != test -f debug.mk
 ifeq ($(.SHELLSTATUS),0)
 	OLVL = $(DEBUG)
 endif
--include $(DEP) $(MKCFG)
+-include $(DEP) $(HDR) $(MKCFG)
 .PHONY: all check clean debug dist install test uninstall $(MKALL)
 
 debug:
