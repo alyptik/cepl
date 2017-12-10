@@ -324,8 +324,6 @@ static inline void init_tlist(TYPE_LIST *restrict list_struct)
 
 static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type type_spec)
 {
-	if (type_spec == T_ERR)
-		return;
 	/* check if size too large */
 	if (++list_struct->cnt > ARRAY_MAX)
 		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
