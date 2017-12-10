@@ -233,7 +233,6 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	}
 
 	/* puts("match one"); */
-	/* normal branch */
 	xcalloc(id, 1, matches[1].rm_eo - matches[1].rm_so + 1, "extract_id()");
 	/* set the output parameter and return the offset */
 	memcpy(*id, ln + matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
