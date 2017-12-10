@@ -25,7 +25,7 @@ UTEST = $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-DEBUG := -p -pg -Og -ggdb3 -no-pie -Wfloat-equal -Wrestrict -Wshadow
+DEBUG := -D_DEBUG -p -pg -Og -ggdb3 -no-pie -fno-inline -Wfloat-equal -Wrestrict -Wshadow
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
 LIBS := -lelf -lhistory -lreadline
 TARGET := cepl
