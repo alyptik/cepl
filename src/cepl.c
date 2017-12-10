@@ -117,6 +117,7 @@ static inline void free_bufs(void)
 /* general signal handling function */
 static inline void sig_handler(int sig)
 {
+	fflush(NULL);
 	/* abort current input line */
 	if (sig == SIGINT) {
 		rl_clear_visible_line();
