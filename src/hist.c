@@ -251,7 +251,7 @@ void pop_history(PROG_SRC *restrict prgm)
 	}
 }
 
-/* look for current ln in readln history */
+/* look for current ln in readline history */
 void dedup_history(char **restrict ln)
 {
 	/* return early on empty input */
