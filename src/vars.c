@@ -24,6 +24,7 @@ extern char **environ;
 long syscall(long __sysno, ...);
 int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 void *mmap(void *__addr, size_t __len, int __prot, int __flags, int __fd, off_t __offset);
+void sync(void);
 
 enum var_type extract_type(char const *restrict ln, char const *restrict id)
 {
@@ -613,6 +614,8 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		close(pipe_exec[0]);
 		close(null_fd);
 		wait(&status);
+		/* fix buffering issues */
+		sync();
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			/* WARNX("executable returned non-zero exit code"); */

@@ -558,6 +558,8 @@ int main(int argc, char *argv[])
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !eval_flag))
 			printf("[exit status: %d]\n", ret);
+		/* fix buffering issues */
+		sync();
 		/* exit if executed with `-e` argument */
 		if (eval_flag) {
 			lbuf = NULL;
