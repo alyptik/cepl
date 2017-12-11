@@ -434,29 +434,40 @@ int main(int argc, char *argv[])
 					case '{': /* fallthough */
 					case '}': /* fallthough */
 					case ';': /* fallthough */
-					case '\\':
-						/* remove extra trailing ';' */
-						for (size_t j = strlen(tbuf) - 1; j > 0; j--) {
-							if (tbuf[j] != ';' || tbuf[j - 1] != ';')
-								break;
-							tbuf[j] = '\0';
-						}
-						build_funcs(&prg, tbuf);
-						for (size_t i = 0; i < 2; i++)
-							strmv(CONCAT, prg[i].f, "\n");
-						/* extract identifiers and types */
-						if (track_flag && find_vars(lptr, &il, &tl))
-							gen_vlist(&vl, &il, &tl);
-						break;
+					case '\\': {
+							/* remove extra trailing ';' */
+							for (size_t j = strlen(tbuf) - 1; j > 0; j--) {
+								if (tbuf[j] != ';' || tbuf[j - 1] != ';')
+									break;
+								tbuf[j] = '\0';
+							}
+							build_funcs(&prg, tbuf);
+							for (size_t i = 0; i < 2; i++)
+								strmv(CONCAT, prg[i].f, "\n");
 
-					default:
-						build_funcs(&prg, tbuf);
-						/* append ';' if no trailing '}', ';', or '\' */
-						for (size_t i = 0; i < 2; i++)
-							strmv(CONCAT, prg[i].f, ";\n");
-						/* extract identifiers and types */
-						if (track_flag && find_vars(lptr, &il, &tl))
-							gen_vlist(&vl, &il, &tl);
+							STR_LIST tmp = strsplit(lptr);
+							for (size_t i = 0; i < tmp.cnt; i++) {
+								/* extract identifiers and types */
+								if (track_flag && find_vars(tmp.list[i], &il, &tl))
+									gen_vlist(&vl, &il, &tl);
+							}
+							free_str_list(&tmp);
+							break;
+						}
+
+					default: {
+							build_funcs(&prg, tbuf);
+							/* append ';' if no trailing '}', ';', or '\' */
+							for (size_t i = 0; i < 2; i++)
+								strmv(CONCAT, prg[i].f, ";\n");
+							STR_LIST tmp = strsplit(lptr);
+							for (size_t i = 0; i < tmp.cnt; i++) {
+								/* extract identifiers and types */
+								if (track_flag && find_vars(tmp.list[i], &il, &tl))
+									gen_vlist(&vl, &il, &tl);
+							}
+							free_str_list(&tmp);
+						 }
 					}
 				}
 				break;
@@ -504,31 +515,41 @@ int main(int argc, char *argv[])
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
-			case '\\':
-				build_body(&prg, lptr);
-				for (size_t i = 0; i < 2; i++) {
-					/* remove extra trailing ';' */
-					size_t b_len = strlen(prg[i].b) - 1;
-					for (size_t j = b_len; j > 0; j--) {
-						if (prg[i].b[j] != ';' || prg[i].b[j - 1] != ';')
-							break;
-						prg[i].b[j] = '\0';
+			case '\\': {
+					build_body(&prg, lptr);
+					for (size_t i = 0; i < 2; i++) {
+						/* remove extra trailing ';' */
+						size_t b_len = strlen(prg[i].b) - 1;
+						for (size_t j = b_len; j > 0; j--) {
+							if (prg[i].b[j] != ';' || prg[i].b[j - 1] != ';')
+								break;
+							prg[i].b[j] = '\0';
+						}
+						strmv(CONCAT, prg[i].b, "\n");
 					}
-					strmv(CONCAT, prg[i].b, "\n");
-				}
-				/* extract identifiers and types */
-				if (track_flag && find_vars(lptr, &il, &tl))
-					gen_vlist(&vl, &il, &tl);
-				break;
+					STR_LIST tmp = strsplit(lptr);
+					for (size_t i = 0; i < tmp.cnt; i++) {
+						/* extract identifiers and types */
+						if (track_flag && find_vars(tmp.list[i], &il, &tl))
+							gen_vlist(&vl, &il, &tl);
+					}
+					free_str_list(&tmp);
+					break;
+				   }
 
-			default:
-				build_body(&prg, lptr);
-				/* append ';' if no trailing '}', ';', or '\' */
-				for (size_t i = 0; i < 2; i++)
-					strmv(CONCAT, prg[i].b, ";\n");
-				/* extract identifiers and types */
-				if (track_flag && find_vars(lptr, &il, &tl))
-					gen_vlist(&vl, &il, &tl);
+			default: {
+					build_body(&prg, lptr);
+					/* append ';' if no trailing '}', ';', or '\' */
+					for (size_t i = 0; i < 2; i++)
+						strmv(CONCAT, prg[i].b, ";\n");
+					STR_LIST tmp = strsplit(lptr);
+					for (size_t i = 0; i < tmp.cnt; i++) {
+						/* extract identifiers and types */
+						if (track_flag && find_vars(tmp.list[i], &il, &tl))
+							gen_vlist(&vl, &il, &tl);
+					}
+					free_str_list(&tmp);
+				}
 			}
 		}
 
@@ -553,8 +574,6 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		STR_LIST tmp = strsplit(lptr);
-		free_str_list(&tmp);
 		/* cleanup old buffer */
 		free(lptr);
 		lptr = NULL;
