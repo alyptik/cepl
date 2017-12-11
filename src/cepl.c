@@ -257,7 +257,6 @@ int main(int argc, char *argv[])
 		switch (lptr[0]) {
 		case ';':
 			switch(lptr[1]) {
-
 			/* pop last history statement */
 			case 'u':
 				undo_last_line();
@@ -446,14 +445,8 @@ int main(int argc, char *argv[])
 						for (size_t i = 0; i < 2; i++)
 							strmv(CONCAT, prg[i].f, "\n");
 						/* extract identifiers and types */
-						if (track_flag && !strpbrk(tbuf, "()")) {
-							/* remove final `;` */
-							char *tmp_buf = strrchr(tbuf, ';');
-							if (tmp_buf)
-								tmp_buf[0] = '\0';
-							if (find_vars(tbuf, &il, &tl))
-								gen_vlist(&vl, &il, &tl);
-						}
+						if (track_flag && find_vars(lptr, &il, &tl))
+							gen_vlist(&vl, &il, &tl);
 						break;
 
 					default:
@@ -462,14 +455,8 @@ int main(int argc, char *argv[])
 						for (size_t i = 0; i < 2; i++)
 							strmv(CONCAT, prg[i].f, ";\n");
 						/* extract identifiers and types */
-						if (track_flag && !strpbrk(tbuf, "()")) {
-							/* remove final `;` */
-							char *tmp_buf = strrchr(tbuf, ';');
-							if (tmp_buf)
-								tmp_buf[0] = '\0';
-							if (find_vars(tbuf, &il, &tl))
-								gen_vlist(&vl, &il, &tl);
-						}
+						if (track_flag && find_vars(lptr, &il, &tl))
+							gen_vlist(&vl, &il, &tl);
 					}
 				}
 				break;
