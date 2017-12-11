@@ -366,6 +366,7 @@ static inline STR_LIST strsplit(char const *restrict str)
 
 	STR_LIST list_struct;
 	bool str_lit = false, chr_lit = false;
+	size_t memb_cnt = 0;
 	char arr[strlen(str) + 1], *ptr = arr;
 
 	strmv(0, ptr, str);
@@ -378,14 +379,28 @@ static inline STR_LIST strsplit(char const *restrict str)
 			break;
 
 		case '"':
-			str_lit ^= true;
+			if (!chr_lit)
+				str_lit ^= true;
 			break;
 
 		case '\'':
+			if (!str_lit)
+				str_lit ^= true;
 			chr_lit ^= true;
 			break;
-		case ';':
+
+		case '{':
 			if (!str_lit && !chr_lit)
+				memb_cnt++;
+			break;
+
+		case '}':
+			if (!str_lit && !chr_lit && memb_cnt > 0)
+				memb_cnt--;
+			break;
+
+		case ';':
+			if (!str_lit && !chr_lit && !memb_cnt)
 				*ptr = '\x1c';
 			break;
 		}

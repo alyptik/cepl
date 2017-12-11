@@ -244,6 +244,7 @@ int main(int argc, char *argv[])
 		dedup_history(&lbuf);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
+
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
 			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &vl, &tl, &il, &prg, &lptr);
@@ -448,9 +449,9 @@ int main(int argc, char *argv[])
 						/* extract identifiers and types */
 						if (track_flag && !strpbrk(tbuf, "()")) {
 							/* remove final `;` */
-							char *tmp_buf = strchr(tbuf, ';');
-							if (tmp_buf)
-								tmp_buf[0] = '\0';
+							/* char *tmp_buf = strrchr(tbuf, ';'); */
+							/* if (tmp_buf) */
+							/*         tmp_buf[0] = '\0'; */
 							if (find_vars(tbuf, &il, &tl))
 								gen_vlist(&vl, &il, &tl);
 						}
@@ -464,9 +465,9 @@ int main(int argc, char *argv[])
 						/* extract identifiers and types */
 						if (track_flag && !strpbrk(tbuf, "()")) {
 							/* remove final `;` */
-							char *tmp_buf = strchr(tbuf, ';');
-							if (tmp_buf)
-								tmp_buf[0] = '\0';
+							/* char *tmp_buf = strrchr(tbuf, ';'); */
+							/* if (tmp_buf) */
+							/*         tmp_buf[0] = '\0'; */
 							if (find_vars(tbuf, &il, &tl))
 								gen_vlist(&vl, &il, &tl);
 						}
