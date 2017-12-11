@@ -20,15 +20,21 @@ int main(void)
 		"long foo = 1, bar = 456;"
 		"short baz = 50; int *quix = &baz;"
 		"double res = foo + (double)bar / 1000;"
-		"ssize_t boop = -5; wchar_t florp = L'x'";
+		"ssize_t boop = -5; wchar_t florp = L'x';"
+		"int plonk[5] = {1,2,3,4,5}, vroom[5] = {0};"
+		"struct foo kabonk = {0};";
 
-	plan(12);
+	plan(15);
 
 	/* initialize lists */
 	init_list(&ids, NULL);
 	init_tlist(&types);
 
-	ok(find_vars(src, &ids, &types) == 8, "succeed finding eight objects.");
+	todo();
+	ok(find_vars(src, &ids, &types) == 12, "succeed finding twelve objects.");
+	printf("%d\n", find_vars(src, &ids, &types));
+	end_todo;
+
 	ok(extract_type(src, "ptr") == T_STR, "succeed extracting string type from `ptr`.");
 	ok(extract_type(src, "wark") == T_STR, "succeed extracting string type from `val`.");
 	ok(extract_type(src, "foo") == T_INT, "succeed extracting signed type from `foo`.");
@@ -38,6 +44,9 @@ int main(void)
 	ok(extract_type(src, "res") == T_DBL, "succeed extracting floating type from `res`.");
 	ok(extract_type(src, "boop") == T_INT, "succeed extracting signed type from `florp`.");
 	ok(extract_type(src, "florp") == T_UINT, "succeed extracting unsigned type from `florp`.");
+	ok(extract_type(src, "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");
+	ok(extract_type(src, "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
+	ok(extract_type(src, "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned type.");
 	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
