@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
 	while (read_line(&lbuf) && *lbuf) {
 		/* point global at line */
 		lptr = lbuf;
-		/* strip newlines */
+		/* lptr newlines */
 		if ((tbuf = strpbrk(lptr, "\f\r\n")))
 			tbuf[0] = '\0';
 		/* add and dedup history */
@@ -252,12 +252,11 @@ int main(int argc, char *argv[])
 		}
 
 		/* strip leading whitespace */
-		char *strip = lptr;
-		strip += strspn(lptr, " \t");
+		lptr += strspn(lptr, " \t");
 		/* control sequence and preprocessor directive parsing */
-		switch (strip[0]) {
+		switch (lptr[0]) {
 		case ';':
-			switch(strip[1]) {
+			switch(lptr[1]) {
 
 			/* pop last history statement */
 			case 'u':
@@ -270,7 +269,7 @@ int main(int argc, char *argv[])
 				/* if file was open, close it and break early */
 				if (asm_flag)
 					break;
-				tbuf = strpbrk(strip, " \t");
+				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
 					/* reset flag */
@@ -299,7 +298,7 @@ int main(int argc, char *argv[])
 				/* if file was open, close it and break early */
 				if (asm_flag)
 					break;
-				tbuf = strpbrk(strip, " \t");
+				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
 					/* reset flag */
@@ -329,7 +328,7 @@ int main(int argc, char *argv[])
 				/* if file was open, close it and break early */
 				if (out_flag)
 					break;
-				tbuf = strpbrk(strip, " \t");
+				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
 					/* reset flag */
@@ -393,18 +392,18 @@ int main(int argc, char *argv[])
 			case 'm': /* fallthrough */
 			case 'f':
 				/* remove trailing ' ' and '\t' */
-				for (size_t i = strlen(strip) - 1; i > 0; i--) {
-					if (strip[i] != ' ' && strip[i] != '\t')
+				for (size_t i = strlen(lptr) - 1; i > 0; i--) {
+					if (lptr[i] != ' ' && lptr[i] != '\t')
 						break;
-					strip[i] = '\0';
+					lptr[i] = '\0';
 				}
-				tbuf = strpbrk(strip, " \t");
+				tbuf = strpbrk(lptr, " \t");
 				/* break if function definition empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf))
 					break;
 				/* increment pointer to start of definition */
 				tbuf += strspn(tbuf, " \t");
-				/* re-allocate enough memory for strip + '\n' + '\n' + '\0' */
+				/* re-allocate enough memory for lptr + '\n' + '\n' + '\0' */
 				size_t s = strlen(tbuf) + 3;
 				for (size_t i = 0; i < 2; i++) {
 					rsz_buf(&prg[i].f, &prg[i].f_sz, &prg[i].f_max, s, &vl, &tl, &il, &prg, &tbuf);
@@ -449,9 +448,9 @@ int main(int argc, char *argv[])
 						/* extract identifiers and types */
 						if (track_flag && !strpbrk(tbuf, "()")) {
 							/* remove final `;` */
-							/* char *tmp_buf = strrchr(tbuf, ';'); */
-							/* if (tmp_buf) */
-							/*         tmp_buf[0] = '\0'; */
+							char *tmp_buf = strrchr(tbuf, ';');
+							if (tmp_buf)
+								tmp_buf[0] = '\0';
 							if (find_vars(tbuf, &il, &tl))
 								gen_vlist(&vl, &il, &tl);
 						}
@@ -465,9 +464,9 @@ int main(int argc, char *argv[])
 						/* extract identifiers and types */
 						if (track_flag && !strpbrk(tbuf, "()")) {
 							/* remove final `;` */
-							/* char *tmp_buf = strrchr(tbuf, ';'); */
-							/* if (tmp_buf) */
-							/*         tmp_buf[0] = '\0'; */
+							char *tmp_buf = strrchr(tbuf, ';');
+							if (tmp_buf)
+								tmp_buf[0] = '\0';
 							if (find_vars(tbuf, &il, &tl))
 								gen_vlist(&vl, &il, &tl);
 						}
@@ -496,10 +495,10 @@ int main(int argc, char *argv[])
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(strip) - 1; i > 0; i--) {
-				if (strip[i] != ' ' && strip[i] != '\t')
+			for (size_t i = strlen(lptr) - 1; i > 0; i--) {
+				if (lptr[i] != ' ' && lptr[i] != '\t')
 					break;
-				strip[i] = '\0';
+				lptr[i] = '\0';
 			}
 			/* start building program source */
 			build_body(&prg, lptr);
@@ -509,12 +508,12 @@ int main(int argc, char *argv[])
 
 		default:
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(strip) - 1; i > 0; i--) {
-				if (strip[i] != ' ' && strip[i] != '\t')
+			for (size_t i = strlen(lptr) - 1; i > 0; i--) {
+				if (lptr[i] != ' ' && lptr[i] != '\t')
 					break;
-				strip[i] = '\0';
+				lptr[i] = '\0';
 			}
-			switch(strip[strlen(strip) - 1]) {
+			switch(lptr[strlen(lptr) - 1]) {
 			case '{': /* fallthough */
 			case '}': /* fallthough */
 			case ';': /* fallthough */
@@ -531,7 +530,7 @@ int main(int argc, char *argv[])
 					strmv(CONCAT, prg[i].b, "\n");
 				}
 				/* extract identifiers and types */
-				if (track_flag && find_vars(strip, &il, &tl))
+				if (track_flag && find_vars(lptr, &il, &tl))
 					gen_vlist(&vl, &il, &tl);
 				break;
 
@@ -541,7 +540,7 @@ int main(int argc, char *argv[])
 				for (size_t i = 0; i < 2; i++)
 					strmv(CONCAT, prg[i].b, ";\n");
 				/* extract identifiers and types */
-				if (track_flag && find_vars(strip, &il, &tl))
+				if (track_flag && find_vars(lptr, &il, &tl))
 					gen_vlist(&vl, &il, &tl);
 			}
 		}
