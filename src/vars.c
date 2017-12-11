@@ -41,7 +41,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 			"(struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
 			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
-			"([^,;]*,[^&,;]*|[^&;=]*)(";
+			"([^,;]*,[^&,;]*|[^&;]*)(";
 	char const end_regex[] = ")(\\[*)";
 	size_t regex_sz[2] = {
 		strlen(id) + sizeof beg_regex + sizeof end_regex - 1,
