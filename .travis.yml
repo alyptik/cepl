@@ -1,5 +1,5 @@
 language: c
-cache: ccache
+# cache: ccache
 
 matrix:
   include:
@@ -14,6 +14,18 @@ matrix:
             - g++-7
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-7 CXX=g++-7"
+
+    # works on Precise and Trusty
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-6
+            - g++-6
+      env:
+        - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-6 CXX=g++-6"
 
     # works on Trusty
     - os: linux
