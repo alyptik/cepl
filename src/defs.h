@@ -9,6 +9,7 @@
 #define DEFS_H 1
 
 #include "errs.h"
+#include <ctype.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -391,8 +392,11 @@ static inline STR_LIST strsplit(char const *restrict str)
 	}
 
 	ptr = arr;
-	for (char *tmp = strtok(ptr, "\x1c"); tmp; tmp = strtok(NULL, "\x1c"))
+	for (char *tmp = strtok(ptr, "\x1c"); tmp; tmp = strtok(NULL, "\x1c")) {
+		while (isspace(*tmp))
+			tmp++;
 		append_str(&list_struct, tmp, 0);
+	}
 
 #ifdef _DEBUG
 	for (size_t i = 0; i < list_struct.cnt; i++)
