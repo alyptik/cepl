@@ -23,7 +23,7 @@ debug:
 	@rm -f $(TARGET)
 	$(MAKE) $(TARGET) check
 
-$(TARGET): %: $(OBJ) $(HDR)
+$(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
 $(TEST): %: %.o $(TAP).o $(OBJ) $(HDR)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
