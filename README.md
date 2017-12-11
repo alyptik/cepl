@@ -1,5 +1,7 @@
 # CEPL - *C Read-Eval-Print Loop*
 
+![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
+
 An interactive C (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently
 supporting multiple compilers, readline key-bindings/tab-completion,
 incremental undo, and assembler source code output.
