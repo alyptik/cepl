@@ -38,9 +38,11 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	char *regex, *type_str;
 	char const beg_regex[] =
 			"(^[[:blank:]]*|[^,;]*[(){};[:blank:]]*)"
-			"(struct[^=]+|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
-			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
-			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
+			"(struct[^=]+|struct|union[^=]+|union|"
+			"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
+			"ptrdiff_t|intptr_t|intmax_t|uintmax_t|"
+			"wchar_t|char[0-9]+_t|char|double|float|"
+			"int|long|short|unsigned|void)[[:blank:]]+"
 			"([^;]*,[^&,;=]*|[^&;]*)(";
 	char const end_regex[] = ")(\\[*)";
 	size_t regex_sz[2] = {
@@ -198,9 +200,11 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
 			"(^|^[^;,]*;+[[:blank:]]*|^[^=,(){};&|'\"]+)"
-			"(struct[^=]+|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
-			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
-			"char|double|float|int|long|short|unsigned|void)"
+			"(struct[^=]+|struct|union[^=]+|union|"
+			"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
+			"ptrdiff_t|intptr_t|intmax_t|uintmax_t|"
+			"wchar_t|char[0-9]+_t|char|double|float|"
+			"int|long|short|unsigned|void)"
 			"[^=,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^=,(){};&|'\"[:alnum:][:blank:]]+$|[^;]*,|\\[|,)";
@@ -212,9 +216,11 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
 				"(^[^,;]*\\{[^}]*\\}[^,;]*|[^,(){};|]+)"
-				"(|struct[^=]+|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
-				"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
-				"char|double|float|int|long|short|unsigned|void)"
+				"(|struct[^=]+|struct|union[^=]+|union|"
+				"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
+				"ptrdiff_t|intptr_t|intmax_t|uintmax_t|"
+				"wchar_t|char[0-9]+_t|char|double|float|"
+				"int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
 
