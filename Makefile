@@ -14,7 +14,7 @@ OPT != test -f debug.mk
 ifeq ($(.SHELLSTATUS),0)
 	OLVL = $(DEBUG)
 endif
--include $(DEP) $(HDR) $(MKCFG)
+-include $(DEP) $(MKCFG)
 .PHONY: all check clean debug dist install test uninstall $(MKALL)
 
 debug:
@@ -23,11 +23,11 @@ debug:
 	@rm -f $(TARGET)
 	$(MAKE) $(TARGET) check
 
-$(TARGET): %: $(OBJ)
+$(TARGET): %: $(OBJ) $(HDR)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
-$(TEST): %: %.o $(TAP).o $(OBJ)
+$(TEST): %: %.o $(TAP).o $(OBJ) $(HDR)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
-%.d %.o: %.c
+%.d %.o: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
 test check: $(TOBJ) $(TEST)
