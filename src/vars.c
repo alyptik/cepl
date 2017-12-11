@@ -200,7 +200,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
-				"(^|[^,(){};|]+)"
+				"(^[^,]*\\{.*\\}[^,]*|[^,(){};|]+)"
 				"(|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
 				"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 				"char|double|float|int|long|short|unsigned|void)"
@@ -214,30 +214,39 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 				return 0;
 			}
 
-			/* puts("match three"); */
 			xcalloc(id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
 			/* set the output parameter and return the offset */
 			memcpy(*id, ln + matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 			regfree(&reg);
 			*off = matches[3].rm_eo;
+#ifdef _DEBUG
+			puts("match three");
+			puts(*id);
+#endif
 			return matches[3].rm_eo;
 		}
 
-		/* puts("match two"); */
 		xcalloc(id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
 		/* set the output parameter and return the offset */
 		memcpy(*id, ln + matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 		regfree(&reg);
 		*off = matches[3].rm_eo;
+#ifdef _DEBUG
+		puts("match two");
+		puts(*id);
+#endif
 		return matches[3].rm_eo;
 	}
 
-	/* puts("match one"); */
 	xcalloc(id, 1, matches[1].rm_eo - matches[1].rm_so + 1, "extract_id()");
 	/* set the output parameter and return the offset */
 	memcpy(*id, ln + matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
 	regfree(&reg);
 	*off = matches[1].rm_eo;
+#ifdef _DEBUG
+	puts("match one");
+	puts(*id);
+#endif
 	return matches[1].rm_eo;
 }
 
