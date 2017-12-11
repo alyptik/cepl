@@ -38,7 +38,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	char *regex, *type_str;
 	char const beg_regex[] =
 			"(^[[:blank:]]*|[^,;]*[(){};[:blank:]]*)"
-			"(struct[^}]+}|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
+			"(struct[^=]+|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
 			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 			"char|double|float|int|long|short|unsigned|void)[[:blank:]]+"
 			"([^;]*,[^&,;=]*|[^&;]*)(";
@@ -186,8 +186,8 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
-			"(^[^;,]*;+[[:blank:]]*|^[^=,(){};&|'\"]+)"
-			"(struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
+			"(^|^[^;,]*;+[[:blank:]]*|^[^=,(){};&|'\"]+)"
+			"(struct[^=]+|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
 			"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 			"char|double|float|int|long|short|unsigned|void)"
 			"[^=,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
@@ -201,7 +201,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			/* first/second/fourth capture is ignored */
 			char const final_regex[] =
 				"(^[^,;]*\\{[^}]*\\}[^,;]*|[^,(){};|]+)"
-				"(|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
+				"(|struct[^=]+|struct|union|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|ptrdiff_t|"
 				"intptr_t|intmax_t|uintmax_t|wchar_t|char[0-9]+_t|"
 				"char|double|float|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
