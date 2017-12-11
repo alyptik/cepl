@@ -17,7 +17,7 @@ int main(void)
 	TYPE_LIST types = {0};
 	char *const src =
 		"int a = 0, b = 0,*c = &a, *d = &b;"
-		"struct { int *memb; } e = {0}, f = {0}, g* = &e, h* = &f;"
+		"struct { int *memb; } e = {0}, f = {0}, *g = &e, *h = &f;"
 		"char wark[] = \"wark\", *ptr = wark;"
 		"long foo = 1, bar = 456;"
 		"short baz = 50; int *quix = &baz;"
@@ -37,10 +37,10 @@ int main(void)
 	ok(extract_type(src, "b") == T_INT, "succeed extracting signed type from `b`.");
 	ok(extract_type(src, "c") == T_PTR, "succeed extracting pointer type from `c`.");
 	ok(extract_type(src, "d") == T_PTR, "succeed extracting pointer type from `d`.");
-	ok(extract_type(src, "e") == T_PTR, "succeed extracting signed type from `a`.");
-	ok(extract_type(src, "f") == T_PTR, "succeed extracting signed type from `b`.");
-	ok(extract_type(src, "g") == T_PTR, "succeed extracting pointer type from `c`.");
-	ok(extract_type(src, "h") == T_PTR, "succeed extracting pointer type from `d`.");
+	ok(extract_type(src, "e") == T_OTHER, "succeed extracting struct type from `e`.");
+	ok(extract_type(src, "f") == T_OTHER, "succeed extracting struct type from `f`.");
+	ok(extract_type(src, "g") == T_OTHER, "succeed extracting struct type from `g`.");
+	ok(extract_type(src, "h") == T_OTHER, "succeed extracting struct type from `h`.");
 	ok(extract_type(src, "wark") == T_STR, "succeed extracting string type from `wark`.");
 	ok(extract_type(src, "ptr") == T_STR, "succeed extracting string type from `ptr`.");
 	ok(extract_type(src, "foo") == T_INT, "succeed extracting signed type from `foo`.");
@@ -54,7 +54,7 @@ int main(void)
 	ok(extract_type(src, "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
 	ok(extract_type(src, "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
 	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned type.");
-	ok(extract_type("struct bar baz[] = 5", "baz") == T_PTR, "succeed extracting pointer type from array.");
+	ok(extract_type("int baz[] = {5,4,3,2,1,0}", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
 	/* cleanup */
 	free_str_list(&ids);

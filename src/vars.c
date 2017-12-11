@@ -103,6 +103,17 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	}
 	regfree(&reg);
 
+	/* struct/union */
+	if (regcomp(&reg, "(struct|union)[^\\*\\[]+", REG_EXTENDED|REG_NOSUB))
+		ERR("failed to compile regex");
+	if (!regexec(&reg, type_str, 1, 0, 0)) {
+		free(regex);
+		free(type_str);
+		regfree(&reg);
+		return T_OTHER;
+	}
+	regfree(&reg);
+
 	/* pointer */
 	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB))
 		ERR("failed to compile regex");
