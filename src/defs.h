@@ -10,6 +10,7 @@
 
 #include "errs.h"
 #include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
 
@@ -355,6 +356,50 @@ static inline void append_flag(FLAG_LIST *restrict list_struct, enum src_flag fl
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
+}
+
+static inline STR_LIST strsplit(char const *restrict str)
+{
+	if (!str)
+		return (STR_LIST){0};
+
+	STR_LIST list_struct;
+	bool str_lit = false, chr_lit = false;
+	char arr[strlen(str) + 1], *ptr = arr;
+
+	strmv(0, ptr, str);
+	init_list(&list_struct, NULL);
+
+	for (; *ptr; ptr++) {
+		switch (*ptr) {
+		case '\\':
+			ptr++;
+			break;
+
+		case '"':
+			str_lit ^= true;
+			break;
+
+		case '\'':
+			chr_lit ^= true;
+			break;
+		case ';':
+			if (!str_lit && !chr_lit)
+				*ptr = '\x1c';
+			break;
+		}
+	}
+
+	ptr = arr;
+	for (char *tmp = strtok(ptr, "\x1c"); tmp; tmp = strtok(NULL, "\x1c"))
+		append_str(&list_struct, tmp, 0);
+
+#ifdef _DEBUG
+	for (size_t i = 0; i < list_struct.cnt; i++)
+		puts(list_struct.list[i]);
+#endif
+
+	return list_struct;
 }
 
 #endif

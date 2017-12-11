@@ -565,6 +565,9 @@ int main(int argc, char *argv[])
 			lbuf = NULL;
 			break;
 		}
+
+		STR_LIST tmp = strsplit(lptr);
+		free_str_list(&tmp);
 		/* cleanup old buffer */
 		free(lptr);
 		lptr = NULL;
