@@ -234,7 +234,11 @@ int main(int argc, char *argv[])
 	sigsetjmp(jmp_env, 1);
 
 	/* loop readline() until EOF is read */
-	while (read_line(&lbuf) && *lbuf) {
+	while (read_line(&lbuf)) {
+		/* if no input then do nothing */
+		if (!*lbuf)
+			continue;
+
 		/* point global at line */
 		lptr = lbuf;
 		/* lptr newlines */
