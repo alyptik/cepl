@@ -132,7 +132,6 @@ void write_file(FILE **restrict out_file, PROG_SRC (*restrict prgm)[])
 
 void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
-	rl_free_line_state();
 	/* write out history/asm before freeing buffers */
 	write_file(&ofile, prgm);
 	write_asm(prgm, cc_argv);
