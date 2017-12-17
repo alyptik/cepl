@@ -32,6 +32,8 @@ int main(void)
 	init_list(&ids, NULL);
 	init_tlist(&types);
 
+	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned type from `foo`.");
+	ok(extract_type("int baz[] = {5,4,3,2,1,0}", "baz") == T_PTR, "succeed extracting pointer type from `baz`.");
 	ok(find_vars(src, &ids, &types) == 20, "succeed finding twelve objects.");
 	ok(extract_type(src, "a") == T_INT, "succeed extracting signed type from `a`.");
 	ok(extract_type(src, "b") == T_INT, "succeed extracting signed type from `b`.");
@@ -53,8 +55,6 @@ int main(void)
 	ok(extract_type(src, "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");
 	ok(extract_type(src, "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
 	ok(extract_type(src, "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
-	ok(extract_type("unsigned long long foo = 5", "foo") == T_UINT, "succeed extracting unsigned type.");
-	ok(extract_type("int baz[] = {5,4,3,2,1,0}", "baz") == T_PTR, "succeed extracting pointer type from array.");
 
 	/* cleanup */
 	free_str_list(&ids);
