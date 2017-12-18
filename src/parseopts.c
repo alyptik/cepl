@@ -213,8 +213,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 	/* asm output flag */
 	if (asm_flag) {
 		if (asm_file && !*asm_filename) {
-			if (!(*asm_filename = calloc(1, strlen(asm_file) + 1)))
-				ERR("error during asm_filename calloc()");
+			xcalloc(asm_filename, 1, strlen(asm_file) + 1, "error during asm_filename calloc()");
 			strmv(0, *asm_filename, asm_file);
 			if (!strcmp(cc_list.list[0], "icc"))
 				asm_choice = ATT;
@@ -227,8 +226,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 	/* output file flag */
 	if (out_flag) {
 		if (out_file && !*out_filename) {
-			if (!(*out_filename = calloc(1, strlen(out_file) + 1)))
-				ERR("error during out_filename calloc()");
+			xcalloc(out_filename, 1, strlen(out_file) + 1, "error during out_filename calloc()");
 			strmv(0, *out_filename, out_file);
 		}
 		if (*ofile)
