@@ -20,15 +20,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* line buffer */
+char *lptr;
+
 /* "currently executing" flag */
 static bool exec_flag = true;
 /* SIGINT buffer for non-local goto */
 static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
-
-/* line buffer */
-char *lptr;
 
 /* `-o` flag output file */
 extern FILE *ofile;
