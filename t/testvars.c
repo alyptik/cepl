@@ -23,10 +23,10 @@ int main(void)
 		"double res = foo + (double)bar / 1000;",
 		"ssize_t boop = -5; wchar_t florp = L'x';",
 		"int plonk[5] = {1,2,3,4,5}, vroom[5] = {0};",
-		"struct foo kabonk = {0}, *kabork = &kabonk;",
+		"struct foo { int boop; } kabonk = {0};",
 	};
 
-	plan(27);
+	plan(26);
 
 	/* initialize lists */
 	init_list(&ids, NULL);
@@ -48,7 +48,7 @@ int main(void)
 	ok(find_vars(src[3], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[3], "baz") == T_INT, "succeed extracting signed type from `baz`.");
 	ok(extract_type(src[3], "quix") == T_PTR, "succeed extracting pointer type from `quix`.");
-	ok(find_vars(src[4], &ids, &types) == 1, "succeed finding one objects.");
+	ok(find_vars(src[4], &ids, &types) == 1, "succeed finding one object.");
 	ok(extract_type(src[4], "res") == T_DBL, "succeed extracting floating type from `res`.");
 	ok(find_vars(src[5], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[5], "boop") == T_INT, "succeed extracting signed type from `boop`.");
@@ -56,9 +56,8 @@ int main(void)
 	ok(find_vars(src[6], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[6], "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");
 	ok(extract_type(src[6], "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
-	ok(find_vars(src[7], &ids, &types) == 2, "succeed finding two objects.");
+	ok(find_vars(src[7], &ids, &types) == 1, "succeed finding one object.");
 	ok(extract_type(src[7], "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
-	ok(extract_type(src[7], "kabork") == T_OTHER, "succeed extracting other type from `kabork`.");
 
 	/* cleanup */
 	free_str_list(&ids);
