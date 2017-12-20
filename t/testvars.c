@@ -23,7 +23,7 @@ int main(void)
 		"double res = foo + (double)bar / 1000;",
 		"ssize_t boop = -5; wchar_t florp = L'x';",
 		"int plonk[5] = {1,2,3,4,5}, vroom[5] = {0};",
-		"struct foo { int boop; } kabonk = {0}, *kabork = &kabonk;",
+		"struct foo kabonk = {0}, *kabork = &kabonk;",
 	};
 
 	plan(27);

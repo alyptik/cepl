@@ -18,10 +18,9 @@
 /* macros */
 #define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
 #define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
-#define HPRINT(VAL)		printf("[%#x] ", (VAL))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.1.3"
+#define VERSION_STRING	"CEPL v5.1.4"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
