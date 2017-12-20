@@ -17,7 +17,6 @@ int main(void)
 	TYPE_LIST types = {0};
 	char const *src[] = {
 		"int a = 0, b = 0,*c = &a, *d = &b;",
-		"struct { int *memb; } e = {0}, *f = &e;",
 		"char wark[] = \"wark\", *ptr = wark;",
 		"long foo = 1, bar = 456;",
 		"short baz = 50; int *quix = &baz;",
@@ -27,7 +26,7 @@ int main(void)
 		"struct foo kabonk = {0};",
 	};
 
-	plan(29);
+	plan(26);
 
 	/* initialize lists */
 	init_list(&ids, NULL);
@@ -41,27 +40,24 @@ int main(void)
 	ok(extract_type(src[0], "c") == T_PTR, "succeed extracting pointer type from `c`.");
 	ok(extract_type(src[0], "d") == T_PTR, "succeed extracting pointer type from `d`.");
 	ok(find_vars(src[1], &ids, &types) == 2, "succeed finding two objects.");
-	ok(extract_type(src[1], "e") == T_OTHER, "succeed extracting struct type from `e`.");
-	ok(extract_type(src[1], "f") == T_OTHER, "succeed extracting struct type from `f`.");
+	ok(extract_type(src[1], "wark") == T_STR, "succeed extracting string type from `wark`.");
+	ok(extract_type(src[1], "ptr") == T_STR, "succeed extracting string type from `ptr`.");
 	ok(find_vars(src[2], &ids, &types) == 2, "succeed finding two objects.");
-	ok(extract_type(src[2], "wark") == T_STR, "succeed extracting string type from `wark`.");
-	ok(extract_type(src[2], "ptr") == T_STR, "succeed extracting string type from `ptr`.");
+	ok(extract_type(src[2], "foo") == T_INT, "succeed extracting signed type from `foo`.");
+	ok(extract_type(src[2], "bar") == T_INT, "succeed extracting signed type from `bar`.");
 	ok(find_vars(src[3], &ids, &types) == 2, "succeed finding two objects.");
-	ok(extract_type(src[3], "foo") == T_INT, "succeed extracting signed type from `foo`.");
-	ok(extract_type(src[3], "bar") == T_INT, "succeed extracting signed type from `bar`.");
-	ok(find_vars(src[4], &ids, &types) == 2, "succeed finding two objects.");
-	ok(extract_type(src[4], "baz") == T_INT, "succeed extracting signed type from `baz`.");
-	ok(extract_type(src[4], "quix") == T_PTR, "succeed extracting pointer type from `quix`.");
-	ok(find_vars(src[5], &ids, &types) == 1, "succeed finding one objects.");
-	ok(extract_type(src[5], "res") == T_DBL, "succeed extracting floating type from `res`.");
+	ok(extract_type(src[3], "baz") == T_INT, "succeed extracting signed type from `baz`.");
+	ok(extract_type(src[3], "quix") == T_PTR, "succeed extracting pointer type from `quix`.");
+	ok(find_vars(src[4], &ids, &types) == 1, "succeed finding one objects.");
+	ok(extract_type(src[4], "res") == T_DBL, "succeed extracting floating type from `res`.");
+	ok(find_vars(src[5], &ids, &types) == 2, "succeed finding two objects.");
+	ok(extract_type(src[5], "boop") == T_INT, "succeed extracting signed type from `boop`.");
+	ok(extract_type(src[5], "florp") == T_UINT, "succeed extracting unsigned type from `florp`.");
 	ok(find_vars(src[6], &ids, &types) == 2, "succeed finding two objects.");
-	ok(extract_type(src[6], "boop") == T_INT, "succeed extracting signed type from `boop`.");
-	ok(extract_type(src[6], "florp") == T_UINT, "succeed extracting unsigned type from `florp`.");
-	ok(find_vars(src[7], &ids, &types) == 2, "succeed finding two objects.");
-	ok(extract_type(src[7], "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");
-	ok(extract_type(src[7], "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
-	ok(find_vars(src[8], &ids, &types) == 1, "succeed finding one objects.");
-	ok(extract_type(src[8], "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
+	ok(extract_type(src[6], "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");
+	ok(extract_type(src[6], "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
+	ok(find_vars(src[7], &ids, &types) == 1, "succeed finding one objects.");
+	ok(extract_type(src[7], "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
 
 	/* cleanup */
 	free_str_list(&ids);
