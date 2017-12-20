@@ -185,7 +185,8 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	char const initial_regex[] =
 		"^[^,(){};&|=]+[^,({;&|=[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-		"(=[^,(){;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
+		"(=[^,(){;'\"_=!<>[:alnum:]]+"
+		"|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
 
 	/* return early if passed NULL pointers */
 	if (!ln || !id || !off)
