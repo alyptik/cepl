@@ -563,21 +563,23 @@ int main(int argc, char *argv[])
 		build_final(&prg, &vl, argv);
 		/* fix buffering issues */
 		sync();
+		usleep(5000);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !eval_flag)
 			printf("%s:\n==========\n%s\n==========\n", argv[0], prg[0].total);
 		int ret = compile(prg[1].total, cc_argv, argv);
+		/* fix buffering issues */
+		sync();
+		usleep(5000);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !eval_flag))
 			printf("[exit status: %d]\n", ret);
-		/* fix buffering issues */
-		sync();
+
 		/* exit if executed with `-e` argument */
 		if (eval_flag) {
 			lbuf = NULL;
 			break;
 		}
-
 		/* cleanup old buffer */
 		free(lptr);
 		lptr = NULL;
