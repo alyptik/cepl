@@ -36,7 +36,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* first/third/fourth captures are ignored */
 	char *regex, *type_str;
-	char const beg_regex[] =
+	char const *beg_regex =
 			"(^[[:blank:]]*|[^,;]*[(){};[:blank:]]*)"
 			"(struct[^=]+|struct|union[^=]+|union|"
 			"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
@@ -44,7 +44,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 			"wchar_t|char[0-9]+_t|char|double|float|"
 			"int|long|short|unsigned|void)[[:blank:]]+"
 			"([^;]*,[^&,;=]*|[^&;]*)(";
-	char const end_regex[] = ")(\\[*)";
+	char const *end_regex = ")(\\[*)";
 	size_t regex_sz[2] = {
 		strlen(id) + sizeof beg_regex + sizeof end_regex - 1,
 		0,
@@ -182,10 +182,11 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	regex_t reg;
 	regmatch_t matches[4];
 	/* second capture is ignored */
-	char const initial_regex[] =
+	char const *initial_regex =
 		"^[^,(){};&|=]+[^,({;&|=[:alnum:]_]+"
 		"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-		"(=[^,(){;'\"_=!<>[:alnum:]]+|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
+		"(=[^,(){;'\"_=!<>[:alnum:]]+"
+		"|<>{2}=[^,({;'\"_=!<>[:alnum:]]*|[^=,;]+=)";
 
 	/* return early if passed NULL pointers */
 	if (!ln || !id || !off)
@@ -198,7 +199,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		/* fallback branch */
 		regfree(&reg);
 		/* first/second/fourth capture is ignored */
-		char const middle_regex[] =
+		char const *middle_regex =
 			"(^|^[^;,]*;+[[:blank:]]*|^[^=,(){};&|'\"]+)"
 			"(struct[^=]+|struct|union[^=]+|union|"
 			"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
@@ -214,7 +215,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		if (regexec(&reg, ln, 5, matches, 0) || matches[3].rm_so == -1) {
 			regfree(&reg);
 			/* first/second/fourth capture is ignored */
-			char const final_regex[] =
+			char const *final_regex =
 				"(^[^,;]*\\{[^}]*\\}[^,;]*|[^,(){};|]+)"
 				"(|struct[^=]+|struct|union[^=]+|union|"
 				"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
