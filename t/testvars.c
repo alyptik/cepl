@@ -15,7 +15,7 @@ int main(void)
 {
 	STR_LIST ids = {0};
 	TYPE_LIST types = {0};
-	char const *const src =
+	char const src[] =
 		"int a = 0, b = 0,*c = &a, *d = &b;"
 		"struct { int *memb; } e = {0}, f = {0}, *g = &e, *h = &f;"
 		"char wark[] = \"wark\", *ptr = wark;"
