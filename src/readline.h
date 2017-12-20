@@ -12,10 +12,9 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
+/* stub */
 #if RL_VERSION_MAJOR < 7
-	#define rl_clear_visible_line() do; while(0)
-#else
-	#define rl_clear_visible_line() rl_clear_visible_line()
+	#define rl_clear_visible_line() do {} while(0)
 #endif
 
 /* prototypes */
