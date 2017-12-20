@@ -35,9 +35,9 @@ BINDIR := bin
 MANDIR := share/man/man1
 MKALL += Makefile debug.mk
 DEBUG += -fno-builtin -fno-common -fprofile-generate=./p -fsanitize=address,alignment,leak,undefined -fverbose-asm
-CFLAGS += -fPIC -fuse-ld=gold
+CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
 CFLAGS += -pedantic-errors -std=c11 -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow
-LDFLAGS += -fPIC -fuse-ld=gold
+LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 
 # vi:ft=make:
