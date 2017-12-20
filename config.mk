@@ -9,8 +9,8 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 OLVL ?= -Os
-CFLAGS ?= -pipe -fstack-protector-strong
-LDFLAGS ?= -pipe -fstack-protector-strong
+CFLAGS ?= -pipe
+LDFLAGS ?= -pipe
 
 # mandatory
 LD = $(CC)
@@ -37,9 +37,7 @@ MKALL += Makefile debug.mk
 DEBUG += -fno-builtin -fno-common -fprofile-generate=./p -fsanitize=address,alignment,leak,undefined -fverbose-asm
 CFLAGS += -fPIC -fuse-ld=gold
 CFLAGS += -pedantic-errors -std=c11 -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow
-# CFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
 LDFLAGS += -fPIC -fuse-ld=gold
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-# LDFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
 
 # vi:ft=make:
