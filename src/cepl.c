@@ -122,8 +122,7 @@ static inline void sig_handler(int sig)
 		rl_clear_visible_line();
 		rl_reset_line_state();
 		rl_free_line_state();
-		rl_reset_after_signal();
-		putchar('\n');
+		fputc('\n', stderr);
 		if (exec_flag) {
 			undo_last_line();
 			exec_flag = false;
