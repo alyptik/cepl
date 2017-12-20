@@ -60,10 +60,10 @@ before_install:
                 | sudo tee /usr/include/linux/memfd.h
 
 script:
-    - make -B || true
-    - make debug || true
+    - make -B
+    - make debug
     - make clean
-    - make test || true
+    - make test
     - make install
     - make uninstall
     - make dist
