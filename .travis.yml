@@ -23,10 +23,10 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - gcc-5
-            - g++-5
+            - gcc-6
+            - g++-6
       env:
-        - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-5 CXX=g++-5"
+        - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-6 CXX=g++-6"
 
     # works on Trusty
     - os: linux
