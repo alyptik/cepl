@@ -7,6 +7,8 @@
 
 #include "tap.h"
 #include "../src/vars.h"
+#include <sys/resource.h>
+#include <sys/time.h>
 
 /* global linker arguments struct */
 STR_LIST ld_list;
@@ -25,6 +27,13 @@ int main(void)
 		"ssize_t boop = -5; wchar_t florp = L'x';"
 		"int plonk[5] = {1,2,3,4,5}, vroom[5] = {0};"
 		"struct foo kabonk = {0};";
+
+	struct rlimit old, new;
+	getrlimit(RLIMIT_STACK, &old);
+	printf("%zu - %zu\n", old.rlim_cur, old.rlim_max);
+	new = old;
+	new.rlim_cur = new.rlim_max;
+	setrlimit(RLIMIT_STACK, &new);
 
 	plan(23);
 
