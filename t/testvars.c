@@ -17,7 +17,7 @@ int main(void)
 	TYPE_LIST types = {0};
 	char const *src[] = {
 		"int a = 0, b = 0,*c = &a, *d = &b;",
-		"struct { int *memb; } e = {0}, f = {0}, *g = &e, *h = &f;",
+		"struct { int *memb; } e = {0}, *f = &e;",
 		"char wark[] = \"wark\", *ptr = wark;",
 		"long foo = 1, bar = 456;",
 		"short baz = 50; int *quix = &baz;",
@@ -27,7 +27,7 @@ int main(void)
 		"struct foo kabonk = {0};",
 	};
 
-	plan(31);
+	plan(29);
 
 	/* initialize lists */
 	init_list(&ids, NULL);
@@ -40,11 +40,9 @@ int main(void)
 	ok(extract_type(src[0], "b") == T_INT, "succeed extracting signed type from `b`.");
 	ok(extract_type(src[0], "c") == T_PTR, "succeed extracting pointer type from `c`.");
 	ok(extract_type(src[0], "d") == T_PTR, "succeed extracting pointer type from `d`.");
-	ok(find_vars(src[1], &ids, &types) == 4, "succeed finding four objects.");
+	ok(find_vars(src[1], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[1], "e") == T_OTHER, "succeed extracting struct type from `e`.");
 	ok(extract_type(src[1], "f") == T_OTHER, "succeed extracting struct type from `f`.");
-	ok(extract_type(src[1], "g") == T_OTHER, "succeed extracting struct type from `g`.");
-	ok(extract_type(src[1], "h") == T_OTHER, "succeed extracting struct type from `h`.");
 	ok(find_vars(src[2], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[2], "wark") == T_STR, "succeed extracting string type from `wark`.");
 	ok(extract_type(src[2], "ptr") == T_STR, "succeed extracting string type from `ptr`.");
