@@ -180,7 +180,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off)
 {
 	regex_t reg;
-	regmatch_t matches[4];
+	regmatch_t matches[5];
 	/* second capture is ignored */
 	char const initial_regex[] =
 		"^[^,(){};&|=]+[^,({;&|=[:alnum:]_]+"
@@ -214,7 +214,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			ERR("failed to compile regex");
 		if (regexec(&reg, ln, 5, matches, 0) || matches[3].rm_so == -1) {
 			regfree(&reg);
-			/* first/second/fourth capture is ignored */
+			/* first/second capture is ignored */
 			char const final_regex[] =
 				"(^[^,;]*\\{[^}]*\\}[^,;]*|[^,(){};|]+)"
 				"(|struct[^=]+|struct|union[^=]+|union|"
