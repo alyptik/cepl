@@ -115,7 +115,7 @@ static inline void free_bufs(void)
 }
 
 /* general signal handling function */
-static inline void sig_handler(int sig)
+static void sig_handler(int sig)
 {
 	/* abort current input line */
 	if (sig == SIGINT) {
@@ -135,7 +135,7 @@ static inline void sig_handler(int sig)
 }
 
 /* register signal handlers to make sure that history is written out */
-static inline void reg_handlers(void)
+static void reg_handlers(void)
 {
 	/* signals to trap */
 	struct { int sig; char *sig_name; } sigs[] = {
