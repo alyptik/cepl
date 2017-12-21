@@ -23,10 +23,10 @@ int main(void)
 		"double res = foo + (double)bar / 1000;",
 		"ssize_t boop = -5; wchar_t florp = L'x';",
 		"int plonk[5] = {1,2,3,4,5}, vroom[5] = {0};",
-		"struct foo { int boop; } kabonk = {0};",
+		"struct foo { int boop; } kabonk = {0}, *klakow = &kabonk;",
 	};
 
-	plan(26);
+	plan(27);
 
 	/* initialize lists */
 	init_list(&ids, NULL);
@@ -56,8 +56,9 @@ int main(void)
 	ok(find_vars(src[6], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[6], "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");
 	ok(extract_type(src[6], "vroom") == T_PTR, "succeed extracting pointer type from `vroom`.");
-	ok(find_vars(src[7], &ids, &types) == 1, "succeed finding one object.");
+	ok(find_vars(src[7], &ids, &types) == 2, "succeed finding two objects.");
 	ok(extract_type(src[7], "kabonk") == T_OTHER, "succeed extracting other type from `kabonk`.");
+	ok(extract_type(src[7], "klakow") == T_OTHER, "succeed extracting other type from `klakow`.");
 
 	/* cleanup */
 	free_str_list(&ids);
