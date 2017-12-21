@@ -153,7 +153,7 @@ static inline void reg_handlers(void)
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
 		/* Restart functions if interrupted by handler/reset signal disposition */
-		sa[i].sa_flags = SA_RESETHAND|SA_RESTART|SA_NODEFER;
+		sa[i].sa_flags = SA_RESETHAND|SA_RESTART;
 		/* don't reset `SIGINT` handler */
 		if (sigs[i].sig == SIGINT)
 			sa[i].sa_flags &= ~SA_RESETHAND;
