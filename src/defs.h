@@ -20,7 +20,7 @@
 #define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.1.4"
+#define VERSION_STRING	"CEPL v5.1.5"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
