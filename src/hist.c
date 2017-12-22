@@ -54,7 +54,7 @@ void cleanup(void)
 int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 {
 	/* return early if no file open */
-	if (!asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
+	if (!asm_flag || !asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
 		return -1;
 
 	int pipe_cc[2], asm_fd, status;

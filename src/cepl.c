@@ -267,9 +267,8 @@ int main(int argc, char *argv[])
 
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
-				asm_flag ^= true;
 				/* if file was open, close it and break early */
-				if (asm_flag)
+				if (!asm_flag)
 					break;
 				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
@@ -296,9 +295,8 @@ int main(int argc, char *argv[])
 
 			/* toggle writing intel-dialect asm output */
 			case 'i':
-				asm_flag ^= true;
 				/* if file was open, close it and break early */
-				if (asm_flag)
+				if (!asm_flag)
 					break;
 				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
@@ -325,10 +323,8 @@ int main(int argc, char *argv[])
 
 			/* toggle output file writing */
 			case 'o':
-				/* toggle global warning flag */
-				out_flag ^= true;
 				/* if file was open, close it and break early */
-				if (out_flag)
+				if (!out_flag)
 					break;
 				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
@@ -356,8 +352,6 @@ int main(int argc, char *argv[])
 			case 'p':
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
-				/* toggle global parse flag */
-				parse_flag ^= true;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
@@ -366,8 +360,6 @@ int main(int argc, char *argv[])
 			case 't':
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
-				/* toggle global parse flag */
-				track_flag ^= true;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
@@ -376,8 +368,6 @@ int main(int argc, char *argv[])
 			case 'w':
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
-				/* toggle global warning flag */
-				warn_flag ^= true;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
