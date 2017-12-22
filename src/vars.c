@@ -34,6 +34,12 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	if (!ln || !id)
 		ERRX("NULL pointer passed to extract_type()");
 
+	/* strip parentheses */
+	for (char *lparens = strchr(id, '('); lparens; (lparens = strchr(id, '(')))
+		*lparens = '.';
+	for (char *rparens = strchr(id, ')'); rparens; (rparens = strchr(id, ')')))
+		*rparens = '.';
+
 	/* first/third/fourth captures are ignored */
 	char *regex, *type_str;
 	char const beg_regex[] =
