@@ -23,7 +23,7 @@ STR_LIST il;
 VAR_LIST vl;
 
 /* externs */
-extern bool asm_flag, eval_flag, track_flag;
+extern bool asm_flag, eval_flag, out_flag, track_flag;
 /* compiler argument list */
 extern char **cc_argv;
 /* completion list of generated symbols */
@@ -120,7 +120,7 @@ int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 void write_file(FILE **restrict out_file, PROG_SRC (*restrict prgm)[])
 {
 	/* return early if no file open */
-	if (!out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
+	if (!out_flag || !out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
 		return;
 	/* write out program to file */
 	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, *out_file);

@@ -267,9 +267,12 @@ int main(int argc, char *argv[])
 
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
-				/* if file was open, close it and break early */
-				if (!asm_flag)
+				/* if file was open, flip it and break early */
+				if (asm_flag) {
+					asm_flag ^= true;
 					break;
+				}
+				asm_flag ^= true;
 				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
@@ -289,15 +292,24 @@ int main(int argc, char *argv[])
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				asm_dialect = ATT;
+				/* reset to defaults */
+				warn_flag = false;
+				track_flag = true;
+				parse_flag = true;
+				out_flag = false;
+				eval_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle writing intel-dialect asm output */
 			case 'i':
-				/* if file was open, close it and break early */
-				if (!asm_flag)
+				/* if file was open, flip it and break early */
+				if (asm_flag) {
+					asm_flag ^= true;
 					break;
+				}
+				asm_flag ^= true;
 				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
@@ -317,15 +329,24 @@ int main(int argc, char *argv[])
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				asm_dialect = INTEL;
+				/* reset to defaults */
+				warn_flag = false;
+				track_flag = true;
+				parse_flag = true;
+				out_flag = false;
+				eval_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle output file writing */
 			case 'o':
-				/* if file was open, close it and break early */
-				if (!out_flag)
+				/* if file was open, flip it and break early */
+				if (out_flag) {
+					out_flag ^= true;
 					break;
+				}
+				out_flag ^= true;
 				tbuf = strpbrk(lptr, " \t");
 				/* break if file name empty */
 				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
@@ -344,30 +365,58 @@ int main(int argc, char *argv[])
 				strmv(0, out_filename, tbuf);
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				printf("%d", out_flag);
+				/* reset to defaults */
+				warn_flag = false;
+				track_flag = true;
+				parse_flag = true;
+				eval_flag = false;
+				asm_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle library parsing */
 			case 'p':
+				parse_flag ^= true;
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				/* reset to defaults */
+				warn_flag = false;
+				track_flag = true;
+				out_flag = false;
+				eval_flag = false;
+				asm_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle variable tracking */
 			case 't':
+				track_flag ^= true;
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				/* reset to defaults */
+				warn_flag = false;
+				parse_flag = true;
+				out_flag = false;
+				eval_flag = false;
+				asm_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
 
 			/* toggle warnings */
 			case 'w':
+				warn_flag ^- true;
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				/* reset to defaults */
+				track_flag = true;
+				parse_flag = true;
+				out_flag = false;
+				eval_flag = false;
+				asm_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
@@ -376,6 +425,13 @@ int main(int argc, char *argv[])
 			case 'r':
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
+				/* reset to defaults */
+				warn_flag = false;
+				track_flag = true;
+				parse_flag = true;
+				out_flag = false;
+				eval_flag = false;
+				asm_flag = false;
 				/* re-initiatalize compiler arg array */
 				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 				break;
