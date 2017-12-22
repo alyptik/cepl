@@ -75,12 +75,12 @@ int main (void)
 	/* initiatalize compiler arg array */
 	lives_ok({build_final(&prg, &vl, argv);}, "test initial program build success.");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok((rsz_buf(&prg[0].b, &prg[0].b_sz, &prg[0].b_max, 3, &vl, &tl, &il, &prg, &lptr)), "b_sz[0] != 0");
-	ok((rsz_buf(&prg[0].total, &prg[0].t_sz, &prg[0].t_max, 3, &vl, &tl, &il, &prg, &lptr)), "t_sz[0] != 0");
+	ok((rsz_buf(&prg[0].b, &prg[0].b_sz, &prg[0].b_max, 3, &lptr)), "b_sz[0] != 0");
+	ok((rsz_buf(&prg[0].total, &prg[0].t_sz, &prg[0].t_max, 3, &lptr)), "t_sz[0] != 0");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok((rsz_buf(&prg[1].b, &prg[1].b_sz, &prg[1].b_max, 3, &vl, &tl, &il, &prg, &lptr)), "gb_sz[1] != 0");
-	ok((rsz_buf(&prg[1].total, &prg[1].t_sz, &prg[1].t_max, 3, &vl, &tl, &il, &prg, &lptr)), "gt_sz[1] != 0");
-	ok((rsz_buf(&prg[1].f, &prg[1].f_sz, &prg[1].f_max, 3, &vl, &tl, &il, &prg, &lptr)), "gf_sz != 0");
+	ok((rsz_buf(&prg[1].b, &prg[1].b_sz, &prg[1].b_max, 3, &lptr)), "gb_sz[1] != 0");
+	ok((rsz_buf(&prg[1].total, &prg[1].t_sz, &prg[1].t_max, 3, &lptr)), "gt_sz[1] != 0");
+	ok((rsz_buf(&prg[1].f, &prg[1].f_sz, &prg[1].f_max, 3, &lptr)), "gf_sz != 0");
 	lives_ok({build_body(&prg, lptr);}, "test program body build success.");
 
 	/* add lptr endings */

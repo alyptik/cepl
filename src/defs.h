@@ -20,7 +20,7 @@
 #define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.1.6"
+#define VERSION_STRING	"CEPL v5.1.7"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -60,8 +60,6 @@
 #define EVAL_LIMIT	4096
 /* `strmv() `concat constant */
 #define CONCAT		(-1)
-/* `malloc()` size ceiling */
-#define ARRAY_MAX	(SIZE_MAX / 2 - 1)
 
 /* source file includes template */
 static char const prelude[] =
@@ -299,12 +297,10 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 static inline void append_str(STR_LIST *restrict list_struct, char const *restrict string, size_t pad)
 {
 	/* sanity checks */
-	if (++list_struct->cnt > ARRAY_MAX)
-		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 	if (!list_struct->list)
 		ERRX("NULL list_struct->list passed to append_str()");
 	/* realloc if cnt reaches current size */
-	if (list_struct->cnt >= list_struct->max) {
+	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_str()");
 	}
@@ -325,11 +321,8 @@ static inline void init_tlist(TYPE_LIST *restrict list_struct)
 
 static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type type_spec)
 {
-	/* check if size too large */
-	if (++list_struct->cnt > ARRAY_MAX)
-		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
-	if (list_struct->cnt >= list_struct->max) {
+	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
 	}
@@ -347,11 +340,8 @@ static inline void init_flag_list(FLAG_LIST *restrict list_struct)
 
 static inline void append_flag(FLAG_LIST *restrict list_struct, enum src_flag flag)
 {
-	/* check if size too large */
-	if (++list_struct->cnt > ARRAY_MAX)
-		ERRX("list_struct->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
-	if (list_struct->cnt >= list_struct->max) {
+	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
 		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
 	}

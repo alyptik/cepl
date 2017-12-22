@@ -45,11 +45,9 @@ static inline void append_var(VAR_LIST *restrict vlist, char const *restrict id,
 {
 	if (type_spec == T_ERR || !id)
 		return;
-	/* check if size too large */
-	if (++vlist->cnt > ARRAY_MAX)
 		ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
-	if (vlist->cnt >= vlist->max) {
+	if (++vlist->cnt >= vlist->max) {
 		vlist->max *= 2;
 		xrealloc(&vlist->list, sizeof *vlist->list * vlist->max, "append_var()");
 	}

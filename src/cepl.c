@@ -250,8 +250,8 @@ int main(int argc, char *argv[])
 
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
-			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &vl, &tl, &il, &prg, &lptr);
-			rsz_buf(&prg[i].total, &prg[i].t_sz, &prg[i].t_max, 3, &vl, &tl, &il, &prg, &lptr);
+			rsz_buf(&prg[i].b, &prg[i].b_sz, &prg[i].b_max, 3, &lptr);
+			rsz_buf(&prg[i].total, &prg[i].t_sz, &prg[i].t_max, 3, &lptr);
 		}
 
 		/* strip leading whitespace */
@@ -454,7 +454,7 @@ int main(int argc, char *argv[])
 				/* re-allocate enough memory for lptr + '\n' + '\n' + '\0' */
 				size_t s = strlen(tbuf) + 3;
 				for (size_t i = 0; i < 2; i++) {
-					rsz_buf(&prg[i].f, &prg[i].f_sz, &prg[i].f_max, s, &vl, &tl, &il, &prg, &tbuf);
+					rsz_buf(&prg[i].f, &prg[i].f_sz, &prg[i].f_max, s, &tbuf);
 				}
 
 				switch (tbuf[0]) {

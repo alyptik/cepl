@@ -202,7 +202,7 @@ void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **restrict buf_str, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
+size_t rsz_buf(char **restrict buf_str, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, char **restrict ln)
 {
 	/* sanity check */
 	if (!buf_str || !*buf_str || !ln)
@@ -217,11 +217,6 @@ size_t rsz_buf(char **restrict buf_str, size_t *restrict buf_sz, size_t *restric
 	/* realloc only if b_max is less than current size */
 	if (*buf_sz < *b_max)
 		return 0;
-	/* check if size too large */
-	if (*buf_sz > ARRAY_MAX) {
-		ERRX("*buf_sz > (SIZE_MAX / 2 - 1)");
-		free_buffers(vlist, tlist, ilist, prgm, ln);
-	}
 	/* double until size is reached */
 	while ((*b_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
