@@ -408,7 +408,7 @@ int main(int argc, char *argv[])
 
 			/* toggle warnings */
 			case 'w':
-				warn_flag ^- true;
+				warn_flag ^= true;
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
 				/* reset to defaults */
