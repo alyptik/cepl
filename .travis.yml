@@ -1,6 +1,6 @@
-group: deprecated-2017Q4
 language: c
-# cache: ccache
+cache: ccache
+group: deprecated-2017Q4
 
 matrix:
   include:
