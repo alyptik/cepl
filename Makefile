@@ -41,7 +41,7 @@ test check: $(TOBJ) $(TEST)
 	./t/testvars
 clean:
 	@echo "cleaning"
-	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz debug.mk
+	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
 install: $(TARGET)
 	@echo "installing"
 	@mkdir -pv $(DESTDIR)$(PREFIX)/$(BINDIR)
