@@ -9,19 +9,22 @@ all:
 
 # user configuration
 MKCFG := config.mk
-# if previously built with `-fsanitize=address` we have to use `DEBUG` flags
-OPT != test -f debug.mk
+# if previously built with `-fsanitize=address` we have to use `ASAN` flags
+OPT != test -f asan.mk
 ifeq ($(.SHELLSTATUS),0)
-	OLVL = $(DEBUG)
+	OLVL = $(DEBUG) $(ASAN)
 endif
 -include $(DEP) $(MKCFG)
-.PHONY: all check clean debug dist install test uninstall $(MKALL)
+.PHONY: all asan check clean debug dist install test uninstall $(MKALL)
 
-debug:
-	# debug indicator flag
-	@touch debug.mk
-	@rm -f $(TARGET)
+asan:
+	# asan indicator flag
+	@touch asan.mk
+	$(MAKE) clean
 	$(MAKE) $(TARGET) check
+debug:
+	$(MAKE) clean
+	$(MAKE) $(TARGET) check OLVL="$(DEBUG)"
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@

@@ -54,5 +54,6 @@ t/*
 .cepl_history
 *.tar.gz
 debug.mk
+asan.mk
 
 # vi:ft=cfg:
