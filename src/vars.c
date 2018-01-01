@@ -385,7 +385,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		return -1;
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-		ERR("open()");
+		ERR("`null_fd` open()");
 
 	/* copy source buffer */
 	xcalloc(&src_tmp, 1, strlen(src) + 1, "src_tmp realloc()");
@@ -552,10 +552,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 
 	/* child */
 	case 0:
-		/* redirect stderr to /dev/null */
-		if (dup2(null_fd, STDERR_FILENO) == -1)
-			ERR("redirecting stderr");
-		/* close(STDERR_FILENO); */
+		dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_ld[1], STDOUT_FILENO);
 		dup2(pipe_cc[0], STDIN_FILENO);
 		execvp(cc_args[0], cc_args);
@@ -590,9 +587,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 
 	/* child */
 	case 0:
-		/* redirect stderr to /dev/null */
-		if (dup2(null_fd, STDERR_FILENO) == -1)
-			ERR("redirecting stderr");
+		dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_exec[1], STDOUT_FILENO);
 		dup2(pipe_ld[0], STDIN_FILENO);
 		if (ld_list.list)
