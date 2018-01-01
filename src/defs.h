@@ -20,7 +20,7 @@
 #define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.1.7"
+#define VERSION_STRING	"CEPL v5.1.8"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -111,6 +111,7 @@ static char const prelude[] =
 	"#include <strings.h>\n"
 	"#include <sys/mman.h>\n"
 	"#include <sys/types.h>\n"
+	"#include <sys/sendfile.h>\n"
 	"#include <sys/socket.h>\n"
 	"#include <sys/syscall.h>\n"
 	"#include <sys/wait.h>\n"
@@ -124,16 +125,16 @@ static char const prelude[] =
 
 /* compiler pre-program */
 static char const prog_start[] =
-	"\nint main(int argc, char *argv[]) "
-	"{"
-		"\n\t(void)argc, (void)argv;\n";
+	"\nint main(int argc, char *argv[])\n"
+	"{\n"
+		"\t(void)argc, (void)argv;\n";
 /* pre-program shown to user */
 static char const prog_start_user[] =
 	"\nint main(int argc, char *argv[])\n"
 	"{\n";
 static char const prog_end[] =
-		"\n\treturn 0;"
-	"\n}\n";
+		"\n\treturn 0;\n"
+	"}\n";
 
 /* enumerations */
 enum src_flag {
