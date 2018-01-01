@@ -45,7 +45,6 @@ static inline void append_var(VAR_LIST *restrict vlist, char const *restrict id,
 {
 	if (type_spec == T_ERR || !id)
 		return;
-		ERRX("vlist->cnt > (SIZE_MAX / 2 - 1)");
 	/* realloc if cnt reaches current size */
 	if (++vlist->cnt >= vlist->max) {
 		vlist->max *= 2;
