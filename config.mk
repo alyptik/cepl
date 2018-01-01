@@ -9,8 +9,8 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 OLVL ?= -O2
-CFLAGS ?= -pipe -fstack-protector-strong
-LDFLAGS ?= -pipe -fstack-protector-strong
+CFLAGS ?=
+LDFLAGS ?=
 
 # mandatory
 LD = $(CC)
