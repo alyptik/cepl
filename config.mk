@@ -36,11 +36,11 @@ BINDIR := bin
 MANDIR := share/man/man1
 MKALL += Makefile asan.mk
 DEBUG += -fno-builtin -fno-common -fverbose-asm
-CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
-CFLAGS += -pedantic-errors -std=c11 -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow
+CFLAGS += -pedantic-errors -std=c11 -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
+CFLAGS += -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow -Wimplicit-fallthrough=0
 CFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
-LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
+LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
 LDFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
 
 # vi:ft=make:

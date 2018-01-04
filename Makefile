@@ -26,7 +26,7 @@ debug:
 	$(MAKE) clean
 	$(MAKE) $(TARGET) check OLVL="$(DEBUG)"
 
-$(TARGET): %: $(OBJ)
+$(TARGET): %: $(OBJ) $(HDR)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
 $(TEST): %: %.o $(TAP).o $(OBJ) $(HDR)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
