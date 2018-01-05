@@ -168,32 +168,37 @@ static void reg_handlers(void)
 
 static inline void eval_line(char **restrict argv)
 {
-	char *ln = NULL;
+	char *ln = NULL, *ln_save = lptr;
 	VAR_LIST ln_vars;
 	TYPE_LIST ln_types;
 	PROG_SRC ln_prg[2];
 	STR_LIST ln_ids;
 	/* initialize source buffers */
 	init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
-	ln = malloc(strlen(lptr) + 31);
-	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	for (size_t i = 0; i < 2; i++) {
-		rsz_buf(&ln_prg[i].b, &ln_prg[i].b_sz, &ln_prg[i].b_max, 31, &ln);
-		rsz_buf(&ln_prg[i].total, &ln_prg[i].t_sz, &ln_prg[i].t_max, 31, &ln);
-	}
-	if (find_vars(lptr, &ln_ids, &ln_types))
-		return;
-	strmv(0, ln, "printf(\"%lld\\n\", (long long)");
+	ln = malloc(strlen(lptr) + 46);
+	strmv(0, ln, "printf(\"%s%lld\\n\", \"result = \", (long long)");
 	strmv(CONCAT, ln, lptr);
 	strmv(CONCAT, ln, ");");
+#ifdef _DEBUG
 	puts(ln);
+#endif
+	build_final(&ln_prg, &ln_vars, argv);
+	for (size_t i = 0; i < 2; i++) {
+		rsz_buf(&ln_prg[i].b, &ln_prg[i].b_sz, &ln_prg[i].b_max, 46, &lptr);
+		rsz_buf(&ln_prg[i].total, &ln_prg[i].t_sz, &ln_prg[i].t_max, 46, &lptr);
+	}
+	if (lptr[0] == ';' || find_vars(lptr, &ln_ids, &ln_types)) {
+		free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+		lptr = ln_save;
+		return;
+	}
 	build_body(&ln_prg, ln);
 	build_final(&ln_prg, &ln_vars, argv);
-	puts(ln_prg[1].total);
 	/* print generated source code unless stdin is a pipe */
 	if (isatty(STDIN_FILENO) && !eval_flag)
 		compile(ln_prg[1].total, cc_argv, argv);
 	free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+	lptr = ln_save;
 }
 
 int main(int argc, char *argv[])
@@ -289,6 +294,15 @@ int main(int argc, char *argv[])
 
 		/* print line expression result */
 		eval_line(argv);
+		/* reset to defaults */
+		warn_flag = false;
+		track_flag = true;
+		parse_flag = true;
+		out_flag = false;
+		eval_flag = false;
+		asm_flag = false;
+		/* re-initiatalize compiler arg array */
+		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {

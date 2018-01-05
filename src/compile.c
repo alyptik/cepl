@@ -36,8 +36,11 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	size_t len = strlen(src);
 
-	if (!src || !len || !cc_args || !exec_args)
+	if (!src || !cc_args || !exec_args)
 		ERRX("NULL pointer passed to compile()");
+	if (!len)
+		return 0;
+
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("open()");
