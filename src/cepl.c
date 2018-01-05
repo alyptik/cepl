@@ -50,7 +50,7 @@ extern STR_LIST il;
 extern VAR_LIST vl;
 /* output filenames */
 extern char *out_filename, *asm_filename;
-extern enum asm_type volatile asm_dialect;
+extern enum asm_type asm_dialect;
 
 static inline char *read_line(char **restrict ln)
 {
