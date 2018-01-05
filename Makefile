@@ -26,11 +26,11 @@ debug:
 	$(MAKE) clean
 	$(MAKE) $(TARGET) check OLVL="$(DEBUG)"
 
-$(TARGET): %: $(OBJ) $(HDR)
+$(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
-$(TEST): %: %.o $(TAP).o $(OBJ) $(HDR)
+$(TEST): %: %.o $(TAP).o $(OBJ)
 	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
-%.d %.o: %.c $(HDR)
+%.d %.o: %.c
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
 test check: $(TOBJ) $(TEST)
