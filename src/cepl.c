@@ -168,27 +168,43 @@ static void reg_handlers(void)
 
 static inline void eval_line(char **restrict argv)
 {
-	char *ln = NULL, *ln_save = lptr;
+	char *ln = NULL, *ln_save = lptr, *term = getenv("TERM");
 	VAR_LIST ln_vars;
 	TYPE_LIST ln_types;
 	PROG_SRC ln_prg[2];
 	STR_LIST ln_ids;
+	bool has_color = true;
+
+	/* toggle flag to `false` if `TERM` is NULL, empty, or matches `dumb` */
+	if (!isatty(STDOUT_FILENO) || !isatty(STDERR_FILENO) || !term || !strcmp(term, "") || !strcmp(term, "dumb"))
+		has_color = false;
+	char *ln_beg = has_color
+		? "printf(\"" GREEN "%s%lld\\n" RST "\", \"result = \", (long long)"
+		: "printf(\"%s%lld\\n\", \"result = \", (long long)";
+	char *ln_end = ");";
+	size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(lptr) + 1;
+	/* save and close stderr */
+	int saved_fd = dup(STDERR_FILENO);
+	close(STDERR_FILENO);
+
 	/* initialize source buffers */
 	init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
-	ln = malloc(strlen(lptr) + 46);
-	strmv(0, ln, "printf(\"%s%lld\\n\", \"result = \", (long long)");
+	xmalloc(&ln, strlen(lptr) + sz, "eval_line() malloc");
+	strmv(0, ln, ln_beg);
 	strmv(CONCAT, ln, lptr);
-	strmv(CONCAT, ln, ");");
+	strmv(CONCAT, ln, ln_end);
+	build_final(&ln_prg, &ln_vars, argv);
 #ifdef _DEBUG
 	puts(ln);
 #endif
-	build_final(&ln_prg, &ln_vars, argv);
+
 	for (size_t i = 0; i < 2; i++) {
-		rsz_buf(&ln_prg[i].b, &ln_prg[i].b_sz, &ln_prg[i].b_max, 46, &lptr);
-		rsz_buf(&ln_prg[i].total, &ln_prg[i].t_sz, &ln_prg[i].t_max, 46, &lptr);
+		rsz_buf(&ln_prg[i].b, &ln_prg[i].b_sz, &ln_prg[i].b_max, sz, &lptr);
+		rsz_buf(&ln_prg[i].total, &ln_prg[i].t_sz, &ln_prg[i].t_max, sz, &lptr);
 	}
 	if (lptr[0] == ';' || find_vars(lptr, &ln_ids, &ln_types)) {
 		free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+		dup2(saved_fd, STDERR_FILENO);
 		lptr = ln_save;
 		return;
 	}
@@ -198,6 +214,7 @@ static inline void eval_line(char **restrict argv)
 	if (isatty(STDIN_FILENO) && !eval_flag)
 		compile(ln_prg[1].total, cc_argv, argv);
 	free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+	dup2(saved_fd, STDERR_FILENO);
 	lptr = ln_save;
 }
 
