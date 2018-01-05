@@ -166,7 +166,7 @@ static void reg_handlers(void)
 		WARN("at_quick_exit(&free_bufs)");
 }
 
-static inline void eval_line(char **restrict argv)
+static void eval_line(char **restrict argv)
 {
 	char *ln = NULL, *ln_save = lptr, *term = getenv("TERM");
 	VAR_LIST ln_vars;
