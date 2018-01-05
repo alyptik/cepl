@@ -166,6 +166,36 @@ static void reg_handlers(void)
 		WARN("at_quick_exit(&free_bufs)");
 }
 
+static inline void eval_line(char **restrict argv)
+{
+	char *ln = NULL;
+	VAR_LIST ln_vars;
+	TYPE_LIST ln_types;
+	PROG_SRC ln_prg[2];
+	STR_LIST ln_ids;
+	/* initialize source buffers */
+	init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+	ln = malloc(strlen(lptr) + 31);
+	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
+	for (size_t i = 0; i < 2; i++) {
+		rsz_buf(&ln_prg[i].b, &ln_prg[i].b_sz, &ln_prg[i].b_max, 31, &ln);
+		rsz_buf(&ln_prg[i].total, &ln_prg[i].t_sz, &ln_prg[i].t_max, 31, &ln);
+	}
+	if (find_vars(lptr, &ln_ids, &ln_types))
+		return;
+	strmv(0, ln, "printf(\"%lld\\n\", (long long)");
+	strmv(CONCAT, ln, lptr);
+	strmv(CONCAT, ln, ");");
+	puts(ln);
+	build_body(&ln_prg, ln);
+	build_final(&ln_prg, &ln_vars, argv);
+	puts(ln_prg[1].total);
+	/* print generated source code unless stdin is a pipe */
+	if (isatty(STDIN_FILENO) && !eval_flag)
+		compile(ln_prg[1].total, cc_argv, argv);
+	free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+}
+
 int main(int argc, char *argv[])
 {
 	struct stat hist_stat;
@@ -256,6 +286,10 @@ int main(int argc, char *argv[])
 
 		/* strip leading whitespace */
 		lptr += strspn(lptr, " \t");
+
+		/* print line expression result */
+		eval_line(argv);
+
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {
 		case ';':
