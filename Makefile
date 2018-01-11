@@ -27,9 +27,9 @@ debug:
 	$(MAKE) $(TARGET) check OLVL="$(DEBUG)"
 
 $(TARGET): %: $(OBJ)
-	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $^ -o $@
+	$(LD) $(LDFLAGS) $(LIBS) $^ -o $@
 $(TEST): %: %.o $(TAP).o $(OBJ)
-	$(LD) $(LDFLAGS) $(OLVL) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
+	$(LD) $(LDFLAGS) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
 %.d %.o: %.c
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
