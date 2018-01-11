@@ -125,12 +125,12 @@ static char const prelude[] =
 
 /* compiler pre-program */
 static char const prog_start[] =
-	"\nint main(int argc, char *argv[])\n"
+	"\nint main(int argc, char **argv)\n"
 	"{\n"
 		"\t(void)argc, (void)argv;\n";
 /* pre-program shown to user */
 static char const prog_start_user[] =
-	"\nint main(int argc, char *argv[])\n"
+	"\nint main(int argc, char **argv)\n"
 	"{\n";
 static char const prog_end[] =
 		"\n\treturn 0;\n"

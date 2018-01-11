@@ -218,7 +218,7 @@ static void eval_line(char **restrict argv)
 	lptr = ln_save;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
 	struct stat hist_stat;
 	size_t hist_len = 0;
