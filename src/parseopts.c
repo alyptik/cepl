@@ -122,6 +122,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 				xmalloc(&input_src[i], PAGE_SIZE, "malloc() input_src");
 				input_src[i][0] = 0;
 			}
+
 			regex_t reg[2];
 			char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
 			char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
@@ -138,7 +139,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 					/* no match */
 					if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
 						strmv(CONCAT, input_src[0], tmp_buf);
-						sz[0] += strlen(tmp_buf) + 1;
+						sz[0] += strlen(tmp_buf);
 						xrealloc(&input_src[0], sz[0], "parse_opts() xrealloc()");
 						break;
 					}
@@ -149,19 +150,19 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 					/* no match */
 					if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
 						strmv(CONCAT, input_src[1], tmp_buf);
-						sz[1] += strlen(tmp_buf) + 1;
+						sz[1] += strlen(tmp_buf);
 						xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
 						break;
 					}
 					strmv(CONCAT, input_src[1], "\n");
-					sz[1] += 2;
+					sz[1] += 1;
 					xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
 					regfree(&reg[1]);
 					scan_state = IN_EPILOGUE;
 
 				case IN_EPILOGUE:
 					strmv(CONCAT, input_src[2], tmp_buf);
-					sz[2] += strlen(tmp_buf) + 1;
+					sz[2] += strlen(tmp_buf);
 					xrealloc(&input_src[2], sz[2], "parse_opts() xrealloc()");
 					break;
 				}
