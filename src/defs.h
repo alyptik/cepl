@@ -38,10 +38,9 @@
 	"-I:\t\t\tSearch directory for header files (flag can be repeated)\n" \
 	"Input lines prefixed with a “;” are used to control internal state\n\t" \
 	";a[tt]:\t\t\tToggle -a (output AT&T-dialect assembler code) flag\n\t" \
-	";f[unction]:\t\tDefine a function (e.g. “;f void bork(void) { puts(\"wark\"); }”)\n\t" \
 	";h[elp]:\t\tShow help\n\t" \
 	";i[ntel]:\t\tToggle -a (output Intel-dialect assembler code) flag\n\t" \
-	";m[acro]:\t\tDefine a macro (e.g. “;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))”)\n\t" \
+	";m[acro]:\t\tDefine a function (e.g. “;f void bork(void) { puts(\"wark\"); }”)\n\t" \
 	";o[utput]:\t\tToggle -o (output C source code) flag\n\t" \
 	";p[arse]:\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]:\t\tExit CEPL\n\t" \
