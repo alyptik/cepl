@@ -66,7 +66,7 @@ int main (void)
 
 	using_history();
 	if (!(lptr = calloc(1, EVAL_LIMIT)))
-		ERR("lptr calloc()");
+		ERR("%s", "lptr calloc()");
 	strmv(0, lptr, "int foobar");
 	asm_filename = asm_error;
 

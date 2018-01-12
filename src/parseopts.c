@@ -96,7 +96,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 
 	/* sanity check */
 	if (!out_filename || !asm_filename)
-		ERRX("output filename NULL");
+		ERRX("%s", "output filename NULL");
 
 	/* initilize argument lists */
 	init_list(&cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -113,7 +113,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		/* use input file */
 		case 'f': {
 			if (in_file)
-				ERRX("too many input files specified");
+				ERRX("%s", "too many input files specified");
 			in_file = optarg;
 			int scan_state = IN_PRELUDE;
 			size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
@@ -127,9 +127,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 			char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
 			char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
 			if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
-				ERR("failed to compile main_regex");
+				ERR("%s", "failed to compile main_regex");
 			if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
-				ERR("failed to compile end_regex");
+				ERR("%s", "failed to compile end_regex");
 
 			FILE *tmp_file = xfopen(in_file, "r");
 			char *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
@@ -174,9 +174,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		/* at&t asm style */
 		case 'a':
 			if (asm_file)
-				ERRX("too many output files specified");
+				ERRX("%s", "too many output files specified");
 			if (asm_choice)
-				ERRX("more than one assembler dialect specified");
+				ERRX("%s", "more than one assembler dialect specified");
 			asm_choice = ATT;
 			asm_file = optarg;
 			asm_flag ^= true;
@@ -190,7 +190,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 				/* realloc if needed */
 				if (cc_len > pval_len) {
 					if (!(tmp_arg = realloc(cc_list.list[0], cc_len)))
-						ERRARR("cc_list.list", (size_t)0);
+						ERR("%s[%zu]", "cc_list.list", (size_t)0);
 					/* copy argument to cc_list.list[0] */
 					cc_list.list[0] = tmp_arg;
 					memset(cc_list.list[0], 0, strlen(optarg) + 1);
@@ -202,7 +202,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		/* eval string */
 		case 'e':
 			if (strlen(optarg) > sizeof eval_arg)
-				ERRX("eval string too long");
+				ERRX("%s", "eval string too long");
 			strmv(0, eval_arg, optarg);
 			eval_flag ^= true;
 			break;
@@ -210,9 +210,9 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		/* intel asm style */
 		case 'i':
 			if (asm_file)
-				ERRX("too many output files specified");
+				ERRX("%s", "too many output files specified");
 			if (asm_choice)
-				ERRX("more than one assembler dialect specified");
+				ERRX("%s", "more than one assembler dialect specified");
 			asm_choice = INTEL;
 			asm_file = optarg;
 			asm_flag ^= true;
@@ -240,7 +240,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		/* output file flag */
 		case 'o':
 			if (out_file)
-				ERRX("too many output files specified");
+				ERRX("%s", "too many output files specified");
 			out_file = optarg;
 			out_flag ^= true;
 			break;
@@ -298,7 +298,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 		if (*ofile)
 			fclose(*ofile);
 		if (!(*ofile = fopen(*out_filename, "wb")))
-			ERR("failed to create output file");
+			ERR("%s", "failed to create output file");
 	}
 
 	/* append warning flags */
@@ -349,7 +349,7 @@ void read_syms(STR_LIST *restrict tokens, char const *restrict elf_file)
 		return;
 	/* coordinate API and lib versions */
 	if (elf_version(EV_CURRENT) == EV_NONE)
-		ERR("libelf out of date");
+		ERR("%s", "libelf out of date");
 	elf_fd = open(elf_file, O_RDONLY);
 	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
 

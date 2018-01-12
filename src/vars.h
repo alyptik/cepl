@@ -59,7 +59,7 @@ static inline void gen_vlist(VAR_LIST *restrict vlist, STR_LIST *restrict ilist,
 {
 	/* sanity checks */
 	if (!vlist || !ilist || !ilist->list || !tlist || !tlist->list)
-		ERRX("NULL pointer passed to gen_var_list()");
+		ERRX("%s", "NULL pointer passed to gen_var_list()");
 	/* nothing to do */
 	if (!ilist->cnt || !tlist->cnt)
 		return;

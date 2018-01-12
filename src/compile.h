@@ -18,9 +18,9 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 static inline void set_cloexec(int set_fd[static 2])
 {
 	if (fcntl(set_fd[0], F_SETFD, FD_CLOEXEC) == -1)
-		WARN("fnctl()");
+		WARN("%s", "fnctl()");
 	if (fcntl(set_fd[1], F_SETFD, FD_CLOEXEC) == -1)
-		WARN("fnctl()");
+		WARN("%s", "fnctl()");
 }
 
 static inline void pipe_fd(int in_fd, int out_fd)
@@ -32,7 +32,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 		if ((buf_len = read(in_fd, buf, PAGE_SIZE)) == -1) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			WARN("error reading from input fd");
+			WARN("%s", "error reading from input fd");
 			break;
 		}
 		/* break on EOF */
@@ -41,7 +41,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 		if (write(out_fd, buf, buf_len) == -1) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			WARN("error writing to output fd");
+			WARN("%s", "error writing to output fd");
 			break;
 		}
 	}

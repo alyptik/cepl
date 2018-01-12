@@ -37,21 +37,21 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	size_t len = strlen(src);
 
 	if (!src || !cc_args || !exec_args)
-		ERRX("NULL pointer passed to compile()");
+		ERRX("%s", "NULL pointer passed to compile()");
 	if (!len)
 		return 0;
 
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-		ERR("open()");
+		ERR("%s", "open()");
 
 	/* create pipes */
 	if (pipe(pipe_cc) == -1)
-		ERR("error making pipe_cc pipe");
+		ERR("%s", "error making pipe_cc pipe");
 	if (pipe(pipe_ld) == -1)
-		ERR("error making pipe_ld pipe");
+		ERR("%s", "error making pipe_ld pipe");
 	if (pipe(pipe_exec) == -1)
-		ERR("error making pipe_exec pipe");
+		ERR("%s", "error making pipe_exec pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 	set_cloexec(pipe_ld);
@@ -67,7 +67,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		ERR("error forking compiler");
+		ERR("%s", "error forking compiler");
 		break;
 
 	/* child */
@@ -76,7 +76,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		dup2(pipe_ld[1], STDOUT_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
-		ERR("error forking compiler");
+		ERR("%s", "error forking compiler");
 		break;
 
 	/* parent */
@@ -84,12 +84,12 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
 		if (write(pipe_cc[1], src, len) == -1)
-			ERR("error writing to pipe_cc[1]");
+			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("compiler returned non-zero exit code");
+			WARNX("%s", "compiler returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -101,7 +101,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		close(pipe_ld[0]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		ERR("error forking linker");
+		ERR("%s", "error forking linker");
 		break;
 
 	/* child */
@@ -114,7 +114,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		/* fallback linker exec */
 		execvp(ld_alt_list[0], ld_alt_list);
 		/* execvp() should never return */
-		ERR("error forking linker");
+		ERR("%s", "error forking linker");
 		break;
 
 	/* parent */
@@ -124,7 +124,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("linker returned non-zero exit code");
+			WARNX("%s", "linker returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -134,17 +134,17 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	/* error */
 	case -1:
 		close(pipe_exec[0]);
-		ERR("error forking executable");
+		ERR("%s", "error forking executable");
 		break;
 
 	/* child */
 	case 0:
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
-			ERR("error creating mem_fd");
+			ERR("%s", "error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
-		ERR("error forking executable");
+		ERR("%s", "error forking executable");
 		break;
 
 	/* parent */
@@ -154,7 +154,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("executable returned non-zero exit code");
+			WARNX("%s", "executable returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}

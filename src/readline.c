@@ -44,7 +44,7 @@ char *generator(char const *text, int state)
 	while ((name = completions[list_index++])) {
 		if (strncmp(name, text, len) == 0) {
 			if (!(buf = calloc(1, strlen(name) + 1))) {
-				WARN("error allocating generator string");
+				WARN("%s", "error allocating generator string");
 				return NULL;
 			}
 			memcpy(buf, name, strlen(name) + 1);

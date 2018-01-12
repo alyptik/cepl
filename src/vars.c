@@ -33,7 +33,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regmatch_t matches[7];
 	/* return early if passed NULL pointers */
 	if (!ln || !id)
-		ERRX("NULL pointer passed to extract_type()");
+		ERRX("%s", "NULL pointer passed to extract_type()");
 
 	/* strip parentheses */
 	for (char *lparens = strchr(id, '('); lparens; (lparens = strchr(id, '(')))
@@ -64,7 +64,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	strmv(CONCAT, regex, end_regex);
 
 	if (regcomp(&reg, regex, REG_EXTENDED|REG_NEWLINE))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, ln, 6, matches, 0) || matches[2].rm_so == -1) {
@@ -92,7 +92,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* string `char[]` */
 	if (regcomp(&reg, "char[[:blank:]]*[^*\\*]+\\[", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -103,7 +103,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* string */
 	if (regcomp(&reg, "char[[:blank:]]*(|const)[[:blank:]]*\\*$", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -114,7 +114,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* struct/union */
 	if (regcomp(&reg, "(struct|union)[^\\*\\[]+", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -125,7 +125,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* pointer */
 	if (regcomp(&reg, "(\\*|\\[)", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -136,7 +136,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* char */
 	if (regcomp(&reg, "^char([[:blank:]]+|)$", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -147,7 +147,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* double */
 	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -158,7 +158,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* unsigned integral */
 	if (regcomp(&reg, "^(_?[Bb]ool|unsigned|char[0-9]+|wchar|uint|r?size)", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -169,7 +169,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 
 	/* signed integral */
 	if (regcomp(&reg, "(short|int|long|ptrdiff|ssize)", REG_EXTENDED|REG_NOSUB))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
@@ -197,10 +197,10 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 
 	/* return early if passed NULL pointers */
 	if (!ln || !id || !off)
-		ERRX("NULL pointer passed to extract_id()");
+		ERRX("%s", "NULL pointer passed to extract_id()");
 
 	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
-		ERR("failed to compile regex");
+		ERR("%s", "failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
 	if (regexec(&reg, ln, 3, matches, 0) || matches[1].rm_so == -1) {
 		/* fallback branch */
@@ -218,7 +218,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			"([^=,(){};&|'\"[:alnum:][:blank:]]+$|[^;]*,|\\[|,)";
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
-			ERR("failed to compile regex");
+			ERR("%s", "failed to compile regex");
 		if (regexec(&reg, ln, 5, matches, 0) || matches[3].rm_so == -1) {
 			regfree(&reg);
 			/* first/second capture is ignored */
@@ -233,7 +233,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 				"([[:alpha:]_][[:alnum:]_]*)";
 
 			if (regcomp(&reg, final_regex, REG_EXTENDED|REG_NEWLINE))
-				ERR("failed to compile regex");
+				ERR("%s", "failed to compile regex");
 			if (regexec(&reg, ln, 4, matches, 0) || matches[3].rm_so == -1) {
 				regfree(&reg);
 				return 0;
@@ -378,15 +378,15 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 
 	/* sanity checks */
 	if (!vlist)
-		ERRX("NULL `var_list *` passed to print_vlist()");
+		ERRX("%s", "NULL `var_list *` passed to print_vlist()");
 	if (strlen(src) < 2)
-		ERRX("empty source string passed to print_vlist()");
+		ERRX("%s", "empty source string passed to print_vlist()");
 	/* return early if nothing to do */
 	if (!src || !cc_args || !exec_args || vlist->cnt == 0)
 		return -1;
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-		ERR("`null_fd` open()");
+		ERR("%s", "`null_fd` open()");
 
 	/* copy source buffer */
 	xcalloc(&src_tmp, 1, strlen(src) + 1, "src_tmp realloc()");
@@ -413,7 +413,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[i].id);
+			ERR("%s", vlist->list[i].id);
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
@@ -483,7 +483,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR(vlist->list[i].id);
+			ERR("%s", vlist->list[i].id);
 			break;
 		case T_INT:
 			/* cast integral type to long long */
@@ -528,11 +528,11 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 
 	/* create pipes */
 	if (pipe(pipe_cc) == -1)
-		ERR("error making pipe_cc pipe");
+		ERR("%s", "error making pipe_cc pipe");
 	if (pipe(pipe_ld) == -1)
-		ERR("error making pipe_ld pipe");
+		ERR("%s", "error making pipe_ld pipe");
 	if (pipe(pipe_exec) == -1)
-		ERR("error making pipe_exec pipe");
+		ERR("%s", "error making pipe_exec pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 	set_cloexec(pipe_ld);
@@ -548,7 +548,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		ERR("error forking compiler");
+		ERR("%s", "error forking compiler");
 		break;
 
 	/* child */
@@ -558,7 +558,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		dup2(pipe_cc[0], STDIN_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
-		ERR("error forking compiler");
+		ERR("%s", "error forking compiler");
 		break;
 
 	/* parent */
@@ -566,7 +566,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		close(pipe_cc[0]);
 		close(pipe_ld[1]);
 		if (write(pipe_cc[1], final, sizeof final) == -1)
-			ERR("error writing to pipe_cc[1]");
+			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
@@ -583,7 +583,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		close(pipe_ld[0]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
-		ERR("error forking linker");
+		ERR("%s", "error forking linker");
 		break;
 
 	/* child */
@@ -596,7 +596,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		/* fallback linker exec */
 		execvp(ld_alt_list[0], ld_alt_list);
 		/* execvp() should never return */
-		ERR("error forking linker");
+		ERR("%s", "error forking linker");
 		break;
 
 	/* parent */
@@ -616,22 +616,22 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 	/* error */
 	case -1:
 		close(pipe_exec[0]);
-		ERR("error forking executable");
+		ERR("%s", "error forking executable");
 		break;
 
 	/* child */
 	case 0:
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
-			ERR("error creating mem_fd");
+			ERR("%s", "error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
 		/* redirect stdout/stdin to /dev/null */
 		if (!(null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
-			ERR("open()");
+			ERR("%s", "open()");
 		dup2(null_fd, STDIN_FILENO);
 		dup2(null_fd, STDOUT_FILENO);
 		fexecve(mem_fd, exec_args, environ);
 		/* fexecve() should never return */
-		ERR("error forking executable");
+		ERR("%s", "error forking executable");
 		break;
 
 	/* parent */

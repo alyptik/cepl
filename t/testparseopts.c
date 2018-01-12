@@ -107,14 +107,14 @@ int main (void)
 	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1 || (tmp_fd[1] = mkstemp(asm_tmp)) == -1) {
 		memset(out_tmp, 0, sizeof out_tmp);
 		memcpy(out_tmp, out_fallback, sizeof out_fallback);
-		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
+		WARN("%s\n%s", "failed calling mkstemp()", "attempting to create a tmpfile in ./ instead");
 		if ((tmp_fd[0] = mkstemp(out_tmp)) == -1)
-			ERR("mkstemp() out file");
+			ERR("%s", "mkstemp() out file");
 		memset(asm_tmp, 0, sizeof asm_tmp);
 		memcpy(asm_tmp, asm_fallback, sizeof asm_fallback);
-		WARNMSG("mkstemp()", "attempting to create a tmpfile in ./ instead");
+		WARN("%s\n%s", "failed calling mkstemp()", "attempting to create a tmpfile in ./ instead");
 		if ((tmp_fd[1] = mkstemp(asm_tmp)) == -1)
-			ERR("mkstemp() asm file");
+			ERR("%s", "mkstemp() asm file");
 	}
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
@@ -147,9 +147,9 @@ int main (void)
 	close(tmp_fd[0]);
 	close(tmp_fd[1]);
 	if (remove(out_tmp) == -1)
-		WARN("remove() out_tmp");
+		WARN("%s", "remove() out_tmp");
 	if (remove(asm_tmp) == -1)
-		WARN("remove() asm_tmp");
+		WARN("%s", "remove() asm_tmp");
 	free(out_filename);
 	free(asm_filename);
 

@@ -126,7 +126,7 @@ static inline void xmalloc(void *restrict ptr, size_t sz, char const *msg)
 	if (!ptr)
 		return;
 	if (!(*(void **)ptr = malloc(sz)))
-		ERR(msg ? msg : "(nil)");
+		ERR("%s", msg ? msg : "(nil)");
 }
 
 /* `calloc()` wrapper */
@@ -136,7 +136,7 @@ static inline void xcalloc(void *restrict ptr, size_t nmemb, size_t sz, char con
 	if (!ptr)
 		return;
 	if (!(*(void **)ptr = calloc(nmemb, sz)))
-		ERR(msg ? msg : "(nil)");
+		ERR("%s", msg ? msg : "(nil)");
 }
 
 /* `realloc()` wrapper */
@@ -147,7 +147,7 @@ static inline void xrealloc(void *restrict ptr, size_t sz, char const *msg)
 	if (!ptr)
 		return;
 	if (!(tmp = realloc(*(void **)ptr, sz)))
-		ERR(msg ? msg : "(nil)");
+		ERR("%s", msg ? msg : "(nil)");
 	*(void **)ptr = tmp;
 }
 
@@ -157,7 +157,7 @@ static inline void xfclose(FILE **restrict out_file)
 	if (!out_file || !*out_file)
 		return;
 	if (fclose(*out_file) == EOF)
-		WARN("xfclose()");
+		WARN("%s", "xfclose()");
 }
 
 /* `fopen()` wrapper */
@@ -165,7 +165,7 @@ static inline FILE *xfopen(char const *restrict path, char const *restrict fmode
 {
 	FILE *file;
 	if (!(file = fopen(path, fmode)))
-		ERR("xfopen()");
+		ERR("%s", "xfopen()");
 	return file;
 }
 
@@ -196,7 +196,7 @@ static inline ptrdiff_t free_argv(char ***restrict argv)
 static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restrict src) {
 	/* sanity checks */
 	if (!dest || !src)
-		ERRX("NULL pointer passed to strmv()");
+		ERRX("%s", "NULL pointer passed to strmv()");
 	ptrdiff_t src_sz;
 	char *dest_ptr = NULL, *src_ptr = memchr(src, '\0', EVAL_LIMIT);
 	if (off >= 0) {
@@ -205,7 +205,7 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 		dest_ptr = memchr(dest, '\0', EVAL_LIMIT);
 	}
 	if (!src_ptr || !dest_ptr)
-		ERRX("strmv() string not null-terminated");
+		ERRX("%s", "strmv() string not null-terminated");
 	src_sz = src_ptr - src;
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
@@ -248,7 +248,7 @@ static inline void append_str(STR_LIST *restrict list_struct, char const *restri
 {
 	/* sanity checks */
 	if (!list_struct->list)
-		ERRX("NULL list_struct->list passed to append_str()");
+		ERRX("%s", "NULL list_struct->list passed to append_str()");
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;

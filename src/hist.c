@@ -115,7 +115,7 @@ void cleanup(void)
 	free_str_list(&comp_list);
 	/* append history to history file */
 	if (has_hist && write_history(hist_file))
-		WARN("write_history()");
+		WARN("%s", "write_history()");
 	free(hist_file);
 	hist_file = NULL;
 	free(out_filename);
@@ -140,20 +140,20 @@ int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 	char src_buffer[strlen((*prgm)[1].total) + 1];
 
 	if (sizeof src_buffer < 2)
-		ERRX("empty source passed to write_asm()");
+		ERRX("%s", "empty source passed to write_asm()");
 	/* add trailing '\n' */
 	memcpy(src_buffer, (*prgm)[1].total, sizeof src_buffer);
 	src_buffer[sizeof src_buffer - 1] = '\n';
 	/* create pipe */
 	if (pipe(pipe_cc) == -1)
-		ERR("error making pipe_cc pipe");
+		ERR("%s", "error making pipe_cc pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 
 	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
-		WARN("error opening asm output file");
+		WARN("%s", "error opening asm output file");
 		return -1;
 	}
 
@@ -164,7 +164,7 @@ int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
 		close(asm_fd);
-		ERR("error forking compiler");
+		ERR("%s", "error forking compiler");
 		break;
 
 	/* child */
@@ -173,19 +173,19 @@ int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 		dup2(asm_fd, STDOUT_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
-		ERR("error forking compiler");
+		ERR("%s", "error forking compiler");
 		break;
 
 	/* parent */
 	default:
 		close(pipe_cc[0]);
 		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
-			ERR("error writing to pipe_cc[1]");
+			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("compiler returned non-zero exit code");
+			WARNX("%s", "compiler returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -263,7 +263,7 @@ void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 		if (!(*prgm)[i].f || !(*prgm)[i].b || !(*prgm)[i].total) {
 			free_buffers(vlist, tlist, ilist, prgm, ln);
 			cleanup();
-			ERR("prgm[2] calloc()");
+			ERR("%s", "prgm[2] calloc()");
 		}
 	}
 	/* no memcpy for prgm[0].f */
@@ -367,7 +367,7 @@ void build_body(PROG_SRC (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
-		WARNX("NULL pointer passed to build_body()");
+		WARNX("%s", "NULL pointer passed to build_body()");
 		return;
 	}
 	for (size_t i = 0; i < 2; i++) {
@@ -383,7 +383,7 @@ void build_funcs(PROG_SRC (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
-		WARNX("NULL pointer passed to build_funcs()");
+		WARNX("%s", "NULL pointer passed to build_funcs()");
 		return;
 	}
 	for (size_t i = 0; i < 2; i++) {
@@ -399,7 +399,7 @@ void build_final(PROG_SRC (*restrict prgm)[], VAR_LIST *restrict vlist, char *ar
 {
 	/* sanity check */
 	if (!prgm || !argv) {
-		WARNX("NULL pointer passed to build_final()");
+		WARNX("%s", "NULL pointer passed to build_final()");
 		return;
 	}
 	/* finish building current iteration of source code */

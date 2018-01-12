@@ -72,7 +72,7 @@ static inline char *read_line(char **restrict ln)
 	/* redirect stdout to /dev/null */
 	FILE *bitbucket;
 	if (!(bitbucket = fopen("/dev/null", "r+b")))
-		ERR("read_line() fopen()");
+		ERR("%s", "read_line() fopen()");
 	rl_outstream = bitbucket;
 	*ln = readline(NULL);
 	rl_outstream = NULL;
@@ -160,12 +160,12 @@ static void reg_handlers(void)
 		if (sigs[i].sig == SIGINT)
 			sa[i].sa_flags &= ~SA_RESETHAND;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
-			ERRMSG(sigs[i].sig_name, "sigaction()");
+			ERR("%s %s", sigs[i].sig_name, "sigaction()");
 	}
 	if (at_quick_exit(&cleanup))
-		WARN("at_quick_exit(&cleanup)");
+		WARN("%s", "at_quick_exit(&cleanup)");
 	if (at_quick_exit(&free_bufs))
-		WARN("at_quick_exit(&free_bufs)");
+		WARN("%s", "at_quick_exit(&free_bufs)");
 }
 
 static void eval_line(char **restrict argv)
@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history fihist_lename ("~/.cepl_history" by default) */
 	if (!(hist_file = calloc(1, buf_sz)))
-		ERR("hist_file malloc()");
+		ERR("%s", "hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "")) {
 		hist_len = strlen(home_env);
@@ -265,7 +265,7 @@ int main(int argc, char **argv)
 	using_history();
 	/* create history file if it doesn't exsit */
 	if (!(make_hist = fopen(hist_file, "ab"))) {
-		WARN("error creating history file with fopen()");
+		WARN("%s", "error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
 		has_hist = true;
@@ -279,7 +279,7 @@ int main(int argc, char **argv)
 			char *hist_ptr = hist_full;
 			strmv(0, hist_ptr, hist_pre);
 			strmv(sizeof hist_pre - 1, hist_ptr, hist_file);
-			WARN(hist_ptr);
+			WARN("%s", hist_ptr);
 		}
 	}
 	reg_handlers();
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
 					asm_filename = NULL;
 				}
 				if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
-					ERR("error during asm_filename calloc()");
+					ERR("%s", "error during asm_filename calloc()");
 				strmv(0, asm_filename, tbuf);
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
@@ -401,7 +401,7 @@ int main(int argc, char **argv)
 					asm_filename = NULL;
 				}
 				if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
-					ERR("error during asm_filename calloc()");
+					ERR("%s", "error during asm_filename calloc()");
 				strmv(0, asm_filename, tbuf);
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
 					out_filename = NULL;
 				}
 				if (!(out_filename = calloc(1, strlen(tbuf) + 1)))
-					ERR("error during out_filename calloc()");
+					ERR("%s", "error during out_filename calloc()");
 				strmv(0, out_filename, tbuf);
 				free_buffers(&vl, &tl, &il, &prg, &lbuf);
 				init_buffers(&vl, &tl, &il, &prg, &lbuf);
