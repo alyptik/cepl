@@ -170,11 +170,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 			prog_start = prog_start_user = input_src[1];
 			prog_end = input_src[2];
 			in_flag ^= true;
-#ifdef _DEBUG
-			puts(input_src[0]);
-			puts(input_src[1]);
-			puts(input_src[2]);
-#endif
 			break;
 		}
 

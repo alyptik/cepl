@@ -322,13 +322,6 @@ int main(int argc, char **argv)
 		asm_flag = false;
 		/* re-initiatalize compiler arg array */
 		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
-		/* finish building current iteration of source code */
-		if (input_src[0])
-			prelude = input_src[0];
-		if (input_src[1])
-			prog_start = prog_start_user = input_src[1];
-		if (input_src[2])
-			prog_end = input_src[2];
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {

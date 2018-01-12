@@ -244,12 +244,6 @@ void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 
 void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
 {
-	if (input_src[0])
-		prelude = input_src[0];
-	if (input_src[1])
-		prog_start = prog_start_user = input_src[1];
-	if (input_src[2])
-		prog_end = input_src[2];
 	/* user is truncated source for display */
 	xcalloc(&(*prgm)[0].f, 1, 1, "init");
 	xcalloc(&(*prgm)[0].b, 1, strlen(prog_start_user) + 1, "init");
@@ -376,12 +370,6 @@ void build_body(PROG_SRC (*restrict prgm)[], char *restrict ln)
 		WARNX("NULL pointer passed to build_body()");
 		return;
 	}
-	if (input_src[0])
-		prelude = input_src[0];
-	if (input_src[1])
-		prog_start = prog_start_user = input_src[1];
-	if (input_src[2])
-		prog_end = input_src[2];
 	for (size_t i = 0; i < 2; i++) {
 		append_str(&(*prgm)[i].lines, ln, 0);
 		append_str(&(*prgm)[i].hist, (*prgm)[i].b, 0);
@@ -398,12 +386,6 @@ void build_funcs(PROG_SRC (*restrict prgm)[], char *restrict ln)
 		WARNX("NULL pointer passed to build_funcs()");
 		return;
 	}
-	if (input_src[0])
-		prelude = input_src[0];
-	if (input_src[1])
-		prog_start = prog_start_user = input_src[1];
-	if (input_src[2])
-		prog_end = input_src[2];
 	for (size_t i = 0; i < 2; i++) {
 		append_str(&(*prgm)[i].lines, ln, 0);
 		append_str(&(*prgm)[i].hist, (*prgm)[i].f, 0);
@@ -421,12 +403,6 @@ void build_final(PROG_SRC (*restrict prgm)[], VAR_LIST *restrict vlist, char *ar
 		return;
 	}
 	/* finish building current iteration of source code */
-	if (input_src[0])
-		prelude = input_src[0];
-	if (input_src[1])
-		prog_start = prog_start_user = input_src[1];
-	if (input_src[2])
-		prog_end = input_src[2];
 	for (size_t i = 0; i < 2; i++) {
 		strmv(0, (*prgm)[i].total, (*prgm)[i].f);
 		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].b);
