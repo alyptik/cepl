@@ -13,7 +13,7 @@
 int mkstemp(char *__template);
 
 /* global compiler arg array */
-char **cc_argv;
+char **cc_argv, *input_src[3];
 bool asm_flag = false, eval_flag = false, out_flag = false, track_flag = false;
 /* global completion list struct */
 STR_LIST comp_list;

@@ -141,6 +141,11 @@ enum src_flag {
 	NOT_IN_MAIN, IN_MAIN, EMPTY,
 };
 
+/* input src state */
+enum scan_state {
+	IN_PRELUDE, IN_MIDDLE, IN_EPILOGUE,
+};
+
 /* asm dialect */
 enum asm_type {
 	NONE, ATT, INTEL,
