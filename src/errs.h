@@ -22,22 +22,13 @@
 
 /* warning macros */
 #define WARN(FMT, ...) \
-	do { \
-		fprintf(stderr, "`%s`: [%s:%u] " FMT "\n", ESTR, __VA_ARGS__); \
-	while (0)
+	do { fprintf(stderr, "`%s`: [%s:%u] " FMT "\n", ESTR, __VA_ARGS__); } while (0)
 #define WARNX(FMT, ... ) \
-	do { \
-		fprintf(stderr, "[%s:%u] " FMT "\n", FSTR, __VA_ARGS__); \
-	while (0)
-
+	do { fprintf(stderr, "[%s:%u] " FMT "\n", FSTR, __VA_ARGS__); } while (0)
 /* error macros */
 #define ERR(FMT, ...) \
-	do { \
-		fprintf(stderr, "`%s`: [%s:%u] " FMT "\n", ESTR, __VA_ARGS__); exit(EXIT_FAILURE); \
-	} while (0)
+	do { fprintf(stderr, "`%s`: [%s:%u] " FMT "\n", ESTR, __VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define ERRX(FMT, ...) \
-	do { \
-		fprintf(stderr, "[%s:%u] " FMT "\n", FSTR, __VA_ARGS__); \ exit(EXIT_FAILURE); \
-	} while (0)
+	do { fprintf(stderr, "[%s:%u] " FMT "\n", FSTR, __VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 
 #endif
