@@ -41,7 +41,7 @@ extern PROG_SRC prg[2];
 /* completion list of generated symbols */
 extern STR_LIST comp_list;
 /* toggle flags */
-extern bool asm_flag, eval_flag, out_flag, parse_flag, track_flag, warn_flag;
+extern bool asm_flag, eval_flag, in_flag, out_flag, parse_flag, track_flag, warn_flag;
 /* history file flag */
 extern bool has_hist;
 /* type, identifier, and var lists */
@@ -50,6 +50,7 @@ extern STR_LIST il;
 extern VAR_LIST vl;
 /* output filenames */
 extern char *out_filename, *asm_filename;
+extern char *input_src[3];
 extern enum asm_type asm_dialect;
 
 static inline char *read_line(char **restrict ln)
@@ -224,7 +225,7 @@ int main(int argc, char **argv)
 	size_t hist_len = 0;
 	size_t buf_sz = sizeof hist_name;
 	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:a:e:i:l:I:o:";
+	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
 	char const *const home_env = getenv("HOME");
 	/* token buffers */
 	char *lbuf = NULL, *tbuf = NULL;

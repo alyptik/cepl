@@ -9,23 +9,27 @@
 #include "readline.h"
 #include <getopt.h>
 #include <limits.h>
+#include <regex.h>
 
 /* silence linter */
 int getopt_long(int ___argc, char *const ___argv[], char const *__shortopts, struct option const *__longopts, int *__longind);
 
 /* global toggle flags */
-bool asm_flag = false, eval_flag = false, out_flag = false;
+bool asm_flag = false, eval_flag = false, in_flag = false, out_flag = false;
 bool parse_flag = true, track_flag = true, warn_flag = false;
 /* global compiler arg array */
 char **cc_argv;
 /* string to compile */
 char eval_arg[EVAL_LIMIT];
+/* input file source */
+char *input_src[3];
 enum asm_type asm_dialect = NONE;
 
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
 	{"cc", required_argument, 0, 'c'},
 	{"eval", required_argument, 0, 'e'},
+	{"file", required_argument, 0, 'f'},
 	{"help", no_argument, 0, 'h'},
 	{"intel", required_argument, 0, 'i'},
 	{"output", required_argument, 0, 'o'},
@@ -76,7 +80,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 {
 	int opt;
 	enum asm_type asm_choice = NONE;
-	char *out_file = NULL, *asm_file = NULL;
+	char *out_file = NULL, *in_file = NULL, *asm_file = NULL;
 	/* cleanup previous allocations */
 	free_str_list(&ld_list);
 	free_str_list(&lib_list);
@@ -104,6 +108,61 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
+
+		/* use input file */
+		case 'f': {
+			if (in_file)
+				ERRX("too many input files specified");
+			in_file = optarg;
+			int scan_state = IN_PRELUDE;
+			size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
+			char tmp_buf[PAGE_SIZE];
+			for (size_t i = 0; i < ARRLEN(input_src); i++) {
+				xmalloc(&input_src[i], PAGE_SIZE, "malloc() input_src");
+				input_src[i][0] = 0;
+			}
+			regex_t reg[2];
+			char const main_regex[] = "main[[:blank:]]*\\(";
+			char const end_regex[] = "return[[:blank:]]+[^;]+;";
+			if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
+				ERR("failed to compile main_regex");
+			if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
+				ERR("failed to compile end_regex");
+
+			for (FILE *tmp_file = xfopen(in_file, "r"); fgets(tmp_buf, 4096, tmp_file);) {
+				switch (scan_state) {
+				case IN_PRELUDE:
+					/* no match */
+					if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
+						strmv(CONCAT, input_src[0], tmp_buf);
+						sz[0] += strlen(tmp_buf) + 1;
+						xrealloc(&input_src[0], sz[0], "parse_opts() xrealloc()");
+						break;
+					}
+					scan_state = IN_MIDDLE;
+					regfree(&reg[0]);
+
+				case IN_MIDDLE:
+					/* no match */
+					if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
+						strmv(CONCAT, input_src[1], tmp_buf);
+						sz[1] += strlen(tmp_buf) + 1;
+						xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
+						break;
+					}
+					scan_state = IN_EPILOGUE;
+					regfree(&reg[1]);
+
+				case IN_EPILOGUE:
+					strmv(CONCAT, input_src[2], tmp_buf);
+					sz[2] += strlen(tmp_buf) + 1;
+					xrealloc(&input_src[2], sz[2], "parse_opts() xrealloc()");
+					break;
+				}
+			}
+			in_flag ^= true;
+			break;
+		}
 
 		/* at&t asm style */
 		case 'a':
