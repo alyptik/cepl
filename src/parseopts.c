@@ -123,7 +123,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 				input_src[i][0] = 0;
 			}
 			regex_t reg[2];
-			char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[[:blank:]]*\\(";
+			char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
 			char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
 			if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
 				ERR("failed to compile main_regex");
