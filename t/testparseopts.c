@@ -19,7 +19,7 @@ STR_LIST ld_list, comp_list;
 int main (void)
 {
 	FILE *ofile = NULL;
-	char const optstring[] = "hptvwc:a:e:i:l:I:o:";
+	char const optstring[] = "hptvwc:a:e:f:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	STR_LIST symbols = {0};
 	char *out_filename = NULL, *asm_filename = NULL, **result;
