@@ -75,6 +75,7 @@ extern int optind, opterr, optopt;
 extern char *comp_arg_list[];
 /* global linker flags and completions structs */
 extern STR_LIST ld_list, comp_list;
+extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 
 char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restrict ofile, char **restrict out_filename, char **restrict asm_filename)
 {
@@ -122,14 +123,16 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 				input_src[i][0] = 0;
 			}
 			regex_t reg[2];
-			char const main_regex[] = "main[[:blank:]]*\\(";
-			char const end_regex[] = "return[[:blank:]]+[^;]+;";
+			char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[[:blank:]]*\\(";
+			char const end_regex[] = "[[:blank:]]*return[[:blank:]]+[^;]+;";
 			if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
 				ERR("failed to compile main_regex");
 			if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
 				ERR("failed to compile end_regex");
 
-			for (FILE *tmp_file = xfopen(in_file, "r"); fgets(tmp_buf, 4096, tmp_file);) {
+			FILE *tmp_file = xfopen(in_file, "r");
+			char *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
+			for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
 				switch (scan_state) {
 				case IN_PRELUDE:
 					/* no match */
@@ -139,8 +142,8 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 						xrealloc(&input_src[0], sz[0], "parse_opts() xrealloc()");
 						break;
 					}
-					scan_state = IN_MIDDLE;
 					regfree(&reg[0]);
+					scan_state = IN_MIDDLE;
 
 				case IN_MIDDLE:
 					/* no match */
@@ -150,8 +153,11 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 						xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
 						break;
 					}
-					scan_state = IN_EPILOGUE;
+					strmv(CONCAT, input_src[1], "\n");
+					sz[1] += 2;
+					xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
 					regfree(&reg[1]);
+					scan_state = IN_EPILOGUE;
 
 				case IN_EPILOGUE:
 					strmv(CONCAT, input_src[2], tmp_buf);
@@ -160,7 +166,15 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 					break;
 				}
 			}
+			prelude = input_src[0];
+			prog_start = prog_start_user = input_src[1];
+			prog_end = input_src[2];
 			in_flag ^= true;
+#ifdef _DEBUG
+			puts(input_src[0]);
+			puts(input_src[1]);
+			puts(input_src[2]);
+#endif
 			break;
 		}
 

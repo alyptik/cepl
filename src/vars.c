@@ -16,6 +16,7 @@ static char *const ld_alt_list[] = {
 	NULL
 };
 
+extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 /* global linker arguments struct */
 extern STR_LIST ld_list;
 extern char **environ;
@@ -516,7 +517,7 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 	}
 
 	/* copy final source into buffer */
-	char final[off + sizeof prog_end + 1], *tok_buf;
+	char final[off + strlen(prog_end) + 1], *tok_buf;
 	memset(final, 0, sizeof final);
 	strmv(0, final, src_tmp);
 	strmv(off, final, prog_end);

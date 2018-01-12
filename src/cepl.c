@@ -51,6 +51,7 @@ extern VAR_LIST vl;
 /* output filenames */
 extern char *out_filename, *asm_filename;
 extern char *input_src[3];
+extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 extern enum asm_type asm_dialect;
 
 static inline char *read_line(char **restrict ln)
@@ -245,10 +246,10 @@ int main(int argc, char **argv)
 	/* build history filename */
 	strmv(hist_len, hist_file, hist_name);
 
-	/* initialize source buffers */
-	init_buffers(&vl, &tl, &il, &prg, &lbuf);
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+	/* initialize source buffers */
+	init_buffers(&vl, &tl, &il, &prg, &lbuf);
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
 	if (isatty(STDIN_FILENO) && !eval_flag)
@@ -321,6 +322,13 @@ int main(int argc, char **argv)
 		asm_flag = false;
 		/* re-initiatalize compiler arg array */
 		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+		/* finish building current iteration of source code */
+		if (input_src[0])
+			prelude = input_src[0];
+		if (input_src[1])
+			prog_start = prog_start_user = input_src[1];
+		if (input_src[2])
+			prog_end = input_src[2];
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {

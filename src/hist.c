@@ -31,6 +31,81 @@ extern STR_LIST comp_list;
 /* line buffer and input file source */
 extern char *lptr, *input_src[3];
 
+/* source file includes template */
+char const *prelude =
+	"#ifndef _BSD_SOURCE\n"
+	"#  define _BSD_SOURCE\n"
+	"#endif\n"
+	"#ifndef _DEFAULT_SOURCE\n"
+	"#  define _DEFAULT_SOURCE\n"
+	"#endif\n"
+	"#ifndef _GNU_SOURCE\n"
+	"#  define _GNU_SOURCE\n"
+	"#endif\n"
+	"#ifndef _POSIX_C_SOURCE\n"
+	"#  define _POSIX_C_SOURCE 200809L\n"
+	"#endif\n"
+	"#ifndef _SVID_SOURCE\n"
+	"#  define _SVID_SOURCE\n"
+	"#endif\n"
+	"#ifndef _XOPEN_SOURCE\n"
+	"#  define _XOPEN_SOURCE 700\n"
+	"#endif\n\n"
+	"#ifdef __INTEL_COMPILER\n"
+	"#  define _Float128 float_t\n"
+	"#else\n"
+	"#  include <complex.h>\n"
+	"#endif\n\n"
+	"#include <assert.h>\n"
+	"#include <ctype.h>\n"
+	"#include <error.h>\n"
+	"#include <errno.h>\n"
+	"#include <float.h>\n"
+	"#include <fcntl.h>\n"
+	"#include <limits.h>\n"
+	"#include <locale.h>\n"
+	"#include <math.h>\n"
+	"#include <pthread.h>\n"
+	"#include <regex.h>\n"
+	"#include <setjmp.h>\n"
+	"#include <signal.h>\n"
+	"#include <stdalign.h>\n"
+	"#include <stdarg.h>\n"
+	"#include <stdbool.h>\n"
+	"#include <stddef.h>\n"
+	"#include <stdint.h>\n"
+	"#include <stdio.h>\n"
+	"#include <stdlib.h>\n"
+	"#include <stdnoreturn.h>\n"
+	"#include <string.h>\n"
+	"#include <strings.h>\n"
+	"#include <sys/mman.h>\n"
+	"#include <sys/types.h>\n"
+	"#include <sys/sendfile.h>\n"
+	"#include <sys/socket.h>\n"
+	"#include <sys/syscall.h>\n"
+	"#include <sys/wait.h>\n"
+	"#include <time.h>\n"
+	"#include <uchar.h>\n"
+	"#include <wchar.h>\n"
+	"#include <wctype.h>\n"
+	"#include <unistd.h>\n\n"
+	"extern char **environ;\n\n"
+	"#line 1\n";
+
+/* compiler pre-program */
+char const *prog_start =
+	"\nint main(int argc, char **argv)\n"
+	"{\n"
+		"\t(void)argc, (void)argv;\n";
+/* pre-program shown to user */
+char const *prog_start_user =
+	"\nint main(int argc, char **argv)\n"
+	"{\n";
+char const *prog_end =
+		"\n\treturn 0;\n"
+	"}\n";
+
 void cleanup(void)
 {
 	/* readline teardown */
