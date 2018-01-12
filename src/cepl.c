@@ -322,6 +322,16 @@ int main(int argc, char **argv)
 		asm_flag = false;
 		/* re-initiatalize compiler arg array */
 		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+		/* parse input file if one is specified */
+		{
+			STR_LIST tmp = strsplit(prog_start_user);
+			for (size_t i = 0; i < tmp.cnt; i++) {
+				/* extract identifiers and types */
+				if (track_flag && find_vars(tmp.list[i], &il, &tl))
+					gen_vlist(&vl, &il, &tl);
+			}
+			free_str_list(&tmp);
+		}
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {
