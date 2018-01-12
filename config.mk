@@ -37,7 +37,8 @@ MANDIR := share/man/man1
 MKALL += Makefile asan.mk
 DEBUG += -fno-builtin -fno-common -fverbose-asm
 CFLAGS += -pedantic-errors -std=c11 -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
-CFLAGS += -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow -Wno-unused-variable -Wimplicit-fallthrough=0
+CFLAGS += -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow
+CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-variable -Wimplicit-fallthrough=0
 CFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
