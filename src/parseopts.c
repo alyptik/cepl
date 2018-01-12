@@ -154,9 +154,6 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 						xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
 						break;
 					}
-					strmv(CONCAT, input_src[1], "\n");
-					sz[1] += 1;
-					xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
 					regfree(&reg[1]);
 					scan_state = IN_EPILOGUE;
 
