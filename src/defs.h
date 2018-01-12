@@ -62,7 +62,7 @@
 #define CONCAT		(-1)
 
 /* source file includes template */
-static char const prelude[] =
+static char const *prelude =
 	"#ifndef _BSD_SOURCE\n"
 	"#  define _BSD_SOURCE\n"
 	"#endif\n"
@@ -124,15 +124,15 @@ static char const prelude[] =
 	"#line 1\n";
 
 /* compiler pre-program */
-static char const prog_start[] =
+static char const *prog_start =
 	"\nint main(int argc, char **argv)\n"
 	"{\n"
 		"\t(void)argc, (void)argv;\n";
 /* pre-program shown to user */
-static char const prog_start_user[] =
+static char const *prog_start_user =
 	"\nint main(int argc, char **argv)\n"
 	"{\n";
-static char const prog_end[] =
+static char const *prog_end =
 		"\n\treturn 0;\n"
 	"}\n";
 
@@ -221,6 +221,24 @@ static inline void xrealloc(void *restrict ptr, size_t sz, char const *msg)
 	*(void **)ptr = tmp;
 }
 
+/* `fclose()` wrapper */
+static inline void xfclose(FILE **restrict out_file)
+{
+	if (!out_file || !*out_file)
+		return;
+	if (fclose(*out_file) == EOF)
+		WARN("xfclose()");
+}
+
+/* `fopen()` wrapper */
+static inline FILE *xfopen(char const *restrict path, char const *restrict fmode)
+{
+	FILE *file;
+	if (!(file = fopen(path, fmode)))
+		ERR("xfopen()");
+	return file;
+}
+
 /* `fread()` wrapper */
 static inline size_t xfread(void *restrict ptr, size_t sz, size_t nmemb, FILE *restrict stream)
 {
@@ -229,6 +247,7 @@ static inline size_t xfread(void *restrict ptr, size_t sz, size_t nmemb, FILE *r
 		return 0;
 	return cnt;
 }
+
 
 /* recursive free */
 static inline ptrdiff_t free_argv(char ***restrict argv)
