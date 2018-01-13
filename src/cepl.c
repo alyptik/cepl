@@ -80,17 +80,8 @@ static inline char *read_line(char **restrict ln)
 	return *ln;
 }
 
-static inline void undo_last_line(void)
+static inline void init_vars(void)
 {
-	/* break early if no history to pop */
-	if (prg[0].flags.cnt < 1 || prg[1].flags.cnt < 1)
-		return;
-	for (size_t i = 0; i < 2; i++)
-		pop_history(&prg[i]);
-	/* break early if tracking disabled */
-	if (!track_flag)
-		return;
-	/* re-init vars */
 	if (tl.list) {
 		free(tl.list);
 		tl.list = NULL;
@@ -101,6 +92,19 @@ static inline void undo_last_line(void)
 		free(vl.list);
 	}
 	init_vlist(&vl);
+}
+
+static inline void undo_last_line(void)
+{
+	/* break early if no history to pop */
+	if (prg[0].flags.cnt < 1 || prg[1].flags.cnt < 1)
+		return;
+	for (size_t i = 0; i < 2; i++)
+		pop_history(&prg[i]);
+	/* break early if tracking disabled */
+	if (!track_flag)
+		return;
+	init_vars();
 	/* add vars from previous lines */
 	for (size_t i = 1; i < prg[0].lines.cnt; i++) {
 		if (prg[0].lines.list[i] && prg[0].flags.list[i] == IN_MAIN) {
@@ -250,6 +254,18 @@ int main(int argc, char **argv)
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	/* initialize source buffers */
 	init_buffers(&vl, &tl, &il, &prg, &lbuf);
+	/* scan input source file */
+	if (in_flag) {
+		init_vars();
+		/* parse input file if one is specified */
+		STR_LIST tmp = strsplit(prog_start_user);
+		for (size_t i = 0; i < tmp.cnt; i++) {
+			/* extract identifiers and types */
+			if (track_flag && find_vars(tmp.list[i], &il, &tl))
+				gen_vlist(&vl, &il, &tl);
+		}
+		free_str_list(&tmp);
+	}
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
 	if (isatty(STDIN_FILENO) && !eval_flag)
@@ -322,16 +338,6 @@ int main(int argc, char **argv)
 		asm_flag = false;
 		/* re-initiatalize compiler arg array */
 		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
-		/* parse input file if one is specified */
-		{
-			STR_LIST tmp = strsplit(prog_start_user);
-			for (size_t i = 0; i < tmp.cnt; i++) {
-				/* extract identifiers and types */
-				if (track_flag && find_vars(tmp.list[i], &il, &tl))
-					gen_vlist(&vl, &il, &tl);
-			}
-			free_str_list(&tmp);
-		}
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {
