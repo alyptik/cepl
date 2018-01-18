@@ -37,17 +37,17 @@ extern char *hist_file, **cc_argv;
 /* string to compile */
 extern char eval_arg[];
 /* program source strucs (prg[0] is truncated for interactive printing) */
-extern PROG_SRC prg[2];
+extern struct prog_src prg[2];
 /* completion list of generated symbols */
-extern STR_LIST comp_list;
+extern struct str_list comp_list;
 /* toggle flags */
 extern bool asm_flag, eval_flag, in_flag, out_flag, parse_flag, track_flag, warn_flag;
 /* history file flag */
 extern bool has_hist;
 /* type, identifier, and var lists */
-extern TYPE_LIST tl;
-extern STR_LIST il;
-extern VAR_LIST vl;
+extern struct type_list tl;
+extern struct str_list il;
+extern struct var_list vl;
 /* output filenames */
 extern char *out_filename, *asm_filename;
 extern char *input_src[3];
@@ -175,24 +175,24 @@ static void reg_handlers(void)
 static void eval_line(char **restrict argv)
 {
 	char *ln = NULL, *ln_save = lptr, *term = getenv("TERM");
-	VAR_LIST ln_vars;
-	TYPE_LIST ln_types;
-	PROG_SRC ln_prg[2];
-	STR_LIST ln_ids;
-	bool has_color = true;
-
-	/* toggle flag to `false` if `TERM` is NULL, empty, or matches `dumb` */
-	if (!isatty(STDOUT_FILENO) || !isatty(STDERR_FILENO) || !term || !strcmp(term, "") || !strcmp(term, "dumb"))
-		has_color = false;
+	struct var_list ln_vars;
+	struct type_list ln_types;
+	struct prog_src ln_prg[2];
+	struct str_list ln_ids;
+	bool has_color = term
+		&& isatty(STDOUT_FILENO)
+		&& isatty(STDERR_FILENO)
+		&& strcmp(term, "")
+		&& strcmp(term, "dumb");
 	char *ln_beg = has_color
 		? "printf(\"" GREEN "%s%lld\\n" RST "\", \"result = \", (long long)"
 		: "printf(\"%s%lld\\n\", \"result = \", (long long)";
 	char *ln_end = ");";
 	size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(lptr) + 1;
+
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
 	close(STDERR_FILENO);
-
 	/* initialize source buffers */
 	init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
 	xmalloc(&ln, strlen(lptr) + sz, "eval_line() malloc");
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 	if (in_flag) {
 		init_vars();
 		/* parse input file if one is specified */
-		STR_LIST tmp = strsplit(prog_start_user);
+		struct str_list tmp = strsplit(prog_start_user);
 		for (size_t i = 0; i < tmp.cnt; i++) {
 			/* extract identifiers and types */
 			if (track_flag && find_vars(tmp.list[i], &il, &tl))
@@ -577,7 +577,7 @@ int main(int argc, char **argv)
 							for (size_t i = 0; i < 2; i++)
 								strmv(CONCAT, prg[i].f, "\n");
 
-							STR_LIST tmp = strsplit(lptr);
+							struct str_list tmp = strsplit(lptr);
 							for (size_t i = 0; i < tmp.cnt; i++) {
 								/* extract identifiers and types */
 								if (track_flag && find_vars(tmp.list[i], &il, &tl))
@@ -592,7 +592,7 @@ int main(int argc, char **argv)
 							/* append ';' if no trailing '}', ';', or '\' */
 							for (size_t i = 0; i < 2; i++)
 								strmv(CONCAT, prg[i].f, ";\n");
-							STR_LIST tmp = strsplit(lptr);
+							struct str_list tmp = strsplit(lptr);
 							for (size_t i = 0; i < tmp.cnt; i++) {
 								/* extract identifiers and types */
 								if (track_flag && find_vars(tmp.list[i], &il, &tl))
@@ -659,7 +659,7 @@ int main(int argc, char **argv)
 						}
 						strmv(CONCAT, prg[i].b, "\n");
 					}
-					STR_LIST tmp = strsplit(lptr);
+					struct str_list tmp = strsplit(lptr);
 					for (size_t i = 0; i < tmp.cnt; i++) {
 						/* extract identifiers and types */
 						if (track_flag && find_vars(tmp.list[i], &il, &tl))
@@ -674,7 +674,7 @@ int main(int argc, char **argv)
 					/* append ';' if no trailing '}', ';', or '\' */
 					for (size_t i = 0; i < 2; i++)
 						strmv(CONCAT, prg[i].b, ";\n");
-					STR_LIST tmp = strsplit(lptr);
+					struct str_list tmp = strsplit(lptr);
 					for (size_t i = 0; i < tmp.cnt; i++) {
 						/* extract identifiers and types */
 						if (track_flag && find_vars(tmp.list[i], &il, &tl))

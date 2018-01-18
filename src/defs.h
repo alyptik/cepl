@@ -84,40 +84,40 @@ enum var_type {
 };
 
 /* struct definition for NULL-terminated string dynamic array */
-typedef struct _str_list {
+struct str_list {
 	size_t cnt, max;
 	char **list;
-} STR_LIST;
+};
 
 /* struct definition for flag dynamic array */
-typedef struct _flag_list {
+struct flag_list {
 	size_t cnt, max;
 	enum src_flag *list;
-} FLAG_LIST;
+};
 
 /* struct definition for type dynamic array */
-typedef struct _type_list {
+struct type_list {
 	size_t cnt, max;
 	enum var_type *list;
-} TYPE_LIST;
+};
 
 /* struct definition for var-tracking array */
-typedef struct _var_list {
+struct var_list {
 	size_t cnt, max;
 	struct {
 		char *id;
 		enum var_type type_spec;
 	} *list;
-} VAR_LIST;
+};
 
 /* struct definition for generated program sources */
-typedef struct _prog_src {
+struct prog_src {
 	size_t b_sz, f_sz, t_sz;
 	size_t b_max, f_max, t_max;
 	char *b, *f, *total;
-	STR_LIST hist, lines;
-	FLAG_LIST flags;
-} PROG_SRC;
+	struct str_list hist, lines;
+	struct flag_list flags;
+};
 
 /* `malloc()` wrapper */
 static inline void xmalloc(void *restrict ptr, size_t sz, char const *msg)
@@ -210,7 +210,7 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
-static inline ptrdiff_t free_str_list(STR_LIST *restrict plist)
+static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
 {
 	size_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
@@ -232,7 +232,7 @@ static inline ptrdiff_t free_str_list(STR_LIST *restrict plist)
 	return null_cnt;
 }
 
-static inline void init_list(STR_LIST *restrict list_struct, char *restrict init_str)
+static inline void init_list(struct str_list *restrict list_struct, char *restrict init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -244,7 +244,7 @@ static inline void init_list(STR_LIST *restrict list_struct, char *restrict init
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
 }
 
-static inline void append_str(STR_LIST *restrict list_struct, char const *restrict string, size_t pad)
+static inline void append_str(struct str_list *restrict list_struct, char const *restrict string, size_t pad)
 {
 	/* sanity checks */
 	if (!list_struct->list)
@@ -262,14 +262,14 @@ static inline void append_str(STR_LIST *restrict list_struct, char const *restri
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
 }
 
-static inline void init_tlist(TYPE_LIST *restrict list_struct)
+static inline void init_tlist(struct type_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
 	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "init_tlist()");
 }
 
-static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type type_spec)
+static inline void append_type(struct type_list *restrict list_struct, enum var_type type_spec)
 {
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
@@ -279,7 +279,7 @@ static inline void append_type(TYPE_LIST *restrict list_struct, enum var_type ty
 	list_struct->list[list_struct->cnt - 1] = type_spec;
 }
 
-static inline void init_flag_list(FLAG_LIST *restrict list_struct)
+static inline void init_flag_list(struct flag_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -288,7 +288,7 @@ static inline void init_flag_list(FLAG_LIST *restrict list_struct)
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
 
-static inline void append_flag(FLAG_LIST *restrict list_struct, enum src_flag flag)
+static inline void append_flag(struct flag_list *restrict list_struct, enum src_flag flag)
 {
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
@@ -298,12 +298,12 @@ static inline void append_flag(FLAG_LIST *restrict list_struct, enum src_flag fl
 	list_struct->list[list_struct->cnt - 1] = flag;
 }
 
-static inline STR_LIST strsplit(char const *restrict str)
+static inline struct str_list strsplit(char const *restrict str)
 {
 	if (!str)
-		return (STR_LIST){0};
+		return (struct str_list){0};
 
-	STR_LIST list_struct;
+	struct str_list list_struct;
 	bool str_lit = false, chr_lit = false;
 	size_t memb_cnt = 0;
 	char arr[strlen(str) + 1], *ptr = arr;

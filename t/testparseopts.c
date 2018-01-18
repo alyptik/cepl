@@ -14,7 +14,7 @@ int mkstemp(char *__template);
 /* global completion list */
 char *comp_arg_list[1];
 /* global linker flags and completions structs */
-STR_LIST ld_list, comp_list;
+struct str_list ld_list, comp_list;
 /* source file includes template */
 char const *prelude =
 	"#ifndef _BSD_SOURCE\n"
@@ -96,7 +96,7 @@ int main (void)
 	FILE *ofile = NULL;
 	char const optstring[] = "hptvwc:a:e:f:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
-	STR_LIST symbols = {0};
+	struct str_list symbols = {0};
 	char *out_filename = NULL, *asm_filename = NULL, **result;
 	ptrdiff_t ret;
 	char out_tmp[] = "/tmp/ceplXXXXXX";

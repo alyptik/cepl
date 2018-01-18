@@ -13,7 +13,7 @@
 #include <sys/types.h>
 
 /* global linker arguments struct */
-STR_LIST ld_list;
+struct str_list ld_list;
 
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {

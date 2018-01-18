@@ -11,9 +11,6 @@
 #include <limits.h>
 #include <regex.h>
 
-/* silence linter */
-int getopt_long(int ___argc, char *const ___argv[], char const *__shortopts, struct option const *__longopts, int *__longind);
-
 /* global toggle flags */
 bool asm_flag = false, eval_flag = false, in_flag = false, out_flag = false;
 bool parse_flag = true, track_flag = true, warn_flag = false;
@@ -66,7 +63,7 @@ static char *const asm_list[] = {
 static int option_index;
 static char *tmp_arg;
 /* compiler arguments and library list structs */
-static STR_LIST cc_list, lib_list, sym_list;
+static struct str_list cc_list, lib_list, sym_list;
 
 /* getopts variables */
 extern char *optarg;
@@ -74,10 +71,14 @@ extern int optind, opterr, optopt;
 /* global completion list */
 extern char *comp_arg_list[];
 /* global linker flags and completions structs */
-extern STR_LIST ld_list, comp_list;
+extern struct str_list ld_list, comp_list;
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 
-char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restrict ofile, char **restrict out_filename, char **restrict asm_filename)
+char **parse_opts(int argc, char *argv[],
+		char const optstring[],
+		FILE **restrict ofile,
+		char **restrict out_filename,
+		char **restrict asm_filename)
 {
 	int opt;
 	enum asm_type asm_choice = NONE;
@@ -337,7 +338,7 @@ char **parse_opts(int argc, char *argv[], char const optstring[], FILE **restric
 	return cc_list.list;
 }
 
-void read_syms(STR_LIST *restrict tokens, char const *restrict elf_file)
+void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
 {
 	int elf_fd;
 	GElf_Shdr shdr;
@@ -379,10 +380,10 @@ void read_syms(STR_LIST *restrict tokens, char const *restrict elf_file)
 	close(elf_fd);
 }
 
-void parse_libs(STR_LIST *restrict symbols, char *restrict libs[])
+void parse_libs(struct str_list *restrict symbols, char *restrict libs[])
 {
 	for (size_t i = 0; libs[i]; i++) {
-		STR_LIST cur_syms = {.cnt = 0, .max = 1, .list = NULL};
+		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};
 		init_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
 		for (size_t j = 0; j < cur_syms.cnt; j++) {

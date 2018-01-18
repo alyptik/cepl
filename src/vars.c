@@ -18,7 +18,7 @@ static char *const ld_alt_list[] = {
 
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 /* global linker arguments struct */
-extern STR_LIST ld_list;
+extern struct str_list ld_list;
 extern char **environ;
 
 /* silence linter */
@@ -272,7 +272,9 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	return matches[1].rm_eo;
 }
 
-int find_vars(char const *restrict ln, STR_LIST *restrict ilist, TYPE_LIST *restrict tlist)
+int find_vars(char const *restrict ln,
+		struct str_list *restrict ilist,
+		struct type_list *restrict tlist)
 {
 	size_t off;
 	char *line_tmp[2], *id_tmp = NULL;
@@ -348,16 +350,21 @@ int find_vars(char const *restrict ln, STR_LIST *restrict ilist, TYPE_LIST *rest
 	return count;
 }
 
-int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const cc_args[], char *const exec_args[])
+int print_vars(struct var_list *restrict vlist,
+		char const *restrict src,
+		char *const cc_args[],
+		char *const exec_args[])
 {
-	char *term = getenv("TERM");
-	bool has_color = true;
-	/* toggle flag to `false` if `TERM` is NULL, empty, or matches `dumb` */
-	if (!isatty(STDOUT_FILENO) || !isatty(STDERR_FILENO) || !term || !strcmp(term, "") || !strcmp(term, "dumb"))
-		has_color = false;
-
 	int status, mem_fd, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
+	size_t off;
+	char *src_tmp;
+	char *term = getenv("TERM");
+	bool has_color = term
+		&& isatty(STDOUT_FILENO)
+		&& isatty(STDERR_FILENO)
+		&& strcmp(term, "")
+		&& strcmp(term, "dumb");
 	char *p_beg = has_color
 		? "\n\tfprintf(stderr, \"" YELLOW "__s = \\\"____\\\", " RST "\", \""
 		: "\n\tfprintf(stderr, \"__s = \\\"____\\\", \",\"";
@@ -366,8 +373,6 @@ int print_vars(VAR_LIST *restrict vlist, char const *restrict src, char *const c
 		: "\n\tfprintf(stderr, \"__s = \\\"____\\\"\\n\", \"";
 	char print_beg[strlen(p_beg) + 1], println_beg[strlen(pln_beg) + 1];
 	char print_end[] = ");";
-	char *src_tmp;
-	size_t off;
 	/* space for <name>, <name> */
 	size_t psz = sizeof print_beg + sizeof print_end + 16;
 	size_t plnsz = sizeof println_beg + sizeof print_end + 16;

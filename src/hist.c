@@ -16,18 +16,18 @@ char *hist_file;
 /* `-o` flag output file */
 FILE *ofile;
 /* program source strucs (prg[0] is truncated for interactive printing) */
-PROG_SRC prg[2];
+struct prog_src prg[2];
 /* type, identifier, and var lists */
-TYPE_LIST tl;
-STR_LIST il;
-VAR_LIST vl;
+struct type_list tl;
+struct str_list il;
+struct var_list vl;
 
 /* externs */
 extern bool asm_flag, eval_flag, out_flag, track_flag;
 /* compiler argument list */
 extern char **cc_argv;
 /* completion list of generated symbols */
-extern STR_LIST comp_list;
+extern struct str_list comp_list;
 /* line buffer and input file source */
 extern char *lptr, *input_src[3];
 
@@ -130,7 +130,7 @@ void cleanup(void)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
+int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
 {
 	/* return early if no file open */
 	if (!asm_flag || !asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
@@ -150,7 +150,8 @@ int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 
-	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
+	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC,
+					S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
 		WARN("%s", "error opening asm output file");
@@ -196,7 +197,7 @@ int write_asm(PROG_SRC (*restrict prgm)[], char *const cc_args[])
 	return 0;
 }
 
-void write_file(FILE **restrict out_file, PROG_SRC (*restrict prgm)[])
+void write_file(FILE **restrict out_file, struct prog_src (*restrict prgm)[])
 {
 	/* return early if no file open */
 	if (!out_flag || !out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
@@ -209,7 +210,11 @@ void write_file(FILE **restrict out_file, PROG_SRC (*restrict prgm)[])
 	*out_file = NULL;
 }
 
-void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
+void free_buffers(struct var_list *restrict vlist,
+		struct type_list *restrict tlist,
+		struct str_list *restrict ilist,
+		struct prog_src (*restrict prgm)[],
+		char **restrict ln)
 {
 	/* write out history/asm before freeing buffers */
 	write_file(&ofile, prgm);
@@ -242,22 +247,35 @@ void free_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 	}
 }
 
-void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST *restrict ilist, PROG_SRC (*restrict prgm)[], char **restrict ln)
+void init_buffers(struct var_list *restrict vlist,
+		struct type_list *restrict tlist,
+		struct str_list *restrict ilist,
+		struct prog_src (*restrict prgm)[],
+		char **restrict ln)
 {
 	/* user is truncated source for display */
 	xcalloc(&(*prgm)[0].f, 1, 1, "init");
 	xcalloc(&(*prgm)[0].b, 1, strlen(prog_start_user) + 1, "init");
-	xcalloc(&(*prgm)[0].total, 1, strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3, "init");
+	xcalloc(&(*prgm)[0].total, 1,
+			strlen(prelude)
+			+ strlen(prog_start_user)
+			+ strlen(prog_end) + 3, "init");
 	(*prgm)[0].f_sz = (*prgm)[0].f_max = 1;
 	(*prgm)[0].b_sz = (*prgm)[0].b_max = strlen(prog_start_user) + 1;
-	(*prgm)[0].t_sz = (*prgm)[0].t_max = strlen(prelude) + strlen(prog_start_user) + strlen(prog_end) + 3;
+	(*prgm)[0].t_sz = (*prgm)[0].t_max = strlen(prelude)
+			+ strlen(prog_start_user)
+			+ strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
 	xcalloc(&(*prgm)[1].f, 1, strlen(prelude) + 1, "init");
 	xcalloc(&(*prgm)[1].b, 1, strlen(prog_start) + 1, "init");
-	xcalloc(&(*prgm)[1].total, 1, strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3, "init");
+	xcalloc(&(*prgm)[1].total, 1, strlen(prelude)
+			+ strlen(prog_start)
+			+ strlen(prog_end) + 3, "init");
 	(*prgm)[1].f_sz = (*prgm)[1].f_max = strlen(prelude) + 1;
 	(*prgm)[1].b_sz = (*prgm)[1].b_max = strlen(prog_start) + 1;
-	(*prgm)[1].t_sz = (*prgm)[1].t_max = strlen(prelude) + strlen(prog_start) + strlen(prog_end) + 3;
+	(*prgm)[1].t_sz = (*prgm)[1].t_max = strlen(prelude)
+			+ strlen(prog_start)
+			+ strlen(prog_end) + 3;
 	/* sanity check */
 	for (size_t i = 0; i < 2; i++) {
 		if (!(*prgm)[i].f || !(*prgm)[i].b || !(*prgm)[i].total) {
@@ -281,7 +299,11 @@ void init_buffers(VAR_LIST *restrict vlist, TYPE_LIST *restrict tlist, STR_LIST 
 	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **restrict buf_str, size_t *restrict buf_sz, size_t *restrict b_max, size_t off, char **restrict ln)
+size_t rsz_buf(char **restrict buf_str,
+			size_t *restrict buf_sz,
+			size_t *restrict b_max,
+			size_t off,
+			char **restrict ln)
 {
 	/* sanity check */
 	if (!buf_str || !*buf_str || !ln)
@@ -303,7 +325,7 @@ size_t rsz_buf(char **restrict buf_str, size_t *restrict buf_sz, size_t *restric
 	return *buf_sz;
 }
 
-void pop_history(PROG_SRC *restrict prgm)
+void pop_history(struct prog_src *restrict prgm)
 {
 	switch(prgm->flags.list[--prgm->flags.cnt]) {
 	case NOT_IN_MAIN:
@@ -363,7 +385,7 @@ void dedup_history(char **restrict ln)
 	add_history(strip);
 }
 
-void build_body(PROG_SRC (*restrict prgm)[], char *restrict ln)
+void build_body(struct prog_src (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
@@ -379,7 +401,7 @@ void build_body(PROG_SRC (*restrict prgm)[], char *restrict ln)
 	}
 }
 
-void build_funcs(PROG_SRC (*restrict prgm)[], char *restrict ln)
+void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln)
 {
 	/* sanity check */
 	if (!prgm || !ln) {
@@ -395,7 +417,7 @@ void build_funcs(PROG_SRC (*restrict prgm)[], char *restrict ln)
 	}
 }
 
-void build_final(PROG_SRC (*restrict prgm)[], VAR_LIST *restrict vlist, char *argv[])
+void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict vlist, char *argv[])
 {
 	/* sanity check */
 	if (!prgm || !argv) {
