@@ -41,7 +41,7 @@ test check: $(TOBJ) $(TEST)
 	./t/testvars
 clean:
 	@echo "cleaning"
-	rm -f $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
+	$(RM) -f $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
 install: $(TARGET)
 	@echo "installing"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
@@ -49,11 +49,11 @@ install: $(TARGET)
 	install -c $(TARGET) $(DESTDIR)$(PREFIX)/$(BINDIR)
 	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
-	rm -f $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
+	$(RM) -f $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
+	$(RM) -f $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
 dist: clean
 	@echo "creating dist tarball"
 	@mkdir -pv $(TARGET)/
 	cp -R LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
-	rm -rf $(TARGET)/
+	$(RM) -rf $(TARGET)/
