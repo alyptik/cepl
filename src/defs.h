@@ -19,8 +19,36 @@
 #define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
 #define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 
+/* `malloc()` wrapper */
+#define xmalloc(TYPE, PTR, SZ, MSG) \
+	do { \
+		void *tmp = malloc(SZ); \
+		if (!tmp) \
+			ERR("%s", (MSG)); \
+		*(TYPE **)PTR = tmp; \
+	} while (0)
+
+/* `calloc()` wrapper */
+#define xcalloc(TYPE, PTR, NMEMB, SZ, MSG) \
+	do { \
+		void *tmp = calloc((NMEMB), (SZ)); \
+		if (!tmp) \
+			ERR("%s", (MSG)); \
+		*(TYPE **)PTR = tmp; \
+	} while (0)
+
+/* `realloc()` wrapper */
+#define xrealloc(TYPE, PTR, SZ, MSG) \
+	do { \
+		void *tmp[2] = {0, *(TYPE **)PTR}; \
+		if (!(tmp[0] = realloc(tmp[1], SZ))) \
+			ERR("%s", (MSG)); \
+		*(TYPE **)PTR = tmp[0]; \
+	} while (0)
+
+
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.3.0"
+#define VERSION_STRING	"CEPL v5.3.1"
 #define USAGE_STRING	"[-hptvw] [(-a|-i)“<asm.s>”] [-c“<compiler>”] [-e“<code>”] " \
 	"[-l“<libs>”] [-I“<includes>”] [-o“<out.c>”]\n\t" \
 	"-a,--att:\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -119,38 +147,6 @@ struct prog_src {
 	struct flag_list flags;
 };
 
-/* `malloc()` wrapper */
-static inline void xmalloc(void *restrict ptr, size_t sz, char const *msg)
-{
-	/* sanity check */
-	if (!ptr)
-		return;
-	if (!(*(void **)ptr = malloc(sz)))
-		ERR("%s", msg ? msg : "(nil)");
-}
-
-/* `calloc()` wrapper */
-static inline void xcalloc(void *restrict ptr, size_t nmemb, size_t sz, char const *msg)
-{
-	/* sanity check */
-	if (!ptr)
-		return;
-	if (!(*(void **)ptr = calloc(nmemb, sz)))
-		ERR("%s", msg ? msg : "(nil)");
-}
-
-/* `realloc()` wrapper */
-static inline void xrealloc(void *restrict ptr, size_t sz, char const *msg)
-{
-	void *tmp;
-	/* sanity check */
-	if (!ptr)
-		return;
-	if (!(tmp = realloc(*(void **)ptr, sz)))
-		ERR("%s", msg ? msg : "(nil)");
-	*(void **)ptr = tmp;
-}
-
 /* `fclose()` wrapper */
 static inline void xfclose(FILE **restrict out_file)
 {
@@ -236,11 +232,11 @@ static inline void init_list(struct str_list *restrict list_struct, char *restri
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
+	xcalloc(char, &list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
 	if (!init_str)
 		return;
 	list_struct->cnt++;
-	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_list()");
+	xcalloc(char, &list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_list()");
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
 }
 
@@ -252,13 +248,13 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
-		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_str()");
+		xrealloc(char, &list_struct->list, sizeof *list_struct->list * list_struct->max, "append_str()");
 	}
 	if (!string) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 		return;
 	}
-	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(string) + pad + 1, "append_str()");
+	xcalloc(char, &list_struct->list[list_struct->cnt - 1], 1, strlen(string) + pad + 1, "append_str()");
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
 }
 
@@ -266,7 +262,7 @@ static inline void init_tlist(struct type_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "init_tlist()");
+	xcalloc(int, &list_struct->list, 1, sizeof *list_struct->list, "init_tlist()");
 }
 
 static inline void append_type(struct type_list *restrict list_struct, enum var_type type_spec)
@@ -274,7 +270,7 @@ static inline void append_type(struct type_list *restrict list_struct, enum var_
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
-		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
+		xrealloc(int, &list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
 	}
 	list_struct->list[list_struct->cnt - 1] = type_spec;
 }
@@ -283,7 +279,7 @@ static inline void init_flag_list(struct flag_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "init_flag_list()");
+	xcalloc(int, &list_struct->list, 1, sizeof *list_struct->list, "init_flag_list()");
 	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
@@ -293,7 +289,7 @@ static inline void append_flag(struct flag_list *restrict list_struct, enum src_
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
-		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
+		xrealloc(int, &list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
 }

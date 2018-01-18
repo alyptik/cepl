@@ -120,7 +120,7 @@ char **parse_opts(int argc, char *argv[],
 			size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 			char tmp_buf[PAGE_SIZE];
 			for (size_t i = 0; i < ARRLEN(input_src); i++) {
-				xmalloc(&input_src[i], PAGE_SIZE, "malloc() input_src");
+				xmalloc(char, &input_src[i], PAGE_SIZE, "malloc() input_src");
 				input_src[i][0] = 0;
 			}
 
@@ -141,7 +141,7 @@ char **parse_opts(int argc, char *argv[],
 					if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
 						strmv(CONCAT, input_src[0], tmp_buf);
 						sz[0] += strlen(tmp_buf);
-						xrealloc(&input_src[0], sz[0], "parse_opts() xrealloc()");
+						xrealloc(char, &input_src[0], sz[0], "parse_opts() xrealloc(char, )");
 						break;
 					}
 					regfree(&reg[0]);
@@ -152,7 +152,7 @@ char **parse_opts(int argc, char *argv[],
 					if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
 						strmv(CONCAT, input_src[1], tmp_buf);
 						sz[1] += strlen(tmp_buf);
-						xrealloc(&input_src[1], sz[1], "parse_opts() xrealloc()");
+						xrealloc(char, &input_src[1], sz[1], "parse_opts() xrealloc(char, )");
 						break;
 					}
 					regfree(&reg[1]);
@@ -161,7 +161,7 @@ char **parse_opts(int argc, char *argv[],
 				case IN_EPILOGUE:
 					strmv(CONCAT, input_src[2], tmp_buf);
 					sz[2] += strlen(tmp_buf);
-					xrealloc(&input_src[2], sz[2], "parse_opts() xrealloc()");
+					xrealloc(char, &input_src[2], sz[2], "parse_opts() xrealloc(char, )");
 					break;
 				}
 			}
@@ -280,7 +280,7 @@ char **parse_opts(int argc, char *argv[],
 	/* asm output flag */
 	if (asm_flag) {
 		if (asm_file && !*asm_filename) {
-			xcalloc(asm_filename, 1, strlen(asm_file) + 1, "error during asm_filename calloc()");
+			xcalloc(char, asm_filename, 1, strlen(asm_file) + 1, "error during asm_filename calloc()");
 			strmv(0, *asm_filename, asm_file);
 			if (!strcmp(cc_list.list[0], "icc"))
 				asm_choice = ATT;
@@ -293,7 +293,7 @@ char **parse_opts(int argc, char *argv[],
 	/* output file flag */
 	if (out_flag) {
 		if (out_file && !*out_filename) {
-			xcalloc(out_filename, 1, strlen(out_file) + 1, "error during out_filename calloc()");
+			xcalloc(char, out_filename, 1, strlen(out_file) + 1, "error during out_filename calloc()");
 			strmv(0, *out_filename, out_file);
 		}
 		if (*ofile)

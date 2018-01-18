@@ -254,9 +254,9 @@ void init_buffers(struct var_list *restrict vlist,
 		char **restrict ln)
 {
 	/* user is truncated source for display */
-	xcalloc(&(*prgm)[0].f, 1, 1, "init");
-	xcalloc(&(*prgm)[0].b, 1, strlen(prog_start_user) + 1, "init");
-	xcalloc(&(*prgm)[0].total, 1,
+	xcalloc(char, &(*prgm)[0].f, 1, 1, "init");
+	xcalloc(char, &(*prgm)[0].b, 1, strlen(prog_start_user) + 1, "init");
+	xcalloc(char, &(*prgm)[0].total, 1,
 			strlen(prelude)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3, "init");
@@ -266,9 +266,9 @@ void init_buffers(struct var_list *restrict vlist,
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	xcalloc(&(*prgm)[1].f, 1, strlen(prelude) + 1, "init");
-	xcalloc(&(*prgm)[1].b, 1, strlen(prog_start) + 1, "init");
-	xcalloc(&(*prgm)[1].total, 1, strlen(prelude)
+	xcalloc(char, &(*prgm)[1].f, 1, strlen(prelude) + 1, "init");
+	xcalloc(char, &(*prgm)[1].b, 1, strlen(prog_start) + 1, "init");
+	xcalloc(char, &(*prgm)[1].total, 1, strlen(prelude)
 			+ strlen(prog_start)
 			+ strlen(prog_end) + 3, "init");
 	(*prgm)[1].f_sz = (*prgm)[1].f_max = strlen(prelude) + 1;
@@ -311,7 +311,7 @@ size_t rsz_buf(char **restrict buf_str,
 	size_t alloc_sz = strlen(*buf_str) + strlen(*ln) + off + 1;
 	if (!buf_sz || !b_max) {
 		/* current length + line length + extra characters + \0 */
-		xrealloc(buf_str, alloc_sz, "rsz_buf()");
+		xrealloc(char, buf_str, alloc_sz, "rsz_buf()");
 		return alloc_sz;
 	}
 	*buf_sz += alloc_sz;
@@ -321,7 +321,7 @@ size_t rsz_buf(char **restrict buf_str,
 	/* double until size is reached */
 	while ((*b_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
-	xrealloc(buf_str, *b_max, "rsz_buf()");
+	xrealloc(char, buf_str, *b_max, "rsz_buf()");
 	return *buf_sz;
 }
 

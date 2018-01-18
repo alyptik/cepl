@@ -195,7 +195,7 @@ static void eval_line(char **restrict argv)
 	close(STDERR_FILENO);
 	/* initialize source buffers */
 	init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
-	xmalloc(&ln, strlen(lptr) + sz, "eval_line() malloc");
+	xmalloc(char, &ln, strlen(lptr) + sz, "eval_line() malloc");
 	strmv(0, ln, ln_beg);
 	strmv(CONCAT, ln, lptr);
 	strmv(CONCAT, ln, ln_end);

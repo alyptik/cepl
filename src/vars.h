@@ -41,9 +41,9 @@ static inline void init_vlist(struct var_list *restrict vlist)
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
 	vlist->cnt = 0;
 	vlist->max = 1;
-	xcalloc(&vlist->list, 1, sizeof *vlist->list, "init_vlist()");
+	xcalloc(char, &vlist->list, 1, sizeof *vlist->list, "init_vlist()");
 	vlist->cnt++;
-	xcalloc(&vlist->list[vlist->cnt - 1].id, 1, strlen(init_str) + 1, "init_vlist");
+	xcalloc(char, &vlist->list[vlist->cnt - 1].id, 1, strlen(init_str) + 1, "init_vlist");
 	strmv(0, vlist->list[vlist->cnt - 1].id, init_str);
 	vlist->list[vlist->cnt - 1].type_spec = T_ERR;
 }
@@ -57,9 +57,9 @@ static inline void append_var(struct var_list *restrict vlist,
 	/* realloc if cnt reaches current size */
 	if (++vlist->cnt >= vlist->max) {
 		vlist->max *= 2;
-		xrealloc(&vlist->list, sizeof *vlist->list * vlist->max, "append_var()");
+		xrealloc(char, &vlist->list, sizeof *vlist->list * vlist->max, "append_var()");
 	}
-	xcalloc(&vlist->list[vlist->cnt - 1].id, 1, strlen(id) + 1, "append_var()");
+	xcalloc(char, &vlist->list[vlist->cnt - 1].id, 1, strlen(id) + 1, "append_var()");
 	strmv(0, vlist->list[vlist->cnt - 1].id, id);
 	vlist->list[vlist->cnt - 1].type_spec = type_spec;
 }
