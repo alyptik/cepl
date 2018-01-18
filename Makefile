@@ -41,19 +41,19 @@ test check: $(TOBJ) $(TEST)
 	./t/testvars
 clean:
 	@echo "cleaning"
-	@rm -fv $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
+	rm -f $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
 install: $(TARGET)
 	@echo "installing"
-	@mkdir -pv $(DESTDIR)$(PREFIX)/$(BINDIR)
-	@mkdir -pv $(DESTDIR)$(PREFIX)/$(MANDIR)
+	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
+	mkdir -p $(DESTDIR)$(PREFIX)/$(MANDIR)
 	install -c $(TARGET) $(DESTDIR)$(PREFIX)/$(BINDIR)
 	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
 uninstall:
-	@rm -fv $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
-	@rm -fv $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
+	rm -f $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
+	rm -f $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
 dist: clean
 	@echo "creating dist tarball"
 	@mkdir -pv $(TARGET)/
-	@cp -Rv LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
+	cp -R LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
-	@rm -rfv $(TARGET)/
+	rm -rf $(TARGET)/
