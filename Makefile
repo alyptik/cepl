@@ -9,11 +9,15 @@ all:
 
 # user configuration
 MKCFG := config.mk
+ifeq ($(CC), gcc)
+	DEBUG += -Wrestrict
+endif
 # if previously built with `-fsanitize=address` we have to use `ASAN` flags
 OPT != test -f asan.mk
-ifeq ($(.SHELLSTATUS),0)
+ifeq ($(.SHELLSTATUS), 0)
 	OLVL = $(DEBUG) $(ASAN)
 endif
+
 -include $(DEP) $(MKCFG)
 .PHONY: all asan check clean debug dist install test uninstall $(MKALL)
 
