@@ -31,14 +31,16 @@ CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN
 LIBS := -lelf -lhistory -lreadline
 TARGET := cepl
 MANPAGE := cepl.1
+COMPLETION := _cepl
 TAP := t/tap
 BINDIR := bin
 MANDIR := share/man/man1
+COMPDIR := share/zsh/site-functions
 MKALL += Makefile asan.mk
 DEBUG += -fno-builtin -fno-common -fverbose-asm
 CFLAGS += -pedantic-errors -std=c11 -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
 CFLAGS += -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow
-CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-variable -Wimplicit-fallthrough=0
+CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-variable -Wno-implicit-fallthrough
 CFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin

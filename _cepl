@@ -20,7 +20,7 @@ _arguments \
 	'-i[Name of the file to output Intel-dialect assembler code to]' \
 	'--intel[Name of the file to output Intel-dialect assembler code to]' \
 	'-o[Name of the file to output C source code to]' \
-	'--output[tName of the file to output C source code to]' \
+	'--output[Name of the file to output C source code to]' \
 	'-p[Disable addition of dynamic library symbols to readline completion]' \
 	'--parse[Disable addition of dynamic library symbols to readline completion]' \
 	'-t[Toggle variable tracking]' \

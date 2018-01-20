@@ -50,11 +50,14 @@ install: $(TARGET)
 	@echo "installing"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
 	mkdir -p $(DESTDIR)$(PREFIX)/$(MANDIR)
+	mkdir -p $(DESTDIR)$(PREFIX)/$(COMPDIR)
 	install -c $(TARGET) $(DESTDIR)$(PREFIX)/$(BINDIR)
 	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
+	install -c $(COMPLETION) $(DESTDIR)$(PREFIX)/$(COMPDIR)
 uninstall:
-	$(RM) -f $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
-	$(RM) -f $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
+	$(RM) $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
+	$(RM) $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
+	$(RM) $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 dist: clean
 	@echo "creating dist tarball"
 	@mkdir -pv $(TARGET)/
