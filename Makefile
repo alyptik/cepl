@@ -34,7 +34,7 @@ $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) $^ -o $@
 $(TEST): %: %.o $(TAP).o $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
-%.d %.o: %.c $(HDR)
+%.o %.d: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
 test check: $(TOBJ) $(TEST)
