@@ -6,7 +6,7 @@ cepl \- a C11 Read\-Eval\-Print Loop
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hptvw] [(\-a|\-i)\fI“<asm\&.s>”\fR] [\-c\fI“<compiler>”\fR] [\-e\fI“<code>”\fR] [\-l\fI“<libs>”\fR] [\-I\fI“<includes>”\fR] [\-o\fI“<out\&.c>”\fR]
+\fIcepl\fR [\-hptvw] [\-(a|i)\fI<asm\&.s>\fR] [\-c\fI<compiler>\fR] [\-e\fI<code>\fR] [\-l\fI<libs>\fR] [\-I\fI<includes>\fR] [\-o\fI<out\&.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
@@ -25,60 +25,60 @@ Command line options:
 .fi
 
 .HP
-\fB\-a\fR,\fB\-\-att\fR:	Name of the file to output AT\&T\-dialect assembler code to
+\fB\-a\fR, \fB\-\-att\fR	Name of the file to output AT\&T\-dialect assembler code to
 .HP
-\fB\-c\fR,\fB\-\-cc\fR:		Specify alternate compiler
+\fB\-c\fR, \fB\-\-cc\fR		Specify alternate compiler
 .HP
-\fB\-e\fR,\fB\-\-eval\fR:	Evaluate argument as C code
+\fB\-e\fR, \fB\-\-eval\fR	Evaluate argument as C code
 .HP
-\fB\-f\fR,\fB\-\-file\fR:	Name of file to use as starting C code template
+\fB\-f\fR, \fB\-\-file\fR	Name of file to use as starting C code template
 .HP
-\fB\-h\fR,\fB\-\-help\fR:	Show help/usage information
+\fB\-h\fR, \fB\-\-help\fR	Show help/usage information
 .HP
-\fB\-i\fR,\fB\-\-intel\fR:	Name of the file to output Intel\-dialect assembler code to
+\fB\-i\fR, \fB\-\-intel\fR	Name of the file to output Intel\-dialect assembler code to
 .HP
-\fB\-o\fR,\fB\-\-output\fR:	Name of the file to write C code to
+\fB\-o\fR, \fB\-\-output\fR	Name of the file to write C code to
 .HP
-\fB\-p\fR,\fB\-\-parse\fR:	Disable addition of dynamic library symbols to readline completion
+\fB\-p\fR, \fB\-\-parse\fR	Disable addition of dynamic library symbols to readline completion
 .HP
-\fB\-t\fR,\fB\-\-tracking\fR:	Toggle variable tracking
+\fB\-t\fR, \fB\-\-tracking\fR	Toggle variable tracking
 .HP
-\fB\-v\fR,\fB\-\-version\fR:	Show version information
+\fB\-v\fR, \fB\-\-version\fR	Show version information
 .HP
-\fB\-w\fR,\fB\-\-warnings\fR:	Compile with \fB\-pedantic\fR \fB\-Wall\fR \fB\-Wextra\fR flags
+\fB\-w\fR, \fB\-\-warnings\fR	Compile with \fB\-pedantic\fR \fB\-Wall\fR \fB\-Wextra\fR flags
 .HP
-\fB\-l\fR:			Link against specified library (flag can be repeated)
+\fB\-l\fR			Link against specified library (flag can be repeated)
 .HP
-\fB\-I\fR:			Search directory for header files (flag can be repeated)
+\fB\-I\fR			Search directory for header files (flag can be repeated)
 .fi
 
 .SS "COMMANDS"
 .sp
-Input lines prefixed with a \fB;\fR are used to control internal state\&.
+Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is optional)\&.
 .fi
 
 .HP
-\fB;a[tt]\fR:		Toggle -a (output AT\&T\-dialect asembler code) flag
+\fB;a[tt]\fR		Toggle -a (output AT\&T\-dialect asembler code) flag
 .HP
-\fB;h[elp]\fR:		Show help
+\fB;h[elp]\fR		Show help
 .HP
-\fB;i[ntel]\fR:		Toggle -i (output Intel\-dialect asembler code) flag
+\fB;i[ntel]\fR		Toggle -i (output Intel\-dialect asembler code) flag
 .HP
-\fB;m[acro]\fR:		Define a macro/function (e\&.g\&. \fB;f void bork(void) { puts("wark"); }\fR)
+\fB;m[acro]\fR		Define a macro/function (e\&.g\&. \fB;f void bork(void) { puts("wark"); }\fR)
 .HP
-\fB;o[utput]\fR:	Toggle -o (output C source code) flag
+\fB;o[utput]\fR	Toggle -o (output C source code) flag
 .HP
-\fB;p[arse]\fR:		Toggle -p (shared library parsing) flag
+\fB;p[arse]\fR		Toggle -p (shared library parsing) flag
 .HP
-\fB;q[uit]\fR:		Exit CEPL
+\fB;q[uit]\fR		Exit CEPL
 .HP
-\fB;r[eset]\fR:		Reset CEPL to its initial program state
+\fB;r[eset]\fR		Reset CEPL to its initial program state
 .HP
-\fB;t[racking]\fR:	Toggle variable tracking
+\fB;t[racking]\fR	Toggle variable tracking
 .HP
-\fB;u[ndo]\fR:		Incremental undo (can be repeated)
+\fB;u[ndo]\fR		Incremental undo (can be repeated)
 .HP
-\fB;w[arnings]\fR:	Toggle -w (pedantic warnings) flag
+\fB;w[arnings]\fR	Toggle -w (pedantic warnings) flag
 .fi
 
 .SH "NOTES"
