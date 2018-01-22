@@ -41,8 +41,8 @@ DEBUG += -fno-builtin -fno-common -fverbose-asm
 CFLAGS += -pedantic-errors -std=c11 -Wall -Wextra -Wstrict-overflow
 CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-variable
 CFLAGS += -Wno-implicit-fallthrough -Wno-missing-field-initializers
-CFLAGS += -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
+CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-LDFLAGS += -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
+LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
 
 # vi:ft=make:
