@@ -37,7 +37,7 @@ $(TEST): %: %.o $(TAP).o $(OBJ)
 %.o %.d: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
-test check: $(TOBJ) $(TEST)
+test check: $(TEST)
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts

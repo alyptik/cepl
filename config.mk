@@ -27,7 +27,7 @@ TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 ASAN := -fsanitize=address,alignment,leak,undefined
 DEBUG := -D_DEBUG -Og -ggdb3 -no-pie -fno-inline -Wfloat-equal -Wshadow
-CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -MMD -MP
+CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -MMD -MP
 LIBS := -lelf -lhistory -lreadline
 TARGET := cepl
 MANPAGE := cepl.1
@@ -38,12 +38,11 @@ MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
 MKALL += Makefile asan.mk
 DEBUG += -fno-builtin -fno-common -fverbose-asm
-CFLAGS += -pedantic-errors -std=c11 -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
-CFLAGS += -Wall -Wextra -Wno-missing-field-initializers -Wstrict-overflow
-CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-variable -Wno-implicit-fallthrough
-CFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
+CFLAGS += -pedantic-errors -std=c11 -Wall -Wextra -Wstrict-overflow
+CFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-unused-variable
+CFLAGS += -Wno-implicit-fallthrough -Wno-missing-field-initializers
+CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin
-LDFLAGS += -fno-align-functions -fno-align-jumps -fno-align-labels -fno-align-loops -fno-strict-aliasing
+LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
 
 # vi:ft=make:
