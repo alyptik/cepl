@@ -5,6 +5,11 @@
  * See LICENSE.md file for copyright and license details.
  */
 
+/* silence linter */
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE
+#endif
+
 #include "compile.h"
 #include "parseopts.h"
 #include <linux/memfd.h>
@@ -25,10 +30,6 @@ static char *const ld_alt_list[] = {
 };
 
 extern char **environ;
-
-/* silence linter */
-long syscall(long __sysno, ...);
-int fexecve(int __fd, char *const __argv[], char *const __envp[]);
 
 int compile(char const *restrict src, char *const cc_args[], char *const exec_args[])
 {

@@ -8,6 +8,7 @@
 #ifndef READLINE_H
 #define READLINE_H 1
 
+#include "defs.h"
 #include "parseopts.h"
 #include <readline/history.h>
 #include <readline/readline.h>

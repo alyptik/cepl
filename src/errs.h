@@ -8,6 +8,13 @@
 #ifndef ERRS_H
 #define ERRS_H 1
 
+#ifdef __INTEL_COMPILER
+#  define float_t long double
+#  define _Float128 float_t
+#else
+#  include <complex.h>
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>

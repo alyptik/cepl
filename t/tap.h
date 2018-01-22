@@ -7,6 +7,13 @@ This file is licensed under the LGPL
 #ifndef __TAP_H__
 #define __TAP_H__
 
+#ifdef __INTEL_COMPILER
+#  define float_t long double
+#  define _Float128 float_t
+#else
+#  include <complex.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

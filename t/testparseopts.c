@@ -86,10 +86,10 @@ char const *prog_start =
 char const *prog_start_user =
 	"\nint main(int argc, char **argv)\n"
 	"{\n";
+/* final section */
 char const *prog_end =
 		"\n\treturn 0;\n"
 	"}\n";
-
 
 int main (void)
 {

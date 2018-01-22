@@ -11,6 +11,20 @@
 /* global linker arguments struct */
 struct str_list ld_list;
 
+/* compiler pre-program */
+char const *prog_start =
+	"\nint main(int argc, char **argv)\n"
+	"{\n"
+		"\t(void)argc, (void)argv;\n";
+/* pre-program shown to user */
+char const *prog_start_user =
+	"\nint main(int argc, char **argv)\n"
+	"{\n";
+/* final section */
+char const *prog_end =
+		"\n\treturn 0;\n"
+	"}\n";
+
 int main(void)
 {
 	struct str_list ids = {0};
