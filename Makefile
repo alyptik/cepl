@@ -32,9 +32,9 @@ debug:
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $(LIBS) $^ -o $@
-$(TEST): %: %.o $(TAP).o $(OBJ)
+$(TEST): %: %.o $(TAP).o $(OBJ) $(TOBJ)
 	$(LD) $(LDFLAGS) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
-%.o %.d: %.c $(HDR)
+%.o: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
 test check: $(TEST)
