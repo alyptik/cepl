@@ -46,7 +46,6 @@
 		*(TYPE **)PTR = tmp[0]; \
 	} while (0)
 
-
 /* global version and usage strings */
 #define VERSION_STRING	"CEPL v5.4.1"
 #define USAGE_STRING	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
