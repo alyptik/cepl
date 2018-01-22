@@ -28,7 +28,7 @@ HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 ASAN := -fsanitize=address,alignment,leak,undefined
 DEBUG := -D_DEBUG -Og -ggdb3 -no-pie -fno-inline -Wfloat-equal -Wshadow
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -MMD -MP
-LIBS := -lelf -lhistory -lreadline
+LIBS := -L/lib64 -lelf -lhistory -lreadline
 TARGET := cepl
 MANPAGE := cepl.1
 COMPLETION := _cepl
