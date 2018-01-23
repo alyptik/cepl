@@ -9,13 +9,11 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 OLVL ?= -O2
-CFLAGS ?=
-LDFLAGS ?=
 
 # mandatory
 LD = $(CC)
-DEBUG_CFLAGS = $(DEBUG)
-DEBUG_LDFLAGS = $(DEBUG)
+DEBUG_CFLAGS = $(CFLAGS) $(DEBUG)
+DEBUG_LDFLAGS = $(LDFLAGS) $(DEBUG)
 MKALL = $(MKCFG) $(DEP)
 OBJ = $(SRC:.c=.o)
 TOBJ = $(TSRC:.c=.o)
@@ -25,8 +23,9 @@ UTEST = $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
+# check for gcc7
+DEBUG := $(shell gcc -v 2>&1 | awk '/version/ { if (substr($$3, 1, 1) == 7) { print "-Wrestrict" } }')
 ASAN := -fsanitize=address,alignment,leak,undefined
-DEBUG := -D_DEBUG -Og -ggdb3 -no-pie -fno-inline -Wfloat-equal -Wshadow
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -MMD -MP
 LIBS := -lelf -lhistory -lreadline
 TARGET := cepl
@@ -37,7 +36,9 @@ BINDIR := bin
 MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
 MKALL += Makefile asan.mk
-DEBUG += -fno-builtin -fno-common -fverbose-asm
+DEBUG += -Wshadow -Wfloat-equal
+DEBUG += -Og -ggdb3 -no-pie -D_DEBUG
+DEBUG += -fno-inline -fno-builtin -fno-common -fverbose-asm
 CFLAGS += -std=c11 -pedantic -errors-Wall -Wextra
 CFLAGS += -Wstrict-overflow -Wno-unused-variable
 CFLAGS += -Wno-implicit-fallthrough -Wno-missing-field-initializers
