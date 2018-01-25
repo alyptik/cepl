@@ -171,7 +171,7 @@ static void reg_handlers(void)
 		WARN("%s", "at_quick_exit(&free_bufs)");
 }
 
-static void eval_line(char **restrict argv)
+static void eval_line(int argc, char **restrict argv, char const *restrict optstring, char ***restrict cc_args)
 {
 	char *ln = NULL, *ln_save = lptr, *term = getenv("TERM");
 	struct var_list ln_vars;
@@ -188,6 +188,10 @@ static void eval_line(char **restrict argv)
 		: "printf(\"%s%lld\\n\", \"result = \", (long long)";
 	char *ln_end = ");";
 	size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(lptr) + 1;
+	bool flags[] = {
+		warn_flag, track_flag, parse_flag,
+		out_flag, eval_flag, asm_flag,
+	};
 
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
@@ -207,20 +211,33 @@ static void eval_line(char **restrict argv)
 		rsz_buf(&ln_prg[i].b, &ln_prg[i].b_sz, &ln_prg[i].b_max, sz, &lptr);
 		rsz_buf(&ln_prg[i].total, &ln_prg[i].t_sz, &ln_prg[i].t_max, sz, &lptr);
 	}
-	if (lptr[0] == ';' || find_vars(lptr, &ln_ids, &ln_types)) {
-		free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
-		dup2(saved_fd, STDERR_FILENO);
-		lptr = ln_save;
-		return;
+	if (lptr[0] != ';' && !find_vars(lptr, &ln_ids, &ln_types)) {
+		build_body(&ln_prg, ln);
+		build_final(&ln_prg, &ln_vars, argv);
+		/* print generated source code unless stdin is a pipe */
+		if (isatty(STDIN_FILENO) && !eval_flag)
+			compile(ln_prg[1].total, cc_argv, argv);
 	}
-	build_body(&ln_prg, ln);
-	build_final(&ln_prg, &ln_vars, argv);
-	/* print generated source code unless stdin is a pipe */
-	if (isatty(STDIN_FILENO) && !eval_flag)
-		compile(ln_prg[1].total, cc_argv, argv);
 	free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
 	dup2(saved_fd, STDERR_FILENO);
 	lptr = ln_save;
+
+	/* reset to defaults */
+	warn_flag = false;
+	track_flag = true;
+	parse_flag = true;
+	out_flag = false;
+	eval_flag = false;
+	asm_flag = false;
+	/* re-initiatalize compiler arg array */
+	*cc_args = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+	/* restore old values */
+	warn_flag = flags[0];
+	track_flag = flags[1];
+	parse_flag = flags[2];
+	out_flag = flags[3];
+	eval_flag = flags[4];
+	asm_flag = flags[5];
 }
 
 void toggle_att(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
@@ -521,28 +538,7 @@ int main(int argc, char **argv)
 		/* strip leading whitespace */
 		lptr += strspn(lptr, " \t");
 
-		bool flags[] = {
-			warn_flag, track_flag, parse_flag,
-			out_flag, eval_flag, asm_flag,
-		};
-		/* print line expression result */
-		eval_line(argv);
-		/* reset to defaults */
-		warn_flag = false;
-		track_flag = true;
-		parse_flag = true;
-		out_flag = false;
-		eval_flag = false;
-		asm_flag = false;
-		/* re-initiatalize compiler arg array */
-		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
-		/* restore old values */
-		warn_flag = flags[0];
-		track_flag = flags[1];
-		parse_flag = flags[2];
-		out_flag = flags[3];
-		eval_flag = flags[4];
-		asm_flag = flags[5];
+		eval_line(argc, argv, optstring, &cc_argv);
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {
