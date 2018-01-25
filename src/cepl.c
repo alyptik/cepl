@@ -223,6 +223,203 @@ static void eval_line(char **restrict argv)
 	lptr = ln_save;
 }
 
+void toggle_att(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+{
+	/* if file was open, flip it and break early */
+	if (asm_flag) {
+		asm_flag ^= true;
+		return;
+	}
+	asm_flag ^= true;
+	tbuf = strpbrk(lptr, " \t");
+	/* return if file name empty */
+	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
+		/* reset flag */
+		asm_flag ^= true;
+		return;
+	}
+	/* increment pointer to start of definition */
+	tbuf += strspn(tbuf, " \t");
+	if (asm_filename) {
+		free(asm_filename);
+		asm_filename = NULL;
+	}
+	if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
+		ERR("%s", "error during asm_filename calloc()");
+	strmv(0, asm_filename, tbuf);
+	free_buffers(&vl, &tl, &il, &prg, &lbuf);
+	init_buffers(&vl, &tl, &il, &prg, &lbuf);
+	asm_dialect = ATT;
+	/* reset to defaults */
+	warn_flag = false;
+	track_flag = true;
+	parse_flag = true;
+	out_flag = false;
+	eval_flag = false;
+	/* re-initiatalize compiler arg array */
+	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+}
+
+void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+{
+	/* if file was open, flip it and break early */
+	if (asm_flag) {
+		asm_flag ^= true;
+		return;
+	}
+	asm_flag ^= true;
+	tbuf = strpbrk(lptr, " \t");
+	/* return if file name empty */
+	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
+		/* reset flag */
+		asm_flag ^= true;
+		return;
+	}
+	/* increment pointer to start of definition */
+	tbuf += strspn(tbuf, " \t");
+	if (asm_filename) {
+		free(asm_filename);
+		asm_filename = NULL;
+	}
+	if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
+		ERR("%s", "error during asm_filename calloc()");
+	strmv(0, asm_filename, tbuf);
+	free_buffers(&vl, &tl, &il, &prg, &lbuf);
+	init_buffers(&vl, &tl, &il, &prg, &lbuf);
+	asm_dialect = INTEL;
+	/* reset to defaults */
+	warn_flag = false;
+	track_flag = true;
+	parse_flag = true;
+	out_flag = false;
+	eval_flag = false;
+	/* re-initiatalize compiler arg array */
+	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+}
+
+void toggle_out_file(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+{
+	/* if file was open, flip it and break early */
+	if (out_flag) {
+		out_flag ^= true;
+		return;
+	}
+	out_flag ^= true;
+	tbuf = strpbrk(lptr, " \t");
+	/* return if file name empty */
+	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
+		/* reset flag */
+		out_flag ^= true;
+		return;
+	}
+	/* increment pointer to start of definition */
+	tbuf += strspn(tbuf, " \t");
+	if (out_filename) {
+		free(out_filename);
+		out_filename = NULL;
+	}
+	if (!(out_filename = calloc(1, strlen(tbuf) + 1)))
+		ERR("%s", "error during out_filename calloc()");
+	strmv(0, out_filename, tbuf);
+	free_buffers(&vl, &tl, &il, &prg, &lbuf);
+	init_buffers(&vl, &tl, &il, &prg, &lbuf);
+	printf("%d", out_flag);
+	/* reset to defaults */
+	warn_flag = false;
+	track_flag = true;
+	parse_flag = true;
+	eval_flag = false;
+	asm_flag = false;
+	/* re-initiatalize compiler arg array */
+	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+}
+
+char *parse_macro(char *tbuf)
+{
+	/* remove trailing ' ' and '\t' */
+	for (size_t i = strlen(lptr) - 1; i > 0; i--) {
+		if (lptr[i] != ' ' && lptr[i] != '\t')
+			return tbuf;
+		lptr[i] = '\0';
+	}
+	tbuf = strpbrk(lptr, " \t");
+	/* return if function definition empty */
+	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf))
+		return tbuf;
+	/* increment pointer to start of definition */
+	tbuf += strspn(tbuf, " \t");
+	/* re-allocate enough memory for lptr + '\n' + '\n' + '\0' */
+	size_t s = strlen(tbuf) + 3;
+	for (size_t i = 0; i < 2; i++) {
+		rsz_buf(&prg[i].f, &prg[i].f_sz, &prg[i].f_max, s, &tbuf);
+	}
+
+	switch (tbuf[0]) {
+	/* dont append ';' for preprocessor directives */
+	case '#':
+		/* remove trailing ' ' and '\t' */
+		for (size_t i = strlen(tbuf) - 1; i > 0; i--) {
+			if (tbuf[i] != ' ' && tbuf[i] != '\t')
+				break;
+			tbuf[i] = '\0';
+		}
+		build_funcs(&prg, tbuf);
+		for (size_t i = 0; i < 2; i++)
+			strmv(CONCAT, prg[i].f, "\n");
+		break;
+
+	default:
+		/* remove trailing ' ' and '\t' */
+		for (size_t i = strlen(tbuf) - 1; i > 0; i--) {
+			if (tbuf[i] != ' ' && tbuf[i] != '\t')
+				break;
+			tbuf[i] = '\0';
+		}
+
+		switch(tbuf[strlen(tbuf) - 1]) {
+		case '{': /* fallthough */
+		case '}': /* fallthough */
+		case ';': /* fallthough */
+		case '\\': {
+				/* remove extra trailing ';' */
+				for (size_t j = strlen(tbuf) - 1; j > 0; j--) {
+					if (tbuf[j] != ';' || tbuf[j - 1] != ';')
+						break;
+					tbuf[j] = '\0';
+				}
+				build_funcs(&prg, tbuf);
+				for (size_t i = 0; i < 2; i++)
+					strmv(CONCAT, prg[i].f, "\n");
+
+				struct str_list tmp = strsplit(lptr);
+				for (size_t i = 0; i < tmp.cnt; i++) {
+					/* extract identifiers and types */
+					if (track_flag && find_vars(tmp.list[i], &il, &tl))
+						gen_vlist(&vl, &il, &tl);
+				}
+				free_str_list(&tmp);
+				break;
+			}
+
+		default: {
+				build_funcs(&prg, tbuf);
+				/* append ';' if no trailing '}', ';', or '\' */
+				for (size_t i = 0; i < 2; i++)
+					strmv(CONCAT, prg[i].f, ";\n");
+				struct str_list tmp = strsplit(lptr);
+				for (size_t i = 0; i < tmp.cnt; i++) {
+					/* extract identifiers and types */
+					if (track_flag && find_vars(tmp.list[i], &il, &tl))
+						gen_vlist(&vl, &il, &tl);
+				}
+				free_str_list(&tmp);
+			 }
+		}
+	}
+
+	return tbuf;
+}
+
 int main(int argc, char **argv)
 {
 	struct stat hist_stat;
@@ -360,113 +557,17 @@ int main(int argc, char **argv)
 
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
-				/* if file was open, flip it and break early */
-				if (asm_flag) {
-					asm_flag ^= true;
-					break;
-				}
-				asm_flag ^= true;
-				tbuf = strpbrk(lptr, " \t");
-				/* break if file name empty */
-				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
-					/* reset flag */
-					asm_flag ^= true;
-					break;
-				}
-				/* increment pointer to start of definition */
-				tbuf += strspn(tbuf, " \t");
-				if (asm_filename) {
-					free(asm_filename);
-					asm_filename = NULL;
-				}
-				if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
-					ERR("%s", "error during asm_filename calloc()");
-				strmv(0, asm_filename, tbuf);
-				free_buffers(&vl, &tl, &il, &prg, &lbuf);
-				init_buffers(&vl, &tl, &il, &prg, &lbuf);
-				asm_dialect = ATT;
-				/* reset to defaults */
-				warn_flag = false;
-				track_flag = true;
-				parse_flag = true;
-				out_flag = false;
-				eval_flag = false;
-				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+				toggle_att(argc, argv, optstring, tbuf, lbuf);
 				break;
 
 			/* toggle writing intel-dialect asm output */
 			case 'i':
-				/* if file was open, flip it and break early */
-				if (asm_flag) {
-					asm_flag ^= true;
-					break;
-				}
-				asm_flag ^= true;
-				tbuf = strpbrk(lptr, " \t");
-				/* break if file name empty */
-				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
-					/* reset flag */
-					asm_flag ^= true;
-					break;
-				}
-				/* increment pointer to start of definition */
-				tbuf += strspn(tbuf, " \t");
-				if (asm_filename) {
-					free(asm_filename);
-					asm_filename = NULL;
-				}
-				if (!(asm_filename = calloc(1, strlen(tbuf) + 1)))
-					ERR("%s", "error during asm_filename calloc()");
-				strmv(0, asm_filename, tbuf);
-				free_buffers(&vl, &tl, &il, &prg, &lbuf);
-				init_buffers(&vl, &tl, &il, &prg, &lbuf);
-				asm_dialect = INTEL;
-				/* reset to defaults */
-				warn_flag = false;
-				track_flag = true;
-				parse_flag = true;
-				out_flag = false;
-				eval_flag = false;
-				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+				toggle_intel(argc, argv, optstring, tbuf, lbuf);
 				break;
 
 			/* toggle output file writing */
 			case 'o':
-				/* if file was open, flip it and break early */
-				if (out_flag) {
-					out_flag ^= true;
-					break;
-				}
-				out_flag ^= true;
-				tbuf = strpbrk(lptr, " \t");
-				/* break if file name empty */
-				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
-					/* reset flag */
-					out_flag ^= true;
-					break;
-				}
-				/* increment pointer to start of definition */
-				tbuf += strspn(tbuf, " \t");
-				if (out_filename) {
-					free(out_filename);
-					out_filename = NULL;
-				}
-				if (!(out_filename = calloc(1, strlen(tbuf) + 1)))
-					ERR("%s", "error during out_filename calloc()");
-				strmv(0, out_filename, tbuf);
-				free_buffers(&vl, &tl, &il, &prg, &lbuf);
-				init_buffers(&vl, &tl, &il, &prg, &lbuf);
-				printf("%d", out_flag);
-				/* reset to defaults */
-				warn_flag = false;
-				track_flag = true;
-				parse_flag = true;
-				eval_flag = false;
-				asm_flag = false;
-				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+				toggle_out_file(argc, argv, optstring, tbuf, lbuf);
 				break;
 
 			/* toggle library parsing */
