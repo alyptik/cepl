@@ -435,6 +435,19 @@ static inline void parse_macro(char *tbuf)
 	}
 }
 
+static inline void scan_input_file(void)
+{
+	init_vars();
+	/* parse input file if one is specified */
+	struct str_list tmp = strsplit(prog_start_user);
+	for (size_t i = 0; i < tmp.cnt; i++) {
+		/* extract identifiers and types */
+		if (track_flag && find_vars(tmp.list[i], &il, &tl))
+			gen_vlist(&vl, &il, &tl);
+	}
+	free_str_list(&tmp);
+}
+
 int main(int argc, char **argv)
 {
 	struct stat hist_stat;
@@ -465,18 +478,11 @@ int main(int argc, char **argv)
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	/* initialize source buffers */
 	init_buffers(&vl, &tl, &il, &prg, &lbuf);
+
 	/* scan input source file */
-	if (in_flag) {
-		init_vars();
-		/* parse input file if one is specified */
-		struct str_list tmp = strsplit(prog_start_user);
-		for (size_t i = 0; i < tmp.cnt; i++) {
-			/* extract identifiers and types */
-			if (track_flag && find_vars(tmp.list[i], &il, &tl))
-				gen_vlist(&vl, &il, &tl);
-		}
-		free_str_list(&tmp);
-	}
+	if (in_flag)
+		scan_input_file();
+
 	/* initialize prg[0].total and prg[1].total then print version */
 	build_final(&prg, &vl, argv);
 	if (isatty(STDIN_FILENO) && !eval_flag)
