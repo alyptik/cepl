@@ -240,7 +240,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	asm_flag = flags[5];
 }
 
-void toggle_att(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_att(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
 {
 	/* if file was open, flip it and break early */
 	if (asm_flag) {
@@ -277,7 +277,7 @@ void toggle_att(int argc, char **argv, char const *optstring, char *tbuf, char *
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 }
 
-void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
 {
 	/* if file was open, flip it and break early */
 	if (asm_flag) {
@@ -314,7 +314,7 @@ void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf, char
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 }
 
-void toggle_out_file(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_out_file(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
 {
 	/* if file was open, flip it and break early */
 	if (out_flag) {
@@ -351,7 +351,7 @@ void toggle_out_file(int argc, char **argv, char const *optstring, char *tbuf, c
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 }
 
-void parse_macro(char *tbuf)
+static inline void parse_macro(char *tbuf)
 {
 	/* remove trailing ' ' and '\t' */
 	for (size_t i = strlen(lptr) - 1; i > 0; i--) {
