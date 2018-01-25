@@ -435,6 +435,56 @@ static inline void parse_macro(char *tbuf)
 	}
 }
 
+static inline void parse_normal(void)
+{
+	/* remove trailing ' ' and '\t' */
+	for (size_t i = strlen(lptr) - 1; i > 0; i--) {
+		if (lptr[i] != ' ' && lptr[i] != '\t')
+			break;
+		lptr[i] = '\0';
+	}
+	switch(lptr[strlen(lptr) - 1]) {
+	case '{': /* fallthough */
+	case '}': /* fallthough */
+	case ';': /* fallthough */
+	case '\\': {
+			build_body(&prg, lptr);
+			for (size_t i = 0; i < 2; i++) {
+				/* remove extra trailing ';' */
+				size_t b_len = strlen(prg[i].b) - 1;
+				for (size_t j = b_len; j > 0; j--) {
+					if (prg[i].b[j] != ';' || prg[i].b[j - 1] != ';')
+						break;
+					prg[i].b[j] = '\0';
+				}
+				strmv(CONCAT, prg[i].b, "\n");
+			}
+			struct str_list tmp = strsplit(lptr);
+			for (size_t i = 0; i < tmp.cnt; i++) {
+				/* extract identifiers and types */
+				if (track_flag && find_vars(tmp.list[i], &il, &tl))
+					gen_vlist(&vl, &il, &tl);
+			}
+			free_str_list(&tmp);
+			break;
+		   }
+
+	default: {
+			build_body(&prg, lptr);
+			/* append ';' if no trailing '}', ';', or '\' */
+			for (size_t i = 0; i < 2; i++)
+				strmv(CONCAT, prg[i].b, ";\n");
+			struct str_list tmp = strsplit(lptr);
+			for (size_t i = 0; i < tmp.cnt; i++) {
+				/* extract identifiers and types */
+				if (track_flag && find_vars(tmp.list[i], &il, &tl))
+					gen_vlist(&vl, &il, &tl);
+			}
+			free_str_list(&tmp);
+		}
+	}
+}
+
 static inline void scan_input_file(void)
 {
 	init_vars();
@@ -675,52 +725,7 @@ int main(int argc, char **argv)
 			break;
 
 		default:
-			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(lptr) - 1; i > 0; i--) {
-				if (lptr[i] != ' ' && lptr[i] != '\t')
-					break;
-				lptr[i] = '\0';
-			}
-			switch(lptr[strlen(lptr) - 1]) {
-			case '{': /* fallthough */
-			case '}': /* fallthough */
-			case ';': /* fallthough */
-			case '\\': {
-					build_body(&prg, lptr);
-					for (size_t i = 0; i < 2; i++) {
-						/* remove extra trailing ';' */
-						size_t b_len = strlen(prg[i].b) - 1;
-						for (size_t j = b_len; j > 0; j--) {
-							if (prg[i].b[j] != ';' || prg[i].b[j - 1] != ';')
-								break;
-							prg[i].b[j] = '\0';
-						}
-						strmv(CONCAT, prg[i].b, "\n");
-					}
-					struct str_list tmp = strsplit(lptr);
-					for (size_t i = 0; i < tmp.cnt; i++) {
-						/* extract identifiers and types */
-						if (track_flag && find_vars(tmp.list[i], &il, &tl))
-							gen_vlist(&vl, &il, &tl);
-					}
-					free_str_list(&tmp);
-					break;
-				   }
-
-			default: {
-					build_body(&prg, lptr);
-					/* append ';' if no trailing '}', ';', or '\' */
-					for (size_t i = 0; i < 2; i++)
-						strmv(CONCAT, prg[i].b, ";\n");
-					struct str_list tmp = strsplit(lptr);
-					for (size_t i = 0; i < tmp.cnt; i++) {
-						/* extract identifiers and types */
-						if (track_flag && find_vars(tmp.list[i], &il, &tl))
-							gen_vlist(&vl, &il, &tl);
-					}
-					free_str_list(&tmp);
-				}
-			}
+			parse_normal();
 		}
 
 		/* set to true before compiling */
