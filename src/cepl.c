@@ -326,6 +326,10 @@ int main(int argc, char **argv)
 		/* strip leading whitespace */
 		lptr += strspn(lptr, " \t");
 
+		bool flags[] = {
+			warn_flag, track_flag, parse_flag,
+			out_flag, eval_flag, asm_flag,
+		};
 		/* print line expression result */
 		eval_line(argv);
 		/* reset to defaults */
@@ -337,6 +341,13 @@ int main(int argc, char **argv)
 		asm_flag = false;
 		/* re-initiatalize compiler arg array */
 		cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+		/* restore old values */
+		warn_flag = flags[0];
+		track_flag = flags[1];
+		parse_flag = flags[2];
+		out_flag = flags[3];
+		eval_flag = flags[4];
+		asm_flag = flags[5];
 
 		/* control sequence and preprocessor directive parsing */
 		switch (lptr[0]) {
