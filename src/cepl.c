@@ -334,7 +334,7 @@ void toggle_out_file(int argc, char **argv, char const *optstring, char *tbuf, c
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 }
 
-char *parse_macro(char *tbuf)
+void parse_macro(char *tbuf)
 {
 	/* remove trailing ' ' and '\t' */
 	for (size_t i = strlen(lptr) - 1; i > 0; i--) {
@@ -345,7 +345,7 @@ char *parse_macro(char *tbuf)
 	tbuf = strpbrk(lptr, " \t");
 	/* return if function definition empty */
 	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf))
-		return tbuf;
+		return;
 	/* increment pointer to start of definition */
 	tbuf += strspn(tbuf, " \t");
 	/* re-allocate enough memory for lptr + '\n' + '\n' + '\0' */
@@ -416,8 +416,6 @@ char *parse_macro(char *tbuf)
 			 }
 		}
 	}
-
-	return tbuf;
 }
 
 int main(int argc, char **argv)
