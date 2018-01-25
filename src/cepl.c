@@ -314,7 +314,7 @@ static inline void toggle_intel(int argc, char **argv, char const *optstring, ch
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 }
 
-static inline void toggle_out_file(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_output_file(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
 {
 	/* if file was open, flip it and break early */
 	if (out_flag) {
@@ -623,7 +623,7 @@ int main(int argc, char **argv)
 
 			/* toggle output file writing */
 			case 'o':
-				toggle_out_file(argc, argv, optstring, tbuf, lbuf);
+				toggle_output_file(argc, argv, optstring, tbuf, lbuf);
 				break;
 
 			/* toggle library parsing */
