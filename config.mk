@@ -39,7 +39,7 @@ MKALL += Makefile asan.mk
 DEBUG += -Wshadow -Wfloat-equal
 DEBUG += -Og -ggdb3 -no-pie -D_DEBUG
 DEBUG += -fno-inline -fno-builtin -fno-common -fverbose-asm
-CFLAGS += -std=c11 -pedantic -errors-Wall -Wextra
+CFLAGS += -std=c11 -pedantic-errors -Wall -Wextra
 CFLAGS += -Wstrict-overflow -Wno-unused-variable
 CFLAGS += -Wno-implicit-fallthrough -Wno-missing-field-initializers
 CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
