@@ -339,7 +339,7 @@ char *parse_macro(char *tbuf)
 	/* remove trailing ' ' and '\t' */
 	for (size_t i = strlen(lptr) - 1; i > 0; i--) {
 		if (lptr[i] != ' ' && lptr[i] != '\t')
-			return tbuf;
+			break;
 		lptr[i] = '\0';
 	}
 	tbuf = strpbrk(lptr, " \t");
@@ -633,86 +633,7 @@ int main(int argc, char **argv)
 			/* define an include/macro/function */
 			case 'm': /* fallthrough */
 			case 'f':
-				/* remove trailing ' ' and '\t' */
-				for (size_t i = strlen(lptr) - 1; i > 0; i--) {
-					if (lptr[i] != ' ' && lptr[i] != '\t')
-						break;
-					lptr[i] = '\0';
-				}
-				tbuf = strpbrk(lptr, " \t");
-				/* break if function definition empty */
-				if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf))
-					break;
-				/* increment pointer to start of definition */
-				tbuf += strspn(tbuf, " \t");
-				/* re-allocate enough memory for lptr + '\n' + '\n' + '\0' */
-				size_t s = strlen(tbuf) + 3;
-				for (size_t i = 0; i < 2; i++) {
-					rsz_buf(&prg[i].f, &prg[i].f_sz, &prg[i].f_max, s, &tbuf);
-				}
-
-				switch (tbuf[0]) {
-				/* dont append ';' for preprocessor directives */
-				case '#':
-					/* remove trailing ' ' and '\t' */
-					for (size_t i = strlen(tbuf) - 1; i > 0; i--) {
-						if (tbuf[i] != ' ' && tbuf[i] != '\t')
-							break;
-						tbuf[i] = '\0';
-					}
-					build_funcs(&prg, tbuf);
-					for (size_t i = 0; i < 2; i++)
-						strmv(CONCAT, prg[i].f, "\n");
-					break;
-
-				default:
-					/* remove trailing ' ' and '\t' */
-					for (size_t i = strlen(tbuf) - 1; i > 0; i--) {
-						if (tbuf[i] != ' ' && tbuf[i] != '\t')
-							break;
-						tbuf[i] = '\0';
-					}
-
-					switch(tbuf[strlen(tbuf) - 1]) {
-					case '{': /* fallthough */
-					case '}': /* fallthough */
-					case ';': /* fallthough */
-					case '\\': {
-							/* remove extra trailing ';' */
-							for (size_t j = strlen(tbuf) - 1; j > 0; j--) {
-								if (tbuf[j] != ';' || tbuf[j - 1] != ';')
-									break;
-								tbuf[j] = '\0';
-							}
-							build_funcs(&prg, tbuf);
-							for (size_t i = 0; i < 2; i++)
-								strmv(CONCAT, prg[i].f, "\n");
-
-							struct str_list tmp = strsplit(lptr);
-							for (size_t i = 0; i < tmp.cnt; i++) {
-								/* extract identifiers and types */
-								if (track_flag && find_vars(tmp.list[i], &il, &tl))
-									gen_vlist(&vl, &il, &tl);
-							}
-							free_str_list(&tmp);
-							break;
-						}
-
-					default: {
-							build_funcs(&prg, tbuf);
-							/* append ';' if no trailing '}', ';', or '\' */
-							for (size_t i = 0; i < 2; i++)
-								strmv(CONCAT, prg[i].f, ";\n");
-							struct str_list tmp = strsplit(lptr);
-							for (size_t i = 0; i < tmp.cnt; i++) {
-								/* extract identifiers and types */
-								if (track_flag && find_vars(tmp.list[i], &il, &tl))
-									gen_vlist(&vl, &il, &tl);
-							}
-							free_str_list(&tmp);
-						 }
-					}
-				}
+				parse_macro(tbuf);
 				break;
 
 			/* show usage information */
