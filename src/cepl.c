@@ -448,16 +448,10 @@ static inline void scan_input_file(void)
 	free_str_list(&tmp);
 }
 
-int main(int argc, char **argv)
+static inline void build_hist_name(void)
 {
-	struct stat hist_stat;
-	size_t hist_len = 0;
-	size_t buf_sz = sizeof hist_name;
-	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
+	size_t buf_sz = sizeof hist_name, hist_len = 0;
 	char const *const home_env = getenv("HOME");
-	/* token buffers */
-	char *lbuf = NULL, *tbuf = NULL;
 
 	/* add hist_length of “$HOME/” if home_env is non-NULL */
 	if (home_env && strcmp(home_env, ""))
@@ -471,15 +465,26 @@ int main(int argc, char **argv)
 		strmv(0, hist_file, home_env);
 		hist_file[hist_len++] = '/';
 	}
-	/* build history filename */
 	strmv(hist_len, hist_file, hist_name);
+}
+
+int main(int argc, char **argv)
+{
+	struct stat hist_stat;
+	FILE *make_hist = NULL;
+	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
+	/* token buffers */
+	char *lbuf = NULL, *tbuf = NULL;
+
+	/* build history filename from environment */
+	build_hist_name();
 
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
 	/* initialize source buffers */
 	init_buffers(&vl, &tl, &il, &prg, &lbuf);
 
-	/* scan input source file */
+	/* scan input source file if applicable */
 	if (in_flag)
 		scan_input_file();
 
