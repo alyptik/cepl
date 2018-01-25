@@ -450,8 +450,10 @@ static inline void scan_input_file(void)
 
 static inline void build_hist_name(void)
 {
+	struct stat hist_stat;
 	size_t buf_sz = sizeof hist_name, hist_len = 0;
 	char const *const home_env = getenv("HOME");
+	FILE *make_hist = NULL;
 
 	/* add hist_length of “$HOME/” if home_env is non-NULL */
 	if (home_env && strcmp(home_env, ""))
@@ -466,32 +468,7 @@ static inline void build_hist_name(void)
 		hist_file[hist_len++] = '/';
 	}
 	strmv(hist_len, hist_file, hist_name);
-}
 
-int main(int argc, char **argv)
-{
-	struct stat hist_stat;
-	FILE *make_hist = NULL;
-	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
-	/* token buffers */
-	char *lbuf = NULL, *tbuf = NULL;
-
-	/* build history filename from environment */
-	build_hist_name();
-
-	/* initiatalize compiler arg array */
-	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
-	/* initialize source buffers */
-	init_buffers(&vl, &tl, &il, &prg, &lbuf);
-
-	/* scan input source file if applicable */
-	if (in_flag)
-		scan_input_file();
-
-	/* initialize prg[0].total and prg[1].total then print version */
-	build_final(&prg, &vl, argv);
-	if (isatty(STDIN_FILENO) && !eval_flag)
-		printf("%s\n", VERSION_STRING);
 	/* enable completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
@@ -520,6 +497,30 @@ int main(int argc, char **argv)
 			WARN("%s", hist_ptr);
 		}
 	}
+}
+
+int main(int argc, char **argv)
+{
+	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
+	/* token buffers */
+	char *lbuf = NULL, *tbuf = NULL;
+
+	/* build history filename from environment */
+	build_hist_name();
+
+	/* initiatalize compiler arg array */
+	cc_argv = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+	/* initialize source buffers */
+	init_buffers(&vl, &tl, &il, &prg, &lbuf);
+
+	/* scan input source file if applicable */
+	if (in_flag)
+		scan_input_file();
+
+	/* initialize prg[0].total and prg[1].total then print version */
+	build_final(&prg, &vl, argv);
+	if (isatty(STDIN_FILENO) && !eval_flag)
+		printf("%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
 	sigsetjmp(jmp_env, 1);
