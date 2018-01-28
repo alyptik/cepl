@@ -215,8 +215,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		build_body(&ln_prg, ln);
 		build_final(&ln_prg, &ln_vars, argv);
 		/* print generated source code unless stdin is a pipe */
-		if (isatty(STDIN_FILENO) && !eval_flag)
-			compile(ln_prg[1].total, cc_argv, argv);
+		compile(ln_prg[1].total, cc_argv, argv);
 	}
 	free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
 	dup2(saved_fd, STDERR_FILENO);
