@@ -173,7 +173,8 @@ static void reg_handlers(void)
 
 static void eval_line(int argc, char **restrict argv, char const *restrict optstring, char ***restrict cc_args)
 {
-	char *ln_save = lptr, *term = getenv("TERM");
+	char *ln = NULL, *ln_save = lptr;
+	char const *const term = getenv("TERM");
 	struct var_list ln_vars;
 	struct type_list ln_types;
 	struct prog_src ln_prg[2];
@@ -196,16 +197,15 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
 	close(STDERR_FILENO);
+	init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+	build_final(&ln_prg, &ln_vars, argv);
 	for (size_t i = 0; i < temp.cnt; i++) {
-		char *ln = NULL;
 		size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(temp.list[i]) + 1;
 		/* initialize source buffers */
-		init_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
 		xcalloc(char, &ln, 1, strlen(temp.list[i]) + sz, "eval_line() calloc");
 		strmv(0, ln, ln_beg);
 		strmv(CONCAT, ln, temp.list[i]);
 		strmv(CONCAT, ln, ln_end);
-		build_final(&ln_prg, &ln_vars, argv);
 #ifdef _DEBUG
 		puts(ln);
 #endif
@@ -218,11 +218,13 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		if (temp.list[i][0] != ';' && !find_vars(temp.list[i], &ln_ids, &ln_types)) {
 			build_body(&ln_prg, ln);
 			build_final(&ln_prg, &ln_vars, argv);
-			/* print generated source code unless stdin is a pipe */
-			compile(ln_prg[1].total, cc_argv, argv);
 		}
-		free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
+		free(ln);
+		ln = NULL;
 	}
+	/* print generated source code unless stdin is a pipe */
+	compile(ln_prg[1].total, cc_argv, argv);
+	free_buffers(&ln_vars, &ln_types, &ln_ids, &ln_prg, &ln);
 	free_str_list(&temp);
 	dup2(saved_fd, STDERR_FILENO);
 	lptr = ln_save;
