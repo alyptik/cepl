@@ -47,7 +47,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.4.2"
+#define VERSION_STRING	"CEPL v5.5.0"
 #define USAGE_STRING	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
 	"-a, --att\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -346,11 +346,6 @@ static inline struct str_list strsplit(char const *restrict str)
 			tmp++;
 		append_str(&list_struct, tmp, 0);
 	}
-
-#ifdef _DEBUG
-	for (size_t i = 0; i < list_struct.cnt; i++)
-		puts(list_struct.list[i]);
-#endif
 
 	return list_struct;
 }
