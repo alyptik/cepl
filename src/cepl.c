@@ -183,10 +183,10 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		&& isatty(STDERR_FILENO)
 		&& strcmp(term, "")
 		&& strcmp(term, "dumb");
-	char *ln_beg = has_color
-		? "printf(\"" GREEN "%s%lld\\n" RST "\", \"result = \", (long long)"
-		: "printf(\"%s%lld\\n\", \"result = \", (long long)";
-	char *ln_end = ");";
+	char const *const ln_beg = has_color
+		? "printf(\"" GREEN "%s%lld\\n" RST "\", \"result = \", (long long)("
+		: "printf(\"%s%lld\\n\", \"result = \", (long long)(";
+	char const *const ln_end = "));";
 	size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(lptr) + 1;
 	bool flags[] = {
 		warn_flag, track_flag, parse_flag,
