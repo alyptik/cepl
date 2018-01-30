@@ -9,6 +9,7 @@ all:
 
 # user configuration
 MKCFG := config.mk
+export C_INCLUDE_PATH=$(READLINE)/include
 # if previously built with `-fsanitize=address` we have to use `ASAN` flags
 ASAN_OPT != test -f asan.mk
 ifeq ($(.SHELLSTATUS),0)
@@ -26,9 +27,9 @@ debug:
 	$(MAKE) $(TARGET) check OLVL= CFLAGS="$(DEBUG_CFLAGS)" LDFLAGS="$(DEBUG_LDFLAGS)"
 
 $(TARGET): %: $(OBJ)
-	$(LD) $(LDFLAGS) $(LIBS) $^ -o $@
+	$(LD) $(LDFLAGS) $^ $(LIBS) -o $@
 $(TEST): %: %.o $(TAP).o $(OBJ) $(TOBJ)
-	$(LD) $(LDFLAGS) $(LIBS) $(TAP).o $(<:t/test%=src/%) $< -o $@
+	$(LD) $(LDFLAGS) $(TAP).o $(<:t/test%=src/%) $< $(LIBS) -o $@
 %.o: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
