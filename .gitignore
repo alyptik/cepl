@@ -33,6 +33,9 @@ t/*
 *.a
 *.la
 *.lo
+*.old
+!/readline/lib
+!/readline/lib/*
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -55,7 +58,5 @@ t/*
 *.tar.gz
 debug.mk
 asan.mk
-!/readline/lib/
-!/readline/lib/*
 
 # vi:ft=cfg:
