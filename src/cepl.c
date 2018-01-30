@@ -155,7 +155,7 @@ static void reg_handlers(void)
 		WARN("%s", "at_quick_exit(&free_bufs)");
 }
 
-static void eval_line(int argc, char **restrict argv, char const *restrict optstring, char ***restrict cc_args)
+static void eval_line(int argc, char **restrict argv, char const *restrict optstring)
 {
 	char *ln = NULL, *ln_save = program_state.cur_line;
 	char const *const term = getenv("TERM");
@@ -218,7 +218,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	program_state.eval_flag = false;
 	program_state.asm_flag = false;
 	/* re-initiatalize compiler arg array */
-	*cc_args = parse_opts(&program_state, argc, argv, optstring);
+	parse_opts(&program_state, argc, argv, optstring);
 	/* restore old values */
 	program_state.warn_flag = flags[0];
 	program_state.track_flag = flags[1];
@@ -262,7 +262,7 @@ static inline void toggle_att(int argc, char **argv, char const *optstring, char
 	program_state.out_flag = false;
 	program_state.eval_flag = false;
 	/* re-initiatalize compiler arg array */
-	cc_argv = parse_opts(&program_state, argc, argv, optstring);
+	parse_opts(&program_state, argc, argv, optstring);
 }
 
 static inline void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf)
@@ -299,7 +299,7 @@ static inline void toggle_intel(int argc, char **argv, char const *optstring, ch
 	program_state.out_flag = false;
 	program_state.eval_flag = false;
 	/* re-initiatalize compiler arg array */
-	cc_argv = parse_opts(&program_state, argc, argv, optstring);
+	parse_opts(&program_state, argc, argv, optstring);
 }
 
 static inline void toggle_output_file(int argc, char **argv, char const *optstring, char *tbuf)
@@ -336,7 +336,7 @@ static inline void toggle_output_file(int argc, char **argv, char const *optstri
 	program_state.eval_flag = false;
 	program_state.asm_flag = false;
 	/* re-initiatalize compiler arg array */
-	cc_argv = parse_opts(&program_state, argc, argv, optstring);
+	parse_opts(&program_state, argc, argv, optstring);
 }
 
 static inline void parse_macro(char *tbuf)
@@ -549,7 +549,7 @@ int main(int argc, char **argv)
 	build_hist_name();
 
 	/* initiatalize compiler arg array */
-	cc_argv = parse_opts(&program_state, argc, argv, optstring);
+	parse_opts(&program_state, argc, argv, optstring);
 	program_state.asm_flag = false;
 	program_state.eval_flag = false;
 	program_state.exec_flag = true;
@@ -600,7 +600,7 @@ int main(int argc, char **argv)
 		/* strip leading whitespace */
 		program_state.cur_line += strspn(program_state.cur_line, " \t");
 
-		eval_line(argc, argv, optstring, &cc_argv);
+		eval_line(argc, argv, optstring);
 
 		/* control sequence and preprocessor directive parsing */
 		switch (program_state.cur_line[0]) {
@@ -638,7 +638,7 @@ int main(int argc, char **argv)
 				program_state.eval_flag = false;
 				program_state.asm_flag = false;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(&program_state, argc, argv, optstring);
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle variable tracking */
@@ -653,7 +653,7 @@ int main(int argc, char **argv)
 				program_state.eval_flag = false;
 				program_state.asm_flag = false;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(&program_state, argc, argv, optstring);
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle warnings */
@@ -668,7 +668,7 @@ int main(int argc, char **argv)
 				program_state.eval_flag = false;
 				program_state.asm_flag = false;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(&program_state, argc, argv, optstring);
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* reset state */
@@ -683,7 +683,7 @@ int main(int argc, char **argv)
 				program_state.eval_flag = false;
 				program_state.asm_flag = false;
 				/* re-initiatalize compiler arg array */
-				cc_argv = parse_opts(&program_state, argc, argv, optstring);
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* define an include/macro/function */
