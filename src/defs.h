@@ -138,12 +138,26 @@ struct var_list {
 };
 
 /* struct definition for generated program sources */
-struct prog_src {
-	size_t b_sz, f_sz, t_sz;
-	size_t b_max, f_max, t_max;
-	char *b, *f, *total;
+struct source {
+	size_t body_size, funcs_size, total_size;
+	size_t body_max, funcs_max, total_max;
+	char *body, *funcs, *total;
 	struct str_list hist, lines;
 	struct flag_list flags;
+};
+
+/* monolithic program structure */
+struct program {
+	bool asm_flag, eval_flag, exec_flag, parse_flag;
+	bool track_flag, warn_flag, in_flag, out_flag;
+	bool has_hist;
+	char *cur_line, *hist_file;
+	char *out_filename, *asm_filename;
+	FILE *ofile;
+	struct str_list comp_list, id_list;
+	struct type_list type_list;
+	struct var_list var_list;
+	struct source src[2];
 };
 
 /* `fclose()` wrapper */
@@ -227,7 +241,7 @@ static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
 	return null_cnt;
 }
 
-static inline void init_list(struct str_list *restrict list_struct, char *restrict init_str)
+static inline void init_str_list(struct str_list *restrict list_struct, char *restrict init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -235,7 +249,7 @@ static inline void init_list(struct str_list *restrict list_struct, char *restri
 	if (!init_str)
 		return;
 	list_struct->cnt++;
-	xcalloc(char, &list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_list()");
+	xcalloc(char, &list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_str_list()");
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
 }
 
@@ -257,11 +271,11 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
 }
 
-static inline void init_tlist(struct type_list *restrict list_struct)
+static inline void init_type_list(struct type_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(int, &list_struct->list, 1, sizeof *list_struct->list, "init_tlist()");
+	xcalloc(int, &list_struct->list, 1, sizeof *list_struct->list, "init_type_list()");
 }
 
 static inline void append_type(struct type_list *restrict list_struct, enum var_type type_spec)
@@ -304,7 +318,7 @@ static inline struct str_list strsplit(char const *restrict str)
 	char arr[strlen(str) + 1], *ptr = arr;
 
 	strmv(0, ptr, str);
-	init_list(&list_struct, NULL);
+	init_str_list(&list_struct, NULL);
 
 	for (; *ptr; ptr++) {
 		switch (*ptr) {
