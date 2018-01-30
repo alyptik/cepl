@@ -55,5 +55,7 @@ t/*
 *.tar.gz
 debug.mk
 asan.mk
+!/readline/lib/
+!/readline/lib/*
 
 # vi:ft=cfg:
