@@ -276,7 +276,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 	/* output file flag */
 	if (prog->out_flag) {
-		if (prog->ofile && !prog->out_filename) {
+		if (out_name && !prog->out_filename) {
 			xcalloc(char, &prog->out_filename, 1, strlen(out_name) + 1, "error during prog->out_filename calloc()");
 			strmv(0, prog->out_filename, out_name);
 		}

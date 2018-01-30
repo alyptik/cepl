@@ -280,7 +280,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	/* sanity checks */
 	if (!prog || !prog->cur_line)
 		return 0;
-	xcalloc(char, &line_tmp[0], 1, strlen(prog->cur_line) + 1, "find_vars()");
+	xcalloc(char, &line_tmp[0], 1, strlen(code) + 1, "find_vars()");
 	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
@@ -292,7 +292,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	init_str_list(&prog->id_list, NULL);
 
 	size_t count = prog->id_list.cnt;
-	strmv(0, line_tmp[1], prog->cur_line);
+	strmv(0, line_tmp[1], code);
 	/* extract all identifiers from the line */
 	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 		append_str(&prog->id_list, id_tmp, 0);
