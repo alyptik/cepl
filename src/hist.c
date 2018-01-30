@@ -399,7 +399,7 @@ void build_final(struct program *restrict prog, char **argv)
 		strmv(CONCAT, prog->src[i].total, prog->src[i].body);
 		/* print variable values */
 		if (prog->track_flag && i == 1)
-			print_vars(&prog->var_list, prog->src[i].total, cc_argv, argv);
+			print_vars(prog, cc_argv, argv);
 		strmv(CONCAT, prog->src[i].total, prog_end);
 	}
 }

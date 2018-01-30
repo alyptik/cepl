@@ -272,9 +272,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	return matches[1].rm_eo;
 }
 
-int find_vars(char const *restrict ln,
-		struct str_list *restrict ilist,
-		struct type_list *restrict tlist)
+int find_vars(struct program *restrict prog, char const *restrict code)
 {
 	size_t off;
 	char *line_tmp[2], *id_tmp = NULL;

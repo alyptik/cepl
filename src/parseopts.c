@@ -74,11 +74,7 @@ extern char *comp_arg_list[];
 extern struct str_list ld_list, comp_list;
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 
-char **parse_opts(int argc, char *argv[],
-		char const optstring[],
-		FILE **restrict ofile,
-		char **restrict out_filename,
-		char **restrict asm_filename)
+char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
 	enum asm_type asm_choice = NONE;

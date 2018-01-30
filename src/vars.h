@@ -28,15 +28,10 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id);
 size_t extract_id(char const *restrict ln,
 		char **restrict id,
 		size_t *restrict offset);
-int find_vars(char const *restrict ln,
-		struct str_list *restrict ilist,
-		struct type_list *restrict tlist);
-int print_vars(struct var_list *restrict vlist,
-		char const *restrict src,
-		char *const cc_args[],
-		char *const exec_args[]);
+int find_vars(struct program *restrict prog, char const *restrict code);
+int print_vars(struct program *restrict prog, char *const *cc_args, char *const *exec_args);
 
-static inline void init_vlist(struct var_list *restrict vlist)
+static inline void init_var_list(struct var_list *restrict vlist)
 {
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
 	vlist->cnt = 0;
@@ -64,9 +59,7 @@ static inline void append_var(struct var_list *restrict vlist,
 	vlist->list[vlist->cnt - 1].type_spec = type_spec;
 }
 
-static inline void gen_vlist(struct var_list *restrict vlist,
-		struct str_list *restrict ilist,
-		struct type_list *restrict tlist)
+static inline void gen_var_list(struct program *restrict prog)
 {
 	/* sanity checks */
 	if (!vlist || !ilist || !ilist->list || !tlist || !tlist->list)
