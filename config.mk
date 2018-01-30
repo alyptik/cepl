@@ -48,8 +48,8 @@ CFLAGS += -std=c11 -pedantic-errors -Wall -Wextra
 CFLAGS += -I$(READLINE)/include
 CFLAGS += -Wstrict-overflow -Wno-unused-variable
 CFLAGS += -Wno-implicit-fallthrough -Wno-missing-field-initializers
-CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
-LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
+CFLAGS += -fPIC -flto -fuse-linker-plugin -fno-strict-aliasing
+LDFLAGS += -Wl,-O2,-z,relro,--sort-common,--as-needed
+LDFLAGS += -fPIC -flto -fuse-linker-plugin -fno-strict-aliasing
 
 # vi:ft=make:
