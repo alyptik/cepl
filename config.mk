@@ -13,6 +13,9 @@ LIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a \
 		$(shell pkg-config ncursesw --libs --cflags 2>/dev/null || \
 			pkg-config ncurses --libs --cflags 2>/dev/null || \
 			printf '%s' '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
+ifneq "$(origin LIBS)" "command line"
+	CFLAGS += -I$(READLINE)/include
+endif
 
 # mandatory
 LD = $(CC)
@@ -45,7 +48,6 @@ DEBUG += -Wshadow -Wfloat-equal
 DEBUG += -Og -ggdb3 -no-pie -D_DEBUG
 DEBUG += -fno-inline -fno-builtin -fno-common -fverbose-asm
 CFLAGS += -std=c11 -pedantic-errors -Wall -Wextra
-CFLAGS += -I$(READLINE)/include
 CFLAGS += -Wstrict-overflow -Wno-unused-variable
 CFLAGS += -Wno-implicit-fallthrough -Wno-missing-field-initializers
 CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
