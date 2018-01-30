@@ -60,10 +60,10 @@ before_install:
                 | sudo tee /usr/include/linux/memfd.h
 
 script:
-    - make -B
-    - make debug
+    - make -B LIBS='-lreadline -lhistory'
+    - make debug LIBS='-lreadline -lhistory'
     - make clean
-    - make test
-    - make install
+    - make test LIBS='-lreadline -lhistory'
+    - make install LIBS='-lreadline -lhistory'
     - make uninstall
     - make dist
