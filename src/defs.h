@@ -154,7 +154,8 @@ struct program {
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;
 	FILE *ofile;
-	struct str_list comp_list, id_list;
+	struct str_list cc_list, ld_list, lib_list;
+	struct str_list comp_list, sym_list, id_list;
 	struct type_list type_list;
 	struct var_list var_list;
 	struct source src[2];

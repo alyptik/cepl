@@ -13,7 +13,7 @@
 #include <fcntl.h>
 
 /* prototypes */
-int compile(char const *restrict src, char *const cc_args[], char *const exec_args[]);
+int compile(char const *restrict src, char *const *restrict cc_args, char *const *restrict exec_args);
 
 static inline void set_cloexec(int set_fd[static 2])
 {

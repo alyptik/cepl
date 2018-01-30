@@ -11,16 +11,12 @@
 #include <limits.h>
 #include <regex.h>
 
-/* global toggle flags */
-bool asm_flag = false, eval_flag = false, in_flag = false, out_flag = false;
-bool parse_flag = true, track_flag = true, warn_flag = false;
-/* global compiler arg array */
-char **cc_argv;
+/* globals */
+enum asm_type asm_dialect = NONE;
 /* string to compile */
 char eval_arg[EVAL_LIMIT];
 /* input file source */
 char *input_src[3];
-enum asm_type asm_dialect = NONE;
 
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
@@ -62,29 +58,25 @@ static char *const asm_list[] = {
 };
 static int option_index;
 static char *tmp_arg;
-/* compiler arguments and library list structs */
-static struct str_list cc_list, lib_list, sym_list;
 
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
 /* global completion list */
 extern char *comp_arg_list[];
-/* global linker flags and completions structs */
-extern struct str_list ld_list, comp_list;
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
 	enum asm_type asm_choice = NONE;
-	char *out_file = NULL, *in_file = NULL, *asm_file = NULL;
+	char *out_name = NULL, *in_file = NULL, *asm_file = NULL;
 	/* cleanup previous allocations */
-	free_str_list(&ld_list);
-	free_str_list(&lib_list);
-	free_str_list(&comp_list);
-	cc_list.cnt = 0;
-	cc_list.max = 1;
+	free_str_list(&prog->ld_list);
+	free_str_list(&prog->lib_list);
+	free_str_list(&prog->comp_list);
+	prog->cc_list.cnt = 0;
+	prog->cc_list.max = 1;
 	/* don't print an error if option not found */
 	opterr = 0;
 	/* reset option indices to reuse argv */
@@ -92,17 +84,17 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	optind = 1;
 
 	/* sanity check */
-	if (!out_filename || !asm_filename)
+	if (!prog->out_filename || !prog->asm_filename)
 		ERRX("%s", "output filename NULL");
 
 	/* initilize argument lists */
-	init_list(&cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
-	init_list(&ld_list, "gcc");
-	init_list(&lib_list, NULL);
+	init_str_list(&prog->ld_list, "gcc");
+	init_str_list(&prog->lib_list, NULL);
 
-	/* re-zero cc_list.list[0] so -c argument can be added */
-	memset(cc_list.list[0], 0, strlen(cc_list.list[0]) + 1);
+	/* re-zero prog->cc_list.list[0] so -c argument can be added */
+	memset(prog->cc_list.list[0], 0, strlen(prog->cc_list.list[0]) + 1);
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
@@ -164,7 +156,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			prelude = input_src[0];
 			prog_start = prog_start_user = input_src[1];
 			prog_end = input_src[2];
-			in_flag ^= true;
+			prog->in_flag ^= true;
 			break;
 		}
 
@@ -176,23 +168,23 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 				ERRX("%s", "more than one assembler dialect specified");
 			asm_choice = ATT;
 			asm_file = optarg;
-			asm_flag ^= true;
+			prog->asm_flag ^= true;
 			break;
 
 		/* switch compiler */
 		case 'c':
-			if (!cc_list.list[0][0]) {
+			if (!prog->cc_list.list[0][0]) {
 				size_t cc_len = strlen(optarg) + 1;
 				size_t pval_len = strlen("FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL") + 1;
 				/* realloc if needed */
 				if (cc_len > pval_len) {
-					if (!(tmp_arg = realloc(cc_list.list[0], cc_len)))
-						ERR("%s[%zu]", "cc_list.list", (size_t)0);
-					/* copy argument to cc_list.list[0] */
-					cc_list.list[0] = tmp_arg;
-					memset(cc_list.list[0], 0, strlen(optarg) + 1);
+					if (!(tmp_arg = realloc(prog->cc_list.list[0], cc_len)))
+						ERR("%s[%zu]", "prog->cc_list.list", (size_t)0);
+					/* copy argument to prog->cc_list.list[0] */
+					prog->cc_list.list[0] = tmp_arg;
+					memset(prog->cc_list.list[0], 0, strlen(optarg) + 1);
 				}
-				strmv(0, cc_list.list[0], optarg);
+				strmv(0, prog->cc_list.list[0], optarg);
 			}
 			break;
 
@@ -201,7 +193,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			if (strlen(optarg) > sizeof eval_arg)
 				ERRX("%s", "eval string too long");
 			strmv(0, eval_arg, optarg);
-			eval_flag ^= true;
+			prog->eval_flag ^= true;
 			break;
 
 		/* intel asm style */
@@ -212,13 +204,13 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 				ERRX("%s", "more than one assembler dialect specified");
 			asm_choice = INTEL;
 			asm_file = optarg;
-			asm_flag ^= true;
+			prog->asm_flag ^= true;
 			break;
 
 		/* header directory flag */
 		case 'I':
-			append_str(&cc_list, optarg, 2);
-			strmv(0, cc_list.list[cc_list.cnt - 1], "-I");
+			append_str(&prog->cc_list, optarg, 2);
+			strmv(0, prog->cc_list.list[prog->cc_list.cnt - 1], "-I");
 			break;
 
 		/* dynamic library flag */
@@ -228,33 +220,33 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 				strmv(0, buf, "/lib/lib");
 				strmv(CONCAT, buf, optarg);
 				strmv(CONCAT, buf, ".so");
-				append_str(&lib_list, buf, 0);
-				append_str(&ld_list, optarg, 2);
-				memcpy(ld_list.list[ld_list.cnt - 1], "-l", 2);
+				append_str(&prog->lib_list, buf, 0);
+				append_str(&prog->ld_list, optarg, 2);
+				memcpy(prog->ld_list.list[prog->ld_list.cnt - 1], "-l", 2);
 			} while (0);
 			break;
 
 		/* output file flag */
 		case 'o':
-			if (out_file)
+			if (out_name)
 				ERRX("%s", "too many output files specified");
-			out_file = optarg;
-			out_flag ^= true;
+			out_name = optarg;
+			prog->out_flag ^= true;
 			break;
 
 		/* parse flag */
 		case 'p':
-			parse_flag ^= true;
+			prog->parse_flag ^= true;
 			break;
 
 		/* track flag */
 		case 't':
-			track_flag ^= true;
+			prog->track_flag ^= true;
 			break;
 
 		/* warning flag */
 		case 'w':
-			warn_flag ^= true;
+			prog->warn_flag ^= true;
 			break;
 
 		/* version flag */
@@ -274,64 +266,64 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	}
 
 	/* asm output flag */
-	if (asm_flag) {
-		if (asm_file && !*asm_filename) {
-			xcalloc(char, asm_filename, 1, strlen(asm_file) + 1, "error during asm_filename calloc()");
-			strmv(0, *asm_filename, asm_file);
-			if (!strcmp(cc_list.list[0], "icc"))
+	if (prog->asm_flag) {
+		if (asm_file && !prog->asm_filename) {
+			xcalloc(char, &prog->asm_filename, 1, strlen(asm_file) + 1, "error during prog->asm_filename calloc()");
+			strmv(0, prog->asm_filename, asm_file);
+			if (!strcmp(prog->cc_list.list[0], "icc"))
 				asm_choice = ATT;
 			if (!asm_dialect)
 				asm_dialect = asm_choice;
-			append_str(&cc_list, asm_list[asm_choice], 0);
+			append_str(&prog->cc_list, asm_list[asm_choice], 0);
 		}
 	}
 
 	/* output file flag */
-	if (out_flag) {
-		if (out_file && !*out_filename) {
-			xcalloc(char, out_filename, 1, strlen(out_file) + 1, "error during out_filename calloc()");
-			strmv(0, *out_filename, out_file);
+	if (prog->out_flag) {
+		if (prog->ofile && !prog->out_filename) {
+			xcalloc(char, &prog->out_filename, 1, strlen(out_name) + 1, "error during prog->out_filename calloc()");
+			strmv(0, prog->out_filename, out_name);
 		}
-		if (*ofile)
-			fclose(*ofile);
-		if (!(*ofile = fopen(*out_filename, "wb")))
+		if (prog->ofile)
+			fclose(prog->ofile);
+		if (!(prog->ofile = fopen(prog->out_filename, "wb")))
 			ERR("%s", "failed to create output file");
 	}
 
 	/* append warning flags */
-	if (warn_flag) {
+	if (prog->warn_flag) {
 		for (size_t i = 0; warn_list[i]; i++)
-			append_str(&cc_list, warn_list[i], 0);
+			append_str(&prog->cc_list, warn_list[i], 0);
 	}
 
 	/* default to gcc as a compiler */
-	if (!cc_list.list[0][0])
-		strmv(0, cc_list.list[0], "gcc");
+	if (!prog->cc_list.list[0][0])
+		strmv(0, prog->cc_list.list[0], "gcc");
 	/* finalize argument lists */
 	for (size_t i = 0; cc_arg_list[i]; i++)
-		append_str(&cc_list, cc_arg_list[i], 0);
+		append_str(&prog->cc_list, cc_arg_list[i], 0);
 	for (size_t i = 0; ld_arg_list[i]; i++)
-		append_str(&ld_list, ld_arg_list[i], 0);
+		append_str(&prog->ld_list, ld_arg_list[i], 0);
 	/* append NULL to generated lists */
-	append_str(&cc_list, NULL, 0);
-	append_str(&ld_list, NULL, 0);
-	append_str(&lib_list, NULL, 0);
+	append_str(&prog->cc_list, NULL, 0);
+	append_str(&prog->ld_list, NULL, 0);
+	append_str(&prog->lib_list, NULL, 0);
 
 	/* parse ELF shared libraries for completions */
-	if (parse_flag) {
-		init_list(&comp_list, NULL);
-		init_list(&sym_list, NULL);
-		parse_libs(&sym_list, lib_list.list);
+	if (prog->parse_flag) {
+		init_str_list(&prog->comp_list, NULL);
+		init_str_list(&prog->sym_list, NULL);
+		parse_libs(&prog->sym_list, prog->lib_list.list);
 		for (size_t i = 0; comp_arg_list[i]; i++)
-			append_str(&comp_list, comp_arg_list[i], 0);
-		for (size_t i = 0; i < sym_list.cnt; i++)
-			append_str(&comp_list, sym_list.list[i], 0);
-		append_str(&comp_list, NULL, 0);
-		append_str(&sym_list, NULL, 0);
-		free_str_list(&sym_list);
+			append_str(&prog->comp_list, comp_arg_list[i], 0);
+		for (size_t i = 0; i < prog->sym_list.cnt; i++)
+			append_str(&prog->comp_list, prog->sym_list.list[i], 0);
+		append_str(&prog->comp_list, NULL, 0);
+		append_str(&prog->sym_list, NULL, 0);
+		free_str_list(&prog->sym_list);
 	}
 
-	return cc_list.list;
+	return prog->cc_list.list;
 }
 
 void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
@@ -380,7 +372,7 @@ void parse_libs(struct str_list *restrict symbols, char *restrict libs[])
 {
 	for (size_t i = 0; libs[i]; i++) {
 		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};
-		init_list(&cur_syms, NULL);
+		init_str_list(&cur_syms, NULL);
 		read_syms(&cur_syms, libs[i]);
 		for (size_t j = 0; j < cur_syms.cnt; j++) {
 			append_str(symbols, cur_syms.list[j], 0);

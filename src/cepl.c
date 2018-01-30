@@ -29,9 +29,9 @@ static struct program program_state;
 static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
-
 /* output file buffer and cc args */
-extern char **cc_argv;
+static char **cc_argv;
+
 /* string to compile */
 extern char eval_arg[];
 /* output filenames */
@@ -550,7 +550,15 @@ int main(int argc, char **argv)
 
 	/* initiatalize compiler arg array */
 	cc_argv = parse_opts(&program_state, argc, argv, optstring);
+	program_state.asm_flag = false;
+	program_state.eval_flag = false;
 	program_state.exec_flag = true;
+	program_state.in_flag = false;
+	program_state.out_flag = false;
+	program_state.parse_flag = true;
+	program_state.track_flag = true;
+	program_state.warn_flag = false;
+
 	/* initialize source buffers */
 	init_buffers(&program_state);
 

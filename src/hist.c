@@ -386,7 +386,7 @@ void build_funcs(struct program *restrict prog)
 	}
 }
 
-void build_final(struct program *restrict prog, char **argv)
+void build_final(struct program *restrict prog, char **restrict argv)
 {
 	/* sanity check */
 	if (!prog || !argv) {

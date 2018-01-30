@@ -31,7 +31,7 @@ static char *const ld_alt_list[] = {
 
 extern char **environ;
 
-int compile(char const *restrict src, char *const cc_args[], char *const exec_args[])
+int compile(char const *restrict src, char *const *restrict cc_args, char *const *restrict exec_args)
 {
 	int null_fd, mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
