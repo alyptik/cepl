@@ -14,7 +14,9 @@ LIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a \
 			pkg-config ncurses --libs --cflags 2>/dev/null || \
 			printf '%s' '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
 ifneq "$(origin LIBS)" "command line"
-	CFLAGS += -I$(READLINE)/include -DRL_OVERRIDE
+	CFLAGS += -I$(READLINE)/include
+else
+	CFLAGS += -DRL_OVERRIDE
 endif
 
 # mandatory
