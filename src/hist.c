@@ -9,7 +9,6 @@
 
 /* externs */
 extern struct str_list comp_list;
-extern char **cc_argv;
 /* line buffer and input file source */
 extern char *input_src[3];
 
@@ -197,14 +196,14 @@ void free_buffers(struct program *restrict prog)
 {
 	/* write out history/asm before freeing buffers */
 	write_file(prog);
-	write_asm(prog, cc_argv);
+	write_asm(prog, prog->cc_list.list);
 	/* clean up user data */
 	free_str_list(&prog->id_list);
 	free(prog->cur_line);
 	prog->cur_line = NULL;
 	free(prog->type_list.list);
 	prog->type_list.list = NULL;
-	free_argv(&cc_argv);
+	free_argv(&prog->cc_list.list);
 	if (prog->var_list.list) {
 		for (size_t i = 0; i < prog->var_list.cnt; i++)
 			free(prog->var_list.list[i].id);
@@ -400,7 +399,7 @@ void build_final(struct program *restrict prog, char **restrict argv)
 		strmv(CONCAT, prog->src[i].total, prog->src[i].body);
 		/* print variable values */
 		if (prog->track_flag && i == 1)
-			print_vars(prog, cc_argv, argv);
+			print_vars(prog, prog->cc_list.list, argv);
 		strmv(CONCAT, prog->src[i].total, prog_end);
 	}
 }

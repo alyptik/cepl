@@ -228,7 +228,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	program_state.asm_flag = flags[5];
 }
 
-static inline void toggle_att(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_att(int argc, char **argv, char const *optstring, char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.asm_flag) {
@@ -265,7 +265,7 @@ static inline void toggle_att(int argc, char **argv, char const *optstring, char
 	cc_argv = parse_opts(&program_state, argc, argv, optstring);
 }
 
-static inline void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.asm_flag) {
@@ -302,7 +302,7 @@ static inline void toggle_intel(int argc, char **argv, char const *optstring, ch
 	cc_argv = parse_opts(&program_state, argc, argv, optstring);
 }
 
-static inline void toggle_output_file(int argc, char **argv, char const *optstring, char *tbuf, char *lbuf)
+static inline void toggle_output_file(int argc, char **argv, char const *optstring, char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.out_flag) {
@@ -613,17 +613,17 @@ int main(int argc, char **argv)
 
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
-				toggle_att(argc, argv, optstring, tbuf, lbuf);
+				toggle_att(argc, argv, optstring, tbuf);
 				break;
 
 			/* toggle writing intel-dialect asm output */
 			case 'i':
-				toggle_intel(argc, argv, optstring, tbuf, lbuf);
+				toggle_intel(argc, argv, optstring, tbuf);
 				break;
 
 			/* toggle output file writing */
 			case 'o':
-				toggle_output_file(argc, argv, optstring, tbuf, lbuf);
+				toggle_output_file(argc, argv, optstring, tbuf);
 				break;
 
 			/* toggle library parsing */

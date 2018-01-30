@@ -83,10 +83,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	option_index = 0;
 	optind = 1;
 
-	/* sanity check */
-	if (!prog->out_filename || !prog->asm_filename)
-		ERRX("%s", "output filename NULL");
-
 	/* initilize argument lists */
 	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
