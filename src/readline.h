@@ -14,7 +14,7 @@
 #include <readline/readline.h>
 
 /* stub */
-#if defined(RL_OVERRIDE) || RL_VERSION_MAJOR < 7
+#if defined RL_OVERRIDE || RL_VERSION_MAJOR < 7
 #	define rl_clear_visible_line() do {} while(0)
 #endif
 
@@ -26,10 +26,10 @@ static inline char **completer(char const *text, int start, int end)
 	/* silence -Wunused-parameter warning */
 	(void)start, (void)end;
 	/* always list completions */
-	rl_bind_key('\t', &rl_complete);
+	rl_bind_key('\t', rl_complete);
 	/* don't append space after completions */
 	rl_completion_append_character = '\0';
-	return rl_completion_matches(text, &generator);
+	return rl_completion_matches(text, generator);
 }
 
 #endif

@@ -59,12 +59,12 @@ static char *const asm_list[] = {
 static int option_index;
 static char *tmp_arg;
 
+extern struct str_list comp_list;
+extern char *comp_arg_list[];
+extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
-/* global completion list */
-extern char *comp_arg_list[];
-extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
@@ -74,7 +74,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	/* cleanup previous allocations */
 	free_str_list(&prog->ld_list);
 	free_str_list(&prog->lib_list);
-	free_str_list(&prog->comp_list);
+	free_str_list(&comp_list);
 	prog->cc_list.cnt = 0;
 	prog->cc_list.max = 1;
 	/* don't print an error if option not found */
@@ -311,14 +311,14 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 	/* parse ELF shared libraries for completions */
 	if (prog->parse_flag) {
-		init_str_list(&prog->comp_list, NULL);
+		init_str_list(&comp_list, NULL);
 		init_str_list(&prog->sym_list, NULL);
 		parse_libs(&prog->sym_list, prog->lib_list.list);
 		for (size_t i = 0; comp_arg_list[i]; i++)
-			append_str(&prog->comp_list, comp_arg_list[i], 0);
+			append_str(&comp_list, comp_arg_list[i], 0);
 		for (size_t i = 0; i < prog->sym_list.cnt; i++)
-			append_str(&prog->comp_list, prog->sym_list.list[i], 0);
-		append_str(&prog->comp_list, NULL, 0);
+			append_str(&comp_list, prog->sym_list.list[i], 0);
+		append_str(&comp_list, NULL, 0);
 		append_str(&prog->sym_list, NULL, 0);
 		free_str_list(&prog->sym_list);
 	}
@@ -368,7 +368,7 @@ void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
 	close(elf_fd);
 }
 
-void parse_libs(struct str_list *restrict symbols, char *restrict libs[])
+void parse_libs(struct str_list *restrict symbols, char **restrict libs)
 {
 	for (size_t i = 0; libs[i]; i++) {
 		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};

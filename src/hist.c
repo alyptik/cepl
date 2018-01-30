@@ -8,6 +8,7 @@
 #include "hist.h"
 
 /* externs */
+extern struct str_list comp_list;
 extern char **cc_argv;
 /* line buffer and input file source */
 extern char *input_src[3];
@@ -94,7 +95,7 @@ void cleanup(struct program *restrict prog)
 	rl_free_line_state();
 	rl_cleanup_after_signal();
 	/* free generated completions */
-	free_str_list(&prog->comp_list);
+	free_str_list(&comp_list);
 	/* append history to history file */
 	if (prog->has_hist && write_history(prog->hist_file))
 		WARN("%s", "write_history()");
@@ -328,7 +329,7 @@ void dedup_history(char **restrict line)
 	char *strip = *line;
 	strip += strspn(strip, " \t");
 	/* current entry and forward/backward function pointers  */
-	HIST_ENTRY *(*seek_hist[])() = {&previous_history, &next_history};
+	HIST_ENTRY *(*seek_hist[])() = {previous_history, next_history};
 	/* save current position */
 	int hpos = where_history();
 	for (size_t i = 0; i < 2; i++) {
