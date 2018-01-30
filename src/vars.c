@@ -278,24 +278,24 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	char *line_tmp[2], *id_tmp = NULL;
 
 	/* sanity checks */
-	if (!ln || !ilist || !tlist)
+	if (!prog || !prog->cur_line)
 		return 0;
-	xcalloc(char, &line_tmp[0], 1, strlen(ln) + 1, "find_vars()");
+	xcalloc(char, &line_tmp[0], 1, strlen(prog->cur_line) + 1, "find_vars()");
 	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
-	if (tlist->list)
-		free(tlist->list);
-	if (ilist->list)
-		free_str_list(ilist);
-	init_tlist(tlist);
-	init_list(ilist, NULL);
+	if (prog->type_list.list)
+		free(prog->type_list.list);
+	if (prog->id_list.list)
+		free_str_list(&prog->id_list);
+	init_type_list(&prog->type_list);
+	init_str_list(&prog->id_list, NULL);
 
-	size_t count = ilist->cnt;
-	strmv(0, line_tmp[1], ln);
+	size_t count = prog->id_list.cnt;
+	strmv(0, line_tmp[1], prog->cur_line);
 	/* extract all identifiers from the line */
 	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
-		append_str(ilist, id_tmp, 0);
+		append_str(&prog->id_list, id_tmp, 0);
 		free(id_tmp);
 		id_tmp = NULL;
 		line_tmp[1] += off;
@@ -309,7 +309,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	while (line_tmp[1] && (line_tmp[1] = strpbrk(line_tmp[1], ";"))) {
 		line_tmp[1]++;
 		while (extract_id(line_tmp[1], &id_tmp, &off)) {
-			append_str(ilist, id_tmp, 0);
+			append_str(&prog->id_list, id_tmp, 0);
 			free(id_tmp);
 			id_tmp = NULL;
 			line_tmp[1] += off;
@@ -333,13 +333,13 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	/* get the type of each identifier */
 	line_tmp[1] = line_tmp[0];
 	/* if no keys found return early */
-	if (ilist->cnt < 1)
+	if (prog->id_list.cnt < 1)
 		return 0;
 	/* copy it into the output parameter */
-	for (size_t i = 0; i < ilist->cnt; i++) {
+	for (size_t i = 0; i < prog->id_list.cnt; i++) {
 		enum var_type type_tmp;
-		type_tmp = extract_type(line_tmp[1], ilist->list[i]);
-		append_type(tlist, type_tmp);
+		type_tmp = extract_type(line_tmp[1], prog->id_list.list[i]);
+		append_type(&prog->type_list, type_tmp);
 	}
 	if (id_tmp)
 		free(id_tmp);
@@ -348,10 +348,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	return count;
 }
 
-int print_vars(struct var_list *restrict vlist,
-		char const *restrict src,
-		char *const cc_args[],
-		char *const exec_args[])
+int print_vars(struct program *restrict prog, char *const *restrict cc_args, char *const *restrict exec_args)
 {
 	int status, mem_fd, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
@@ -380,33 +377,31 @@ int print_vars(struct var_list *restrict vlist,
 	strmv(0, println_beg, pln_beg);
 
 	/* sanity checks */
-	if (!vlist)
-		ERRX("%s", "NULL `var_list *` passed to print_vlist()");
-	if (strlen(src) < 2)
-		ERRX("%s", "empty source string passed to print_vlist()");
+	if (strlen(prog->src[1].total) < 2)
+		ERRX("%s", "empty source string passed to print_prog->var_list()");
 	/* return early if nothing to do */
-	if (!src || !cc_args || !exec_args || vlist->cnt == 0)
+	if (!prog->src[1].total || !cc_args || !exec_args || prog->var_list.cnt == 0)
 		return -1;
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "`null_fd` open()");
 
 	/* copy source buffer */
-	xcalloc(char, &src_tmp, 1, strlen(src) + 1, "src_tmp realloc()");
-	strmv(0, src_tmp, src);
-	off = strlen(src);
+	xcalloc(char, &src_tmp, 1, strlen(prog->src[1].total) + 1, "src_tmp realloc()");
+	strmv(0, src_tmp, prog->src[1].total);
+	off = strlen(prog->src[1].total);
 
 	/* build var-tracking source */
-	for (size_t i = 0; i < vlist->cnt; i++) {
-		enum var_type cur_type = vlist->list[i].type_spec;
+	for (size_t i = 0; i < prog->var_list.cnt; i++) {
+		enum var_type cur_type = prog->var_list.list[i].type_spec;
 		/* skip erroneous types */
 		if (cur_type == T_ERR)
 			continue;
 		/* populate buffers */
-		size_t printf_sz = (i < vlist->cnt - 1) ? psz : plnsz;
-		size_t arr_sz = (i < vlist->cnt - 1) ? sizeof print_beg : sizeof println_beg;
-		size_t cur_sz = strlen(vlist->list[i].id) * 2;
-		char (*arr_ptr)[printf_sz] = (i < vlist->cnt - 1) ? &print_beg : &println_beg;
+		size_t printf_sz = (i < prog->var_list.cnt - 1) ? psz : plnsz;
+		size_t arr_sz = (i < prog->var_list.cnt - 1) ? sizeof print_beg : sizeof println_beg;
+		size_t cur_sz = strlen(prog->var_list.list[i].id) * 2;
+		char (*arr_ptr)[printf_sz] = (i < prog->var_list.cnt - 1) ? &print_beg : &println_beg;
 
 		xrealloc(char, &src_tmp, strlen(src_tmp) + cur_sz + printf_sz, "src_tmp realloc()");
 		char print_tmp[arr_sz];
@@ -416,7 +411,7 @@ int print_vars(struct var_list *restrict vlist,
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR("%s", vlist->list[i].id);
+			ERR("%s", prog->var_list.list[i].id);
 			break;
 		case T_CHR:
 			strchr(print_tmp, '_')[0] = '%';
@@ -479,14 +474,14 @@ int print_vars(struct var_list *restrict vlist,
 		/* copy format string */
 		strmv(off, src_tmp, print_tmp);
 		off += arr_sz - 1;
-		strmv(off, src_tmp, vlist->list[i].id);
-		off += strlen(vlist->list[i].id);
+		strmv(off, src_tmp, prog->var_list.list[i].id);
+		off += strlen(prog->var_list.list[i].id);
 
 		/* handle other variable types */
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
-			ERR("%s", vlist->list[i].id);
+			ERR("%s", prog->var_list.list[i].id);
 			break;
 		case T_INT:
 			/* cast integral type to long long */
@@ -513,8 +508,8 @@ int print_vars(struct var_list *restrict vlist,
 		}
 
 		/* copy final part of printf */
-		strmv(off, src_tmp, vlist->list[i].id);
-		off += strlen(vlist->list[i].id);
+		strmv(off, src_tmp, prog->var_list.list[i].id);
+		off += strlen(prog->var_list.list[i].id);
 		strmv(off, src_tmp, print_end);
 		off += sizeof print_end - 1;
 	}
