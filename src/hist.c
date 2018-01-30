@@ -7,29 +7,10 @@
 
 #include "hist.h"
 
-/* globals */
-bool has_hist = false;
-/* output filenames */
-char *out_filename, *asm_filename;
-/* name of REPL history file */
-char *hist_file;
-/* `-o` flag output file */
-FILE *ofile;
-/* program source strucs (prg[0] is truncated for interactive printing) */
-struct prog_src prg[2];
-/* type, identifier, and var lists */
-struct type_list tl;
-struct str_list il;
-struct var_list vl;
-
 /* externs */
-extern bool asm_flag, eval_flag, out_flag, track_flag;
-/* compiler argument list */
 extern char **cc_argv;
-/* completion list of generated symbols */
-extern struct str_list comp_list;
 /* line buffer and input file source */
-extern char *lptr, *input_src[3];
+extern char *input_src[3];
 
 /* source file includes template */
 char const *prelude =
@@ -107,43 +88,43 @@ char const *prog_end =
 		"\n\treturn 0;\n"
 	"}\n";
 
-void cleanup(void)
+void cleanup(struct program *restrict prog)
 {
 	/* readline teardown */
 	rl_free_line_state();
 	rl_cleanup_after_signal();
 	/* free generated completions */
-	free_str_list(&comp_list);
+	free_str_list(&prog->comp_list);
 	/* append history to history file */
-	if (has_hist && write_history(hist_file))
+	if (prog->has_hist && write_history(prog->hist_file))
 		WARN("%s", "write_history()");
-	free(hist_file);
-	hist_file = NULL;
-	free(out_filename);
-	out_filename = NULL;
-	free(asm_filename);
-	asm_filename = NULL;
+	free(prog->hist_file);
+	prog->hist_file = NULL;
+	free(prog->out_filename);
+	prog->out_filename = NULL;
+	free(prog->asm_filename);
+	prog->asm_filename = NULL;
 	for (size_t i = 0; i < ARRLEN(input_src); i++) {
 		free(input_src[i]);
 		input_src[i] = NULL;
 	}
-	if (isatty(STDIN_FILENO) && !eval_flag)
+	if (isatty(STDIN_FILENO) && !prog->eval_flag)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
+int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 {
 	/* return early if no file open */
-	if (!asm_flag || !asm_filename || !*asm_filename || !(*prgm) || !(*prgm)[1].total)
+	if (!prog->asm_flag || !prog->asm_filename || !*prog->asm_filename || !prog->src[1].total)
 		return -1;
 
 	int pipe_cc[2], asm_fd, status;
-	char src_buffer[strlen((*prgm)[1].total) + 1];
+	char src_buffer[strlen(prog->src[1].total) + 1];
 
 	if (sizeof src_buffer < 2)
 		ERRX("%s", "empty source passed to write_asm()");
 	/* add trailing '\n' */
-	memcpy(src_buffer, (*prgm)[1].total, sizeof src_buffer);
+	memcpy(src_buffer, prog->src[1].total, sizeof src_buffer);
 	src_buffer[sizeof src_buffer - 1] = '\n';
 	/* create pipe */
 	if (pipe(pipe_cc) == -1)
@@ -151,7 +132,7 @@ int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
 
-	if ((asm_fd = open(asm_filename, O_WRONLY|O_CREAT|O_TRUNC,
+	if ((asm_fd = open(prog->asm_filename, O_WRONLY|O_CREAT|O_TRUNC,
 					S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
@@ -198,166 +179,153 @@ int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[])
 	return 0;
 }
 
-void write_file(FILE **restrict out_file, struct prog_src (*restrict prgm)[])
+void write_file(struct program *restrict prog)
 {
 	/* return early if no file open */
-	if (!out_flag || !out_file || !*out_file || !(*prgm) || !(*prgm)[1].total)
+	if (!prog->out_flag || !prog->ofile || !prog->src[1].total)
 		return;
 	/* write out program to file */
-	fwrite((*prgm)[1].total, strlen((*prgm)[1].total), 1, *out_file);
-	fputc('\n', *out_file);
+	fwrite(prog->src[1].total, strlen(prog->src[1].total), 1, prog->ofile);
+	fputc('\n', prog->ofile);
 	fflush(NULL);
-	fclose(*out_file);
-	*out_file = NULL;
+	fclose(prog->ofile);
+	prog->ofile = NULL;
 }
 
-void free_buffers(struct var_list *restrict vlist,
-		struct type_list *restrict tlist,
-		struct str_list *restrict ilist,
-		struct prog_src (*restrict prgm)[],
-		char **restrict ln)
+void free_buffers(struct program *restrict prog)
 {
 	/* write out history/asm before freeing buffers */
-	write_file(&ofile, prgm);
-	write_asm(prgm, cc_argv);
+	write_file(prog);
+	write_asm(prog, cc_argv);
 	/* clean up user data */
-	free_str_list(ilist);
-	free(*ln);
-	*ln = NULL;
-	lptr = NULL;
-	free(tlist->list);
-	tlist->list = NULL;
+	free_str_list(&prog->id_list);
+	free(prog->cur_line);
+	prog->cur_line = NULL;
+	free(prog->type_list.list);
+	prog->type_list.list = NULL;
 	free_argv(&cc_argv);
-	if (vlist->list) {
-		for (size_t i = 0; i < vlist->cnt; i++)
-			free(vlist->list[i].id);
-		free(vlist->list);
+	if (prog->var_list.list) {
+		for (size_t i = 0; i < prog->var_list.cnt; i++)
+			free(prog->var_list.list[i].id);
+		free(prog->var_list.list);
 	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
-		free((*prgm)[i].f);
-		free((*prgm)[i].b);
-		free((*prgm)[i].total);
-		free((*prgm)[i].flags.list);
-		free_str_list(&(*prgm)[i].hist);
-		free_str_list(&(*prgm)[i].lines);
-		(*prgm)[i].b_sz = (*prgm)[i].f_sz = (*prgm)[i].t_sz = 0;
-		(*prgm)[i].b_max = (*prgm)[i].f_max = (*prgm)[i].t_max = 1;
+		free(prog->src[i].funcs);
+		free(prog->src[i].body);
+		free(prog->src[i].total);
+		free(prog->src[i].flags.list);
+		free_str_list(&prog->src[i].hist);
+		free_str_list(&prog->src[i].lines);
+		prog->src[i].body_size = prog->src[i].funcs_size = prog->src[i].total_size = 0;
+		prog->src[i].body_max = prog->src[i].funcs_max = prog->src[i].total_max = 1;
 		/* `(void *)` casts needed to chain diff ptr types */
-		(*prgm)[i].b = (*prgm)[i].f = (*prgm)[i].total = (void *)((*prgm)[i].flags.list = NULL);
+		prog->src[i].body = prog->src[i].funcs = prog->src[i].total = (void *)(prog->src[i].flags.list = NULL);
 	}
 }
 
-void init_buffers(struct var_list *restrict vlist,
-		struct type_list *restrict tlist,
-		struct str_list *restrict ilist,
-		struct prog_src (*restrict prgm)[],
-		char **restrict ln)
+void init_buffers(struct program *restrict prog)
 {
 	/* user is truncated source for display */
-	xcalloc(char, &(*prgm)[0].f, 1, 1, "init");
-	xcalloc(char, &(*prgm)[0].b, 1, strlen(prog_start_user) + 1, "init");
-	xcalloc(char, &(*prgm)[0].total, 1,
+	xcalloc(char, &prog->src[0].funcs, 1, 1, "init");
+	xcalloc(char, &prog->src[0].body, 1, strlen(prog_start_user) + 1, "init");
+	xcalloc(char, &prog->src[0].total, 1,
 			strlen(prelude)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3, "init");
-	(*prgm)[0].f_sz = (*prgm)[0].f_max = 1;
-	(*prgm)[0].b_sz = (*prgm)[0].b_max = strlen(prog_start_user) + 1;
-	(*prgm)[0].t_sz = (*prgm)[0].t_max = strlen(prelude)
+	prog->src[0].funcs_size = prog->src[0].funcs_max = 1;
+	prog->src[0].body_size = prog->src[0].body_max = strlen(prog_start_user) + 1;
+	prog->src[0].total_size = prog->src[0].total_max = strlen(prelude)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	xcalloc(char, &(*prgm)[1].f, 1, strlen(prelude) + 1, "init");
-	xcalloc(char, &(*prgm)[1].b, 1, strlen(prog_start) + 1, "init");
-	xcalloc(char, &(*prgm)[1].total, 1, strlen(prelude)
+	xcalloc(char, &prog->src[1].funcs, 1, strlen(prelude) + 1, "init");
+	xcalloc(char, &prog->src[1].body, 1, strlen(prog_start) + 1, "init");
+	xcalloc(char, &prog->src[1].total, 1, strlen(prelude)
 			+ strlen(prog_start)
 			+ strlen(prog_end) + 3, "init");
-	(*prgm)[1].f_sz = (*prgm)[1].f_max = strlen(prelude) + 1;
-	(*prgm)[1].b_sz = (*prgm)[1].b_max = strlen(prog_start) + 1;
-	(*prgm)[1].t_sz = (*prgm)[1].t_max = strlen(prelude)
+	prog->src[1].funcs_size = prog->src[1].funcs_max = strlen(prelude) + 1;
+	prog->src[1].body_size = prog->src[1].body_max = strlen(prog_start) + 1;
+	prog->src[1].total_size = prog->src[1].total_max = strlen(prelude)
 			+ strlen(prog_start)
 			+ strlen(prog_end) + 3;
 	/* sanity check */
 	for (size_t i = 0; i < 2; i++) {
-		if (!(*prgm)[i].f || !(*prgm)[i].b || !(*prgm)[i].total) {
-			free_buffers(vlist, tlist, ilist, prgm, ln);
-			cleanup();
+		if (!prog->src[i].funcs || !prog->src[i].body || !prog->src[i].total) {
+			free_buffers(prog);
+			cleanup(prog);
 			ERR("%s", "prgm[2] calloc()");
 		}
 	}
-	/* no memcpy for prgm[0].f */
-	strmv(0, (*prgm)[0].b, prog_start_user);
-	strmv(0, (*prgm)[1].f, prelude);
-	strmv(0, (*prgm)[1].b, prog_start);
+	/* no memcpy for prgm[0].funcs */
+	strmv(0, prog->src[0].body, prog_start_user);
+	strmv(0, prog->src[1].funcs, prelude);
+	strmv(0, prog->src[1].body, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
-		init_list(&(*prgm)[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_list(&(*prgm)[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_flag_list(&(*prgm)[i].flags);
+		init_str_list(&prog->src[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_str_list(&prog->src[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_flag_list(&prog->src[i].flags);
 	}
-	init_vlist(vlist);
-	init_tlist(tlist);
-	init_list(ilist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+	init_var_list(&prog->var_list);
+	init_type_list(&prog->type_list);
+	init_str_list(&prog->id_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
-size_t rsz_buf(char **restrict buf_str,
-			size_t *restrict buf_sz,
-			size_t *restrict b_max,
-			size_t off,
-			char **restrict ln)
+size_t rsz_buf(struct program *restrict prog, char **buf_str, size_t *buf_sz, size_t *buf_max, size_t off)
 {
 	/* sanity check */
-	if (!buf_str || !*buf_str || !ln)
+	if (!buf_str || !*buf_str || !prog->cur_line)
 		return 0;
-	size_t alloc_sz = strlen(*buf_str) + strlen(*ln) + off + 1;
-	if (!buf_sz || !b_max) {
+	size_t alloc_sz = strlen(*buf_str) + strlen(prog->cur_line) + off + 1;
+	if (!buf_sz || !buf_max) {
 		/* current length + line length + extra characters + \0 */
 		xrealloc(char, buf_str, alloc_sz, "rsz_buf()");
 		return alloc_sz;
 	}
 	*buf_sz += alloc_sz;
 	/* realloc only if b_max is less than current size */
-	if (*buf_sz < *b_max)
+	if (*buf_sz < *buf_max)
 		return 0;
 	/* double until size is reached */
-	while ((*b_max *= 2) < *buf_sz);
+	while ((*buf_max *= 2) < *buf_sz);
 	/* current length + line length + extra characters + \0 */
-	xrealloc(char, buf_str, *b_max, "rsz_buf()");
+	xrealloc(char, buf_str, *buf_max, "rsz_buf()");
 	return *buf_sz;
 }
 
-void pop_history(struct prog_src *restrict prgm)
+void pop_history(struct source *restrict src)
 {
-	switch(prgm->flags.list[--prgm->flags.cnt]) {
+	switch(src->flags.list[--src->flags.cnt]) {
 	case NOT_IN_MAIN:
-		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
-		strmv(0, prgm->f, prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->lines.list[prgm->lines.cnt]);
-		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
+		src->hist.cnt = src->lines.cnt = src->flags.cnt;
+		strmv(0, src->funcs, src->hist.list[src->hist.cnt]);
+		free(src->hist.list[src->hist.cnt]);
+		free(src->lines.list[src->lines.cnt]);
+		src->hist.list[src->hist.cnt] = src->lines.list[src->lines.cnt] = NULL;
 		break;
 	case IN_MAIN:
-		prgm->hist.cnt = prgm->lines.cnt = prgm->flags.cnt;
-		strmv(0, prgm->b, prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->hist.list[prgm->hist.cnt]);
-		free(prgm->lines.list[prgm->lines.cnt]);
-		prgm->hist.list[prgm->hist.cnt] = prgm->lines.list[prgm->lines.cnt] = NULL;
+		src->hist.cnt = src->lines.cnt = src->flags.cnt;
+		strmv(0, src->body, src->hist.list[src->hist.cnt]);
+		free(src->hist.list[src->hist.cnt]);
+		free(src->lines.list[src->lines.cnt]);
+		src->hist.list[src->hist.cnt] = src->lines.list[src->lines.cnt] = NULL;
 		break;
 	case EMPTY: /* fallthrough */
 	default:
 		/* revert decrement */
-		prgm->flags.cnt++;
+		src->flags.cnt++;
 	}
 }
 
-/* look for current ln in readline history */
-void dedup_history(char **restrict ln)
+/* look for current line in readline history */
+void dedup_history(char **restrict line)
 {
 	/* return early on empty input */
-	if (!ln || !*ln)
+	if (!line || !*line)
 		return;
 	/* strip leading whitespace */
-	char *strip = *ln;
+	char *strip = *line;
 	strip += strspn(strip, " \t");
 	/* current entry and forward/backward function pointers  */
 	HIST_ENTRY *(*seek_hist[])() = {&previous_history, &next_history};
@@ -368,7 +336,7 @@ void dedup_history(char **restrict ln)
 			/* if this line is already in the history, remove the earlier entry */
 			HIST_ENTRY *ent = current_history();
 			/* HIST_ENTRY *ent = history_get(hpos[1]); */
-			if (!ent || !ent->line || strcmp(*ln, ent->line)) {
+			if (!ent || !ent->line || strcmp(*line, ent->line)) {
 				/* break if at end of list */
 				if (!seek_hist[i]())
 					break;
@@ -386,52 +354,52 @@ void dedup_history(char **restrict ln)
 	add_history(strip);
 }
 
-void build_body(struct prog_src (*restrict prgm)[], char *restrict ln)
+void build_body(struct program *restrict prog)
 {
 	/* sanity check */
-	if (!prgm || !ln) {
+	if (!prog || !prog->cur_line) {
 		WARNX("%s", "NULL pointer passed to build_body()");
 		return;
 	}
 	for (size_t i = 0; i < 2; i++) {
-		append_str(&(*prgm)[i].lines, ln, 0);
-		append_str(&(*prgm)[i].hist, (*prgm)[i].b, 0);
-		append_flag(&(*prgm)[i].flags, IN_MAIN);
-		strmv(CONCAT, (*prgm)[i].b, "\t");
-		strmv(CONCAT, (*prgm)[i].b, ln);
+		append_str(&prog->src[i].lines, prog->cur_line, 0);
+		append_str(&prog->src[i].hist, prog->src[i].body, 0);
+		append_flag(&prog->src[i].flags, IN_MAIN);
+		strmv(CONCAT, prog->src[i].body, "\t");
+		strmv(CONCAT, prog->src[i].body, prog->cur_line);
 	}
 }
 
-void build_funcs(struct prog_src (*restrict prgm)[], char *restrict ln)
+void build_funcs(struct program *restrict prog)
 {
 	/* sanity check */
-	if (!prgm || !ln) {
+	if (!prog || !prog->cur_line) {
 		WARNX("%s", "NULL pointer passed to build_funcs()");
 		return;
 	}
 	for (size_t i = 0; i < 2; i++) {
-		append_str(&(*prgm)[i].lines, ln, 0);
-		append_str(&(*prgm)[i].hist, (*prgm)[i].f, 0);
-		append_flag(&(*prgm)[i].flags, NOT_IN_MAIN);
+		append_str(&prog->src[i].lines, prog->cur_line, 0);
+		append_str(&prog->src[i].hist, prog->src[i].funcs, 0);
+		append_flag(&prog->src[i].flags, NOT_IN_MAIN);
 		/* generate function buffers */
-		strmv(CONCAT, (*prgm)[i].f, ln);
+		strmv(CONCAT, prog->src[i].funcs, prog->cur_line);
 	}
 }
 
-void build_final(struct prog_src (*restrict prgm)[], struct var_list *restrict vlist, char *argv[])
+void build_final(struct program *restrict prog, char **argv)
 {
 	/* sanity check */
-	if (!prgm || !argv) {
+	if (!prog || !argv) {
 		WARNX("%s", "NULL pointer passed to build_final()");
 		return;
 	}
 	/* finish building current iteration of source code */
 	for (size_t i = 0; i < 2; i++) {
-		strmv(0, (*prgm)[i].total, (*prgm)[i].f);
-		strmv(CONCAT, (*prgm)[i].total, (*prgm)[i].b);
+		strmv(0, prog->src[i].total, prog->src[i].funcs);
+		strmv(CONCAT, prog->src[i].total, prog->src[i].body);
 		/* print variable values */
-		if (track_flag && i == 1)
-			print_vars(vlist, (*prgm)[i].total, cc_argv, argv);
-		strmv(CONCAT, (*prgm)[i].total, prog_end);
+		if (prog->track_flag && i == 1)
+			print_vars(&prog->var_list, prog->src[i].total, cc_argv, argv);
+		strmv(CONCAT, prog->src[i].total, prog_end);
 	}
 }

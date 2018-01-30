@@ -16,32 +16,16 @@
 #include <sys/types.h>
 
 /* prototypes */
-void cleanup(void);
-int write_asm(struct prog_src (*restrict prgm)[], char *const cc_args[]);
-void write_file(FILE **out_file, struct prog_src (*restrict prgm)[]);
-void free_buffers(struct var_list *restrict vlist,
-		struct type_list *restrict tlist,
-		struct str_list *restrict ilist,
-		struct prog_src (*restrict prgm)[],
-		char **restrict ln);
-void init_buffers(struct var_list *restrict vlist,
-		struct type_list *restrict tlist,
-		struct str_list *restrict ilist,
-		struct prog_src (*restrict prgm)[],
-		char **restrict ln);
-size_t rsz_buf(char **restrict buf_str,
-		size_t *restrict buf_sz,
-		size_t *restrict b_max,
-		size_t off,
-		char **restrict ln);
-void dedup_history(char **restrict ln);
-void pop_history(struct prog_src *restrict prgm);
-void build_body(struct prog_src (*restrict prgm)[],
-		char *restrict ln);
-void build_funcs(struct prog_src (*restrict prgm)[],
-		char *restrict ln);
-void build_final(struct prog_src (*restrict prgm)[],
-		struct var_list *restrict vlist,
-		char *argv[]);
+void cleanup(struct program *restrict prog);
+int write_asm(struct program *restrict prog, char *const *restrict cc_args);
+void write_file(struct program *restrict prog);
+void free_buffers(struct program *restrict prog);
+void init_buffers(struct program *restrict prog);
+size_t rsz_buf(struct program *restrict prog, char **buf_str, size_t *buf_sz, size_t *buf_max, size_t off);
+void dedup_history(char **restrict line);
+void pop_history(struct source *restrict src);
+void build_body(struct program *restrict prog);
+void build_funcs(struct program *restrict prog);
+void build_final(struct program *restrict prog, char **argv);
 
 #endif
