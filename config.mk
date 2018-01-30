@@ -39,7 +39,7 @@ READLINE := readline
 MKALL += Makefile asan.mk
 LIBS += $(shell pkg-config ncursesw --libs --cflags 2>/dev/null || \
 		pkg-config ncurses --libs --cflags || \
-		printf '%s' '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncurses')
+		printf '%s' '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
 LIBS += $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a
 DEBUG += -Wshadow -Wfloat-equal
 DEBUG += -Og -ggdb3 -no-pie -D_DEBUG
