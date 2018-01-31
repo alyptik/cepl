@@ -185,8 +185,6 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 #endif
 
 		for (size_t j = 0; j < 2; j++) {
-			puts(prg.src[j].body);
-			puts(prg.src[j].total);
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
 			rsz_buf(&prg, &prg.src[j].total, &prg.src[j].total_size, &prg.src[j].total_max, sz);
 		}
