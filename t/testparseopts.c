@@ -14,7 +14,7 @@ int mkstemp(char *__template);
 /* global completion list */
 char *comp_arg_list[1];
 /* global linker flags and completions structs */
-struct str_list ld_list, comp_list;
+struct str_list comp_list;
 /* source file includes template */
 char const *prelude =
 	"#ifndef _BSD_SOURCE\n"
