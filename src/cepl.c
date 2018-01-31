@@ -305,6 +305,7 @@ static inline void parse_macro(char *tbuf)
 	/* re-allocate enough memory for program_state.cur_line + '\n' + '\n' + '\0' */
 	size_t sz = strlen(tbuf) + 3;
 	for (size_t i = 0; i < 2; i++) {
+		/* keep line length to a minimum */
 		struct program *prg = &program_state;
 		rsz_buf(prg, &prg->src[i].funcs, &prg->src[i].funcs_size, &prg->src[i].funcs_max, sz);
 	}
@@ -388,6 +389,7 @@ static inline void parse_normal(void)
 	case '\\': {
 			build_body(&program_state);
 			for (size_t i = 0; i < 2; i++) {
+				/* keep line length to a minimum */
 				struct program *prg = &program_state;
 				/* remove extra trailing ';' */
 				size_t b_len = strlen(prg->src[i].body) - 1;
@@ -557,6 +559,7 @@ int main(int argc, char **argv)
 		dedup_history(&program_state.cur_line);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
+			/* keep line length to a minimum */
 			struct program *prg = &program_state;
 			rsz_buf(prg, &prg->src[i].body, &prg->src[i].body_size, &prg->src[i].body_max, 3);
 			rsz_buf(prg, &prg->src[i].total, &prg->src[i].total_size, &prg->src[i].total_max, 3);
@@ -579,7 +582,7 @@ int main(int argc, char **argv)
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
 				restore_flag_state(flags);
-				toggle_att(program_state.cur_line);
+				toggle_att(stripped);
 				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
@@ -587,7 +590,7 @@ int main(int argc, char **argv)
 			/* toggle writing intel-dialect asm output */
 			case 'i':
 				restore_flag_state(flags);
-				toggle_intel(program_state.cur_line);
+				toggle_intel(stripped);
 				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
@@ -595,7 +598,7 @@ int main(int argc, char **argv)
 			/* toggle output file writing */
 			case 'o':
 				restore_flag_state(flags);
-				toggle_output_file(program_state.cur_line);
+				toggle_output_file(stripped);
 				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
@@ -642,7 +645,7 @@ int main(int argc, char **argv)
 			/* define an include/macro/function */
 			case 'm': /* fallthrough */
 			case 'f':
-				parse_macro(program_state.cur_line);
+				parse_macro(stripped);
 				break;
 
 			/* show usage information */
@@ -666,10 +669,10 @@ int main(int argc, char **argv)
 		/* dont append ';' for preprocessor directives */
 		case '#':
 			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
-				if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
+			for (size_t i = strlen(stripped) - 1; i > 0; i--) {
+				if (stripped[i] != ' ' && stripped[i] != '\t')
 					break;
-				program_state.cur_line[i] = '\0';
+				stripped[i] = '\0';
 			}
 			/* start building program source */
 			build_body(&program_state);
