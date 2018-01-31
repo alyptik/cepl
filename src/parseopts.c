@@ -123,7 +123,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 					if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
 						strmv(CONCAT, prog->input_src[0], tmp_buf);
 						sz[0] += strlen(tmp_buf);
-						xrealloc(char, &prog->input_src[0], sz[0], "parse_opts() xrealloc(char, )");
+						xrealloc(char, &prog->input_src[0], sz[0], "xrealloc(char)");
 						break;
 					}
 					regfree(&reg[0]);
@@ -134,7 +134,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 					if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
 						strmv(CONCAT, prog->input_src[1], tmp_buf);
 						sz[1] += strlen(tmp_buf);
-						xrealloc(char, &prog->input_src[1], sz[1], "parse_opts() xrealloc(char, )");
+						xrealloc(char, &prog->input_src[1], sz[1], "xrealloc(char)");
 						break;
 					}
 					regfree(&reg[1]);
@@ -143,7 +143,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 				case IN_EPILOGUE:
 					strmv(CONCAT, prog->input_src[2], tmp_buf);
 					sz[2] += strlen(tmp_buf);
-					xrealloc(char, &prog->input_src[2], sz[2], "parse_opts() xrealloc(char, )");
+					xrealloc(char, &prog->input_src[2], sz[2], "xrealloc(char)");
 					break;
 				}
 			}
@@ -262,7 +262,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	/* asm output flag */
 	if (prog->asm_flag) {
 		if (asm_file && !prog->asm_filename) {
-			xcalloc(char, &prog->asm_filename, 1, strlen(asm_file) + 1, "error during prog->asm_filename calloc()");
+			xcalloc(char, &prog->asm_filename, 1, strlen(asm_file) + 1, "prog->asm_filename calloc()");
 			strmv(0, prog->asm_filename, asm_file);
 			if (!strcmp(prog->cc_list.list[0], "icc"))
 				asm_choice = ATT;

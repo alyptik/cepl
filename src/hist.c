@@ -201,7 +201,7 @@ void free_buffers(struct program *restrict prog)
 	prog->cur_line = NULL;
 	free(prog->type_list.list);
 	prog->type_list.list = NULL;
-	free_argv(&prog->cc_list.list);
+	free_str_list(&prog->cc_list);
 	if (prog->var_list.list) {
 		for (size_t i = 0; i < prog->var_list.cnt; i++)
 			free(prog->var_list.list[i].id);

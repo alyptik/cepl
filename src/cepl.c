@@ -28,7 +28,17 @@ static char hist_name[] = "./.cepl_history";
  * program source strucs (program_state.src[0] is
  * truncated for interactive printing)
  */
-static struct program program_state;
+static struct program program_state = {
+	.asm_flag = false,
+	.eval_flag = false,
+	.exec_flag = true,
+	.in_flag = false,
+	.out_flag = false,
+	.parse_flag = true,
+	.track_flag = true,
+	.warn_flag = false,
+};
+static bool flags[8];
 
 /* string to compile */
 extern char eval_arg[];
@@ -153,7 +163,6 @@ static void reg_handlers(void)
 
 static void eval_line(int argc, char **restrict argv, char const *restrict optstring)
 {
-	char *ln_save = program_state.cur_line;
 	char const *const term = getenv("TERM");
 	struct program prg = {0};
 	struct str_list temp = strsplit(program_state.cur_line);
@@ -166,23 +175,10 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		? "printf(\"" GREEN "%s%lld\\n" RST "\", \"result = \", (long long)("
 		: "printf(\"%s%lld\\n\", \"result = \", (long long)(";
 	char const *const ln_end = "));";
-	bool flags[] = {
-		program_state.warn_flag, program_state.track_flag, program_state.parse_flag,
-		program_state.out_flag, program_state.eval_flag, program_state.asm_flag,
-	};
 
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
 	close(STDERR_FILENO);
-	/* initiatalize compiler arg array */
-	prg.asm_flag = false;
-	prg.eval_flag = false;
-	prg.exec_flag = true;
-	prg.in_flag = false;
-	prg.out_flag = false;
-	prg.parse_flag = true;
-	prg.track_flag = true;
-	prg.warn_flag = false;
 	parse_opts(&prg, argc, argv, optstring);
 	init_buffers(&prg);
 	build_final(&prg, argv);
@@ -215,27 +211,9 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	free_buffers(&prg);
 	free_str_list(&temp);
 	dup2(saved_fd, STDERR_FILENO);
-	program_state.cur_line = ln_save;
-
-	/* reset to defaults */
-	program_state.warn_flag = false;
-	program_state.track_flag = true;
-	program_state.parse_flag = true;
-	program_state.out_flag = false;
-	program_state.eval_flag = false;
-	program_state.asm_flag = false;
-	/* re-initiatalize compiler arg array */
-	parse_opts(&program_state, argc, argv, optstring);
-	/* restore old values */
-	program_state.warn_flag = flags[0];
-	program_state.track_flag = flags[1];
-	program_state.parse_flag = flags[2];
-	program_state.out_flag = flags[3];
-	program_state.eval_flag = flags[4];
-	program_state.asm_flag = flags[5];
 }
 
-static inline void toggle_att(int argc, char **argv, char const *optstring, char *tbuf)
+static inline void toggle_att(char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.asm_flag) {
@@ -262,17 +240,9 @@ static inline void toggle_att(int argc, char **argv, char const *optstring, char
 	free_buffers(&program_state);
 	init_buffers(&program_state);
 	asm_dialect = ATT;
-	/* reset to defaults */
-	program_state.warn_flag = false;
-	program_state.track_flag = true;
-	program_state.parse_flag = true;
-	program_state.out_flag = false;
-	program_state.eval_flag = false;
-	/* re-initiatalize compiler arg array */
-	parse_opts(&program_state, argc, argv, optstring);
 }
 
-static inline void toggle_intel(int argc, char **argv, char const *optstring, char *tbuf)
+static inline void toggle_intel(char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.asm_flag) {
@@ -299,17 +269,9 @@ static inline void toggle_intel(int argc, char **argv, char const *optstring, ch
 	free_buffers(&program_state);
 	init_buffers(&program_state);
 	asm_dialect = INTEL;
-	/* reset to defaults */
-	program_state.warn_flag = false;
-	program_state.track_flag = true;
-	program_state.parse_flag = true;
-	program_state.out_flag = false;
-	program_state.eval_flag = false;
-	/* re-initiatalize compiler arg array */
-	parse_opts(&program_state, argc, argv, optstring);
 }
 
-static inline void toggle_output_file(int argc, char **argv, char const *optstring, char *tbuf)
+static inline void toggle_output_file(char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.out_flag) {
@@ -330,20 +292,10 @@ static inline void toggle_output_file(int argc, char **argv, char const *optstri
 		free(program_state.out_filename);
 		program_state.out_filename = NULL;
 	}
-	if (!(program_state.out_filename = calloc(1, strlen(tbuf) + 1)))
-		ERR("%s", "error during program_state.out_filename calloc()");
+	xcalloc(char, &program_state.out_filename, 1, strlen(tbuf) + 1, "program_state.out_filename calloc()");
 	strmv(0, program_state.out_filename, tbuf);
 	free_buffers(&program_state);
 	init_buffers(&program_state);
-	printf("%d", program_state.out_flag);
-	/* reset to defaults */
-	program_state.warn_flag = false;
-	program_state.track_flag = true;
-	program_state.parse_flag = true;
-	program_state.eval_flag = false;
-	program_state.asm_flag = false;
-	/* re-initiatalize compiler arg array */
-	parse_opts(&program_state, argc, argv, optstring);
 }
 
 static inline void parse_macro(char *tbuf)
@@ -546,6 +498,30 @@ static inline void build_hist_name(void)
 	}
 }
 
+static inline void save_flag_state(void)
+{
+	flags[0] = program_state.asm_flag;
+	flags[1] = program_state.eval_flag;
+	flags[2] = program_state.exec_flag;
+	flags[3] = program_state.in_flag;
+	flags[4] = program_state.out_flag;
+	flags[5] = program_state.parse_flag;
+	flags[6] = program_state.track_flag;
+	flags[7] = program_state.warn_flag;
+}
+
+static inline void restore_flag_state(void)
+{
+	program_state.asm_flag = flags[0];
+	program_state.eval_flag = flags[1];
+	program_state.exec_flag = flags[2];
+	program_state.in_flag = flags[3];
+	program_state.out_flag = flags[4];
+	program_state.parse_flag = flags[5];
+	program_state.track_flag = flags[6];
+	program_state.warn_flag = flags[7];
+}
+
 int main(int argc, char **argv)
 {
 	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
@@ -556,14 +532,7 @@ int main(int argc, char **argv)
 	build_hist_name();
 
 	/* initiatalize compiler arg array */
-	program_state.asm_flag = false;
-	program_state.eval_flag = false;
-	program_state.exec_flag = true;
-	program_state.in_flag = false;
-	program_state.out_flag = false;
-	program_state.parse_flag = true;
-	program_state.track_flag = true;
-	program_state.warn_flag = false;
+	save_flag_state();
 	parse_opts(&program_state, argc, argv, optstring);
 
 	/* initialize source buffers */
@@ -590,7 +559,6 @@ int main(int argc, char **argv)
 		/* program_state.cur_line newlines */
 		if ((tbuf = strpbrk(program_state.cur_line, "\f\r\n")))
 			tbuf[0] = '\0';
-		/* add and dedup history */
 		dedup_history(&program_state.cur_line);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
@@ -618,61 +586,56 @@ int main(int argc, char **argv)
 
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
-				toggle_att(argc, argv, optstring, tbuf);
+				restore_flag_state();
+				toggle_att(tbuf);
+				save_flag_state();
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle writing intel-dialect asm output */
 			case 'i':
-				toggle_intel(argc, argv, optstring, tbuf);
+				restore_flag_state();
+				toggle_intel(tbuf);
+				save_flag_state();
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle output file writing */
 			case 'o':
-				toggle_output_file(argc, argv, optstring, tbuf);
+				restore_flag_state();
+				toggle_output_file(tbuf);
+				save_flag_state();
+				printf("%d", program_state.out_flag);
+				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle library parsing */
 			case 'p':
-				program_state.parse_flag ^= true;
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				/* reset to defaults */
-				program_state.warn_flag = false;
-				program_state.track_flag = true;
-				program_state.out_flag = false;
-				program_state.eval_flag = false;
-				program_state.asm_flag = false;
-				/* re-initiatalize compiler arg array */
+				restore_flag_state();
+				program_state.parse_flag ^= true;
+				save_flag_state();
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle variable tracking */
 			case 't':
-				program_state.track_flag ^= true;
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				/* reset to defaults */
-				program_state.warn_flag = false;
-				program_state.parse_flag = true;
-				program_state.out_flag = false;
-				program_state.eval_flag = false;
-				program_state.asm_flag = false;
-				/* re-initiatalize compiler arg array */
+				restore_flag_state();
+				program_state.track_flag ^= true;
+				save_flag_state();
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle warnings */
 			case 'w':
-				program_state.warn_flag ^= true;
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				/* reset to defaults */
-				program_state.track_flag = true;
-				program_state.parse_flag = true;
-				program_state.out_flag = false;
-				program_state.eval_flag = false;
-				program_state.asm_flag = false;
-				/* re-initiatalize compiler arg array */
+				restore_flag_state();
+				program_state.warn_flag ^= true;
+				save_flag_state();
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
@@ -680,14 +643,8 @@ int main(int argc, char **argv)
 			case 'r':
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				/* reset to defaults */
-				program_state.warn_flag = false;
-				program_state.track_flag = true;
-				program_state.parse_flag = true;
-				program_state.out_flag = false;
-				program_state.eval_flag = false;
-				program_state.asm_flag = false;
-				/* re-initiatalize compiler arg array */
+				restore_flag_state();
+				save_flag_state();
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
