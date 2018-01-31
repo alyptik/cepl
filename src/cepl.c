@@ -28,17 +28,7 @@ static char hist_name[] = "./.cepl_history";
  * program source strucs (program_state.src[0] is
  * truncated for interactive printing)
  */
-static struct program program_state = {
-	.asm_flag = false,
-	.eval_flag = false,
-	.exec_flag = true,
-	.in_flag = false,
-	.out_flag = false,
-	.parse_flag = true,
-	.track_flag = true,
-	.warn_flag = false,
-};
-static bool flags[8];
+static struct program program_state;
 
 /* string to compile */
 extern char eval_arg[];
@@ -498,7 +488,7 @@ static inline void build_hist_name(void)
 	}
 }
 
-static inline void save_flag_state(void)
+static inline void save_flag_state(bool *restrict flags)
 {
 	flags[0] = program_state.asm_flag;
 	flags[1] = program_state.eval_flag;
@@ -510,7 +500,7 @@ static inline void save_flag_state(void)
 	flags[7] = program_state.warn_flag;
 }
 
-static inline void restore_flag_state(void)
+static inline void restore_flag_state(bool *restrict flags)
 {
 	program_state.asm_flag = flags[0];
 	program_state.eval_flag = flags[1];
@@ -524,18 +514,25 @@ static inline void restore_flag_state(void)
 
 int main(int argc, char **argv)
 {
+	/*
+	 * option defaults
+	 *
+	 * .asm_flag = false, .eval_flag = false, .exec_flag = true,
+	 * .in_flag = false, .out_flag = false, .parse_flag = true,
+	 * .track_flag = true, .warn_flag = false,
+	 */
+	bool flags[8] = {
+		false, false, true,
+		false, false, true,
+		true, false
+	};
 	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
-	/* token buffers */
 	char *tbuf = NULL;
 
-	/* build history filename from environment */
-	build_hist_name();
-
 	/* initiatalize compiler arg array */
-	save_flag_state();
+	build_hist_name();
+	save_flag_state(flags);
 	parse_opts(&program_state, argc, argv, optstring);
-
-	/* initialize source buffers */
 	init_buffers(&program_state);
 
 	/* scan input source file if applicable */
@@ -586,26 +583,25 @@ int main(int argc, char **argv)
 
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
-				restore_flag_state();
+				restore_flag_state(flags);
 				toggle_att(tbuf);
-				save_flag_state();
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle writing intel-dialect asm output */
 			case 'i':
-				restore_flag_state();
+				restore_flag_state(flags);
 				toggle_intel(tbuf);
-				save_flag_state();
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle output file writing */
 			case 'o':
-				restore_flag_state();
+				restore_flag_state(flags);
 				toggle_output_file(tbuf);
-				save_flag_state();
-				printf("%d", program_state.out_flag);
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
@@ -613,9 +609,9 @@ int main(int argc, char **argv)
 			case 'p':
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				restore_flag_state();
+				restore_flag_state(flags);
 				program_state.parse_flag ^= true;
-				save_flag_state();
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
@@ -623,9 +619,9 @@ int main(int argc, char **argv)
 			case 't':
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				restore_flag_state();
+				restore_flag_state(flags);
 				program_state.track_flag ^= true;
-				save_flag_state();
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
@@ -633,9 +629,9 @@ int main(int argc, char **argv)
 			case 'w':
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				restore_flag_state();
+				restore_flag_state(flags);
 				program_state.warn_flag ^= true;
-				save_flag_state();
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
@@ -643,8 +639,8 @@ int main(int argc, char **argv)
 			case 'r':
 				free_buffers(&program_state);
 				init_buffers(&program_state);
-				restore_flag_state();
-				save_flag_state();
+				restore_flag_state(flags);
+				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
