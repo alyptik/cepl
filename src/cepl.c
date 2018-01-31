@@ -153,7 +153,7 @@ static void reg_handlers(void)
 
 static void eval_line(int argc, char **restrict argv, char const *restrict optstring)
 {
-	char *ln = NULL, *ln_save = program_state.cur_line;
+	char *ln_save = program_state.cur_line;
 	char const *const term = getenv("TERM");
 	struct program prg;
 	struct str_list temp = strsplit(program_state.cur_line);
@@ -176,18 +176,21 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	close(STDERR_FILENO);
 	init_buffers(&prg);
 	build_final(&prg, argv);
+	prg.cc_list.list = program_state.cc_list.list;
 	for (size_t i = 0; i < temp.cnt; i++) {
 		size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(temp.list[i]) + 1;
 		/* initialize source buffers */
-		xcalloc(char, &ln, 1, strlen(temp.list[i]) + sz, "eval_line() calloc");
-		strmv(0, ln, ln_beg);
-		strmv(CONCAT, ln, temp.list[i]);
-		strmv(CONCAT, ln, ln_end);
+		xcalloc(char, &prg.cur_line, 1, strlen(temp.list[i]) + sz, "eval_line() calloc");
+		strmv(0, prg.cur_line, ln_beg);
+		strmv(CONCAT, prg.cur_line, temp.list[i]);
+		strmv(CONCAT, prg.cur_line, ln_end);
 #ifdef _DEBUG
-		puts(ln);
+		puts(prg.cur_line);
 #endif
 
 		for (size_t j = 0; j < 2; j++) {
+			puts(prg.src[j].body);
+			puts(prg.src[j].total);
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
 			rsz_buf(&prg, &prg.src[j].total, &prg.src[j].total_size, &prg.src[j].total_max, sz);
 		}
@@ -196,8 +199,6 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 			build_body(&prg);
 			build_final(&prg, argv);
 		}
-		free(ln);
-		ln = NULL;
 	}
 	/* print generated source code unless stdin is a pipe */
 	compile(prg.src[1].total, program_state.cc_list.list, argv);
