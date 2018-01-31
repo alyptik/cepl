@@ -149,10 +149,15 @@ struct source {
 /* monolithic program structure */
 struct program {
 	FILE *ofile;
-	bool asm_flag, eval_flag, exec_flag, parse_flag;
-	bool track_flag, warn_flag, in_flag, out_flag, has_hist;
-	char *input_src[3], *cur_line, *hist_file, *out_filename, *asm_filename;
-	struct str_list cc_list, ld_list, lib_list, sym_list;
+	bool asm_flag, eval_flag;
+	bool exec_flag, parse_flag;
+	bool track_flag, warn_flag;
+	bool in_flag, out_flag, has_hist;
+	char *input_src[3];
+	char *cur_line, *hist_file;
+	char *out_filename, *asm_filename;
+	struct str_list cc_list, ld_list;
+	struct str_list lib_list, sym_list;
 	struct str_list id_list;
 	struct type_list type_list;
 	struct var_list var_list;
