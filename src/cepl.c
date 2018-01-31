@@ -183,7 +183,6 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 #ifdef _DEBUG
 		puts(prg.cur_line);
 #endif
-
 		for (size_t j = 0; j < 2; j++) {
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
 			rsz_buf(&prg, &prg.src[j].total, &prg.src[j].total_size, &prg.src[j].total_max, sz);
@@ -194,7 +193,8 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 			build_final(&prg, argv);
 		}
 	}
-	/* print generated source code unless stdin is a pipe */
+
+	/* print line evaluation */
 	compile(prg.src[1].total, program_state.cc_list.list, argv);
 	free_buffers(&prg);
 	free_str_list(&temp);
