@@ -700,12 +700,15 @@ int main(int argc, char **argv)
 		if (ret || (isatty(STDIN_FILENO) && !program_state.eval_flag))
 			printf("[exit status: %d]\n", ret);
 
+		/* exit if executed with `-e` argument */
+		if (program_state.eval_flag) {
+			/* don't call free() since this points to eval_arg[0] */
+			program_state.cur_line = NULL;
+			break;
+		}
 		/* cleanup old buffer */
 		free(program_state.cur_line);
 		program_state.cur_line = NULL;
-		/* exit if executed with `-e` argument */
-		if (program_state.eval_flag)
-			break;
 	}
 
 	free_buffers(&program_state);
