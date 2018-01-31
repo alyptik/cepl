@@ -155,7 +155,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 {
 	char *ln_save = program_state.cur_line;
 	char const *const term = getenv("TERM");
-	struct program prg;
+	struct program prg = {0};
 	struct str_list temp = strsplit(program_state.cur_line);
 	bool has_color = term
 		&& isatty(STDOUT_FILENO)
@@ -174,9 +174,19 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
 	close(STDERR_FILENO);
+	/* initiatalize compiler arg array */
+	prg.asm_flag = false;
+	prg.eval_flag = false;
+	prg.exec_flag = true;
+	prg.in_flag = false;
+	prg.out_flag = false;
+	prg.parse_flag = true;
+	prg.track_flag = true;
+	prg.warn_flag = false;
+	parse_opts(&prg, argc, argv, optstring);
 	init_buffers(&prg);
 	build_final(&prg, argv);
-	prg.cc_list.list = program_state.cc_list.list;
+
 	for (size_t i = 0; i < temp.cnt; i++) {
 		size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(temp.list[i]) + 1;
 		/* initialize source buffers */
