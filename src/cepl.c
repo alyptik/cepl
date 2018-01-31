@@ -527,7 +527,6 @@ int main(int argc, char **argv)
 		true, false
 	};
 	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
-	char *tbuf = NULL;
 
 	/* initiatalize compiler arg array */
 	build_hist_name();
@@ -553,13 +552,9 @@ int main(int argc, char **argv)
 		if (!*program_state.cur_line)
 			continue;
 
-		/* program_state.cur_line newlines */
-		if ((tbuf = strpbrk(program_state.cur_line, "\f\r\n")))
-			tbuf[0] = '\0';
-		dedup_history(&program_state.cur_line);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
-
+		dedup_history(&program_state.cur_line);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
 			struct program *prg = &program_state;
@@ -567,15 +562,15 @@ int main(int argc, char **argv)
 			rsz_buf(prg, &prg->src[i].total, &prg->src[i].total_size, &prg->src[i].total_max, 3);
 		}
 
-		/* strip leading whitespace */
-		program_state.cur_line += strspn(program_state.cur_line, " \t");
-
+		/* strip leading whitespace for switch statement */
+		char *stripped = program_state.cur_line;
+		stripped += strspn(stripped, " \t");
 		eval_line(argc, argv, optstring);
 
 		/* control sequence and preprocessor directive parsing */
-		switch (program_state.cur_line[0]) {
+		switch (stripped[0]) {
 		case ';':
-			switch(program_state.cur_line[1]) {
+			switch(stripped[1]) {
 			/* pop last history statement */
 			case 'u':
 				undo_last_line();
@@ -584,7 +579,7 @@ int main(int argc, char **argv)
 			/* toggle writing at&t-dialect asm output */
 			case 'a':
 				restore_flag_state(flags);
-				toggle_att(tbuf);
+				toggle_att(program_state.cur_line);
 				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
@@ -592,7 +587,7 @@ int main(int argc, char **argv)
 			/* toggle writing intel-dialect asm output */
 			case 'i':
 				restore_flag_state(flags);
-				toggle_intel(tbuf);
+				toggle_intel(program_state.cur_line);
 				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
@@ -600,7 +595,7 @@ int main(int argc, char **argv)
 			/* toggle output file writing */
 			case 'o':
 				restore_flag_state(flags);
-				toggle_output_file(tbuf);
+				toggle_output_file(program_state.cur_line);
 				save_flag_state(flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
@@ -647,7 +642,7 @@ int main(int argc, char **argv)
 			/* define an include/macro/function */
 			case 'm': /* fallthrough */
 			case 'f':
-				parse_macro(tbuf);
+				parse_macro(program_state.cur_line);
 				break;
 
 			/* show usage information */
