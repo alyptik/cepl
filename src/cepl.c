@@ -286,36 +286,40 @@ static inline void toggle_output_file(char *tbuf)
 	init_buffers(&program_state);
 }
 
-static inline void parse_macro(char *tbuf)
+static inline void parse_macro(void)
 {
+	struct str_list tmp_list;
+	char *saved, *tmp_buf;
 	/* remove trailing ' ' and '\t' */
 	for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
 		if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
 			break;
 		program_state.cur_line[i] = '\0';
 	}
-	tbuf = strpbrk(program_state.cur_line, " \t");
+	tmp_buf = strpbrk(program_state.cur_line, " \t");
 	/* return if function definition empty */
-	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf))
+	if (!tmp_buf || strspn(tmp_buf, " \t") == strlen(tmp_buf))
 		return;
+	saved = program_state.cur_line;
 	/* increment pointer to start of definition */
-	tbuf += strspn(tbuf, " \t");
+	tmp_buf += strspn(tmp_buf, " \t");
 	/* re-allocate enough memory for program_state.cur_line + '\n' + '\n' + '\0' */
-	size_t sz = strlen(tbuf) + 3;
+	size_t sz = strlen(tmp_buf) + 3;
 	for (size_t i = 0; i < 2; i++) {
 		/* keep line length to a minimum */
 		struct program *prg = &program_state;
 		rsz_buf(prg, &prg->src[i].funcs, &prg->src[i].funcs_size, &prg->src[i].funcs_max, sz);
 	}
+	program_state.cur_line = tmp_buf;
 
-	switch (tbuf[0]) {
+	switch (program_state.cur_line[0]) {
 	/* dont append ';' for preprocessor directives */
 	case '#':
 		/* remove trailing ' ' and '\t' */
-		for (size_t i = strlen(tbuf) - 1; i > 0; i--) {
-			if (tbuf[i] != ' ' && tbuf[i] != '\t')
+		for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
+			if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
 				break;
-			tbuf[i] = '\0';
+			program_state.cur_line[i] = '\0';
 		}
 		build_funcs(&program_state);
 		for (size_t i = 0; i < 2; i++)
@@ -324,52 +328,51 @@ static inline void parse_macro(char *tbuf)
 
 	default:
 		/* remove trailing ' ' and '\t' */
-		for (size_t i = strlen(tbuf) - 1; i > 0; i--) {
-			if (tbuf[i] != ' ' && tbuf[i] != '\t')
+		for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
+			if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
 				break;
-			tbuf[i] = '\0';
+			program_state.cur_line[i] = '\0';
 		}
 
-		switch(tbuf[strlen(tbuf) - 1]) {
+		switch(program_state.cur_line[strlen(program_state.cur_line) - 1]) {
 		case '{': /* fallthough */
 		case '}': /* fallthough */
 		case ';': /* fallthough */
-		case '\\': {
-				/* remove extra trailing ';' */
-				for (size_t j = strlen(tbuf) - 1; j > 0; j--) {
-					if (tbuf[j] != ';' || tbuf[j - 1] != ';')
-						break;
-					tbuf[j] = '\0';
-				}
-				build_funcs(&program_state);
-				for (size_t i = 0; i < 2; i++)
-					strmv(CONCAT, program_state.src[i].funcs, "\n");
-
-				struct str_list tmp = strsplit(program_state.cur_line);
-				for (size_t i = 0; i < tmp.cnt; i++) {
-					/* extract identifiers and types */
-					if (program_state.track_flag && find_vars(&program_state, tmp.list[i]))
-						gen_var_list(&program_state);
-				}
-				free_str_list(&tmp);
-				break;
+		case '\\':
+			/* remove extra trailing ';' */
+			for (size_t j = strlen(program_state.cur_line) - 1; j > 0; j--) {
+				if (program_state.cur_line[j] != ';' || program_state.cur_line[j - 1] != ';')
+					break;
+				program_state.cur_line[j] = '\0';
 			}
+			build_funcs(&program_state);
+			for (size_t i = 0; i < 2; i++)
+				strmv(CONCAT, program_state.src[i].funcs, "\n");
 
-		default: {
-				build_funcs(&program_state);
-				/* append ';' if no trailing '}', ';', or '\' */
-				for (size_t i = 0; i < 2; i++)
-					strmv(CONCAT, program_state.src[i].funcs, ";\n");
-				struct str_list tmp = strsplit(program_state.cur_line);
-				for (size_t i = 0; i < tmp.cnt; i++) {
-					/* extract identifiers and types */
-					if (program_state.track_flag && find_vars(&program_state, tmp.list[i]))
-						gen_var_list(&program_state);
-				}
-				free_str_list(&tmp);
-			 }
+			tmp_list = strsplit(program_state.cur_line);
+			for (size_t i = 0; i < tmp_list.cnt; i++) {
+				/* extract identifiers and types */
+				if (program_state.track_flag && find_vars(&program_state, tmp_list.list[i]))
+					gen_var_list(&program_state);
+			}
+			free_str_list(&tmp_list);
+			break;
+
+		default:
+			build_funcs(&program_state);
+			/* append ';' if no trailing '}', ';', or '\' */
+			for (size_t i = 0; i < 2; i++)
+				strmv(CONCAT, program_state.src[i].funcs, ";\n");
+			tmp_list = strsplit(program_state.cur_line);
+			for (size_t i = 0; i < tmp_list.cnt; i++) {
+				/* extract identifiers and types */
+				if (program_state.track_flag && find_vars(&program_state, tmp_list.list[i]))
+					gen_var_list(&program_state);
+			}
+			free_str_list(&tmp_list);
 		}
 	}
+	program_state.cur_line = saved;
 }
 
 static inline void parse_normal(void)
@@ -643,7 +646,7 @@ int main(int argc, char **argv)
 			/* define an include/macro/function */
 			case 'm': /* fallthrough */
 			case 'f':
-				parse_macro(stripped);
+				parse_macro();
 				break;
 
 			/* show usage information */
