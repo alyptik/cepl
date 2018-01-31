@@ -27,8 +27,7 @@ char const *prog_end =
 
 int main(void)
 {
-	struct str_list ids = {0};
-	struct type_list types = {0};
+	struct program prg = {0};
 	char const src[] =
 		"unsigned long long a = 5;"
 		"int b[];"
@@ -44,10 +43,11 @@ int main(void)
 	plan(20);
 
 	/* initialize lists */
-	init_list(&ids, NULL);
-	init_tlist(&types);
+	init_str_list(&prg.id_list, NULL);
+	init_type_list(&prg.type_list);
 
-	ok(find_vars(src, &ids, &types) == 19, "succeed finding nineteen objects.");
+	printf("%d", find_vars(&prg, src));
+	ok(find_vars(&prg, src) == 19, "succeed finding nineteen objects.");
 	ok(extract_type(src, "a") == T_UINT, "succeed extracting unsigned type from `a`.");
 	ok(extract_type(src, "b") == T_PTR, "succeed extracting pointer type from `b`.");
 	ok(extract_type(src, "c") == T_INT, "succeed extracting signed type from `c`.");
@@ -69,8 +69,8 @@ int main(void)
 	ok(extract_type(src, "klakow") == T_OTHER, "succeed extracting other type from `klakow`.");
 
 	/* cleanup */
-	free_str_list(&ids);
-	free(types.list);
+	free_str_list(&prg.id_list);
+	free(prg.type_list.list);
 
 	done_testing();
 }

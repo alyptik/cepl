@@ -15,8 +15,6 @@
 enum asm_type asm_dialect = NONE;
 /* string to compile */
 char eval_arg[EVAL_LIMIT];
-/* input file source */
-char *input_src[3];
 
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
@@ -103,9 +101,9 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			int scan_state = IN_PRELUDE;
 			size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 			char tmp_buf[PAGE_SIZE];
-			for (size_t i = 0; i < ARRLEN(input_src); i++) {
-				xmalloc(char, &input_src[i], PAGE_SIZE, "malloc() input_src");
-				input_src[i][0] = 0;
+			for (size_t i = 0; i < ARRLEN(prog->input_src); i++) {
+				xmalloc(char, &prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
+				prog->input_src[i][0] = 0;
 			}
 
 			regex_t reg[2];
@@ -123,9 +121,9 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 				case IN_PRELUDE:
 					/* no match */
 					if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
-						strmv(CONCAT, input_src[0], tmp_buf);
+						strmv(CONCAT, prog->input_src[0], tmp_buf);
 						sz[0] += strlen(tmp_buf);
-						xrealloc(char, &input_src[0], sz[0], "parse_opts() xrealloc(char, )");
+						xrealloc(char, &prog->input_src[0], sz[0], "parse_opts() xrealloc(char, )");
 						break;
 					}
 					regfree(&reg[0]);
@@ -134,24 +132,24 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 				case IN_MIDDLE:
 					/* no match */
 					if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
-						strmv(CONCAT, input_src[1], tmp_buf);
+						strmv(CONCAT, prog->input_src[1], tmp_buf);
 						sz[1] += strlen(tmp_buf);
-						xrealloc(char, &input_src[1], sz[1], "parse_opts() xrealloc(char, )");
+						xrealloc(char, &prog->input_src[1], sz[1], "parse_opts() xrealloc(char, )");
 						break;
 					}
 					regfree(&reg[1]);
 					scan_state = IN_EPILOGUE;
 
 				case IN_EPILOGUE:
-					strmv(CONCAT, input_src[2], tmp_buf);
+					strmv(CONCAT, prog->input_src[2], tmp_buf);
 					sz[2] += strlen(tmp_buf);
-					xrealloc(char, &input_src[2], sz[2], "parse_opts() xrealloc(char, )");
+					xrealloc(char, &prog->input_src[2], sz[2], "parse_opts() xrealloc(char, )");
 					break;
 				}
 			}
-			prelude = input_src[0];
-			prog_start = prog_start_user = input_src[1];
-			prog_end = input_src[2];
+			prelude = prog->input_src[0];
+			prog_start = prog_start_user = prog->input_src[1];
+			prog_end = prog->input_src[2];
 			prog->in_flag ^= true;
 			break;
 		}

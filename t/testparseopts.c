@@ -93,10 +93,9 @@ char const *prog_end =
 
 int main (void)
 {
-	FILE *ofile = NULL;
 	char const optstring[] = "hptvwc:a:e:f:i:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
-	struct str_list symbols = {0};
+	struct program prg = {0};
 	char *out_filename = NULL, *asm_filename = NULL, **result;
 	ptrdiff_t ret;
 	char out_tmp[] = "/tmp/ceplXXXXXX";
@@ -123,24 +122,24 @@ int main (void)
 	};
 	int argc = sizeof argv / sizeof argv[0] - 1;
 	/* print argument strings */
-	result = parse_opts(argc, argv, optstring, &ofile, &out_filename, &asm_filename);
+	result = parse_opts(&prg, argc, argv, optstring);
+	init_str_list(&prg.sym_list, "cepl");
 	printf("%s\n%s", "# generated compiler string: ", "# ");
 	for (int i = 0; result[i]; i++)
 		printf("%s ", result[i]);
 	printf("\n%s\n%s", "# using argv string: ", "# ");
 	for (int i = 0; i < argc; i++)
 		printf("%s %s", argv[i], (i == argc - 1) ? "\n" : "");
-	init_list(&symbols, "cepl");
 
 	plan(7);
 
 	ok(result != NULL, "test option parsing.");
 	like(result[0], "^(gcc|clang)$", "test generation of compiler string.");
-	lives_ok({read_syms(&symbols, NULL);}, "test passing read_syms() empty filename.");
-	lives_ok({parse_libs(&symbols, libs);}, "test shared library parsing.");
-	ok((ret = free_str_list(&symbols)) != -1, "test free_str_list() doesn't return -1.");
+	lives_ok({read_syms(&prg.sym_list, NULL);}, "test passing read_syms() empty filename.");
+	lives_ok({parse_libs(&prg.sym_list, libs);}, "test shared library parsing.");
+	ok((ret = free_str_list(&prg.sym_list)) != -1, "test free_str_list() doesn't return -1.");
 	ok(ret == 1, "test free_str_list() return is exactly 1.");
-	ok(free_str_list(&symbols) == -1, "test free_str_list() on empty pointer returns -1.");
+	ok(free_str_list(&prg.sym_list) == -1, "test free_str_list() on empty pointer returns -1.");
 
 	/* cleanup */
 	free_argv(&result);

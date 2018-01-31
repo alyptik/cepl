@@ -148,12 +148,10 @@ struct source {
 
 /* monolithic program structure */
 struct program {
-	bool asm_flag, eval_flag, exec_flag, parse_flag;
-	bool track_flag, warn_flag, in_flag, out_flag;
-	bool has_hist;
-	char *cur_line, *hist_file;
-	char *out_filename, *asm_filename;
 	FILE *ofile;
+	bool asm_flag, eval_flag, exec_flag, parse_flag;
+	bool track_flag, warn_flag, in_flag, out_flag, has_hist;
+	char *input_src[3], *cur_line, *hist_file, *out_filename, *asm_filename;
 	struct str_list cc_list, ld_list, lib_list, sym_list;
 	struct str_list id_list;
 	struct type_list type_list;
@@ -187,7 +185,6 @@ static inline size_t xfread(void *restrict ptr, size_t sz, size_t nmemb, FILE *r
 		return 0;
 	return cnt;
 }
-
 
 /* recursive free */
 static inline ptrdiff_t free_argv(char ***restrict argv)

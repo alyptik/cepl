@@ -9,8 +9,6 @@
 
 /* externs */
 extern struct str_list comp_list;
-/* line buffer and input file source */
-extern char *input_src[3];
 
 /* source file includes template */
 char const *prelude =
@@ -104,9 +102,9 @@ void cleanup(struct program *restrict prog)
 	prog->out_filename = NULL;
 	free(prog->asm_filename);
 	prog->asm_filename = NULL;
-	for (size_t i = 0; i < ARRLEN(input_src); i++) {
-		free(input_src[i]);
-		input_src[i] = NULL;
+	for (size_t i = 0; i < ARRLEN(prog->input_src); i++) {
+		free(prog->input_src[i]);
+		prog->input_src[i] = NULL;
 	}
 	if (isatty(STDIN_FILENO) && !prog->eval_flag)
 		printf("\n%s\n\n", "Terminating program.");

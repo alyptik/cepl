@@ -20,22 +20,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* SIGINT buffer for non-local goto */
+static sigjmp_buf jmp_env;
+/* TODO: change history filename to a non-hardcoded string */
+static char hist_name[] = "./.cepl_history";
 /*
  * program source strucs (program_state.src[0] is
  * truncated for interactive printing)
  */
 static struct program program_state;
-/* SIGINT buffer for non-local goto */
-static sigjmp_buf jmp_env;
-/* TODO: change history filename to a non-hardcoded string */
-static char hist_name[] = "./.cepl_history";
-/* output file buffer and cc args */
-static char **cc_argv;
 
 /* string to compile */
 extern char eval_arg[];
-/* output filenames */
-extern char *input_src[3];
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 extern enum asm_type asm_dialect;
 
@@ -204,7 +200,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		ln = NULL;
 	}
 	/* print generated source code unless stdin is a pipe */
-	compile(prg.src[1].total, cc_argv, argv);
+	compile(prg.src[1].total, program_state.cc_list.list, argv);
 	free_buffers(&prg);
 	free_str_list(&temp);
 	dup2(saved_fd, STDERR_FILENO);
@@ -736,7 +732,7 @@ int main(int argc, char **argv)
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !program_state.eval_flag)
 			printf("%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total);
-		int ret = compile(program_state.src[1].total, cc_argv, argv);
+		int ret = compile(program_state.src[1].total, program_state.cc_list.list, argv);
 		/* fix buffering issues */
 		sync();
 		usleep(5000);

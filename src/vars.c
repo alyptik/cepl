@@ -278,8 +278,8 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	char *line_tmp[2], *id_tmp = NULL;
 
 	/* sanity checks */
-	if (!prog || !prog->cur_line)
-		return 0;
+	if (!prog || !code)
+		return -1;
 	xcalloc(char, &line_tmp[0], 1, strlen(code) + 1, "find_vars()");
 	line_tmp[1] = line_tmp[0];
 
