@@ -543,13 +543,12 @@ int main(int argc, char **argv)
 {
 	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
 	/* token buffers */
-	char *lbuf = NULL, *tbuf = NULL;
+	char *tbuf = NULL;
 
 	/* build history filename from environment */
 	build_hist_name();
 
 	/* initiatalize compiler arg array */
-	parse_opts(&program_state, argc, argv, optstring);
 	program_state.asm_flag = false;
 	program_state.eval_flag = false;
 	program_state.exec_flag = true;
@@ -558,6 +557,7 @@ int main(int argc, char **argv)
 	program_state.parse_flag = true;
 	program_state.track_flag = true;
 	program_state.warn_flag = false;
+	parse_opts(&program_state, argc, argv, optstring);
 
 	/* initialize source buffers */
 	init_buffers(&program_state);
@@ -575,18 +575,16 @@ int main(int argc, char **argv)
 	sigsetjmp(jmp_env, 1);
 
 	/* loop readline() until EOF is read */
-	while (read_line(&lbuf)) {
+	while (read_line(&program_state.cur_line)) {
 		/* if no input then do nothing */
-		if (!*lbuf)
+		if (!*program_state.cur_line)
 			continue;
 
-		/* point global at line */
-		program_state.cur_line = lbuf;
 		/* program_state.cur_line newlines */
 		if ((tbuf = strpbrk(program_state.cur_line, "\f\r\n")))
 			tbuf[0] = '\0';
 		/* add and dedup history */
-		dedup_history(&lbuf);
+		dedup_history(&program_state.cur_line);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 
@@ -746,14 +744,12 @@ int main(int argc, char **argv)
 		if (ret || (isatty(STDIN_FILENO) && !program_state.eval_flag))
 			printf("[exit status: %d]\n", ret);
 
-		/* exit if executed with `-e` argument */
-		if (program_state.eval_flag) {
-			lbuf = NULL;
-			break;
-		}
 		/* cleanup old buffer */
 		free(program_state.cur_line);
 		program_state.cur_line = NULL;
+		/* exit if executed with `-e` argument */
+		if (program_state.eval_flag)
+			break;
 	}
 
 	free_buffers(&program_state);
