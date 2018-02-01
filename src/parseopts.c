@@ -268,6 +268,63 @@ static inline void build_sym_list(struct program *restrict prog)
 	}
 }
 
+void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
+{
+	int elf_fd;
+	GElf_Shdr shdr;
+	Elf *elf;
+	Elf_Scn *scn = NULL;
+
+	/* sanity check filename */
+	if (!elf_file)
+		return;
+	/* coordinate API and lib versions */
+	if (elf_version(EV_CURRENT) == EV_NONE)
+		ERR("%s", "libelf out of date");
+	elf_fd = open(elf_file, O_RDONLY);
+	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
+
+	while ((scn = elf_nextscn(elf, scn))) {
+		gelf_getshdr(scn, &shdr);
+		/* found a symbol table, go print it. */
+		if (shdr.sh_type == SHT_DYNSYM)
+			break;
+	}
+
+	/* don't try to parse if NULL section descriptor */
+	if (scn) {
+		Elf_Data *data = elf_getdata(scn, NULL);
+		size_t count = shdr.sh_size / shdr.sh_entsize;
+		/* read the symbol names */
+		for (size_t i = 0; i < count; i++) {
+			GElf_Sym sym;
+			char *sym_str;
+			gelf_getsym(data, i, &sym);
+			sym_str = elf_strptr(elf, shdr.sh_link, sym.st_name);
+			append_str(tokens, sym_str, 0);
+		}
+		append_str(tokens, NULL, 0);
+	}
+
+	elf_end(elf);
+	close(elf_fd);
+}
+
+void parse_libs(struct str_list *restrict symbols, char **restrict libs)
+{
+	for (size_t i = 0; libs[i]; i++) {
+		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};
+		init_str_list(&cur_syms, NULL);
+		read_syms(&cur_syms, libs[i]);
+		for (size_t j = 0; j < cur_syms.cnt; j++) {
+			append_str(symbols, cur_syms.list[j], 0);
+		}
+		append_str(&cur_syms, NULL, 0);
+		free_str_list(&cur_syms);
+	}
+	append_str(symbols, NULL, 0);
+}
+
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
@@ -376,61 +433,4 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	build_sym_list(prog);
 
 	return prog->cc_list.list;
-}
-
-void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
-{
-	int elf_fd;
-	GElf_Shdr shdr;
-	Elf *elf;
-	Elf_Scn *scn = NULL;
-
-	/* sanity check filename */
-	if (!elf_file)
-		return;
-	/* coordinate API and lib versions */
-	if (elf_version(EV_CURRENT) == EV_NONE)
-		ERR("%s", "libelf out of date");
-	elf_fd = open(elf_file, O_RDONLY);
-	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
-
-	while ((scn = elf_nextscn(elf, scn))) {
-		gelf_getshdr(scn, &shdr);
-		/* found a symbol table, go print it. */
-		if (shdr.sh_type == SHT_DYNSYM)
-			break;
-	}
-
-	/* don't try to parse if NULL section descriptor */
-	if (scn) {
-		Elf_Data *data = elf_getdata(scn, NULL);
-		size_t count = shdr.sh_size / shdr.sh_entsize;
-		/* read the symbol names */
-		for (size_t i = 0; i < count; i++) {
-			GElf_Sym sym;
-			char *sym_str;
-			gelf_getsym(data, i, &sym);
-			sym_str = elf_strptr(elf, shdr.sh_link, sym.st_name);
-			append_str(tokens, sym_str, 0);
-		}
-		append_str(tokens, NULL, 0);
-	}
-
-	elf_end(elf);
-	close(elf_fd);
-}
-
-void parse_libs(struct str_list *restrict symbols, char **restrict libs)
-{
-	for (size_t i = 0; libs[i]; i++) {
-		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};
-		init_str_list(&cur_syms, NULL);
-		read_syms(&cur_syms, libs[i]);
-		for (size_t j = 0; j < cur_syms.cnt; j++) {
-			append_str(symbols, cur_syms.list[j], 0);
-		}
-		append_str(&cur_syms, NULL, 0);
-		free_str_list(&cur_syms);
-	}
-	append_str(symbols, NULL, 0);
 }
