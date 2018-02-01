@@ -121,6 +121,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	prog_start = prog_start_user = prog->input_src[1];
 	prog_end = prog->input_src[2];
 	prog->in_flag ^= true;
+	xfclose(&tmp_file);
 }
 
 static inline void copy_compiler(struct program *restrict prog)
