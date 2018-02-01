@@ -64,6 +64,66 @@ extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 extern char *optarg;
 extern int optind, opterr, optopt;
 
+static void parse_input_file(struct program *restrict prog, char **restrict in_file)
+{
+	if (*in_file)
+		ERRX("%s", "too many input files specified");
+	*in_file = optarg;
+	int scan_state = IN_PRELUDE;
+	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
+	char tmp_buf[PAGE_SIZE];
+	for (size_t i = 0; i < ARRLEN(prog->input_src); i++) {
+		xmalloc(char, &prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
+		prog->input_src[i][0] = 0;
+	}
+
+	regex_t reg[2];
+	char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
+	char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
+	if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
+		ERR("%s", "failed to compile main_regex");
+	if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
+		ERR("%s", "failed to compile end_regex");
+
+	FILE *tmp_file = xfopen(*in_file, "r");
+	char *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
+	for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
+		switch (scan_state) {
+		case IN_PRELUDE:
+			/* no match */
+			if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
+				strmv(CONCAT, prog->input_src[0], tmp_buf);
+				sz[0] += strlen(tmp_buf);
+				xrealloc(char, &prog->input_src[0], sz[0], "xrealloc(char)");
+				break;
+			}
+			regfree(&reg[0]);
+			scan_state = IN_MIDDLE;
+
+		case IN_MIDDLE:
+			/* no match */
+			if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
+				strmv(CONCAT, prog->input_src[1], tmp_buf);
+				sz[1] += strlen(tmp_buf);
+				xrealloc(char, &prog->input_src[1], sz[1], "xrealloc(char)");
+				break;
+			}
+			regfree(&reg[1]);
+			scan_state = IN_EPILOGUE;
+
+		case IN_EPILOGUE:
+			strmv(CONCAT, prog->input_src[2], tmp_buf);
+			sz[2] += strlen(tmp_buf);
+			xrealloc(char, &prog->input_src[2], sz[2], "xrealloc(char)");
+			break;
+		}
+	}
+	prelude = prog->input_src[0];
+	prog_start = prog_start_user = prog->input_src[1];
+	prog_end = prog->input_src[2];
+	prog->in_flag ^= true;
+}
+
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
@@ -96,65 +156,9 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		switch (opt) {
 
 		/* use input file */
-		case 'f': {
-			if (in_file)
-				ERRX("%s", "too many input files specified");
-			in_file = optarg;
-			int scan_state = IN_PRELUDE;
-			size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
-			char tmp_buf[PAGE_SIZE];
-			for (size_t i = 0; i < ARRLEN(prog->input_src); i++) {
-				xmalloc(char, &prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
-				prog->input_src[i][0] = 0;
-			}
-
-			regex_t reg[2];
-			char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
-			char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
-			if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
-				ERR("%s", "failed to compile main_regex");
-			if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
-				ERR("%s", "failed to compile end_regex");
-
-			FILE *tmp_file = xfopen(in_file, "r");
-			char *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
-			for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
-				switch (scan_state) {
-				case IN_PRELUDE:
-					/* no match */
-					if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
-						strmv(CONCAT, prog->input_src[0], tmp_buf);
-						sz[0] += strlen(tmp_buf);
-						xrealloc(char, &prog->input_src[0], sz[0], "xrealloc(char)");
-						break;
-					}
-					regfree(&reg[0]);
-					scan_state = IN_MIDDLE;
-
-				case IN_MIDDLE:
-					/* no match */
-					if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
-						strmv(CONCAT, prog->input_src[1], tmp_buf);
-						sz[1] += strlen(tmp_buf);
-						xrealloc(char, &prog->input_src[1], sz[1], "xrealloc(char)");
-						break;
-					}
-					regfree(&reg[1]);
-					scan_state = IN_EPILOGUE;
-
-				case IN_EPILOGUE:
-					strmv(CONCAT, prog->input_src[2], tmp_buf);
-					sz[2] += strlen(tmp_buf);
-					xrealloc(char, &prog->input_src[2], sz[2], "xrealloc(char)");
-					break;
-				}
-			}
-			prelude = prog->input_src[0];
-			prog_start = prog_start_user = prog->input_src[1];
-			prog_end = prog->input_src[2];
-			prog->in_flag ^= true;
+		case 'f':
+			parse_input_file(prog, &in_file);
 			break;
-		}
 
 		/* at&t asm style */
 		case 'a':
