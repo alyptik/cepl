@@ -152,7 +152,27 @@ static inline void copy_libs(struct program *restrict prog)
 	memcpy(prog->ld_list.list[prog->ld_list.cnt - 1], "-l", 2);
 }
 
-/* static inline void copy_compiler(struct program *restrict prog) */
+static inline void set_att_flag(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
+{
+	if (*asm_file)
+		ERRX("%s", "too many output files specified");
+	if (*asm_choice)
+		ERRX("%s", "more than one assembler dialect specified");
+	*asm_choice = ATT;
+	*asm_file = optarg;
+	prog->asm_flag ^= true;
+}
+
+static inline void set_intel_flag(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
+{
+	if (*asm_file)
+		ERRX("%s", "too many output files specified");
+	if (*asm_choice)
+		ERRX("%s", "more than one assembler dialect specified");
+	*asm_choice = INTEL;
+	*asm_file = optarg;
+	prog->asm_flag ^= true;
+}
 
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
@@ -192,13 +212,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* at&t asm style */
 		case 'a':
-			if (asm_file)
-				ERRX("%s", "too many output files specified");
-			if (asm_choice)
-				ERRX("%s", "more than one assembler dialect specified");
-			asm_choice = ATT;
-			asm_file = optarg;
-			prog->asm_flag ^= true;
+			set_att_flag(prog, &asm_file, &asm_choice);
 			break;
 
 		/* specify compiler */
@@ -216,13 +230,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* intel asm style */
 		case 'i':
-			if (asm_file)
-				ERRX("%s", "too many output files specified");
-			if (asm_choice)
-				ERRX("%s", "more than one assembler dialect specified");
-			asm_choice = INTEL;
-			asm_file = optarg;
-			prog->asm_flag ^= true;
+			set_intel_flag(prog, &asm_file, &asm_choice);
 			break;
 
 		/* header directory flag */
