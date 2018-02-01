@@ -187,6 +187,14 @@ static inline void copy_header_dirs(struct program *restrict prog)
 	strmv(0, prog->cc_list.list[prog->cc_list.cnt - 1], "-I");
 }
 
+static inline void copy_out_file(struct program *restrict prog, char **restrict out_name)
+{
+	if (*out_name)
+		ERRX("%s", "too many output files specified");
+	*out_name = optarg;
+	prog->out_flag ^= true;
+}
+
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
@@ -255,10 +263,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* output file flag */
 		case 'o':
-			if (out_name)
-				ERRX("%s", "too many output files specified");
-			out_name = optarg;
-			prog->out_flag ^= true;
+			copy_out_file(prog, &out_name);
 			break;
 
 		/* parse flag */
