@@ -11,9 +11,6 @@
 #include <limits.h>
 #include <regex.h>
 
-/* globals */
-enum asm_type asm_dialect = NONE;
-
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
 	{"cc", required_argument, 0, 'c'},
@@ -195,6 +192,20 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 	prog->out_flag ^= true;
 }
 
+static inline void copy_asm_file(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
+{
+	/* asm output flag */
+	if (prog->asm_flag) {
+		if (*asm_file && !prog->asm_filename) {
+			xcalloc(char, &prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
+			strmv(0, prog->asm_filename, *asm_file);
+			if (!strcmp(prog->cc_list.list[0], "icc"))
+				*asm_choice = ATT;
+			append_str(&prog->cc_list, asm_list[*asm_choice], 0);
+		}
+	}
+}
+
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
@@ -297,18 +308,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		}
 	}
 
-	/* asm output flag */
-	if (prog->asm_flag) {
-		if (asm_file && !prog->asm_filename) {
-			xcalloc(char, &prog->asm_filename, 1, strlen(asm_file) + 1, "prog->asm_filename calloc()");
-			strmv(0, prog->asm_filename, asm_file);
-			if (!strcmp(prog->cc_list.list[0], "icc"))
-				asm_choice = ATT;
-			if (!asm_dialect)
-				asm_dialect = asm_choice;
-			append_str(&prog->cc_list, asm_list[asm_choice], 0);
-		}
-	}
+	copy_asm_file(prog, &asm_file, &asm_choice);
 
 	/* output file flag */
 	if (prog->out_flag) {
