@@ -80,6 +80,8 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	/* reset option indices to reuse argv */
 	option_index = 0;
 	optind = 1;
+	/* need to invert tracking flag because of control flow oddities */
+	prog->track_flag ^= true;
 
 	/* initilize argument lists */
 	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");

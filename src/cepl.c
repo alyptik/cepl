@@ -533,8 +533,6 @@ int main(int argc, char **argv)
 
 	/* initiatalize compiler arg array */
 	build_hist_name();
-	/* need to invert tracking flag because of control flow oddities */
-	program_state.track_flag ^= true;
 	save_flag_state(flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
@@ -545,7 +543,6 @@ int main(int argc, char **argv)
 
 	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
 	build_final(&program_state, argv);
-	if (isatty(STDIN_FILENO) && !program_state.eval_flag)
 		printf("%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
