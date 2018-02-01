@@ -64,7 +64,7 @@ extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-static void parse_input_file(struct program *restrict prog, char **restrict in_file)
+static inline void parse_input_file(struct program *restrict prog, char **restrict in_file)
 {
 	if (*in_file)
 		ERRX("%s", "too many input files specified");
@@ -124,6 +124,25 @@ static void parse_input_file(struct program *restrict prog, char **restrict in_f
 	prog->in_flag ^= true;
 }
 
+static inline void copy_compiler(struct program *restrict prog)
+{
+	if (!prog->cc_list.list[0][0]) {
+		size_t cc_len = strlen(optarg) + 1;
+		size_t pval_len = strlen("FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL") + 1;
+		/* realloc if needed */
+		if (cc_len > pval_len) {
+			if (!(tmp_arg = realloc(prog->cc_list.list[0], cc_len)))
+				ERR("%s[%zu]", "prog->cc_list.list", (size_t)0);
+			/* copy argument to prog->cc_list.list[0] */
+			prog->cc_list.list[0] = tmp_arg;
+			memset(prog->cc_list.list[0], 0, strlen(optarg) + 1);
+		}
+		strmv(0, prog->cc_list.list[0], optarg);
+	}
+}
+
+/* static inline void parse_input_file(struct program *restrict prog, char **restrict in_file) */
+
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
@@ -171,21 +190,9 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			prog->asm_flag ^= true;
 			break;
 
-		/* switch compiler */
+		/* specify compiler */
 		case 'c':
-			if (!prog->cc_list.list[0][0]) {
-				size_t cc_len = strlen(optarg) + 1;
-				size_t pval_len = strlen("FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL") + 1;
-				/* realloc if needed */
-				if (cc_len > pval_len) {
-					if (!(tmp_arg = realloc(prog->cc_list.list[0], cc_len)))
-						ERR("%s[%zu]", "prog->cc_list.list", (size_t)0);
-					/* copy argument to prog->cc_list.list[0] */
-					prog->cc_list.list[0] = tmp_arg;
-					memset(prog->cc_list.list[0], 0, strlen(optarg) + 1);
-				}
-				strmv(0, prog->cc_list.list[0], optarg);
-			}
+			copy_compiler(prog);
 			break;
 
 		/* eval string */
