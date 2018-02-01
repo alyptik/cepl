@@ -533,6 +533,8 @@ int main(int argc, char **argv)
 
 	/* initiatalize compiler arg array */
 	build_hist_name();
+	/* need to invert tracking flag because of control flow oddities */
+	program_state.track_flag ^= true;
 	save_flag_state(flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
