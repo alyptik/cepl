@@ -141,7 +141,18 @@ static inline void copy_compiler(struct program *restrict prog)
 	}
 }
 
-/* static inline void parse_input_file(struct program *restrict prog, char **restrict in_file) */
+static inline void copy_libs(struct program *restrict prog)
+{
+	char buf[strlen(optarg) + 12];
+	strmv(0, buf, "/lib/lib");
+	strmv(CONCAT, buf, optarg);
+	strmv(CONCAT, buf, ".so");
+	append_str(&prog->lib_list, buf, 0);
+	append_str(&prog->ld_list, optarg, 2);
+	memcpy(prog->ld_list.list[prog->ld_list.cnt - 1], "-l", 2);
+}
+
+/* static inline void copy_compiler(struct program *restrict prog) */
 
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
@@ -222,15 +233,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* dynamic library flag */
 		case 'l':
-			do {
-				char buf[strlen(optarg) + 12];
-				strmv(0, buf, "/lib/lib");
-				strmv(CONCAT, buf, optarg);
-				strmv(CONCAT, buf, ".so");
-				append_str(&prog->lib_list, buf, 0);
-				append_str(&prog->ld_list, optarg, 2);
-				memcpy(prog->ld_list.list[prog->ld_list.cnt - 1], "-l", 2);
-			} while (0);
+			copy_libs(prog);
 			break;
 
 		/* output file flag */
