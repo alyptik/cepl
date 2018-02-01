@@ -17,7 +17,7 @@
 
 /* macros */
 #define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
-#define ARRLEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
+#define ARR_LEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 
 /* `malloc()` wrapper */
 #define xmalloc(TYPE, PTR, SZ, MSG) \

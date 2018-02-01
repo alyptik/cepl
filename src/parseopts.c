@@ -70,7 +70,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	int scan_state = IN_PRELUDE;
 	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 	char tmp_buf[PAGE_SIZE];
-	for (size_t i = 0; i < ARRLEN(prog->input_src); i++) {
+	for (size_t i = 0; i < ARR_LEN(prog->input_src); i++) {
 		xmalloc(char, &prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
 		prog->input_src[i][0] = 0;
 	}
