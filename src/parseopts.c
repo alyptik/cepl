@@ -11,6 +11,9 @@
 #include <limits.h>
 #include <regex.h>
 
+/* globals */
+enum asm_type asm_dialect = NONE;
+
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
 	{"cc", required_argument, 0, 'c'},
@@ -192,7 +195,7 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 	prog->out_flag ^= true;
 }
 
-static inline void copy_asm_file(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
+static inline void copy_asm_filename(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
 {
 	/* asm output flag */
 	if (prog->asm_flag) {
@@ -201,8 +204,67 @@ static inline void copy_asm_file(struct program *restrict prog, char **asm_file,
 			strmv(0, prog->asm_filename, *asm_file);
 			if (!strcmp(prog->cc_list.list[0], "icc"))
 				*asm_choice = ATT;
+			if (!asm_dialect)
+				asm_dialect = *asm_choice;
 			append_str(&prog->cc_list, asm_list[*asm_choice], 0);
 		}
+	}
+}
+
+static inline void set_out_file(struct program *restrict prog, char *restrict out_name)
+{
+	/* output file flag */
+	if (prog->out_flag) {
+		if (out_name && !prog->out_filename) {
+			xcalloc(char, &prog->out_filename, 1, strlen(out_name) + 1, "prog->out_filename calloc()");
+			strmv(0, prog->out_filename, out_name);
+		}
+		if (prog->ofile)
+			fclose(prog->ofile);
+		if (!(prog->ofile = fopen(prog->out_filename, "wb")))
+			ERR("%s", "failed to create output file");
+	}
+}
+
+static inline void enable_warnings(struct program *restrict prog)
+{
+	/* append warning flags */
+	if (prog->warn_flag) {
+		for (size_t i = 0; warn_list[i]; i++)
+			append_str(&prog->cc_list, warn_list[i], 0);
+	}
+}
+
+static inline void build_arg_list(struct program *restrict prog, char *const *cc_list, char *const *ld_list)
+{
+	/* default to gcc as a compiler */
+	if (!prog->cc_list.list[0][0])
+		strmv(0, prog->cc_list.list[0], "gcc");
+	/* finalize argument lists */
+	for (size_t i = 0; cc_arg_list[i]; i++)
+		append_str(&prog->cc_list, cc_list[i], 0);
+	for (size_t i = 0; ld_arg_list[i]; i++)
+		append_str(&prog->ld_list, ld_list[i], 0);
+	/* append NULL to generated lists */
+	append_str(&prog->cc_list, NULL, 0);
+	append_str(&prog->ld_list, NULL, 0);
+	append_str(&prog->lib_list, NULL, 0);
+}
+
+static inline void build_sym_list(struct program *restrict prog)
+{
+	/* parse ELF shared libraries for completions */
+	if (prog->parse_flag) {
+		init_str_list(&comp_list, NULL);
+		init_str_list(&prog->sym_list, NULL);
+		parse_libs(&prog->sym_list, prog->lib_list.list);
+		for (size_t i = 0; comp_arg_list[i]; i++)
+			append_str(&comp_list, comp_arg_list[i], 0);
+		for (size_t i = 0; i < prog->sym_list.cnt; i++)
+			append_str(&comp_list, prog->sym_list.list[i], 0);
+		append_str(&comp_list, NULL, 0);
+		append_str(&prog->sym_list, NULL, 0);
+		free_str_list(&prog->sym_list);
 	}
 }
 
@@ -308,52 +370,10 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		}
 	}
 
-	copy_asm_file(prog, &asm_file, &asm_choice);
-
-	/* output file flag */
-	if (prog->out_flag) {
-		if (out_name && !prog->out_filename) {
-			xcalloc(char, &prog->out_filename, 1, strlen(out_name) + 1, "error during prog->out_filename calloc()");
-			strmv(0, prog->out_filename, out_name);
-		}
-		if (prog->ofile)
-			fclose(prog->ofile);
-		if (!(prog->ofile = fopen(prog->out_filename, "wb")))
-			ERR("%s", "failed to create output file");
-	}
-
-	/* append warning flags */
-	if (prog->warn_flag) {
-		for (size_t i = 0; warn_list[i]; i++)
-			append_str(&prog->cc_list, warn_list[i], 0);
-	}
-
-	/* default to gcc as a compiler */
-	if (!prog->cc_list.list[0][0])
-		strmv(0, prog->cc_list.list[0], "gcc");
-	/* finalize argument lists */
-	for (size_t i = 0; cc_arg_list[i]; i++)
-		append_str(&prog->cc_list, cc_arg_list[i], 0);
-	for (size_t i = 0; ld_arg_list[i]; i++)
-		append_str(&prog->ld_list, ld_arg_list[i], 0);
-	/* append NULL to generated lists */
-	append_str(&prog->cc_list, NULL, 0);
-	append_str(&prog->ld_list, NULL, 0);
-	append_str(&prog->lib_list, NULL, 0);
-
-	/* parse ELF shared libraries for completions */
-	if (prog->parse_flag) {
-		init_str_list(&comp_list, NULL);
-		init_str_list(&prog->sym_list, NULL);
-		parse_libs(&prog->sym_list, prog->lib_list.list);
-		for (size_t i = 0; comp_arg_list[i]; i++)
-			append_str(&comp_list, comp_arg_list[i], 0);
-		for (size_t i = 0; i < prog->sym_list.cnt; i++)
-			append_str(&comp_list, prog->sym_list.list[i], 0);
-		append_str(&comp_list, NULL, 0);
-		append_str(&prog->sym_list, NULL, 0);
-		free_str_list(&prog->sym_list);
-	}
+	copy_asm_filename(prog, &asm_file, &asm_choice);
+	set_out_file(prog, out_name);
+	build_arg_list(prog, cc_arg_list, ld_arg_list);
+	build_sym_list(prog);
 
 	return prog->cc_list.list;
 }
