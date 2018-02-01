@@ -13,8 +13,6 @@
 
 /* globals */
 enum asm_type asm_dialect = NONE;
-/* string to compile */
-char eval_arg[EVAL_LIMIT];
 
 static struct option long_opts[] = {
 	{"att", required_argument, 0, 'a'},
@@ -85,7 +83,8 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
 		ERR("%s", "failed to compile end_regex");
 
-	FILE *tmp_file = xfopen(*in_file, "r");
+	FILE *tmp_file;
+	xfopen(&tmp_file, *in_file, "r");
 	char *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
 	for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
 		switch (scan_state) {
@@ -174,6 +173,20 @@ static inline void set_intel_flag(struct program *restrict prog, char **asm_file
 	prog->asm_flag ^= true;
 }
 
+static inline void copy_eval_code(struct program *restrict prog)
+{
+	if (strlen(optarg) > sizeof prog->eval_arg)
+		ERRX("%s", "eval string too long");
+	strmv(0, prog->eval_arg, optarg);
+	prog->eval_flag ^= true;
+}
+
+static inline void copy_header_dirs(struct program *restrict prog)
+{
+	append_str(&prog->cc_list, optarg, 2);
+	strmv(0, prog->cc_list.list[prog->cc_list.cnt - 1], "-I");
+}
+
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
@@ -222,10 +235,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* eval string */
 		case 'e':
-			if (strlen(optarg) > sizeof eval_arg)
-				ERRX("%s", "eval string too long");
-			strmv(0, eval_arg, optarg);
-			prog->eval_flag ^= true;
+			copy_eval_code(prog);
 			break;
 
 		/* intel asm style */
@@ -235,8 +245,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* header directory flag */
 		case 'I':
-			append_str(&prog->cc_list, optarg, 2);
-			strmv(0, prog->cc_list.list[prog->cc_list.cnt - 1], "-I");
+			copy_header_dirs(prog);
 			break;
 
 		/* dynamic library flag */

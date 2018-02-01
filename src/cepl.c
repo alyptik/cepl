@@ -31,34 +31,27 @@ static char hist_name[] = "./.cepl_history";
 static struct program program_state;
 
 /* string to compile */
-extern char eval_arg[];
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
 extern enum asm_type asm_dialect;
 
-static inline char *read_line(char **restrict ln)
+static inline char *read_line(struct program *restrict prog)
 {
 	/* false while waiting for input */
-	program_state.exec_flag = false;
+	prog->exec_flag = false;
 	/* return early if executed with `-e` argument */
-	if (program_state.eval_flag) {
-		*ln = eval_arg;
-		return *ln;
-	}
+	if (prog->eval_flag)
+		return prog->cur_line = prog->eval_arg;
 	/* use an empty prompt if stdin is a pipe */
-	if (isatty(STDIN_FILENO)) {
-		*ln = readline(">>> ");
-		return *ln;
-	}
-
+	if (isatty(STDIN_FILENO))
+		return prog->cur_line = readline(">>> ");
 	/* redirect stdout to /dev/null */
 	FILE *bitbucket;
-	if (!(bitbucket = fopen("/dev/null", "r+b")))
-		ERR("%s", "read_line() fopen()");
+	xfopen(&bitbucket, "/dev/null", "r+b");
 	rl_outstream = bitbucket;
-	*ln = readline(NULL);
+	prog->cur_line = readline(NULL);
 	rl_outstream = NULL;
 	fclose(bitbucket);
-	return *ln;
+	return prog->cur_line;
 }
 
 static inline void init_vars(void)
@@ -549,7 +542,7 @@ int main(int argc, char **argv)
 	sigsetjmp(jmp_env, 1);
 
 	/* loop readline() until EOF is read */
-	while (read_line(&program_state.cur_line)) {
+	while (read_line(&program_state)) {
 		/* if no input then do nothing */
 		if (!*program_state.cur_line)
 			continue;

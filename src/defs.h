@@ -47,7 +47,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.6.2"
+#define VERSION_STRING	"CEPL v5.6.3"
 #define USAGE_STRING	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
 	"-a, --att\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
@@ -153,7 +153,7 @@ struct program {
 	bool exec_flag, parse_flag;
 	bool track_flag, warn_flag;
 	bool in_flag, out_flag, has_hist;
-	char *input_src[3];
+	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;
 	struct str_list cc_list, ld_list;
@@ -174,12 +174,10 @@ static inline void xfclose(FILE **restrict out_file)
 }
 
 /* `fopen()` wrapper */
-static inline FILE *xfopen(char const *restrict path, char const *restrict fmode)
+static inline void xfopen(FILE **restrict file, char const *restrict path, char const *restrict fmode)
 {
-	FILE *file;
-	if (!(file = fopen(path, fmode)))
+	if (!(*file = fopen(path, fmode)))
 		ERR("%s", "xfopen()");
-	return file;
 }
 
 /* `fread()` wrapper */
