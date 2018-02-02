@@ -155,7 +155,7 @@ static inline char *gen_bin_str(char const *restrict in_str)
 	errno = 0;
 	unsigned long long num = strtoll(in_str, 0, 0);
 	if (errno)
-		return NULL;
+		return "(nan)";
 
 	/* build base binary string */
 	while (num) {
@@ -216,8 +216,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	build_final(&prg, argv);
 
 	for (size_t i = 0; i < temp.cnt; i++) {
-		char *ret = gen_bin_str(temp.list[i]);
-		char const *const ln_bin = ret ? ret : "(nan)";
+		char const *const ln_bin = gen_bin_str(temp.list[i]);
 		size_t sz = 1 + strlen(ln_beg) + strlen(ln_end)
 			+ strlen(ln_long[0]) + strlen(ln_long[1])
 			+ strlen(ln_hex[0]) + strlen(ln_hex[1])
