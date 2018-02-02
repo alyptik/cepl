@@ -147,11 +147,15 @@ static void reg_handlers(void)
 static inline char *gen_bin_str(char const *restrict in_str)
 {
 	size_t cnt = 0;
-	char *err = NULL;
 	char base_arr[65] = {0}, *base_ptr = base_arr;
 	char rev_arr[sizeof base_arr + sizeof base_arr / 8] = {0}, *rev_ptr = rev_arr;
 	static char fin_arr[sizeof rev_arr], *fin_ptr = NULL;
-	unsigned long long num = strtol(in_str, &err, 0);
+
+	/* reset for ERANGE check */
+	errno = 0;
+	unsigned long long num = strtoll(in_str, 0, 0);
+	if (num == 0 || errno == ERANGE)
+		return NULL;
 
 	/* build base binary string */
 	while (num) {
@@ -164,15 +168,17 @@ static inline char *gen_bin_str(char const *restrict in_str)
 		num >>= 1;
 		cnt++;
 	}
+
+	/* zero fill and reverse the digits */
 	for (; cnt % 8; cnt++)
 		sprintf(base_ptr++, "%c", '0');
-	/* reverse the digits */
 	for (size_t i = 0, j = cnt - 1; i < cnt; i++, j--)
 		rev_arr[j] = base_arr[i];
+
+	/* convert it to "0b_0000000_000..." format */
 	memset(fin_arr, 0, sizeof fin_arr);
 	fin_ptr = fin_arr + 2;
 	sprintf(fin_arr, "%s", "0b");
-	/* convert it to 0b_0000000_00000000 format */
 	for (size_t i = 0; i < strlen(rev_arr) / 8; i++) {
 		sprintf(fin_ptr, "%c%.8s", '_', rev_ptr);
 		rev_ptr += 8;
@@ -182,7 +188,6 @@ static inline char *gen_bin_str(char const *restrict in_str)
 #ifdef _DEBUG
 	DPRINTF("[%zu] %s - %s - %s", 8 - (cnt % 8), base_arr, rev_arr, fin_arr);
 #endif
-
 	return fin_arr;
 }
 
@@ -197,12 +202,11 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		&& strcmp(term, "")
 		&& strcmp(term, "dumb");
 	char const *const ln_beg = has_color
-		? "printf(\"" GREEN "%s[%lld, %#llx]\\n" RST "\", \"result = \", "
-		: "printf(\"%s%lld\\n\", \"result = \", ";
+		? "printf(\"" GREEN "%s[%lld, %#llx, %s]\\n" RST "\", \"result = \", "
+		: "printf(\"%s[%lld, %#llx, %s]\\n\", \"result = \", ";
 	char const *const ln_long[] = {"(long long)(", "), "};
-	char const *const ln_hex[] = {"(unsigned long long)(", ")"};
-	/* char const *const ln_bin[] = {""}; */
-	char const *const ln_end = ");";
+	char const *const ln_hex[] = {"(unsigned long long)(", "), \""};
+	char const *const ln_end = "\");";
 
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
@@ -212,19 +216,20 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	build_final(&prg, argv);
 
 	for (size_t i = 0; i < temp.cnt; i++) {
-		size_t sz = strlen(ln_beg) + strlen(ln_end)
+		char *ret = gen_bin_str(temp.list[i]);
+		char const *const ln_bin = ret ? ret : "(nan)";
+		size_t sz = 1 + strlen(ln_beg) + strlen(ln_end)
 			+ strlen(ln_long[0]) + strlen(ln_long[1])
 			+ strlen(ln_hex[0]) + strlen(ln_hex[1])
-			+ strlen(temp.list[i]) + 1;
+			+ strlen(ln_bin) + strlen(temp.list[i]) * 2;
 		/* initialize source buffers */
-		xcalloc(char, &prg.cur_line, 1, strlen(temp.list[i]) + sz, "eval_line() calloc");
-		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s", ln_beg,
+		xcalloc(char, &prg.cur_line, 1, sz, "eval_line() calloc");
+		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s%s", ln_beg,
 				ln_long[0], temp.list[i], ln_long[1],
 				ln_hex[0], temp.list[i], ln_hex[1],
-				ln_end);
+				ln_bin, ln_end);
 #ifdef _DEBUG
 		DPRINTF("%s", prg.cur_line);
-		gen_bin_str(temp.list[i]);
 #endif
 		for (size_t j = 0; j < 2; j++) {
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
