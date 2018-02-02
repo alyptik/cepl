@@ -159,6 +159,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		: "printf(\"%s%lld\\n\", \"result = \", ";
 	char const *const ln_long[] = {"(long long)(", "), "};
 	char const *const ln_hex[] = {"(unsigned long long)(", ")"};
+	/* char const *const ln_bin[] = {""}; */
 	char const *const ln_end = ");";
 
 	/* save and close stderr */
