@@ -151,10 +151,10 @@ static inline char *gen_bin_str(char const *restrict in_str)
 	char rev_arr[sizeof base_arr + sizeof base_arr / 8] = {0}, *rev_ptr = rev_arr;
 	static char fin_arr[sizeof rev_arr], *fin_ptr = NULL;
 
-	/* reset for ERANGE check */
+	/* reset for ERANGE / EINVAL check */
 	errno = 0;
 	unsigned long long num = strtoll(in_str, 0, 0);
-	if (num == 0 || errno == ERANGE)
+	if (errno)
 		return NULL;
 
 	/* build base binary string */
