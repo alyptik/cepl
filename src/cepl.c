@@ -155,9 +155,11 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		&& strcmp(term, "")
 		&& strcmp(term, "dumb");
 	char const *const ln_beg = has_color
-		? "printf(\"" GREEN "%s%lld\\n" RST "\", \"result = \", (long long)("
-		: "printf(\"%s%lld\\n\", \"result = \", (long long)(";
-	char const *const ln_end = "));";
+		? "printf(\"" GREEN "%s[%lld, %#llx]\\n" RST "\", \"result = \", "
+		: "printf(\"%s%lld\\n\", \"result = \", ";
+	char const *const ln_long[] = {"(long long)(", "), "};
+	char const *const ln_hex[] = {"(unsigned long long)(", ")"};
+	char const *const ln_end = ");";
 
 	/* save and close stderr */
 	int saved_fd = dup(STDERR_FILENO);
@@ -167,14 +169,18 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	build_final(&prg, argv);
 
 	for (size_t i = 0; i < temp.cnt; i++) {
-		size_t sz = strlen(ln_beg) + strlen(ln_end) + strlen(temp.list[i]) + 1;
+		size_t sz = strlen(ln_beg) + strlen(ln_end)
+			+ strlen(ln_long[0]) + strlen(ln_long[1])
+			+ strlen(ln_hex[0]) + strlen(ln_hex[1])
+			+ strlen(temp.list[i]) + 1;
 		/* initialize source buffers */
 		xcalloc(char, &prg.cur_line, 1, strlen(temp.list[i]) + sz, "eval_line() calloc");
-		strmv(0, prg.cur_line, ln_beg);
-		strmv(CONCAT, prg.cur_line, temp.list[i]);
-		strmv(CONCAT, prg.cur_line, ln_end);
+		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s", ln_beg,
+				ln_long[0], temp.list[i], ln_long[1],
+				ln_hex[0], temp.list[i], ln_hex[1],
+				ln_end);
 #ifdef _DEBUG
-		puts(prg.cur_line);
+		DPRINTF("%s", prg.cur_line);
 #endif
 		for (size_t j = 0; j < 2; j++) {
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
