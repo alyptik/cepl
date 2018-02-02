@@ -19,7 +19,7 @@
 #define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
 #define ARR_LEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 #define FOR_EACH_IN(LIST)	for (size_t i = 0; i < (LIST).cnt; i++)
-#define DPRINTF(FMT, ...)	printf("\033[91m" FMT "\033[00m\n", __VA_ARGS__)
+#define DPRINTF(FMT, ...)	fprintf(stderr, "\033[91m" FMT "\033[00m\n", __VA_ARGS__)
 
 /* `malloc()` wrapper */
 #define xmalloc(TYPE, PTR, SZ, MSG) \
