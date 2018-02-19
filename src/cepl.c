@@ -214,6 +214,8 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	parse_opts(&prg, argc, argv, optstring);
 	init_buffers(&prg);
 	build_final(&prg, argv);
+	/* don't write out files for line evaluation */
+	prg.out_flag = prg.asm_flag = false;
 
 	for (size_t i = 0; i < temp.cnt; i++) {
 		char const *const ln_bin = gen_bin_str(temp.list[i]);
