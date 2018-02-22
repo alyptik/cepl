@@ -6,34 +6,18 @@ typeset -A opt_args
 local -a libs
 libs=(${${$(find -L /lib -maxdepth 1 -type f -regex '.*/lib[a-z]*\.so' 2>/dev/null)##*/lib}:r})
 
-_arguments \
-	'-a[Name of the file to output AT&T-dialect assembler code to]' \
-	'--att[Name of the file to output AT&T-dialect assembler code to]' \
-	'-c[Specify alternate compiler]:compiler:(gcc clang icc)' \
-	'--cc[Specify alternate compiler]:compiler:(gcc clang icc)' \
-	'-e[Evaluate the following argument as C code]' \
-	'--eval[Evaluate the following argument as C code]' \
-	'-f[Name of file to use as starting C code template]' \
-	'--file[Name of file to use as starting C code template]' \
-	'-h[Show help/usage information]' \
-	'--help[Show help/usage information]' \
-	'-i[Name of the file to output Intel-dialect assembler code to]' \
-	'--intel[Name of the file to output Intel-dialect assembler code to]' \
-	'-o[Name of the file to output C source code to]' \
-	'--output[Name of the file to output C source code to]' \
-	'-p[Disable addition of dynamic library symbols to readline completion]' \
-	'--parse[Disable addition of dynamic library symbols to readline completion]' \
-	'-t[Toggle variable tracking]' \
-	'--trackin[Toggle variable tracking]' \
-	'-v[Show version information]' \
-	'--version[Show version information]' \
-	'-w[Compile with "-pedantic -Wall -Wextra" flags]' \
-	'--warning[Compile with "-pedantic -Wall -Wextra" flags]' \
-	"-l[Link against specified library (flag can be repeated)]:library:(${libs[*]})" \
-	'-I[Search directory for header files (flag can be repeated)]' \
-	'*:' && ret=0
-
-case $state in
-*)
-	_wanted files expl 'files/directories' _files && ret=0
-esac
+_arguments -s \
+	{-a,--att=}'[Name of the file to output AT&T-dialect assembler code to]:file:_files' \
+	{-c,--cc=}'[Specify alternate compiler]:compiler:(gcc clang icc)' \
+	{-e,--eval=}'[Evaluate the following argument as C code]:code:' \
+	{-f,--file=}'[Name of file to use as starting C code template]:file_files' \
+	{-h,--help}'[Show help/usage information]' \
+	{-i,--intel=}'[Name of the file to output Intel-dialect assembler code to]:file:_files' \
+	{-o,--output=}'[Name of the file to output C source code to]:file_files' \
+	{-p,--parse}'[Disable addition of dynamic library symbols to readline completion]' \
+	{-t,--tracking}'[Toggle variable tracking]' \
+	{-v,--version}'[Show version information]' \
+	{-w,--warnings}'[Compile with "-pedantic -Wall -Wextra" flags]' \
+	-l"[Link against specified library (flag can be repeated)]:library:(${libs[*]})" \
+	-I'[Search directory for header files (flag can be repeated)]:directory:_files -/' \
+	'*:' -- && ret=0

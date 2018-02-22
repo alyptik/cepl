@@ -49,7 +49,7 @@ install: $(TARGET)
 	mkdir -p $(DESTDIR)$(PREFIX)/$(COMPDIR)
 	install -c $(TARGET) $(DESTDIR)$(PREFIX)/$(BINDIR)
 	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
-	install -c $(COMPLETION) $(DESTDIR)$(PREFIX)/$(COMPDIR)
+	cat $(COMPLETION) > $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 uninstall:
 	$(RM) $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
 	$(RM) $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
