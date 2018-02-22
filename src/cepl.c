@@ -186,7 +186,7 @@ static inline char *gen_bin_str(char const *restrict in_str)
 	}
 
 #ifdef _DEBUG
-	DPRINTF("[%zu] %s - %s - %s", 8 - (cnt % 8), base_arr, rev_arr, fin_arr);
+	DPRINTF("[%zu] %s - %s - %s\n", 8 - (cnt % 8), base_arr, rev_arr, fin_arr);
 #endif
 	return fin_arr;
 }
@@ -208,9 +208,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	char const *const ln_hex[] = {"(unsigned long long)(", "), \""};
 	char const *const ln_end = "\");";
 
-	/* save and close stderr */
-	int saved_fd = dup(STDERR_FILENO);
-	close(STDERR_FILENO);
+	/* bit bucket */
 	parse_opts(&prg, argc, argv, optstring);
 	init_buffers(&prg);
 	build_final(&prg, argv);
@@ -230,7 +228,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 				ln_hex[0], temp.list[i], ln_hex[1],
 				ln_bin, ln_end);
 #ifdef _DEBUG
-		DPRINTF("%s", prg.cur_line);
+		DPRINTF("%s\n", prg.cur_line);
 #endif
 		for (size_t j = 0; j < 2; j++) {
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
@@ -244,10 +242,15 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	}
 
 	/* print line evaluation */
+	int null_fd, saved_fd = dup(STDERR_FILENO);
+	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
+		ERR("%s", "open()");
+	dup2(null_fd, STDERR_FILENO);
 	compile(prg.src[1].total, program_state.cc_list.list, argv);
 	free_buffers(&prg);
 	free_str_list(&temp);
 	dup2(saved_fd, STDERR_FILENO);
+	close(null_fd);
 }
 
 static inline void toggle_att(char *tbuf)

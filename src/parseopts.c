@@ -45,7 +45,7 @@ static char *const ld_arg_list[] = {
 static char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
-	"-pedantic-errors",
+	"-pedantic",
 	NULL
 };
 static char *const asm_list[] = {
@@ -246,6 +246,8 @@ static inline void build_arg_list(struct program *restrict prog, char *const *cc
 		append_str(&prog->cc_list, cc_list[i], 0);
 	for (size_t i = 0; ld_arg_list[i]; i++)
 		append_str(&prog->ld_list, ld_list[i], 0);
+	if (prog->warn_flag)
+		enable_warnings(prog);
 	/* append NULL to generated lists */
 	append_str(&prog->cc_list, NULL, 0);
 	append_str(&prog->ld_list, NULL, 0);
@@ -433,5 +435,10 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	build_arg_list(prog, cc_arg_list, ld_arg_list);
 	build_sym_list(prog);
 
+#ifdef _DEBUG
+	for (size_t i = 0; prog->cc_list.list[i]; i++)
+		DPRINTF("%s ", prog->cc_list.list[i]);
+	putc('\n', stderr);
+#endif
 	return prog->cc_list.list;
 }
