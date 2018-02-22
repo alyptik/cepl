@@ -436,9 +436,11 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	build_sym_list(prog);
 
 #ifdef _DEBUG
+	DPRINTF("%s", "cc command line: \"");
 	for (size_t i = 0; prog->cc_list.list[i]; i++)
 		DPRINTF("%s ", prog->cc_list.list[i]);
-	putc('\n', stderr);
+	DPRINTF("\b%s\n", "\"");
 #endif
+
 	return prog->cc_list.list;
 }

@@ -199,6 +199,11 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	if (!ln || !id || !off)
 		ERRX("%s", "NULL pointer passed to extract_id()");
 
+#ifdef _DEBUG
+	if (strlen(ln))
+		DPRINTF("extract_id(): \"%s\"\n", ln);
+#endif
+
 	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
 		ERR("%s", "failed to compile regex");
 	/* non-zero return or -1 value in rm_so means no captures */
@@ -215,7 +220,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			"int|long|short|unsigned|void)"
 			"[^=,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
-			"([^=,(){};&|'\"[:alnum:][:blank:]]+$|[^;]*,|\\[|,)";
+			"([^=,(){};&|'\"[:alnum:][:blank:]]+$|[^;]*,|$|\\[|,)";
 
 		if (regcomp(&reg, middle_regex, REG_EXTENDED|REG_NEWLINE))
 			ERR("%s", "failed to compile regex");

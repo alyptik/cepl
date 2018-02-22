@@ -228,7 +228,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 				ln_hex[0], temp.list[i], ln_hex[1],
 				ln_bin, ln_end);
 #ifdef _DEBUG
-		DPRINTF("%s\n", prg.cur_line);
+		DPRINTF("eval_line(): \"%s\"\n", prg.cur_line);
 #endif
 		for (size_t j = 0; j < 2; j++) {
 			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
