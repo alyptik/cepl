@@ -32,7 +32,7 @@ Command history is read from and saved to `~/.cepl_history`.
 	-p, --parse		Disable addition of dynamic library symbols to readline completion
 	-t, --tracking		Toggle variable tracking
 	-v, --version		Show version information
-	-w, --warnings		Compile with "-pedantic -Wall -Wextra" flags
+	-w, --warnings		Compile with "-Wall -Wextra -pedantic" flags
 	-l			Link against specified library (flag can be repeated)
 	-I			Search directory for header files (flag can be repeated)
 
