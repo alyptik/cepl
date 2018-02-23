@@ -201,11 +201,11 @@ void free_buffers(struct program *restrict prog)
 	write_file(prog);
 	write_asm(prog, prog->cc_list.list);
 	/* clean up user data */
-	free_str_list(&prog->id_list);
 	free(prog->cur_line);
 	prog->cur_line = NULL;
 	free(prog->type_list.list);
 	prog->type_list.list = NULL;
+	free_str_list(&prog->id_list);
 	free_str_list(&prog->cc_list);
 	if (prog->var_list.list) {
 		for (size_t i = 0; i < prog->var_list.cnt; i++)
@@ -348,8 +348,7 @@ void dedup_history(char **restrict line)
 			/* free application data */
 			ent = remove_history(where_history());
 			histdata_t data = free_history_entry(ent);
-			if (data)
-				free(data);
+			free(data);
 		}
 		history_set_pos(hpos);
 	}

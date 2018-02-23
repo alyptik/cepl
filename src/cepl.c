@@ -29,6 +29,7 @@ static char hist_name[] = "./.cepl_history";
  * truncated for interactive printing)
  */
 static struct program program_state;
+static int saved_fd = -1;
 
 /* string to compile */
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
@@ -98,12 +99,17 @@ static inline void free_bufs(void)
 /* general signal handling function */
 static void sig_handler(int sig)
 {
+	if (saved_fd != -1)
+		dup2(saved_fd, STDERR_FILENO);
+	free(program_state.cur_line);
+	program_state.cur_line = NULL;
 	/* abort current input line */
 	if (sig == SIGINT) {
 		rl_clear_visible_line();
 		rl_reset_line_state();
 		rl_free_line_state();
-		fputc('\n', stderr);
+		rl_reset_after_signal();
+		rl_initialize();
 		if (program_state.sflags.exec_flag) {
 			undo_last_line();
 			program_state.sflags.exec_flag = false;
@@ -242,7 +248,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	}
 
 	/* print line evaluation */
-	int null_fd, saved_fd = dup(STDERR_FILENO);
+	int null_fd;
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "open()");
 	dup2(null_fd, STDERR_FILENO);
@@ -577,6 +583,8 @@ int main(int argc, char **argv)
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
+	/* save stderr for signal handler */
+	saved_fd = dup(STDERR_FILENO);
 
 	/* scan input source file if applicable */
 	if (program_state.sflags.in_flag)
@@ -587,7 +595,10 @@ int main(int argc, char **argv)
 		printf("%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
-	sigsetjmp(jmp_env, 1);
+	if (sigsetjmp(jmp_env, 1)) {
+		fputc('\n', stderr);
+		fflush(NULL);
+	}
 
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
@@ -729,16 +740,10 @@ int main(int argc, char **argv)
 		program_state.sflags.exec_flag = true;
 		/* finalize source */
 		build_final(&program_state, argv);
-		/* fix buffering issues */
-		sync();
-		usleep(5000);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
 			printf("%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total);
 		int ret = compile(program_state.src[1].total, program_state.cc_list.list, argv);
-		/* fix buffering issues */
-		sync();
-		usleep(5000);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
 			printf("[exit status: %d]\n", ret);

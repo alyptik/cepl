@@ -483,6 +483,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		off += strlen(prog->var_list.list[i].id);
 
 		/* handle other variable types */
+		char *tmp_buf;
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
@@ -490,26 +491,30 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 			break;
 		case T_INT:
 			/* cast integral type to long long */
-			strmv(off, src_tmp, "\", (long long)");
-			off += 14;
+			tmp_buf = "\", (long long)";
+			strmv(off, src_tmp, tmp_buf);
+			off += strlen(tmp_buf);
 			break;
 		case T_DBL:
 			/* cast floating type to long double */
-			strmv(off, src_tmp, "\", (long double)");
-			off += 16;
+			tmp_buf = "\", (long double)";
+			strmv(off, src_tmp, tmp_buf);
+			off += strlen(tmp_buf);
 			break;
 		case T_OTHER:
 			/* take the address of variable if type unknown */
-			strmv(off, src_tmp, "\", &");
-			off += 4;
+			tmp_buf = "\", &";
+			strmv(off, src_tmp, tmp_buf);
+			off += strlen(tmp_buf);
 			break;
 		case T_CHR: /* fallthrough */
 		case T_STR: /* fallthrough */
 		case T_UINT: /* fallthrough */
 		case T_PTR: /* fallthrough */
 		default:
-			strmv(off, src_tmp, "\", ");
-			off += 3;
+			tmp_buf = "\", ";
+			strmv(off, src_tmp, tmp_buf);
+			off += strlen(tmp_buf);
 		}
 
 		/* copy final part of printf */

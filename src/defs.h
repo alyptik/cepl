@@ -78,7 +78,7 @@
 /* option default initializer */
 #define STATE_FLAG_DEF_INIT \
 	(struct state_flags){ \
-		.asm_flag = false, .eval_flag = false, .exec_flag = true, \
+		.asm_flag = false, .eval_flag = false, .exec_flag = false, \
 		.in_flag = false, .out_flag = false, .parse_flag = true, \
 		.track_flag = true, .warn_flag = false, .hist_flag = false, \
 	}
