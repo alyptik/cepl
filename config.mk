@@ -48,8 +48,9 @@ ELF_LIBS := -lelf
 MKALL += Makefile asan.mk
 DEBUG += -Wshadow -Wfloat-equal
 DEBUG += -O0 -ggdb3 -no-pie -D_DEBUG
-DEBUG += -fno-inline -fno-builtin -fno-common -fverbose-asm
-CFLAGS += -std=c11 -pedantic-errors -Wall -Wextra
+DEBUG += -fno-inline -fno-builtin -fno-common
+DEBUG += -fverbose-asm
+CFLAGS += -std=c11 -pedantic -Wall -Wextra
 CFLAGS += -Wstrict-overflow -Wno-unused-variable
 CFLAGS += -Wno-cpp -Wno-implicit-fallthrough -Wno-missing-field-initializers
 CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
