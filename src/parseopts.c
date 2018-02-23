@@ -5,6 +5,12 @@
  * See LICENSE.md file for copyright and license details.
  */
 
+/* silence linter */
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE
+#endif
+
+#include "hist.h"
 #include "parseopts.h"
 #include "readline.h"
 #include <getopt.h>
@@ -67,6 +73,8 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	if (*in_file)
 		ERRX("%s", "too many input files specified");
 	*in_file = optarg;
+	regex_t reg[2];
+	bool after_main_signature = false;
 	int scan_state = IN_PRELUDE;
 	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 	char tmp_buf[PAGE_SIZE];
@@ -75,45 +83,60 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 		prog->input_src[i][0] = 0;
 	}
 
-	regex_t reg[2];
+	/* regexes for pre-main, main, and return */
 	char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
 	char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
 	if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
 		ERR("%s", "failed to compile main_regex");
 	if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
 		ERR("%s", "failed to compile end_regex");
-
 	FILE *tmp_file;
 	xfopen(&tmp_file, *in_file, "r");
-	char *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
+	char *buf_ptr, *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
+
+	/* loop over file lines */
 	for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
 		switch (scan_state) {
+		/* pre-main */
 		case IN_PRELUDE:
 			/* no match */
 			if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
-				strmv(CONCAT, prog->input_src[0], tmp_buf);
+				buf_ptr = tmp_buf;
 				sz[0] += strlen(tmp_buf);
 				xrealloc(char, &prog->input_src[0], sz[0], "xrealloc(char)");
+				strmv(CONCAT, prog->input_src[0], tmp_buf);
 				break;
 			}
 			regfree(&reg[0]);
 			scan_state = IN_MIDDLE;
 
+		/* main */
 		case IN_MIDDLE:
 			/* no match */
 			if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
-				strmv(CONCAT, prog->input_src[1], tmp_buf);
+				buf_ptr = tmp_buf;
 				sz[1] += strlen(tmp_buf);
 				xrealloc(char, &prog->input_src[1], sz[1], "xrealloc(char)");
+				strmv(CONCAT, prog->input_src[1], tmp_buf);
+				if (!after_main_signature) {
+					after_main_signature = true;
+					break;
+				}
+				strchrnul(buf_ptr, '\n')[0] = 0;
+				/* skip single chars and argc/argv void statements */
+				if (strlen(buf_ptr) > 1 && strcmp(buf_ptr, "(void)argc, (void)argv;"))
+					dedup_history_add(&buf_ptr);
 				break;
 			}
 			regfree(&reg[1]);
 			scan_state = IN_EPILOGUE;
 
+		/* return */
 		case IN_EPILOGUE:
-			strmv(CONCAT, prog->input_src[2], tmp_buf);
+			buf_ptr = tmp_buf;
 			sz[2] += strlen(tmp_buf);
 			xrealloc(char, &prog->input_src[2], sz[2], "xrealloc(char)");
+			strmv(CONCAT, prog->input_src[2], tmp_buf);
 			break;
 		}
 	}

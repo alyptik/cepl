@@ -608,7 +608,7 @@ int main(int argc, char **argv)
 
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
-		dedup_history(&program_state.cur_line);
+		dedup_history_add(&program_state.cur_line);
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
 			/* keep line length to a minimum */

@@ -321,41 +321,6 @@ void pop_history(struct source *restrict src)
 	}
 }
 
-/* look for current line in readline history */
-void dedup_history(char **restrict line)
-{
-	/* return early on empty input */
-	if (!line || !*line)
-		return;
-	/* strip leading whitespace */
-	char *strip = *line;
-	strip += strspn(strip, " \t");
-	/* current entry and forward/backward function pointers  */
-	HIST_ENTRY *(*seek_hist[])() = {previous_history, next_history};
-	/* save current position */
-	int hpos = where_history();
-	for (size_t i = 0; i < 2; i++) {
-		while (history_search_prefix(strip, i - 1) != -1) {
-			/* if this line is already in the history, remove the earlier entry */
-			HIST_ENTRY *ent = current_history();
-			/* HIST_ENTRY *ent = history_get(hpos[1]); */
-			if (!ent || !ent->line || strcmp(*line, ent->line)) {
-				/* break if at end of list */
-				if (!seek_hist[i]())
-					break;
-				continue;
-			}
-			/* free application data */
-			ent = remove_history(where_history());
-			histdata_t data = free_history_entry(ent);
-			free(data);
-		}
-		history_set_pos(hpos);
-	}
-	history_set_pos(hpos);
-	add_history(strip);
-}
-
 void build_body(struct program *restrict prog)
 {
 	/* sanity check */
