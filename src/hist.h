@@ -36,6 +36,9 @@ static inline void dedup_history_add(char *const *restrict line)
 	/* strip leading whitespace */
 	char *strip = *line;
 	strip += strspn(strip, " \t");
+	/* don't add empty or single character lines (invalid syntax) */
+	if (strlen(strip) < 2)
+		return;
 	/* current entry and forward/backward function pointers  */
 	HIST_ENTRY *(*seek_hist[])() = {previous_history, next_history};
 	/* save current position */
