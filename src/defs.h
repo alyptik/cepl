@@ -20,7 +20,6 @@
 #define ARR_LEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
 #define FOR_EACH_IN(LIST)	for (size_t i = 0; i < (LIST).cnt; i++)
 #define DPRINTF(FMT, ...)	fprintf(stderr, "\033[92m" FMT "\033[00m", __VA_ARGS__)
-
 /* `malloc()` wrapper */
 #define xmalloc(TYPE, PTR, SZ, MSG) \
 	do { \
@@ -29,7 +28,6 @@
 			ERR("%s", (MSG)); \
 		*(TYPE **)PTR = tmp; \
 	} while (0)
-
 /* `calloc()` wrapper */
 #define xcalloc(TYPE, PTR, NMEMB, SZ, MSG) \
 	do { \
@@ -38,7 +36,6 @@
 			ERR("%s", (MSG)); \
 		*(TYPE **)PTR = tmp; \
 	} while (0)
-
 /* `realloc()` wrapper */
 #define xrealloc(TYPE, PTR, SZ, MSG) \
 	do { \
@@ -50,7 +47,8 @@
 
 /* global version and usage strings */
 #define VERSION_STRING	"CEPL v5.6.7"
-#define USAGE_STRING	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
+#define USAGE_STRING \
+	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
 	"-a, --att\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
 	"-c, --cc\t\tSpecify alternate compiler\n\t" \
@@ -77,6 +75,13 @@
 	";t[racking]\t\tToggle variable tracking\n\t" \
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]\t\tToggle -w (pedantic warnings) flag"
+/* option default initializer */
+#define STATE_FLAG_DEF_INIT \
+	(struct state_flags){ \
+		.asm_flag = false, .eval_flag = false, .exec_flag = true, \
+		.in_flag = false, .out_flag = false, .parse_flag = true, \
+		.track_flag = true, .warn_flag = false, .hist_flag = false, \
+	}
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
 #define	YELLOW		"\\033[33m"
@@ -91,13 +96,6 @@
 #define EVAL_LIMIT	4096
 /* `strmv() `concat constant */
 #define CONCAT		(-1)
-/* option default initializer */
-#define STATE_FLAG_DEFAULTS \
-	(struct state_flags){ \
-		.asm_flag = false, .eval_flag = false, .exec_flag = true, \
-		.in_flag = false, .out_flag = false, .parse_flag = true, \
-		.track_flag = true, .warn_flag = false, .hist_flag = false, \
-	}
 
 /* enumerations */
 enum src_flag {
