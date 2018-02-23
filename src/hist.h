@@ -26,6 +26,6 @@ void dedup_history(char **restrict line);
 void pop_history(struct source *restrict src);
 void build_body(struct program *restrict prog);
 void build_funcs(struct program *restrict prog);
-void build_final(struct program *restrict prog, char **restrict argv);
+void build_final(struct program *restrict prog, char **argv);
 
 #endif

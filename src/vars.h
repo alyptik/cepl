@@ -27,7 +27,7 @@
 enum var_type extract_type(char const *restrict ln, char const *restrict id);
 size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off);
 int find_vars(struct program *restrict prog, char const *restrict code);
-int print_vars(struct program *restrict prog, char *const *restrict cc_args, char *const *restrict exec_args);
+int print_vars(struct program *restrict prog, char *const *restrict cc_args, char *const *exec_args);
 
 static inline void init_var_list(struct var_list *restrict var_list)
 {
