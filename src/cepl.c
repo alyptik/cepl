@@ -202,7 +202,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		&& strcmp(term, "")
 		&& strcmp(term, "dumb");
 	char const *const ln_beg = has_color
-		? "printf(\"" GREEN "%s[%lld, %#llx, %s]\\n" RST "\", \"result = \", "
+		? "printf(\"" YELLOW "%s[%lld, %#llx, %s]\\n" RST "\", \"result = \", "
 		: "printf(\"%s[%lld, %#llx, %s]\\n\", \"result = \", ";
 	char const *const ln_long[] = {"(long long)(", "), "};
 	char const *const ln_hex[] = {"(unsigned long long)(", "), \""};
@@ -213,7 +213,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	init_buffers(&prg);
 	build_final(&prg, argv);
 	/* don't write out files for line evaluation */
-	prg.sflags.out_flag = prg.sflags.asm_flag = false;
+	prg.sflags = (struct state_flags){0};
 
 	for (size_t i = 0; i < temp.cnt; i++) {
 		char const *const ln_bin = gen_bin_str(temp.list[i]);

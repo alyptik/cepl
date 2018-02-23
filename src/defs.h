@@ -80,6 +80,8 @@
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
 #define	YELLOW		"\\033[33m"
+#define	PURPLE		"\\033[35m"
+#define	CYAN		"\\033[36m"
 #define	RST		"\\033[00m"
 /* page size for buffer count */
 #define PAGE_SIZE	sysconf(_SC_PAGESIZE)
