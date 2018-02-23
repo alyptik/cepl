@@ -569,12 +569,7 @@ static inline void restore_flag_state(struct state_flags *restrict sflags)
 
 int main(int argc, char **argv)
 {
-	/* option defaults */
-	struct state_flags saved_flags = {
-		.asm_flag = false, .eval_flag = false, .exec_flag = true,
-		.in_flag = false, .out_flag = false, .parse_flag = true,
-		.track_flag = true, .warn_flag = false, .hist_flag = false,
-	};
+	struct state_flags saved_flags = STATE_FLAG_DEFAULTS;
 	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
 
 	/* initiatalize compiler arg array */
