@@ -300,10 +300,10 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 		free_str_list(&prog->id_list);
 	init_type_list(&prog->type_list);
 	init_str_list(&prog->id_list, NULL);
-
-	size_t count = prog->id_list.cnt;
 	strmv(0, line_tmp[1], code);
+
 	/* extract all identifiers from the line */
+	size_t count = prog->id_list.cnt;
 	while (line_tmp[1] && extract_id(line_tmp[1], &id_tmp, &off) != 0) {
 		append_str(&prog->id_list, id_tmp, 0);
 		free(id_tmp);
@@ -311,19 +311,18 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 		line_tmp[1] += off;
 		count++;
 	}
-	/* second pass */
 	if (id_tmp) {
 		free(id_tmp);
 		id_tmp = NULL;
 	}
+
+	/* second pass */
 	while (line_tmp[1] && (line_tmp[1] = strpbrk(line_tmp[1], ";"))) {
-		line_tmp[1]++;
-		while (extract_id(line_tmp[1], &id_tmp, &off)) {
+		for (line_tmp[1]++; extract_id(line_tmp[1], &id_tmp, &off); count++) {
 			append_str(&prog->id_list, id_tmp, 0);
 			free(id_tmp);
 			id_tmp = NULL;
 			line_tmp[1] += off;
-			count++;
 		}
 		if (id_tmp) {
 			free(id_tmp);
@@ -332,29 +331,24 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	}
 
 	/* return early if nothing to do */
-	if (count == 0) {
-		if (id_tmp)
-			free(id_tmp);
-		if (line_tmp[0])
-			free(line_tmp[0]);
+	if (!count) {
+		free(id_tmp);
+		free(line_tmp[0]);
 		return 0;
 	}
+	if (prog->id_list.cnt < 1)
+		return 0;
 
 	/* get the type of each identifier */
 	line_tmp[1] = line_tmp[0];
-	/* if no keys found return early */
-	if (prog->id_list.cnt < 1)
-		return 0;
-	/* copy it into the output parameter */
 	for (size_t i = 0; i < prog->id_list.cnt; i++) {
 		enum var_type type_tmp;
 		type_tmp = extract_type(line_tmp[1], prog->id_list.list[i]);
 		append_type(&prog->type_list, type_tmp);
 	}
-	if (id_tmp)
-		free(id_tmp);
-	if (line_tmp[0])
-		free(line_tmp[0]);
+	free(id_tmp);
+	free(line_tmp[0]);
+
 	return count;
 }
 
