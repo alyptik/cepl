@@ -120,7 +120,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	prelude = prog->input_src[0];
 	prog_start = prog_start_user = prog->input_src[1];
 	prog_end = prog->input_src[2];
-	prog->in_flag ^= true;
+	prog->sflags.in_flag ^= true;
 	xfclose(&tmp_file);
 }
 
@@ -160,7 +160,7 @@ static inline void set_att_flag(struct program *restrict prog, char **asm_file, 
 		ERRX("%s", "more than one assembler dialect specified");
 	*asm_choice = ATT;
 	*asm_file = optarg;
-	prog->asm_flag ^= true;
+	prog->sflags.asm_flag ^= true;
 }
 
 static inline void set_intel_flag(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
@@ -171,7 +171,7 @@ static inline void set_intel_flag(struct program *restrict prog, char **asm_file
 		ERRX("%s", "more than one assembler dialect specified");
 	*asm_choice = INTEL;
 	*asm_file = optarg;
-	prog->asm_flag ^= true;
+	prog->sflags.asm_flag ^= true;
 }
 
 static inline void copy_eval_code(struct program *restrict prog)
@@ -179,7 +179,7 @@ static inline void copy_eval_code(struct program *restrict prog)
 	if (strlen(optarg) > sizeof prog->eval_arg)
 		ERRX("%s", "eval string too long");
 	strmv(0, prog->eval_arg, optarg);
-	prog->eval_flag ^= true;
+	prog->sflags.eval_flag ^= true;
 }
 
 static inline void copy_header_dirs(struct program *restrict prog)
@@ -193,13 +193,13 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 	if (*out_name)
 		ERRX("%s", "too many output files specified");
 	*out_name = optarg;
-	prog->out_flag ^= true;
+	prog->sflags.out_flag ^= true;
 }
 
 static inline void copy_asm_filename(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
 {
 	/* asm output flag */
-	if (prog->asm_flag) {
+	if (prog->sflags.asm_flag) {
 		if (*asm_file && !prog->asm_filename) {
 			xcalloc(char, &prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
 			strmv(0, prog->asm_filename, *asm_file);
@@ -215,7 +215,7 @@ static inline void copy_asm_filename(struct program *restrict prog, char **asm_f
 static inline void set_out_file(struct program *restrict prog, char *restrict out_name)
 {
 	/* output file flag */
-	if (prog->out_flag) {
+	if (prog->sflags.out_flag) {
 		if (out_name && !prog->out_filename) {
 			xcalloc(char, &prog->out_filename, 1, strlen(out_name) + 1, "prog->out_filename calloc()");
 			strmv(0, prog->out_filename, out_name);
@@ -230,7 +230,7 @@ static inline void set_out_file(struct program *restrict prog, char *restrict ou
 static inline void enable_warnings(struct program *restrict prog)
 {
 	/* append warning flags */
-	if (prog->warn_flag) {
+	if (prog->sflags.warn_flag) {
 		for (size_t i = 0; warn_list[i]; i++)
 			append_str(&prog->cc_list, warn_list[i], 0);
 	}
@@ -246,7 +246,7 @@ static inline void build_arg_list(struct program *restrict prog, char *const *cc
 		append_str(&prog->cc_list, cc_list[i], 0);
 	for (size_t i = 0; ld_arg_list[i]; i++)
 		append_str(&prog->ld_list, ld_list[i], 0);
-	if (prog->warn_flag)
+	if (prog->sflags.warn_flag)
 		enable_warnings(prog);
 	/* append NULL to generated lists */
 	append_str(&prog->cc_list, NULL, 0);
@@ -257,7 +257,7 @@ static inline void build_arg_list(struct program *restrict prog, char *const *cc
 static inline void build_sym_list(struct program *restrict prog)
 {
 	/* parse ELF shared libraries for completions */
-	if (prog->parse_flag) {
+	if (prog->sflags.parse_flag) {
 		init_str_list(&comp_list, NULL);
 		init_str_list(&prog->sym_list, NULL);
 		parse_libs(&prog->sym_list, prog->lib_list.list);
@@ -345,7 +345,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	option_index = 0;
 	optind = 1;
 	/* need to invert tracking flag because of control flow oddities */
-	prog->track_flag ^= true;
+	prog->sflags.track_flag ^= true;
 
 	/* initilize argument lists */
 	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
@@ -401,17 +401,17 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* parse flag */
 		case 'p':
-			prog->parse_flag ^= true;
+			prog->sflags.parse_flag ^= true;
 			break;
 
 		/* track flag */
 		case 't':
-			prog->track_flag ^= true;
+			prog->sflags.track_flag ^= true;
 			break;
 
 		/* warning flag */
 		case 'w':
-			prog->warn_flag ^= true;
+			prog->sflags.warn_flag ^= true;
 			break;
 
 		/* version flag */

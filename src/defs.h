@@ -148,13 +148,17 @@ struct source {
 	struct flag_list flags;
 };
 
-/* monolithic program structure */
-struct program {
-	FILE *ofile;
+/* struct definition for state flags */
+struct state_flags {
 	bool asm_flag, eval_flag;
 	bool exec_flag, parse_flag;
 	bool track_flag, warn_flag;
-	bool in_flag, out_flag, has_hist;
+	bool in_flag, out_flag, hist_flag;
+};
+
+/* monolithic program structure */
+struct program {
+	FILE *ofile;
 	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;
@@ -164,6 +168,7 @@ struct program {
 	struct type_list type_list;
 	struct var_list var_list;
 	struct source src[2];
+	struct state_flags sflags;
 };
 
 /* `fclose()` wrapper */

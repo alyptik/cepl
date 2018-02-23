@@ -99,7 +99,7 @@ void cleanup(struct program *restrict prog)
 	/* free generated completions */
 	free_str_list(&comp_list);
 	/* append history to history file */
-	if (prog->has_hist && write_history(prog->hist_file))
+	if (prog->sflags.hist_flag && write_history(prog->hist_file))
 		WARN("%s", "write_history()");
 	free(prog->hist_file);
 	prog->hist_file = NULL;
@@ -111,14 +111,14 @@ void cleanup(struct program *restrict prog)
 		free(prog->input_src[i]);
 		prog->input_src[i] = NULL;
 	}
-	if (isatty(STDIN_FILENO) && !prog->eval_flag)
+	if (isatty(STDIN_FILENO) && !prog->sflags.eval_flag)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
 int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 {
 	/* return early if no file open */
-	if (!prog->asm_flag || !prog->asm_filename || !*prog->asm_filename || !prog->src[1].total)
+	if (!prog->sflags.asm_flag || !prog->asm_filename || !*prog->asm_filename || !prog->src[1].total)
 		return -1;
 
 	int pipe_cc[2], asm_fd, status;
@@ -185,7 +185,7 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 void write_file(struct program *restrict prog)
 {
 	/* return early if no file open */
-	if (!prog->out_flag || !prog->ofile || !prog->src[1].total)
+	if (!prog->sflags.out_flag || !prog->ofile || !prog->src[1].total)
 		return;
 	/* write out program to file */
 	fwrite(prog->src[1].total, strlen(prog->src[1].total), 1, prog->ofile);
@@ -401,7 +401,7 @@ void build_final(struct program *restrict prog, char **restrict argv)
 		strmv(0, prog->src[i].total, prog->src[i].funcs);
 		strmv(CONCAT, prog->src[i].total, prog->src[i].body);
 		/* print variable values */
-		if (prog->track_flag && i == 1)
+		if (prog->sflags.track_flag && i == 1)
 			print_vars(prog, prog->cc_list.list, argv);
 		strmv(CONCAT, prog->src[i].total, prog_end);
 	}
