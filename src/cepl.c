@@ -570,7 +570,7 @@ static inline void restore_flag_state(struct state_flags *restrict sflags)
 int main(int argc, char **argv)
 {
 	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
-	char const optstring[] = "hptvwc:a:f:e:i:l:I:o:";
+	char const *const optstring = "hptvwc:a:f:e:i:l:I:o:";
 
 	/* initiatalize compiler arg array */
 	build_hist_name();
