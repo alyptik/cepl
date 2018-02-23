@@ -407,15 +407,17 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		/* skip erroneous types */
 		if (cur_type == T_ERR)
 			continue;
+
 		/* populate buffers */
 		size_t printf_sz = (i < prog->var_list.cnt - 1) ? psz : plnsz;
 		size_t arr_sz = (i < prog->var_list.cnt - 1) ? sizeof print_beg : sizeof println_beg;
 		size_t cur_sz = strlen(prog->var_list.list[i].id) * 2;
-		char (*arr_ptr)[printf_sz] = (i < prog->var_list.cnt - 1) ? &print_beg : &println_beg;
-
-		xrealloc(char, &src_tmp, strlen(src_tmp) + cur_sz + printf_sz, "src_tmp realloc()");
 		char print_tmp[arr_sz];
-		strmv(0, print_tmp, *arr_ptr);
+		if (i < prog->var_list.cnt - 1)
+			strmv(0, print_tmp, print_beg);
+		else
+			strmv(0, print_tmp, println_beg);
+		xrealloc(char, &src_tmp, strlen(src_tmp) + cur_sz + printf_sz, "src_tmp realloc()");
 
 		/* build format string */
 		switch (cur_type) {
