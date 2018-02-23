@@ -5,6 +5,11 @@
  * See LICENSE.md file for copyright and license details.
  */
 
+/* silence linter */
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE
+#endif
+
 #include "vars.h"
 
 /* fallback linker arg array */
@@ -419,61 +424,61 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 			ERR("%s", prog->var_list.list[i].id);
 			break;
 		case T_CHR:
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '-';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = 'c';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '-';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = 'c';
 			break;
 		case T_STR:
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '-';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = 's';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '-';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = 's';
 			break;
 		case T_INT:
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = 'l';
-			strchr(print_tmp, '_')[0] = 'l';
-			strchr(print_tmp, '_')[0] = 'd';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = 'l';
+			strchrnul(print_tmp, '_')[0] = 'l';
+			strchrnul(print_tmp, '_')[0] = 'd';
 			break;
 		case T_UINT:
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = 'l';
-			strchr(print_tmp, '_')[0] = 'l';
-			strchr(print_tmp, '_')[0] = 'u';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = 'l';
+			strchrnul(print_tmp, '_')[0] = 'l';
+			strchrnul(print_tmp, '_')[0] = 'u';
 			break;
 		case T_DBL:
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = 'L';
-			strchr(print_tmp, '_')[0] = 'f';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = 'L';
+			strchrnul(print_tmp, '_')[0] = 'f';
 			break;
 		case T_PTR:
-			strchr(print_tmp, '_')[0] = '*';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '-';
-			strchr(print_tmp, '_')[0] = '-';
-			strchr(print_tmp, '_')[0] = 'p';
+			strchrnul(print_tmp, '_')[0] = '*';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '-';
+			strchrnul(print_tmp, '_')[0] = '-';
+			strchrnul(print_tmp, '_')[0] = 'p';
 			break;
 		case T_OTHER: /* fallthrough */
 		default:
-			strchr(print_tmp, '_')[0] = '&';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '%';
-			strchr(print_tmp, '_')[0] = '-';
-			strchr(print_tmp, '_')[0] = '1';
-			strchr(print_tmp, '_')[0] = 'p';
+			strchrnul(print_tmp, '_')[0] = '&';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '%';
+			strchrnul(print_tmp, '_')[0] = '-';
+			strchrnul(print_tmp, '_')[0] = '1';
+			strchrnul(print_tmp, '_')[0] = 'p';
 		}
 
 		/* copy format string */
