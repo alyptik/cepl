@@ -485,17 +485,17 @@ static inline void parse_normal(void)
 	}
 }
 
+/* parse input file if one is specified */
 static inline void scan_input_file(void)
 {
+	if (!program_state.sflags.in_flag)
+		return;
 	init_vars();
-	/* parse input file if one is specified */
-	struct str_list tmp = strsplit(prog_start_user);
-	for (size_t i = 0; i < tmp.cnt; i++) {
-		/* extract identifiers and types */
-		if (program_state.sflags.track_flag && find_vars(&program_state, tmp.list[i]))
-			gen_var_list(&program_state);
-	}
-	free_str_list(&tmp);
+	char *prog_buf = strchr(prog_start_user, '{');
+	if (!prog_buf)
+		return;
+	if (program_state.sflags.track_flag && find_vars(&program_state, ++prog_buf))
+		gen_var_list(&program_state);
 }
 
 static inline void build_hist_name(void)
@@ -583,22 +583,17 @@ int main(int argc, char **argv)
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
+	scan_input_file();
 	/* save stderr for signal handler */
 	saved_fd = dup(STDERR_FILENO);
-
-	/* scan input source file if applicable */
-	if (program_state.sflags.in_flag)
-		scan_input_file();
-
 	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
 	build_final(&program_state, argv);
 		printf("%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
-	if (sigsetjmp(jmp_env, 1)) {
+	/* on longjmp reset prompt with newline */
+	if (sigsetjmp(jmp_env, 1))
 		fputc('\n', stderr);
-		fflush(NULL);
-	}
 
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
@@ -692,6 +687,7 @@ int main(int argc, char **argv)
 				restore_flag_state(&saved_flags);
 				save_flag_state(&saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
+				scan_input_file();
 				break;
 
 			/* define an include/macro/function */

@@ -122,6 +122,8 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 					after_main_signature = true;
 					break;
 				}
+				/* strip leading whitespace */
+				buf_ptr += strspn(buf_ptr, " \t");
 				strchrnul(buf_ptr, '\n')[0] = 0;
 				/* skip single chars and argc/argv void statements */
 				if (strlen(buf_ptr) > 1 && strcmp(buf_ptr, "(void)argc, (void)argv;"))

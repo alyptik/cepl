@@ -46,7 +46,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.6.7"
+#define VERSION_STRING	"CEPL v5.6.8"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -363,6 +363,7 @@ static inline struct str_list strsplit(char const *restrict str)
 			break;
 
 		case ';':
+		case '\n': /* fallthrough */
 			if (!str_lit && !chr_lit && !memb_cnt)
 				*ptr = '\x1c';
 			break;
