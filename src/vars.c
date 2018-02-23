@@ -353,7 +353,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	return count;
 }
 
-int print_vars(struct program *restrict prog, char *const *restrict cc_args, char *const *exec_args)
+int print_vars(struct program *restrict prog, char *const *restrict cc_args, char **exec_args)
 {
 	int status, mem_fd, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
