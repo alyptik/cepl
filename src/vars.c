@@ -356,7 +356,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 {
 	int status, mem_fd, null_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
-	size_t off;
 	char *src_tmp;
 	char *term = getenv("TERM");
 	bool has_color = term
@@ -379,7 +378,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* inititalize arrays */
 	strmv(0, print_beg, p_beg);
 	strmv(0, println_beg, pln_beg);
-
 	/* sanity checks */
 	if (strlen(prog->src[1].total) < 2)
 		ERRX("%s", "empty source string passed to print_prog->var_list()");
@@ -389,16 +387,15 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "`null_fd` open()");
-
 	/* copy source buffer */
 	xcalloc(char, &src_tmp, 1, strlen(prog->src[1].total) + 1, "src_tmp realloc()");
 	strmv(0, src_tmp, prog->src[1].total);
-	off = strlen(prog->src[1].total);
+	size_t off = strlen(prog->src[1].total);
 
-	/* build var-tracking source */
+	/* build variable tracking source instance */
 	for (size_t i = 0; i < prog->var_list.cnt; i++) {
-		enum var_type cur_type = prog->var_list.list[i].type_spec;
 		/* skip erroneous types */
+		enum var_type cur_type = prog->var_list.list[i].type_spec;
 		if (cur_type == T_ERR)
 			continue;
 
@@ -407,6 +404,8 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		size_t arr_sz = (i < prog->var_list.cnt - 1) ? sizeof print_beg : sizeof println_beg;
 		size_t cur_sz = strlen(prog->var_list.list[i].id) * 2;
 		char print_tmp[arr_sz];
+
+		/* add newline on last iteration */
 		if (i < prog->var_list.cnt - 1)
 			strmv(0, print_tmp, print_beg);
 		else
