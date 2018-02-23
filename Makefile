@@ -34,16 +34,17 @@ $(TEST): %: %.o $(TAP).o $(OBJ) $(TOBJ)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
 test check: $(TEST)
+	@echo "[running unit tests]"
 	./t/testcompile
 	./t/testhist
 	./t/testparseopts
 	echo "test string" | ./t/testreadline
 	./t/testvars
 clean:
-	@echo "cleaning"
+	@echo "[cleaning]"
 	$(RM) $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
 install: $(TARGET)
-	@echo "installing"
+	@echo "[installing]"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
 	mkdir -p $(DESTDIR)$(PREFIX)/$(MANDIR)
 	mkdir -p $(DESTDIR)$(PREFIX)/$(COMPDIR)
@@ -51,12 +52,16 @@ install: $(TARGET)
 	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
 	cat $(COMPLETION) > $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 uninstall:
+	@echo "[uninstalling]"
 	$(RM) $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
 	$(RM) $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
 	$(RM) $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 dist: clean
-	@echo "creating dist tarball"
+	@echo "[creating dist tarball]"
 	mkdir -p $(TARGET)/
 	cp -R LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
 	tar -czf $(TARGET).tar.gz $(TARGET)/
 	$(RM) -r $(TARGET)/
+cscope:
+	@echo "[creating cscope database]"
+	cscope -Rbq
