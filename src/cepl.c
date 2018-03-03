@@ -139,10 +139,10 @@ static void reg_handlers(void)
 	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
+		/* don't reset `SIGINT` handler */
 		sa[i].sa_flags = (sigs[i].sig == SIGINT)
 			? SA_RESTART
 			: SA_RESETHAND|SA_RESTART;
-		/* don't reset `SIGINT` handler */
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
 			ERR("%s %s", sigs[i].sig_name, "sigaction()");
 	}
@@ -588,7 +588,7 @@ int main(int argc, char **argv)
 	saved_fd = dup(STDERR_FILENO);
 	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
 	build_final(&program_state, argv);
-		printf("%s\n", VERSION_STRING);
+		fprintf(stderr, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
 	/* on longjmp reset prompt with newline */
@@ -738,11 +738,11 @@ int main(int argc, char **argv)
 		build_final(&program_state, argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
-			printf("%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total);
+			fprintf(stderr, "%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total);
 		int ret = compile(program_state.src[1].total, program_state.cc_list.list, argv);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
-			printf("[exit status: %d]\n", ret);
+			fprintf(stderr, "[exit status: %d]\n", ret);
 
 		/* exit if executed with `-e` argument */
 		if (program_state.sflags.eval_flag) {
