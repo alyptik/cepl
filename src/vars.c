@@ -629,6 +629,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 
 	/* child */
 	case 0:
+		reset_handlers();
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
 			ERR("%s", "error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);

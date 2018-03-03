@@ -31,7 +31,7 @@ static char *const ld_alt_list[] = {
 
 extern char **environ;
 
-int compile(char const *restrict src, char *const cc_args[], char *const exec_args[])
+int compile(char const *restrict src, char *const cc_args[], char *const exec_args[], bool show_errors)
 {
 	int null_fd, mem_fd, status;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
@@ -73,6 +73,8 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 
 	/* child */
 	case 0:
+		if (!show_errors)
+			dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_cc[0], STDIN_FILENO);
 		dup2(pipe_ld[1], STDOUT_FILENO);
 		execvp(cc_args[0], cc_args);
@@ -90,7 +92,8 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("%s", "compiler returned non-zero exit code");
+			if (show_errors)
+				WARNX("%s", "compiler returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -125,7 +128,8 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("%s", "linker returned non-zero exit code");
+			if (show_errors)
+				WARNX("%s", "linker returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -140,6 +144,7 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 
 	/* child */
 	case 0:
+		reset_handlers();
 		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
 			ERR("%s", "error creating mem_fd");
 		pipe_fd(pipe_exec[0], mem_fd);
@@ -155,7 +160,8 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("%s", "executable returned non-zero exit code");
+			if (show_errors)
+				WARNX("%s", "executable returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}

@@ -100,7 +100,7 @@ static inline void free_bufs(void)
 static void sig_handler(int sig)
 {
 	if (saved_fd != -1)
-		dup2(saved_fd, STDERR_FILENO);
+		dup2(saved_fd, STDOUT_FILENO);
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
 	/* abort current input line */
@@ -199,6 +199,10 @@ static inline char *gen_bin_str(char const *restrict in_str)
 
 static void eval_line(int argc, char **restrict argv, char const *restrict optstring)
 {
+	/* return early if line is a cepl command */
+	if (program_state.cur_line[0] == ';')
+		return;
+
 	char const *const term = getenv("TERM");
 	struct program prg = {0};
 	struct str_list temp = strsplit(program_state.cur_line);
@@ -208,8 +212,8 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		&& strcmp(term, "")
 		&& strcmp(term, "dumb");
 	char const *const ln_beg = has_color
-		? "printf(\"" YELLOW "%s[%lld, %#llx, %s]\\n" RST "\", \"result = \", "
-		: "printf(\"%s[%lld, %#llx, %s]\\n\", \"result = \", ";
+		? "fprintf(stderr, \"" YELLOW "%s[%lld, %#llx, %s]\\n" RST "\", \"result = \", "
+		: "fprintf(stderr, \"%s[%lld, %#llx, %s]\\n\", \"result = \", ";
 	char const *const ln_long[] = {"(long long)(", "), "};
 	char const *const ln_hex[] = {"(unsigned long long)(", "), \""};
 	char const *const ln_end = "\");";
@@ -251,11 +255,11 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	int null_fd;
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "open()");
-	dup2(null_fd, STDERR_FILENO);
-	compile(prg.src[1].total, program_state.cc_list.list, argv);
+	dup2(null_fd, STDOUT_FILENO);
+	compile(prg.src[1].total, program_state.cc_list.list, argv, false);
 	free_buffers(&prg);
 	free_str_list(&temp);
-	dup2(saved_fd, STDERR_FILENO);
+	dup2(saved_fd, STDOUT_FILENO);
 	close(null_fd);
 }
 
@@ -739,7 +743,7 @@ int main(int argc, char **argv)
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
 			fprintf(stderr, "%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total);
-		int ret = compile(program_state.src[1].total, program_state.cc_list.list, argv);
+		int ret = compile(program_state.src[1].total, program_state.cc_list.list, argv, true);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
 			fprintf(stderr, "[exit status: %d]\n", ret);

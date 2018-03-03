@@ -8,9 +8,15 @@
 #ifndef DEFS_H
 #define DEFS_H 1
 
+/* silence linter */
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE
+#endif
+
 #include "errs.h"
 #include <ctype.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -46,7 +52,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.6.8"
+#define VERSION_STRING	"CEPL v5.7.0"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -177,6 +183,31 @@ struct program {
 	struct source src[2];
 	struct state_flags sflags;
 };
+
+/* reset signal handlers before fork */
+static inline void reset_handlers(void)
+{
+	/* signals to trap */
+	struct { int sig; char *sig_name; } sigs[] = {
+		{SIGHUP, "SIGHUP"}, {SIGINT, "SIGINT"},
+		{SIGQUIT, "SIGQUIT"}, {SIGILL, "SIGILL"},
+		{SIGABRT, "SIGABRT"}, {SIGFPE, "SIGFPE"},
+		{SIGSEGV, "SIGSEGV"}, {SIGPIPE, "SIGPIPE"},
+		{SIGALRM, "SIGALRM"}, {SIGTERM, "SIGTERM"},
+		{SIGBUS, "SIGBUS"}, {SIGSYS, "SIGSYS"},
+		{SIGVTALRM, "SIGVTALRM"}, {SIGXCPU, "SIGXCPU"},
+		{SIGXFSZ, "SIGXFSZ"},
+	};
+	struct sigaction sa[ARR_LEN(sigs)];
+	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
+		sa[i].sa_handler = SIG_IGN;
+		sigemptyset(&sa[i].sa_mask);
+		/* don't reset `SIGINT` handler */
+		sa[i].sa_flags = SA_RESETHAND;
+		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
+			ERR("%s %s", sigs[i].sig_name, "sigaction()");
+	}
+}
 
 /* `fclose()` wrapper */
 static inline void xfclose(FILE **restrict out_file)
