@@ -103,12 +103,13 @@ static inline void free_bufs(void)
 /* general signal handling function */
 static void sig_handler(int sig)
 {
+	/* reset terminal attributes */
+	tty_fix();
 	if (saved_fd != -1)
 		dup2(saved_fd, STDOUT_FILENO);
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
-	/* reset terminal attributes */
-	tty_fix();
+
 	/* abort current input line */
 	if (sig == SIGINT) {
 		rl_clear_visible_line();
@@ -122,6 +123,8 @@ static void sig_handler(int sig)
 		}
 		siglongjmp(jmp_env, 1);
 	}
+
+	/* else cleanup and die */
 	free_buffers(&program_state);
 	cleanup(&program_state);
 	raise(sig);
@@ -611,6 +614,8 @@ int main(int argc, char **argv)
 		if (!*program_state.cur_line)
 			continue;
 
+		/* set io streams to non-buffering */
+		tty_break();
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		dedup_history_add(&program_state.cur_line);
@@ -753,6 +758,9 @@ int main(int argc, char **argv)
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
 			fprintf(stderr, "[exit status: %d]\n", ret);
+
+		/* reset io stream buffering modes */
+		tty_fix();
 
 		/* exit if executed with `-e` argument */
 		if (program_state.sflags.eval_flag) {

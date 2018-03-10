@@ -193,17 +193,22 @@ static inline int tty_break(void)
 	extern struct termio save_modes[4];
 	struct termio *cur_mode = save_modes;
 	FILE *streams[] = {stdin, stdout, stderr, NULL};
+
+	if (have_modes)
+		return 0;
+
 	for (FILE **cur = streams; *cur; cur++, cur_mode++) {
 		struct termio mod_modes = {0};
 		if (ioctl(fileno(*cur), TCGETA, cur_mode) < 0)
 			return -1;
-		have_modes = 1;
 		mod_modes = *cur_mode;
 		mod_modes.c_lflag &= ~ICANON;
 		mod_modes.c_cc[VMIN] = 1;
 		mod_modes.c_cc[VTIME] = 0;
 		ioctl(fileno(*cur), TCSETAW, &mod_modes);
 	}
+	have_modes = 1;
+
 	return 1;
 }
 
@@ -214,11 +219,14 @@ static inline int tty_fix(void)
 	extern int have_modes;
 	extern struct termio save_modes[4];
 	struct termio *cur_mode = save_modes;
+	FILE *streams[] = {stdin, stdout, stderr, NULL};
+
 	if (!have_modes)
 		return 0;
-	FILE *streams[] = {stdin, stdout, stderr, NULL};
+
 	for (FILE **cur = streams; *cur; cur++, cur_mode++)
 		ioctl(fileno(*cur), TCSETAW, cur_mode);
+
 	return 1;
 }
 
