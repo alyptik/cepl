@@ -200,16 +200,24 @@ static void reg_handlers(void)
 
 static inline char *gen_bin_str(char const *restrict in_str)
 {
-	size_t cnt = 0, num_octets = 0;
-	char base_arr[65] = {0}, *base_ptr = base_arr;
+	size_t in_len = 0, cnt = 0, num_octets = 0;
+	char base_arr[65] = {0}, *base_ptr = base_arr, *end_ptr;
 	char rev_arr[sizeof base_arr + sizeof base_arr / 8] = {0}, *rev_ptr = rev_arr;
 	static char final_array[sizeof rev_arr], *final_ptr = NULL;
 
+	/* return early if NULL or empty string */
+	if (!in_str || !(in_len = strlen(in_str))) {
+		WARNX("%s", "NULL or empty string passed to gen_bin_str()");
+		return "";
+	}
 	/* reset for ERANGE / EINVAL check */
 	errno = 0;
-	unsigned long long num = strtoll(in_str, 0, 0);
-	/* return empty string on error */
-	if (errno)
+	unsigned long long num = strtoll(in_str, &end_ptr, 0);
+#ifdef _DEBUG
+	DPRINTF("endptr: \"%s\"\n*endptr = '%c'\n", end_ptr, *end_ptr);
+#endif
+	/* return empty string on parse error */
+	if (errno || !in_len || (*end_ptr && (strspn(end_ptr, " \t;") != strlen(end_ptr))))
 		return "";
 
 	/* build base binary string */
@@ -659,10 +667,9 @@ int main(int argc, char **argv)
 
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
-		/* if no input then do nothing */
-		if (!*program_state.cur_line)
+		/* if no input or all whitespace then do nothing */
+		if (!*program_state.cur_line || !strcspn(program_state.cur_line, " \t;"))
 			continue;
-
 		/* set io streams to non-buffering */
 		tty_break(&program_state);
 		/* re-enable completion if disabled */
