@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <termio.h>
 #include <unistd.h>
 
 /* macros */
@@ -183,6 +184,43 @@ struct program {
 	struct source src[2];
 	struct state_flags sflags;
 };
+
+/* set io streams to non-buffering */
+static inline int tty_break(void)
+{
+	/* tty state globals */
+	extern int have_modes;
+	extern struct termio save_modes[4];
+	struct termio *cur_mode = save_modes;
+	FILE *streams[] = {stdin, stdout, stderr, NULL};
+	for (FILE **cur = streams; *cur; cur++, cur_mode++) {
+		struct termio mod_modes = {0};
+		if (ioctl(fileno(*cur), TCGETA, cur_mode) < 0)
+			return -1;
+		have_modes = 1;
+		mod_modes = *cur_mode;
+		mod_modes.c_lflag &= ~ICANON;
+		mod_modes.c_cc[VMIN] = 1;
+		mod_modes.c_cc[VTIME] = 0;
+		ioctl(fileno(*cur), TCSETAW, &mod_modes);
+	}
+	return 1;
+}
+
+/* reset attributes of standard io streams */
+static inline int tty_fix(void)
+{
+	/* tty state globals */
+	extern int have_modes;
+	extern struct termio save_modes[4];
+	struct termio *cur_mode = save_modes;
+	if (!have_modes)
+		return 0;
+	FILE *streams[] = {stdin, stdout, stderr, NULL};
+	for (FILE **cur = streams; *cur; cur++, cur_mode++)
+		ioctl(fileno(*cur), TCSETAW, cur_mode);
+	return 1;
+}
 
 /* reset signal handlers before fork */
 static inline void reset_handlers(void)

@@ -8,6 +8,10 @@
 #include "tap.h"
 #include "../src/compile.h"
 
+/* tty state globals */
+int have_modes = 0;
+struct termio save_modes[4] = {0};
+
 int main(void)
 {
 	char *argv[] = {"cepl", NULL};

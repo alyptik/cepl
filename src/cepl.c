@@ -20,6 +20,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+/* tty state globals */
+int have_modes = 0;
+struct termio save_modes[4] = {0};
+
 /* SIGINT buffer for non-local goto */
 static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
@@ -103,6 +107,8 @@ static void sig_handler(int sig)
 		dup2(saved_fd, STDOUT_FILENO);
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
+	/* reset terminal attributes */
+	tty_fix();
 	/* abort current input line */
 	if (sig == SIGINT) {
 		rl_clear_visible_line();

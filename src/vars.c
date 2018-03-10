@@ -546,6 +546,9 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	set_cloexec(pipe_ld);
 	set_cloexec(pipe_exec);
 
+	/* set modes to non-buffering */
+	tty_break();
+
 	/* fork compiler */
 	switch (fork()) {
 	/* error */
@@ -648,8 +651,8 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		close(pipe_exec[0]);
 		close(null_fd);
 		wait(&status);
-		/* fix buffering issues */
-		sync();
+		/* restore buffering */
+		tty_fix();
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			/* WARNX("executable returned non-zero exit code"); */
