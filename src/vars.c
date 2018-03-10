@@ -379,18 +379,18 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	strmv(0, print_beg, p_beg);
 	strmv(0, println_beg, pln_beg);
 	/* sanity checks */
-	if (strlen(prog->src[1].total) < 2)
+	if (strlen(prog->src[1].total.buf) < 2)
 		ERRX("%s", "empty source string passed to print_prog->var_list()");
 	/* return early if nothing to do */
-	if (!prog->src[1].total || !cc_args || !exec_args || prog->var_list.cnt == 0)
+	if (!prog->src[1].total.buf || !cc_args || !exec_args || prog->var_list.cnt == 0)
 		return -1;
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "`null_fd` open()");
 	/* copy source buffer */
-	xcalloc(char, &src_tmp, 1, strlen(prog->src[1].total) + 1, "src_tmp realloc()");
-	strmv(0, src_tmp, prog->src[1].total);
-	size_t off = strlen(prog->src[1].total);
+	xcalloc(char, &src_tmp, 1, strlen(prog->src[1].total.buf) + 1, "src_tmp realloc()");
+	strmv(0, src_tmp, prog->src[1].total.buf);
+	size_t off = strlen(prog->src[1].total.buf);
 
 	/* build variable tracking source instance */
 	for (size_t i = 0; i < prog->var_list.cnt; i++) {

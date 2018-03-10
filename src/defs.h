@@ -24,7 +24,9 @@
 
 /* macros */
 #define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
-#define ARR_LEN(ARR)		((sizeof (ARR)) / (sizeof (ARR)[0]))
+#define MIN(A, B)		(((A) < (B)) ? (A) : (B))
+#define MAX(A, B)		(((A) > (B)) ? (A) : (B))
+#define ARR_LEN(ARR)		((sizeof (ARR)) / (sizeof *(ARR)))
 #define FOR_EACH_IN(LIST)	for (size_t i = 0; i < (LIST).cnt; i++)
 #define DPRINTF(FMT, ...)	fprintf(stderr, "\033[92m" FMT "\033[00m", __VA_ARGS__)
 /* `malloc()` wrapper */
@@ -53,7 +55,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.8.1"
+#define VERSION_STRING	"CEPL v5.8.2"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -153,11 +155,15 @@ struct var_list {
 	} *list;
 };
 
+/* struct definition for program source sections */
+struct source_section {
+	size_t size, max;
+	char *buf;
+};
+
 /* struct definition for generated program sources */
 struct source_code {
-	size_t body_size, funcs_size, total_size;
-	size_t body_max, funcs_max, total_max;
-	char *body, *funcs, *total;
+	struct source_section body, funcs, total;
 	struct str_list hist, lines;
 	struct flag_list flags;
 };

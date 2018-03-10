@@ -21,7 +21,7 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args);
 void write_file(struct program *restrict prog);
 void free_buffers(struct program *restrict prog);
 void init_buffers(struct program *restrict prog);
-size_t rsz_buf(struct program *restrict prog, char **buf_str, size_t *buf_sz, size_t *buf_max, size_t off);
+size_t resize_sect(struct program *restrict prog, struct source_section *restrict sect, size_t off);
 void pop_history(struct program *restrict prog);
 void build_body(struct program *restrict prog);
 void build_funcs(struct program *restrict prog);

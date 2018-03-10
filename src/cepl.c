@@ -299,8 +299,8 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		DPRINTF("eval_line(): \"%s\"\n", prg.cur_line);
 #endif
 		for (size_t j = 0; j < 2; j++) {
-			rsz_buf(&prg, &prg.src[j].body, &prg.src[j].body_size, &prg.src[j].body_max, sz);
-			rsz_buf(&prg, &prg.src[j].total, &prg.src[j].total_size, &prg.src[j].total_max, sz);
+			resize_sect(&prg, &prg.src[j].body, sz);
+			resize_sect(&prg, &prg.src[j].total, sz);
 		}
 		/* extract identifiers and types */
 		if (temp.list[i][0] != ';' && !find_vars(&prg, temp.list[i])) {
@@ -314,7 +314,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "open()");
 	dup2(null_fd, STDOUT_FILENO);
-	compile(prg.src[1].total, program_state.cc_list.list, argv, false);
+	compile(prg.src[1].total.buf, program_state.cc_list.list, argv, false);
 	free_buffers(&prg);
 	free_str_list(&temp);
 	dup2(program_state.saved_fd, STDOUT_FILENO);
@@ -428,7 +428,7 @@ static inline void parse_macro(void)
 	for (size_t i = 0; i < 2; i++) {
 		/* keep line length to a minimum */
 		struct program *prg = &program_state;
-		rsz_buf(prg, &prg->src[i].funcs, &prg->src[i].funcs_size, &prg->src[i].funcs_max, sz);
+		resize_sect(prg, &prg->src[i].funcs, sz);
 	}
 	program_state.cur_line = tmp_buf;
 
@@ -443,7 +443,7 @@ static inline void parse_macro(void)
 		}
 		build_funcs(&program_state);
 		for (size_t i = 0; i < 2; i++)
-			strmv(CONCAT, program_state.src[i].funcs, "\n");
+			strmv(CONCAT, program_state.src[i].funcs.buf, "\n");
 		break;
 
 	default:
@@ -467,7 +467,7 @@ static inline void parse_macro(void)
 			}
 			build_funcs(&program_state);
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].funcs, "\n");
+				strmv(CONCAT, program_state.src[i].funcs.buf, "\n");
 
 			tmp_list = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp_list.cnt; i++) {
@@ -482,7 +482,7 @@ static inline void parse_macro(void)
 			build_funcs(&program_state);
 			/* append ';' if no trailing '}', ';', or '\' */
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].funcs, ";\n");
+				strmv(CONCAT, program_state.src[i].funcs.buf, ";\n");
 			tmp_list = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp_list.cnt; i++) {
 				/* extract identifiers and types */
@@ -513,13 +513,13 @@ static inline void parse_normal(void)
 				/* keep line length to a minimum */
 				struct program *prg = &program_state;
 				/* remove extra trailing ';' */
-				size_t b_len = strlen(prg->src[i].body) - 1;
+				size_t b_len = strlen(prg->src[i].body.buf) - 1;
 				for (size_t j = b_len; j > 0; j--) {
-					if (prg->src[i].body[j] != ';' || prg->src[i].body[j - 1] != ';')
+					if (prg->src[i].body.buf[j] != ';' || prg->src[i].body.buf[j - 1] != ';')
 						break;
-					prg->src[i].body[j] = '\0';
+					prg->src[i].body.buf[j] = '\0';
 				}
-				strmv(CONCAT, prg->src[i].body, "\n");
+				strmv(CONCAT, prg->src[i].body.buf, "\n");
 			}
 			struct str_list tmp = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp.cnt; i++) {
@@ -535,7 +535,7 @@ static inline void parse_normal(void)
 			build_body(&program_state);
 			/* append ';' if no trailing '}', ';', or '\' */
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].body, ";\n");
+				strmv(CONCAT, program_state.src[i].body.buf, ";\n");
 			struct str_list tmp = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp.cnt; i++) {
 				/* extract identifiers and types */
@@ -672,8 +672,8 @@ int main(int argc, char **argv)
 		for (size_t i = 0; i < 2; i++) {
 			/* keep line length to a minimum */
 			struct program *prg = &program_state;
-			rsz_buf(prg, &prg->src[i].body, &prg->src[i].body_size, &prg->src[i].body_max, 3);
-			rsz_buf(prg, &prg->src[i].total, &prg->src[i].total_size, &prg->src[i].total_max, 3);
+			resize_sect(prg, &prg->src[i].body, 3);
+			resize_sect(prg, &prg->src[i].total, 3);
 		}
 
 		/* strip leading whitespace for switch statement */
@@ -789,7 +789,7 @@ int main(int argc, char **argv)
 			/* start building program source */
 			build_body(&program_state);
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].body, "\n");
+				strmv(CONCAT, program_state.src[i].body.buf, "\n");
 			break;
 
 		default:
@@ -802,8 +802,8 @@ int main(int argc, char **argv)
 		build_final(&program_state, argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
-			fprintf(stderr, "%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total);
-		int ret = compile(program_state.src[1].total, program_state.cc_list.list, argv, true);
+			fprintf(stderr, "%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total.buf);
+		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, argv, true);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
 			fprintf(stderr, "[exit status: %d]\n", ret);

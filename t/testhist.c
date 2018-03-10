@@ -63,17 +63,17 @@ int main (void)
 	/* initiatalize compiler arg array */
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 	lives_ok({build_final(&prg, argv);}, "test initial program build success.");
-	ok(rsz_buf(&prg, &prg.src[0].body, &prg.src[0].body_size, &prg.src[0].body_max, 3), "body_sz[0] != 0.");
-	ok(rsz_buf(&prg, &prg.src[0].total, &prg.src[0].total_size, &prg.src[0].total_max, 3), "total_sz[0] != 0.");
+	ok(resize_sect(&prg, &prg.src[0].body, 3), "test if `body_sz[0] != 0`.");
+	ok(resize_sect(&prg, &prg.src[0].total, 3), "test if `total_sz[0] != 0`.");
 	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-	ok(rsz_buf(&prg, &prg.src[1].body, &prg.src[1].body_size, &prg.src[1].body_max, 3), "gbody_sz[1] != 0.");
-	ok(rsz_buf(&prg, &prg.src[1].total, &prg.src[1].total_size, &prg.src[1].total_max, 3), "gtotal_sz[1] != 0.");
-	ok(rsz_buf(&prg, &prg.src[1].funcs, &prg.src[1].funcs_size, &prg.src[1].funcs_max, 3), "gfuncs_sz != 0.");
+	ok(resize_sect(&prg, &prg.src[1].body, 3), "test if `gbody_sz[1] != 0`.");
+	ok(resize_sect(&prg, &prg.src[1].total, 3), "test if `gtotal_sz[1] != 0`.");
+	ok(resize_sect(&prg, &prg.src[1].funcs, 3), "test if `gfuncs_sz != 0`.");
 	lives_ok({build_body(&prg);}, "test program body build success.");
 
 	/* add lptr endings */
 	for (size_t i = 0; i < 2; i++)
-		strmv(CONCAT, prg.src[i].body, ";\n");
+		strmv(CONCAT, prg.src[i].body.buf, ";\n");
 	lives_ok({build_final(&prg, argv);}, "test final program build success.");
 	lives_ok({pop_history(&prg);}, "test pop_history().");
 	lives_ok({build_final(&prg, argv);}, "test secondary program build success.");
