@@ -157,6 +157,7 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 
 	/* child */
 	case 0:
+		reset_handlers();
 		dup2(pipe_cc[0], STDIN_FILENO);
 		dup2(asm_fd, STDOUT_FILENO);
 		execvp(cc_args[0], cc_args);
