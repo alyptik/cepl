@@ -5,7 +5,7 @@
 # See LICENSE.md file for copyright and license details.
 
 all:
-	$(MAKE) $(TARGET) check cscope tags
+	$(MAKE) $(TARGET) check
 
 # user configuration
 MKCFG := config.mk
