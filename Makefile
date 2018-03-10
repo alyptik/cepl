@@ -5,7 +5,7 @@
 # See LICENSE.md file for copyright and license details.
 
 all:
-	$(MAKE) $(TARGET) check
+	$(MAKE) $(TARGET) check cscope tags
 
 # user configuration
 MKCFG := config.mk
@@ -42,7 +42,7 @@ test check: $(TEST)
 	./t/testvars
 clean:
 	@echo "[cleaning]"
-	$(RM) $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz asan.mk
+	$(RM) $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz cscope.* tags TAGS asan.mk
 install: $(TARGET)
 	@echo "[installing]"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
@@ -64,4 +64,9 @@ dist: clean
 	$(RM) -r $(TARGET)/
 cscope:
 	@echo "[creating cscope database]"
+	$(RM) cscope.*
 	cscope -Rbq
+tags TAGS:
+	@echo "[creating ctags file]"
+	$(RM) $@
+	ctags -R -f $@ --fields=+l --c-kinds=+p --c++-kinds=+p .
