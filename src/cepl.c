@@ -668,7 +668,7 @@ int main(int argc, char **argv)
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
 		/* if no input or all whitespace then do nothing */
-		if (!*program_state.cur_line || !strcspn(program_state.cur_line, " \t;"))
+		if (!*program_state.cur_line || !strcspn(program_state.cur_line + 1, " \t;"))
 			continue;
 		/* set io streams to non-buffering */
 		tty_break(&program_state);
