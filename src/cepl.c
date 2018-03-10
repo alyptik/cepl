@@ -29,7 +29,6 @@ static char hist_name[] = "./.cepl_history";
  * truncated for interactive printing)
  */
 static struct program program_state;
-static int saved_fd = -1;
 
 /* string to compile */
 extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
@@ -96,34 +95,79 @@ static inline void free_bufs(void)
 	cleanup(&program_state);
 }
 
+/* set io streams to non-buffering */
+static inline void tty_break(struct program *restrict prg)
+{
+	if (prg->tty_state.modes_changed)
+		return;
+	struct termio *cur_mode = prg->tty_state.save_modes;
+	FILE *streams[] = {stdin, stdout, stderr, NULL};
+	for (FILE **cur = streams; *cur; cur_mode++, cur++) {
+		struct termio mod_modes = {0};
+		if (ioctl(fileno(*cur), TCGETA, cur_mode) < 0) {
+			WARN("%s", "tty_break()");
+			continue;
+		}
+		mod_modes = *cur_mode;
+		mod_modes.c_lflag &= ~ICANON;
+		mod_modes.c_cc[VMIN] = 1;
+		mod_modes.c_cc[VTIME] = 0;
+		ioctl(fileno(*cur), TCSETAW, &mod_modes);
+	}
+	prg->tty_state.modes_changed = true;
+}
+
+/* reset attributes of standard io streams */
+static inline void tty_fix(struct program *restrict prg)
+{
+	if (prg->tty_state.modes_changed)
+		return;
+	struct termio *cur_mode = prg->tty_state.save_modes;
+	FILE *streams[] = {stdin, stdout, stderr, NULL};
+	for (FILE **cur = streams; *cur; cur_mode++, cur++)
+		ioctl(fileno(*cur), TCSETAW, cur_mode);
+	prg->tty_state.modes_changed = false;
+}
+
 /* general signal handling function */
 static void sig_handler(int sig)
 {
+	/*
+	 * TODO (?):
+	 *
+	 * this relies on stderr never being fd 0, unsure
+	 * if worth caring about the corner case where stderr
+	 * _is_ 0 (possible but *very* unlikely).
+	 */
+	if (program_state.saved_fd)
+		dup2(program_state.saved_fd, STDOUT_FILENO);
 	/* reset io stream buffering modes */
 	tty_fix(&program_state);
-	if (saved_fd != -1)
-		dup2(saved_fd, STDOUT_FILENO);
+	/* cleanup input line */
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
 
-	/* abort current input line */
-	if (sig == SIGINT) {
-		rl_clear_visible_line();
-		rl_reset_line_state();
-		rl_free_line_state();
-		rl_reset_after_signal();
-		rl_initialize();
-		if (program_state.sflags.exec_flag) {
-			undo_last_line();
-			program_state.sflags.exec_flag = false;
-		}
-		siglongjmp(jmp_env, 1);
+	/* cleanup and die if not SIGINT */
+	if (sig != SIGINT) {
+		free_buffers(&program_state);
+		cleanup(&program_state);
+		raise(sig);
+		/* this should never be hit, but just in case */
+		WARNX("%s", "wtf did you do to the signal mask to hit this return???");
+		return;
 	}
 
-	/* else cleanup and die */
-	free_buffers(&program_state);
-	cleanup(&program_state);
-	raise(sig);
+	/* else abort current input line and longjmp back to loop beginning */
+	rl_clear_visible_line();
+	rl_reset_line_state();
+	rl_free_line_state();
+	rl_reset_after_signal();
+	rl_initialize();
+	if (program_state.sflags.exec_flag) {
+		undo_last_line();
+		program_state.sflags.exec_flag = false;
+	}
+	siglongjmp(jmp_env, 1);
 }
 
 /* register signal handlers to make sure that history is written out */
@@ -264,7 +308,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	compile(prg.src[1].total, program_state.cc_list.list, argv, false);
 	free_buffers(&prg);
 	free_str_list(&temp);
-	dup2(saved_fd, STDOUT_FILENO);
+	dup2(program_state.saved_fd, STDOUT_FILENO);
 	close(null_fd);
 }
 
@@ -594,7 +638,7 @@ int main(int argc, char **argv)
 	init_buffers(&program_state);
 	scan_input_file();
 	/* save stderr for signal handler */
-	saved_fd = dup(STDERR_FILENO);
+	program_state.saved_fd = dup(STDERR_FILENO);
 	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
 	build_final(&program_state, argv);
 		fprintf(stderr, "%s\n", VERSION_STRING);

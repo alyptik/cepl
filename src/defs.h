@@ -171,14 +171,15 @@ struct state_flags {
 };
 
 /* standard io stream state state */
-struct terminal_state {
-	int have_modes;
+struct termio_state {
+	bool modes_changed;
 	struct termio save_modes[4];
 };
 
 /* monolithic program structure */
 struct program {
 	FILE *ofile;
+	int saved_fd;
 	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;
@@ -189,47 +190,8 @@ struct program {
 	struct var_list var_list;
 	struct source src[2];
 	struct state_flags sflags;
-	struct terminal_state tty_state;
+	struct termio_state tty_state;
 };
-
-/* set io streams to non-buffering */
-static inline int tty_break(struct program *restrict prog)
-{
-	struct termio *cur_mode = prog->tty_state.save_modes;
-	FILE *streams[] = {stdin, stdout, stderr, NULL};
-
-	if (prog->tty_state.have_modes)
-		return 0;
-
-	for (FILE **cur = streams; *cur; cur++, cur_mode++) {
-		struct termio mod_modes = {0};
-		if (ioctl(fileno(*cur), TCGETA, cur_mode) < 0)
-			return -1;
-		mod_modes = *cur_mode;
-		mod_modes.c_lflag &= ~ICANON;
-		mod_modes.c_cc[VMIN] = 1;
-		mod_modes.c_cc[VTIME] = 0;
-		ioctl(fileno(*cur), TCSETAW, &mod_modes);
-	}
-	prog->tty_state.have_modes = 1;
-
-	return 1;
-}
-
-/* reset attributes of standard io streams */
-static inline int tty_fix(struct program *restrict prog)
-{
-	struct termio *cur_mode = prog->tty_state.save_modes;
-	FILE *streams[] = {stdin, stdout, stderr, NULL};
-
-	if (prog->tty_state.have_modes)
-		return 0;
-
-	for (FILE **cur = streams; *cur; cur++, cur_mode++)
-		ioctl(fileno(*cur), TCSETAW, cur_mode);
-
-	return 1;
-}
 
 /* reset signal handlers before fork */
 static inline void reset_handlers(void)
