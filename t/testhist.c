@@ -36,9 +36,6 @@ char *const warn_list[] = {
 	"-pedantic-errors",
 	NULL
 };
-/* tty state globals */
-int have_modes = 0;
-struct termio save_modes[4] = {0};
 
 static char asm_error[] = "/a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/s/y/z";
 static char *argv[] = {"cepl", NULL};

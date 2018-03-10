@@ -134,8 +134,6 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 		ERR("%s", "error making pipe_cc pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
-	/* set modes to non-buffering */
-	tty_break();
 
 	if ((asm_fd = open(prog->asm_filename, O_WRONLY|O_CREAT|O_TRUNC,
 					S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
@@ -172,8 +170,6 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
-		/* restore buffering */
-		tty_fix();
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			WARNX("%s", "compiler returned non-zero exit code");

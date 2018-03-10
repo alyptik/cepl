@@ -10,9 +10,6 @@
 
 /* global linker arguments struct */
 struct str_list ld_list = {0};
-/* tty state globals */
-int have_modes = 0;
-struct termio save_modes[4] = {0};
 
 /* compiler pre-program */
 char const *prog_start =

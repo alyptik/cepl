@@ -20,10 +20,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-/* tty state globals */
-int have_modes = 0;
-struct termio save_modes[4] = {0};
-
 /* SIGINT buffer for non-local goto */
 static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
@@ -103,8 +99,8 @@ static inline void free_bufs(void)
 /* general signal handling function */
 static void sig_handler(int sig)
 {
-	/* reset terminal attributes */
-	tty_fix();
+	/* reset io stream buffering modes */
+	tty_fix(&program_state);
 	if (saved_fd != -1)
 		dup2(saved_fd, STDOUT_FILENO);
 	free(program_state.cur_line);
@@ -615,7 +611,7 @@ int main(int argc, char **argv)
 			continue;
 
 		/* set io streams to non-buffering */
-		tty_break();
+		tty_break(&program_state);
 		/* re-enable completion if disabled */
 		rl_bind_key('\t', &rl_complete);
 		dedup_history_add(&program_state.cur_line);
@@ -760,7 +756,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "[exit status: %d]\n", ret);
 
 		/* reset io stream buffering modes */
-		tty_fix();
+		tty_fix(&program_state);
 
 		/* exit if executed with `-e` argument */
 		if (program_state.sflags.eval_flag) {
