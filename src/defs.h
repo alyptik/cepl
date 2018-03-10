@@ -53,7 +53,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v5.8.0"
+#define VERSION_STRING	"CEPL v5.8.1"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -154,7 +154,7 @@ struct var_list {
 };
 
 /* struct definition for generated program sources */
-struct source {
+struct source_code {
 	size_t body_size, funcs_size, total_size;
 	size_t body_max, funcs_max, total_max;
 	char *body, *funcs, *total;
@@ -188,7 +188,7 @@ struct program {
 	struct str_list id_list;
 	struct type_list type_list;
 	struct var_list var_list;
-	struct source src[2];
+	struct source_code src[2];
 	struct state_flags sflags;
 	struct termio_state tty_state;
 };

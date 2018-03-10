@@ -298,27 +298,31 @@ size_t rsz_buf(struct program *restrict prog, char **buf_str, size_t *buf_sz, si
 	return *buf_sz;
 }
 
-void pop_history(struct source *restrict src)
+void pop_history(struct program *restrict prog)
 {
-	switch(src->flags.list[--src->flags.cnt]) {
-	case NOT_IN_MAIN:
-		src->hist.cnt = src->lines.cnt = src->flags.cnt;
-		strmv(0, src->funcs, src->hist.list[src->hist.cnt]);
-		free(src->hist.list[src->hist.cnt]);
-		free(src->lines.list[src->lines.cnt]);
-		src->hist.list[src->hist.cnt] = src->lines.list[src->lines.cnt] = NULL;
-		break;
-	case IN_MAIN:
-		src->hist.cnt = src->lines.cnt = src->flags.cnt;
-		strmv(0, src->body, src->hist.list[src->hist.cnt]);
-		free(src->hist.list[src->hist.cnt]);
-		free(src->lines.list[src->lines.cnt]);
-		src->hist.list[src->hist.cnt] = src->lines.list[src->lines.cnt] = NULL;
-		break;
-	case EMPTY: /* fallthrough */
-	default:
-		/* revert decrement */
-		src->flags.cnt++;
+	for (size_t i = 0; i < 2; i++) {
+		switch(prog->src[i].flags.list[--prog->src[i].flags.cnt]) {
+		case NOT_IN_MAIN:
+			prog->src[i].hist.cnt = prog->src[i].lines.cnt = prog->src[i].flags.cnt;
+			strmv(0, prog->src[i].funcs, prog->src[i].hist.list[prog->src[i].hist.cnt]);
+			free(prog->src[i].hist.list[prog->src[i].hist.cnt]);
+			free(prog->src[i].lines.list[prog->src[i].lines.cnt]);
+			prog->src[i].hist.list[prog->src[i].hist.cnt] = NULL;
+			prog->src[i].lines.list[prog->src[i].lines.cnt] = NULL;
+			break;
+		case IN_MAIN:
+			prog->src[i].hist.cnt = prog->src[i].lines.cnt = prog->src[i].flags.cnt;
+			strmv(0, prog->src[i].body, prog->src[i].hist.list[prog->src[i].hist.cnt]);
+			free(prog->src[i].hist.list[prog->src[i].hist.cnt]);
+			free(prog->src[i].lines.list[prog->src[i].lines.cnt]);
+			prog->src[i].hist.list[prog->src[i].hist.cnt] = NULL;
+			prog->src[i].lines.list[prog->src[i].lines.cnt] = NULL;
+			break;
+		case EMPTY: /* fallthrough */
+		default:
+			/* revert decrement */
+			prog->src[i].flags.cnt++;
+		}
 	}
 }
 

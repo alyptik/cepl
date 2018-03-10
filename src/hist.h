@@ -22,7 +22,7 @@ void write_file(struct program *restrict prog);
 void free_buffers(struct program *restrict prog);
 void init_buffers(struct program *restrict prog);
 size_t rsz_buf(struct program *restrict prog, char **buf_str, size_t *buf_sz, size_t *buf_max, size_t off);
-void pop_history(struct source *restrict src);
+void pop_history(struct program *restrict prog);
 void build_body(struct program *restrict prog);
 void build_funcs(struct program *restrict prog);
 void build_final(struct program *restrict prog, char **argv);

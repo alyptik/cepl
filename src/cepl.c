@@ -73,8 +73,7 @@ static inline void undo_last_line(void)
 	/* break early if no history to pop */
 	if (program_state.src[0].flags.cnt < 1 || program_state.src[1].flags.cnt < 1)
 		return;
-	for (size_t i = 0; i < 2; i++)
-		pop_history(&program_state.src[i]);
+	pop_history(&program_state);
 	/* break early if tracking disabled */
 	if (!program_state.sflags.track_flag)
 		return;
