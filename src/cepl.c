@@ -201,16 +201,17 @@ static void reg_handlers(void)
 
 static inline char *gen_bin_str(char const *restrict in_str)
 {
-	size_t cnt = 0;
+	size_t cnt = 0, num_octets = 0;
 	char base_arr[65] = {0}, *base_ptr = base_arr;
 	char rev_arr[sizeof base_arr + sizeof base_arr / 8] = {0}, *rev_ptr = rev_arr;
-	static char fin_arr[sizeof rev_arr], *fin_ptr = NULL;
+	static char final_array[sizeof rev_arr], *final_ptr = NULL;
 
 	/* reset for ERANGE / EINVAL check */
 	errno = 0;
 	unsigned long long num = strtoll(in_str, 0, 0);
+	/* return empty string on error */
 	if (errno)
-		return "(nan)";
+		return "";
 
 	/* build base binary string */
 	while (num) {
@@ -231,25 +232,30 @@ static inline char *gen_bin_str(char const *restrict in_str)
 		rev_arr[j] = base_arr[i];
 
 	/* convert it to "0b_0000000_000..." format */
-	memset(fin_arr, 0, sizeof fin_arr);
-	fin_ptr = fin_arr + 2;
-	sprintf(fin_arr, "%s", "0b");
-	for (size_t i = 0; i < strlen(rev_arr) / 8; i++) {
-		sprintf(fin_ptr, "%c%.8s", '_', rev_ptr);
+	memset(final_array, 0, sizeof final_array);
+	final_ptr = final_array + 2;
+	sprintf(final_array, "%s", "0b");
+	num_octets = strlen(rev_arr) / 8;
+	for (size_t i = 0; i < num_octets; i++) {
+		sprintf(final_ptr, "%c%.8s", '_', rev_ptr);
 		rev_ptr += 8;
-		fin_ptr += 9;
+		final_ptr += 9;
 	}
 
 #ifdef _DEBUG
-	DPRINTF("[%zu] %s - %s - %s\n", 8 - (cnt % 8), base_arr, rev_arr, fin_arr);
+	DPRINTF("[%zu] %s - %s - %s\n", 8 - (cnt % 8), base_arr, rev_arr, final_array);
 #endif
-	return fin_arr;
+	/* return empty string on error */
+	if (strlen(final_array) < 3)
+		return "";
+
+	return final_array;
 }
 
 static void eval_line(int argc, char **restrict argv, char const *restrict optstring)
 {
 	/* return early if line is a cepl command */
-	if (program_state.cur_line[0] == ';')
+	if (program_state.cur_line && *program_state.cur_line == ';')
 		return;
 
 	char const *const term = getenv("TERM");
@@ -261,8 +267,8 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 		&& strcmp(term, "")
 		&& strcmp(term, "dumb");
 	char const *const ln_beg = has_color
-		? "fprintf(stderr, \"" YELLOW "%s[%lld, %#llx, %s]\\n" RST "\", \"result = \", "
-		: "fprintf(stderr, \"%s[%lld, %#llx, %s]\\n\", \"result = \", ";
+		? "fprintf(stderr, \"" YELLOW "%s[%lld, %#llx%s\\n" RST "\", \"result = \", "
+		: "fprintf(stderr, \"%s[%lld, %#llx%s\\n\", \"result = \", ";
 	char const *const ln_long[] = {"(long long)(", "), "};
 	char const *const ln_hex[] = {"(unsigned long long)(", "), \""};
 	char const *const ln_end = "\");";
@@ -276,16 +282,20 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 
 	for (size_t i = 0; i < temp.cnt; i++) {
 		char const *const ln_bin = gen_bin_str(temp.list[i]);
+		char const *const ln_bin_pre = strlen(ln_bin) ? ", " : "";
+		char const *const ln_bin_end = "]";
 		size_t sz = 1 + strlen(ln_beg) + strlen(ln_end)
 			+ strlen(ln_long[0]) + strlen(ln_long[1])
 			+ strlen(ln_hex[0]) + strlen(ln_hex[1])
-			+ strlen(ln_bin) + strlen(temp.list[i]) * 2;
+			+ strlen(ln_bin_pre) + strlen(ln_bin) + strlen(ln_bin_end)
+			+ strlen(temp.list[i]) * 2;
 		/* initialize source buffers */
 		xcalloc(char, &prg.cur_line, 1, sz, "eval_line() calloc");
-		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s%s", ln_beg,
+		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s%s%s%s", ln_beg,
 				ln_long[0], temp.list[i], ln_long[1],
 				ln_hex[0], temp.list[i], ln_hex[1],
-				ln_bin, ln_end);
+				ln_bin_pre, ln_bin, ln_bin_end,
+				ln_end);
 #ifdef _DEBUG
 		DPRINTF("eval_line(): \"%s\"\n", prg.cur_line);
 #endif
