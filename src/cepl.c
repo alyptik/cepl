@@ -667,8 +667,11 @@ int main(int argc, char **argv)
 
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
-		/* if no input or all whitespace then do nothing */
-		if (!*program_state.cur_line || !strcspn(program_state.cur_line + 1, " \t;"))
+		/* if all whitespace or empty read a new line */
+		char *stripped = program_state.cur_line;
+		if (*stripped == ';')
+			stripped++;
+		if (!*stripped || !strcspn(stripped, " \t;"))
 			continue;
 		/* set io streams to non-buffering */
 		tty_break(&program_state);
@@ -682,9 +685,8 @@ int main(int argc, char **argv)
 			resize_sect(prg, &prg->src[i].body, 3);
 			resize_sect(prg, &prg->src[i].total, 3);
 		}
-
-		/* strip leading whitespace for switch statement */
-		char *stripped = program_state.cur_line;
+		/* reset pointer and strip leading whitespace for switch statement */
+		stripped = program_state.cur_line;
 		stripped += strspn(stripped, " \t");
 		eval_line(argc, argv, optstring);
 
