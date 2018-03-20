@@ -207,7 +207,9 @@ static inline char *gen_bin_str(char const *restrict in_str)
 
 	/* return early if NULL or empty string */
 	if (!in_str || !(in_len = strlen(in_str))) {
-		WARNX("%s", "NULL or empty string passed to gen_bin_str()");
+#ifdef _DEBUG
+		DPRINTF("%s", "NULL or empty string passed to gen_bin_str()");
+#endif
 		return "";
 	}
 	/* reset for ERANGE / EINVAL check */
@@ -671,7 +673,6 @@ int main(int argc, char **argv)
 		char *stripped = program_state.cur_line;
 		if (!*program_state.cur_line)
 			continue;
-		stripped = program_state.cur_line;
 		stripped += strspn(stripped, " \t;");
 		if (!*stripped && *program_state.cur_line != ';')
 			continue;
