@@ -104,11 +104,10 @@ static inline void tty_break(struct program *restrict prg)
 	for (FILE **cur = streams; *cur; cur_mode++, cur++) {
 		struct termio mod_modes = {0};
 		int cur_fd = fileno(*cur);
-		if (!isatty(cur_fd))
-			continue;
 		if (ioctl(cur_fd, TCGETA, cur_mode) < 0) {
 #ifdef _DEBUG
-			DPRINTF("%s\n", "tty_break()");
+			if (isatty(cur_fd))
+				DPRINTF("%s\n", "tty_break()");
 #endif
 			continue;
 		}
