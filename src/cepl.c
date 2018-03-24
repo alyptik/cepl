@@ -103,15 +103,20 @@ static inline void tty_break(struct program *restrict prg)
 	FILE *streams[] = {stdin, stdout, stderr, NULL};
 	for (FILE **cur = streams; *cur; cur_mode++, cur++) {
 		struct termio mod_modes = {0};
-		if (ioctl(fileno(*cur), TCGETA, cur_mode) < 0) {
-			WARN("%s", "tty_break()");
+		int cur_fd = fileno(*cur);
+		if (!isatty(cur_fd))
+			continue;
+		if (ioctl(cur_fd, TCGETA, cur_mode) < 0) {
+#ifdef _DEBUG
+			DPRINTF("%s\n", "tty_break()");
+#endif
 			continue;
 		}
 		mod_modes = *cur_mode;
 		mod_modes.c_lflag &= ~ICANON;
 		mod_modes.c_cc[VMIN] = 1;
 		mod_modes.c_cc[VTIME] = 0;
-		ioctl(fileno(*cur), TCSETAW, &mod_modes);
+		ioctl(cur_fd, TCSETAW, &mod_modes);
 	}
 	prg->tty_state.modes_changed = true;
 }
