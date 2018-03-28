@@ -45,14 +45,20 @@ MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
 READLINE := readline
 ELF_LIBS := -lelf
+WARNINGS := -Wall -Wextra -pedantic \
+		-Wcast-align -Wfloat-equal -Winline -Wmissing-declarations \
+		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
+		-Wshadow -Wstrict-overflow -Wwrite-strings
+IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers \
+		-Wno-implicit-fallthrough -Wno-long-long \
+		-Wno-missing-field-initializers -Wno-redundant-decls \
+		-Wno-sign-conversion -Wno-strict-prototypes \
+		-Wno-unused-variable
 MKALL += Makefile asan.mk
-DEBUG += -Wshadow -Wfloat-equal
-DEBUG += -O0 -ggdb3 -no-pie -D_DEBUG
+DEBUG += -O0 -g3 -no-pie -D_DEBUG
 DEBUG += -fno-inline -fno-builtin -fno-common
 DEBUG += -fverbose-asm
-CFLAGS += -std=c11 -pedantic -Wall -Wextra
-CFLAGS += -Wstrict-overflow -Wno-unused-variable
-CFLAGS += -Wno-cpp -Wno-implicit-fallthrough -Wno-missing-field-initializers
+CFLAGS += -g3 -std=c11 $(WARNINGS) $(IGNORES)
 CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
 LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
 LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
