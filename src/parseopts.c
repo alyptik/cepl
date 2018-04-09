@@ -224,16 +224,14 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 static inline void copy_asm_filename(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
 {
 	/* asm output flag */
-	if (prog->sflags.asm_flag) {
-		if (*asm_file && !prog->asm_filename) {
-			xcalloc(char, &prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
-			strmv(0, prog->asm_filename, *asm_file);
-			if (!strcmp(prog->cc_list.list[0], "icc"))
-				*asm_choice = ATT;
-			if (!asm_dialect)
-				asm_dialect = *asm_choice;
-			append_str(&prog->cc_list, asm_list[*asm_choice], 0);
-		}
+	if (prog->sflags.asm_flag && *asm_file && !prog->asm_filename) {
+		xcalloc(char, &prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
+		strmv(0, prog->asm_filename, *asm_file);
+		if (!strcmp(prog->cc_list.list[0], "icc"))
+			*asm_choice = ATT;
+		if (!asm_dialect)
+			asm_dialect = *asm_choice;
+		append_str(&prog->cc_list, asm_list[*asm_choice], 0);
 	}
 }
 
