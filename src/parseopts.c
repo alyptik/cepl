@@ -369,15 +369,20 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	/* reset option indices to reuse argv */
 	option_index = 0;
 	optind = 1;
-	/* need to invert tracking flag because of control flow oddities */
-	prog->sflags.track_flag ^= true;
 
+	/*
+	 * TODO XXX:
+	 *
+	 * you currently need to need to invert the parse and track flags
+	 * because they start out true; need to figure out why and fix it.
+	 */
+	prog->sflags.parse_flag ^= true;
+	prog->sflags.track_flag ^= true;
 	/* initilize argument lists */
 	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
 	init_str_list(&prog->ld_list, "gcc");
 	init_str_list(&prog->lib_list, NULL);
-
 	/* re-zero prog->cc_list.list[0] so -c argument can be added */
 	memset(prog->cc_list.list[0], 0, strlen(prog->cc_list.list[0]) + 1);
 
