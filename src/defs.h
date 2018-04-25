@@ -203,7 +203,7 @@ struct program {
 static inline void reset_handlers(void)
 {
 	/* signals to trap */
-	struct { int sig; char *sig_name; } sigs[] = {
+	struct { int sig; char const *sig_name; } sigs[] = {
 		{SIGHUP, "SIGHUP"}, {SIGINT, "SIGINT"},
 		{SIGQUIT, "SIGQUIT"}, {SIGILL, "SIGILL"},
 		{SIGABRT, "SIGABRT"}, {SIGFPE, "SIGFPE"},

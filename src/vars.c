@@ -483,7 +483,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		off += strlen(prog->var_list.list[i].id);
 
 		/* handle other variable types */
-		char *tmp_buf;
+		char const *tmp_buf;
 		switch (cur_type) {
 		case T_ERR:
 			/* should never hit this branch */
