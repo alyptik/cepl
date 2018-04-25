@@ -16,7 +16,7 @@
 static char *const ld_alt_list[] = {
 	"gcc",
 	"-O0", "-pipe", "-fPIC",
-	"-xassembler", "/dev/stdin",
+	"-xassembler", "-",
 	"-lm", "-o", "/dev/stdout",
 	NULL
 };

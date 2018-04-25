@@ -37,14 +37,14 @@ static struct option long_opts[] = {
 static char *const cc_arg_list[] = {
 	"-O0", "-pipe", "-fPIC",
 	"-fverbose-asm", "-std=c11",
-	"-S", "-xc", "/dev/stdin",
+	"-S", "-xc", "-",
 	"-o", "/dev/stdout",
 	NULL
 };
 static char *const ld_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-no-pie",
-	"-xassembler", "/dev/stdin",
+	"-xassembler", "-",
 	"-lm", "-o", "/dev/stdout",
 	NULL
 };
@@ -412,8 +412,8 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			set_intel_flag(prog, &asm_file, &asm_choice);
 			break;
 
-		/* header directory flag */
 		case 'I':
+			/* header directory flag */
 			copy_header_dirs(prog);
 			break;
 

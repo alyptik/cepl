@@ -19,14 +19,14 @@ char *input_src[3];
 char *const cc_arg_list[] = {
 	"-O0", "-pipe", "-fPIC",
 	"-fverbose-asm", "-std=c11",
-	"-S", "-xc", "/dev/stdin",
+	"-S", "-xc", "-",
 	"-o", "/dev/stdout",
 	NULL
 };
 char *const ld_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-no-pie",
-	"-xassembler", "/dev/stdin",
+	"-xassembler", "-",
 	"-lm", "-o", "/dev/stdout",
 	NULL
 };
