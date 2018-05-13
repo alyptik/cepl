@@ -268,15 +268,20 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	if (!dest || !src)
 		ERRX("%s", "NULL pointer passed to strmv()");
 	ptrdiff_t src_sz;
-	char *dest_ptr = NULL, *src_ptr = memchr(src, '\0', EVAL_LIMIT);
-	if (off >= 0) {
+	char *dest_ptr = dest;
+	char const *src_end = src;
+	/* find the end of the source string */
+	for (size_t i = 0; i < EVAL_LIMIT && *src_end; i++, src_end++);
+	/* find the end of the desitnation string if offset is negative */
+	if (off < 0)
+		for (size_t i = 0; i < EVAL_LIMIT && *dest_ptr; i++, dest_ptr++);
+	else
 		dest_ptr = dest + off;
-	} else {
-		dest_ptr = memchr(dest, '\0', EVAL_LIMIT);
-	}
-	if (!src_ptr || !dest_ptr)
+	if (!src_end || !dest_ptr)
 		ERRX("%s", "strmv() string not null-terminated");
-	src_sz = src_ptr - src;
+	src_sz = src_end - src;
+	if (src_sz < 0)
+		ERRX("%s", "strmv() src_end - src < 0");
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
