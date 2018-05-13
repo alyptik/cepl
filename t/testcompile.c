@@ -1,7 +1,7 @@
 /*
  * t/testcompile.c - unit-test for compile.c
  *
- * AUTHOR: Joey Pabalinas <alyptik@protonmail.com>
+ * AUTHOR: Joey Pabalinas <joeypabalinas@gmail.com>
  * See LICENSE.md file for copyright and license details.
  */
 
