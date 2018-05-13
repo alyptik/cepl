@@ -65,8 +65,11 @@ dist: clean
 cscope:
 	@echo "[creating cscope database]"
 	$(RM) cscope.*
-	cscope -Rbq
+	cscope -Ruqb
 tags TAGS:
 	@echo "[creating ctags file]"
 	$(RM) $@
 	ctags -R -f $@ --fields=+l --c-kinds=+p --c++-kinds=+p .
+	ctags -R -f $@ --fields=+l \
+		--c-kinds=+l-p --c++-kinds=+l-p --python-kinds=+lz \
+		--extras=+q --tag-relative=yes .
