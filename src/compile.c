@@ -110,7 +110,8 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 
 	/* child */
 	case 0:
-		dup2(null_fd, STDERR_FILENO);
+		if (!show_errors)
+			dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_ld[0], STDIN_FILENO);
 		dup2(pipe_exec[1], STDOUT_FILENO);
 		if (ld_list.list)
