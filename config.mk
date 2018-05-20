@@ -8,7 +8,7 @@
 DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
-OLVL ?= -O2
+OLVL ?= -O3
 LIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a \
 		$(shell pkg-config ncursesw --libs --cflags 2>/dev/null || \
 			pkg-config ncurses --libs --cflags 2>/dev/null || \
@@ -55,12 +55,15 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers \
 		-Wno-sign-conversion -Wno-strict-prototypes \
 		-Wno-unused-variable
 MKALL += Makefile asan.mk
-DEBUG += -O0 -g3 -no-pie -D_DEBUG
-DEBUG += -fno-inline -fno-builtin -fno-common
+DEBUG += -O1 -no-pie -D_DEBUG
+DEBUG += -Wno-inline -fno-inline
+DEBUG += -fno-builtin -fno-common
 DEBUG += -fverbose-asm
-CFLAGS += -g3 -std=c11 $(WARNINGS) $(IGNORES)
-CFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
-LDFLAGS += -Wl,-O2,-z,relro,-z,now,--sort-common,--as-needed
-LDFLAGS += -fPIC -fuse-ld=gold -flto -fuse-linker-plugin -fno-strict-aliasing
+CFLAGS += -g3 -std=c11 -fPIC -fno-strict-aliasing
+CFLAGS += -flto -fuse-ld=gold -fuse-linker-plugin
+CFLAGS += $(WARNINGS) $(IGNORES)
+LDFLAGS += -Wl,-O2,-z,relro,-z,now,-z,noexecstack
+LDFLAGS += -Wl,--sort-common,--as-needed,--warn-common
+LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
 
 # vi:ft=make:
