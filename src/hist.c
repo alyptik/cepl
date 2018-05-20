@@ -39,6 +39,7 @@ char const *prelude =
 	"#  define _Float128 float_t\n"
 	"#else\n"
 	"#  include <complex.h>\n"
+	"#  include <math.h>\n"
 	"#endif\n\n"
 	"#include <arpa/inet.h>\n"
 	"#include <assert.h>\n"
