@@ -1,11 +1,9 @@
 #compdef cepl
 
-local curcontext="$curcontext" state line
+local curcontext="$curcontext" state line libs
 typeset -A opt_args
 
-local -a libs
-libs=(${${$(find -L /lib -maxdepth 1 -type f -regex '.*/lib[a-z]*\.so' 2>/dev/null)##*/lib}:r})
-
+libs=(${$(find -L /lib/ -mindepth 1 -maxdepth 1 -type f -regex '.*/lib[a-z]*\.so' -printf '%f '):r})
 _arguments -s \
 	{-a,--att=}'[Name of the file to output AT&T-dialect assembler code to]:file:_files' \
 	{-c,--cc=}'[Specify alternate compiler]:compiler:(gcc clang icc)' \
@@ -18,6 +16,6 @@ _arguments -s \
 	{-t,--tracking}'[Toggle variable tracking]' \
 	{-v,--version}'[Show version information]' \
 	{-w,--warnings}'[Compile with "-Wall -Wextra -pedantic" flags]' \
-	-l"[Link against specified library (flag can be repeated)]:library:(${libs[*]})" \
+	-l"[Link against specified library (flag can be repeated)]:library:($libs)" \
 	-I'[Search directory for header files (flag can be repeated)]:directory:_files -/' \
 	'*:' -- && ret=0
