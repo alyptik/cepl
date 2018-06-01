@@ -16,12 +16,9 @@
 #include "parseopts.h"
 #include "readline.h"
 #include "vars.h"
-#include <setjmp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-/* SIGINT buffer for non-local goto */
-static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
 /*
@@ -132,6 +129,7 @@ static inline void tty_fix(struct program *restrict prg)
 	prg->tty_state.modes_changed = false;
 }
 
+
 /* general signal handling function */
 static void sig_handler(int sig)
 {
@@ -161,17 +159,17 @@ static void sig_handler(int sig)
 		return;
 	}
 
-	/* else abort current input line and longjmp back to loop beginning */
-	rl_clear_visible_line();
-	rl_reset_line_state();
+	/* else abort current input line and redisplay prompt */
 	rl_free_line_state();
+	rl_cleanup_after_signal();
 	rl_reset_after_signal();
 	rl_initialize();
 	if (program_state.sflags.exec_flag) {
 		undo_last_line();
 		program_state.sflags.exec_flag = false;
 	}
-	siglongjmp(jmp_env, 1);
+	fputc('\n', stderr);
+	rl_redisplay();
 }
 
 /* register signal handlers to make sure that history is written out */
@@ -192,10 +190,10 @@ static void reg_handlers(void)
 	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
-		sa[i].sa_flags = SA_RESETHAND|SA_RESTART;
 		/* don't reset `SIGINT` handler */
-		if (sigs[i].sig == SIGINT)
-			sa[i].sa_flags &= ~SA_RESETHAND;
+		sa[i].sa_flags = (sigs[i].sig == SIGINT)
+			? SA_RESTART
+			: SA_RESETHAND|SA_RESTART;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
 			ERR("%s %s", sigs[i].sig_name, "sigaction()");
 	}
@@ -668,9 +666,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
-	/* on longjmp reset prompt with newline */
-	if (sigsetjmp(jmp_env, 1))
-		fputc('\n', stderr);
 
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
