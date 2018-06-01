@@ -68,8 +68,8 @@ cscope:
 	cscope -Ruqb
 tags TAGS:
 	@echo "[creating ctags file]"
-	$(RM) $@
-	ctags -R -f $@ --fields=+l --c-kinds=+p --c++-kinds=+p .
-	ctags -R -f $@ --fields=+l \
+	$(RM) tags TAGS
+	ctags -RGf $@ \
+		--langmap=c:+.h.C.H --fields=+l \
 		--c-kinds=+l-p --c++-kinds=+l-p --python-kinds=+lz \
-		--extras=+q --tag-relative=yes .
+		--extras=+q --tag-relative=no .
