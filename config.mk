@@ -60,7 +60,7 @@ DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline -fverbose-asm
 CFLAGS += -march=native -g3 -std=c11
 CFLAGS += -fPIC -fuse-ld=gold -fuse-linker-plugin
-CFLAGS +=  -fno-common -fno-plt -fno-strict-aliasing
+CFLAGS +=  -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES)
 LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
 LDFLAGS += -Wl,--sort-common,--as-needed,--warn-common
