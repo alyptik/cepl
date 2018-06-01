@@ -100,7 +100,9 @@ void cleanup(struct program *restrict prog)
 {
 	/* readline teardown */
 	rl_free_line_state();
-	rl_cleanup_after_signal();
+	/* avoid segfault when stdin is not a tty */
+	if (isatty(STDIN_FILENO))
+		rl_cleanup_after_signal();
 	/* free generated completions */
 	free_str_list(&comp_list);
 	/* append history to history file */
