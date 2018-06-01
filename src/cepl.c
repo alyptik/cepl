@@ -145,6 +145,7 @@ static void sig_handler(int sig)
 	if (program_state.saved_fd)
 		dup2(program_state.saved_fd, STDOUT_FILENO);
 	/* reset io stream buffering modes */
+	tty_break(&program_state);
 	tty_fix(&program_state);
 	/* cleanup input line */
 	free(program_state.cur_line);
