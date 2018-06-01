@@ -160,6 +160,9 @@ static void sig_handler(int sig)
 	}
 
 	/* else abort current input line and redisplay prompt */
+	rl_clear_visible_line();
+	rl_reset_line_state();
+	rl_clear_message();
 	rl_free_line_state();
 	rl_cleanup_after_signal();
 	rl_reset_after_signal();
