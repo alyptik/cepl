@@ -192,10 +192,10 @@ static void reg_handlers(void)
 	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
+		sa[i].sa_flags = SA_RESETHAND|SA_RESTART;
 		/* don't reset `SIGINT` handler */
-		sa[i].sa_flags = (sigs[i].sig == SIGINT)
-			? SA_RESTART
-			: SA_RESETHAND|SA_RESTART;
+		if (sigs[i].sig == SIGINT)
+			sa[i].sa_flags &= ~SA_RESETHAND;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
 			ERR("%s %s", sigs[i].sig_name, "sigaction()");
 	}
