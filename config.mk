@@ -4,15 +4,18 @@
 # AUTHOR: Joey Pabalinas <joeypabalinas@gmail.com>
 # See LICENSE.md file for copyright and license details.
 
+# add -Wrestrict if using gcc7 or higher
+DEBUG != gcc -v 2>&1 | awk '/version/ {if (substr($$3, 1, 1) > 6) {print "-Wrestrict"}}'
+
 # optional
 DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 OLVL ?= -O3
-LIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a \
-		$(shell pkg-config ncursesw --libs --cflags 2>/dev/null || \
-			pkg-config ncurses --libs --cflags 2>/dev/null || \
-			printf '%s' '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
+LIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a 		\
+	$(shell pkg-config ncursesw --libs --cflags 2>/dev/null			\
+		|| pkg-config ncurses --libs --cflags 2>/dev/null		\
+		|| echo '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
 ifneq "$(origin LIBS)" "command line"
 	CFLAGS += -I$(READLINE)/include
 else
@@ -32,8 +35,6 @@ UTEST = $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-# check for gcc7
-DEBUG := $(shell gcc -v 2>&1 | awk '/version/ { if (substr($$3, 1, 1) == 7) { print "-Wrestrict" } }')
 ASAN := -fsanitize=address,alignment,leak,undefined
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -MMD -MP
 TARGET := cepl
@@ -45,24 +46,23 @@ MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
 READLINE := readline
 ELF_LIBS := -lelf
-WARNINGS := -Wall -Wextra -pedantic \
-		-Wcast-align -Wfloat-equal -Winline -Wmissing-declarations \
-		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
+WARNINGS := -Wall -Wextra -pedantic					\
+		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
+		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
 		-Wshadow -Wstrict-overflow -Wwrite-strings
-IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers \
-		-Wno-implicit-fallthrough -Wno-long-long \
-		-Wno-missing-field-initializers -Wno-redundant-decls \
-		-Wno-sign-conversion -Wno-strict-prototypes \
+IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers		\
+		-Wno-implicit-fallthrough -Wno-inline -Wno-long-long	\
+		-Wno-missing-field-initializers -Wno-redundant-decls	\
+		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
-DEBUG += -Wno-inline -fno-inline
-DEBUG += -fno-builtin -fno-common
-DEBUG += -fverbose-asm
-CFLAGS += -g3 -std=c11 -fPIC -fno-strict-aliasing
-CFLAGS += -flto -fuse-ld=gold -fuse-linker-plugin
+DEBUG += -fno-builtin -fno-inline -fverbose-asm
+CFLAGS += -march=native -g3 -std=c11
+CFLAGS += -fPIC -fuse-ld=gold -fuse-linker-plugin
+CFLAGS +=  -fno-common -fno-plt -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES)
-LDFLAGS += -Wl,-O2,-z,relro,-z,now,-z,noexecstack
+LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
 LDFLAGS += -Wl,--sort-common,--as-needed,--warn-common
 LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
 
