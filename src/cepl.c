@@ -162,11 +162,6 @@ static void sig_handler(int sig)
 	}
 
 	/* else abort current input line and longjmp back to loop beginning */
-	rl_clear_visible_line();
-	rl_reset_line_state();
-	rl_free_line_state();
-	rl_reset_after_signal();
-	rl_initialize();
 	if (program_state.sflags.exec_flag) {
 		undo_last_line();
 		program_state.sflags.exec_flag = false;
@@ -689,8 +684,22 @@ int main(int argc, char **argv)
 	 * reset the current prompt with a
 	 * newline character
 	 */
-	if (sigsetjmp(jmp_env, 1))
+	if (sigsetjmp(jmp_env, 1)) {
+		int rl_flags = 0;
+		rl_flags |= RL_STATE_ISEARCH;
+		rl_flags |= RL_STATE_NSEARCH;
+		rl_flags |= RL_STATE_VIMOTION;
+		rl_flags |= RL_STATE_NUMERICARG;
+		rl_flags |= RL_STATE_MULTIKEY;
+		rl_clear_visible_line();
+		rl_reset_line_state();
+		rl_free_line_state();
+		rl_cleanup_after_signal();
+		RL_UNSETSTATE(rl_flags);
+		rl_line_buffer[rl_point = rl_end = rl_mark = 0] = 0;
+		rl_initialize();
 		fputc('\n', stderr);
+	}
 
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
