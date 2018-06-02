@@ -171,6 +171,15 @@ static void sig_handler(int sig)
 		undo_last_line();
 		program_state.sflags.exec_flag = false;
 	}
+
+	/*
+	 * _n.b._
+	 *
+	 * the siglongjmp() here is needed in order to
+	 * handle using ^ to both both clear the
+	 * current command-line and also to abort
+	 * running code early
+	 */
 	siglongjmp(jmp_env, 1);
 }
 
@@ -669,7 +678,17 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
-	/* on longjmp reset prompt with newline */
+
+	/*
+	 * _n.b._
+	 *
+	 * the sigsetjmp() here is needed in order to
+	 * handle using ^ to both both clear the
+	 * current command-line and also to abort
+	 * running code early. on siglongjmp(),
+	 * reset the current prompt with a
+	 * newline character
+	 */
 	if (sigsetjmp(jmp_env, 1))
 		fputc('\n', stderr);
 
