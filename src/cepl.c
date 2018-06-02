@@ -666,6 +666,7 @@ int main(int argc, char **argv)
 	program_state.saved_fd = dup(STDERR_FILENO);
 	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
 	build_final(&program_state, argv);
+	if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
 		fprintf(stderr, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
