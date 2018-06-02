@@ -655,169 +655,144 @@ static inline void restore_flag_state(struct state_flags *restrict sflags)
 	program_state.sflags.warn_flag = sflags->warn_flag;
 }
 
-int main(int argc, char **argv)
+static bool prompt(int argc,
+                   char **argv,
+                   struct state_flags *saved_flags,
+                   const char *optstring)
 {
-	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
-	char const *const optstring = "hptvwc:a:f:e:i:l:I:o:";
+	/* if all whitespace (non-state commands) or empty read a new line */
+	char *stripped = program_state.cur_line;
+	if (!*program_state.cur_line)
+		return true;
+	stripped += strspn(stripped, " \t;");
+	if (!*stripped && *program_state.cur_line != ';')
+		return true;
+	/* set io streams to non-buffering */
+	tty_break(&program_state);
+	/* re-enable completion if disabled */
+	rl_bind_key('\t', &rl_complete);
+	dedup_history_add(&program_state.cur_line);
+	/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
+	for (size_t i = 0; i < 2; i++) {
+		/* keep line length to a minimum */
+		struct program *prg = &program_state;
+		resize_sect(prg, &prg->src[i].body, 3);
+		resize_sect(prg, &prg->src[i].total, 3);
+	}
+	stripped = program_state.cur_line;
+	stripped += strspn(stripped, " \t");
+	eval_line(argc, argv, optstring);
 
-	/* initialize compiler arg array */
-	build_hist_name();
-	save_flag_state(&saved_flags);
-	parse_opts(&program_state, argc, argv, optstring);
-	init_buffers(&program_state);
-	scan_input_file();
-	/* save stderr for signal handler */
-	program_state.saved_fd = dup(STDERR_FILENO);
-	/*
-	 * initialize program_state.src[0].total
-	 * and program_state.src[1].total then
-	 * print version
-	 */
-	build_final(&program_state, argv);
-	if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
-		fprintf(stderr, "%s\n", VERSION_STRING);
-	reg_handlers();
-	rl_set_signals();
-
-	/* loop readline() until EOF is read */
-	while (read_line(&program_state)) {
-		/* if all whitespace (non-state commands) or empty read a new line */
-		char *stripped = program_state.cur_line;
-		if (!*program_state.cur_line)
-			continue;
-		stripped += strspn(stripped, " \t;");
-		if (!*stripped && *program_state.cur_line != ';')
-			continue;
-		/* set io streams to non-buffering */
-		tty_break(&program_state);
-		/* re-enable completion if disabled */
-		rl_bind_key('\t', &rl_complete);
-		dedup_history_add(&program_state.cur_line);
-		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
-		for (size_t i = 0; i < 2; i++) {
-			/* keep line length to a minimum */
-			struct program *prg = &program_state;
-			resize_sect(prg, &prg->src[i].body, 3);
-			resize_sect(prg, &prg->src[i].total, 3);
-		}
-		stripped = program_state.cur_line;
-		stripped += strspn(stripped, " \t");
-		eval_line(argc, argv, optstring);
-
-		/* control sequence and preprocessor directive parsing */
-		switch (stripped[0]) {
-		case ';':
-			switch(stripped[1]) {
+	/* control sequence and preprocessor directive parsing */
+	switch (stripped[0]) {
+	case ';':
+		switch(stripped[1]) {
 			/* pop last history statement */
-			case 'u':
-				undo_last_line();
-				break;
+		case 'u':
+			undo_last_line();
+			break;
 
 			/* toggle writing at&t-dialect asm output */
-			case 'a':
-				restore_flag_state(&saved_flags);
-				toggle_att(stripped);
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
+		case 'a':
+			restore_flag_state(saved_flags);
+			toggle_att(stripped);
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			break;
 
 			/* toggle writing intel-dialect asm output */
-			case 'i':
-				restore_flag_state(&saved_flags);
-				toggle_intel(stripped);
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
+		case 'i':
+			restore_flag_state(saved_flags);
+			toggle_intel(stripped);
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			break;
 
 			/* toggle output file writing */
-			case 'o':
-				restore_flag_state(&saved_flags);
-				toggle_output_file(stripped);
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
+		case 'o':
+			restore_flag_state(saved_flags);
+			toggle_output_file(stripped);
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			break;
 
 			/* toggle library parsing */
-			case 'p':
-				free_buffers(&program_state);
-				init_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				program_state.sflags.parse_flag ^= true;
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
+		case 'p':
+			free_buffers(&program_state);
+			init_buffers(&program_state);
+			restore_flag_state(saved_flags);
+			program_state.sflags.parse_flag ^= true;
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			break;
 
 			/* toggle variable tracking */
-			case 't':
-				free_buffers(&program_state);
-				init_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				program_state.sflags.track_flag ^= true;
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
+		case 't':
+			free_buffers(&program_state);
+			init_buffers(&program_state);
+			restore_flag_state(saved_flags);
+			program_state.sflags.track_flag ^= true;
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			break;
 
 			/* toggle warnings */
-			case 'w':
-				free_buffers(&program_state);
-				init_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				program_state.sflags.warn_flag ^= true;
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
+		case 'w':
+			free_buffers(&program_state);
+			init_buffers(&program_state);
+			restore_flag_state(saved_flags);
+			program_state.sflags.warn_flag ^= true;
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			break;
 
 			/* reset state */
-			case 'r':
-				free_buffers(&program_state);
-				init_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				scan_input_file();
-				break;
+		case 'r':
+			free_buffers(&program_state);
+			init_buffers(&program_state);
+			restore_flag_state(saved_flags);
+			save_flag_state(saved_flags);
+			parse_opts(&program_state, argc, argv, optstring);
+			scan_input_file();
+			break;
 
 			/* define an include/macro/function */
-			case 'm': /* fallthrough */
-			case 'f':
-				parse_macro();
-				break;
+		case 'm': /* fallthrough */
+		case 'f':
+			parse_macro();
+			break;
 
 			/* show usage information */
-			case 'h':
-				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
-				break;
+		case 'h':
+			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
+			break;
 
 			/* clean up and exit program */
-			case 'q':
-				free_buffers(&program_state);
-				cleanup(&program_state);
-				exit(EXIT_SUCCESS);
-				/* unused break */
-				break;
+		case 'q':
+			free_buffers(&program_state);
+			cleanup(&program_state);
+			exit(EXIT_SUCCESS);
+			/* unused break */
+			break;
 
 			/* unknown command becomes a noop */
-			default:;
-			}
-			break;
+		default:;
+		}
+		break;
 
 		/* dont append ';' for preprocessor directives */
-		case '#':
-			/* remove trailing ' ' and '\t' */
-			for (size_t i = strlen(stripped) - 1; i > 0; i--) {
-				if (stripped[i] != ' ' && stripped[i] != '\t')
-					break;
-				stripped[i] = '\0';
-			}
-			/* start building program source */
-			build_body(&program_state);
-			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].body.buf, "\n");
-			break;
-
-		default:
-			parse_normal();
+	case '#':
+		/* remove trailing ' ' and '\t' */
+		for (size_t i = strlen(stripped) - 1; i > 0; i--) {
+			if (stripped[i] != ' ' && stripped[i] != '\t')
+				break;
+			stripped[i] = '\0';
 		}
+		/* start building program source */
+		build_body(&program_state);
+		for (size_t i = 0; i < 2; i++)
+			strmv(CONCAT, program_state.src[i].body.buf, "\n");
+		break;
 
 		/* set to true before compiling */
 		program_state.sflags.exec_flag = true;
@@ -847,7 +822,36 @@ int main(int argc, char **argv)
 		/* cleanup old buffer */
 		free(program_state.cur_line);
 		program_state.cur_line = NULL;
+		return false;
 	}
+	/* cleanup old buffer */
+	free(program_state.cur_line);
+	program_state.cur_line = NULL;
+	return true;
+}
+
+int main(int argc, char **argv)
+{
+	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
+	char const *const optstring = "hptvwc:a:f:e:i:l:I:o:";
+
+	/* initiatalize compiler arg array */
+	build_hist_name();
+	save_flag_state(&saved_flags);
+	parse_opts(&program_state, argc, argv, optstring);
+	init_buffers(&program_state);
+	scan_input_file();
+	/* save stderr for signal handler */
+	program_state.saved_fd = dup(STDERR_FILENO);
+	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
+	build_final(&program_state, argv);
+		fprintf(stderr, "%s\n", VERSION_STRING);
+	reg_handlers();
+	rl_set_signals();
+
+	/* loop readline() until EOF is read */
+	while (read_line(&program_state)
+	       && prompt(argc, argv, &saved_flags, optstring));
 
 	free_buffers(&program_state);
 	cleanup(&program_state);
