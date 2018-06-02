@@ -13,9 +13,24 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
-/* stub */
+/* stubs */
 #if defined RL_OVERRIDE || RL_VERSION_MAJOR < 7
-#	define rl_clear_visible_line() do {} while(0)
+# define rl_clear_visible_line() do { /*no-op*/ } while (0)
+#endif
+#ifndef RL_STATE_ISEARCH
+# define RL_STATE_ISEARCH 0
+#endif
+#ifndef RL_STATE_NSEARCH
+# define RL_STATE_BSEARCH 0
+#endif
+#ifndef RL_STATE_VIMOTION
+# define RL_STATE_VIMOTION 0
+#endif
+#ifndef RL_STATE_NUMERICARG
+# define RL_STATE_NUMERICARG 0
+#endif
+#ifndef RL_STATE_MULTIKEY
+# define RL_STATE_MULTIKEY 0
 #endif
 
 /* prototypes */
