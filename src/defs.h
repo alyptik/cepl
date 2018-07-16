@@ -98,11 +98,11 @@
 #define	CYAN		"\\033[36m"
 #define	RST		"\\033[00m"
 /* page size for buffer count */
-#define PAGE_SIZE	sysconf(_SC_PAGESIZE)
+#define PAGE_SIZE	0x1000
+/* max eval string length */
+#define EVAL_LIMIT	PAGE_SIZE
 /* max possible types */
 #define TNUM		7
-/* max eval string length */
-#define EVAL_LIMIT	4096
 /* `strmv() `concat constant */
 #define CONCAT		(-1)
 
