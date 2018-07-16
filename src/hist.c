@@ -129,10 +129,8 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 	memcpy(src_buffer, prog->src[1].total.buf, buf_len - 1);
 	src_buffer[buf_len - 1] = '\n';
 	/* create pipe */
-	if (pipe(pipe_cc) < 0)
+	if (pipe2(pipe_cc, O_CLOEXEC) < 0)
 		ERR("%s", "error making pipe_cc pipe");
-	/* set close-on-exec for pipe fds */
-	set_cloexec(pipe_cc);
 	if ((asm_fd = open(prog->asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0) {
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);

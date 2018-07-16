@@ -47,16 +47,12 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		ERR("%s", "open()");
 
 	/* create pipes */
-	if (pipe(pipe_cc) == -1)
+	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_cc pipe");
-	if (pipe(pipe_ld) == -1)
+	if (pipe2(pipe_ld, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_ld pipe");
-	if (pipe(pipe_exec) == -1)
+	if (pipe2(pipe_exec, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_exec pipe");
-	/* set close-on-exec for pipe fds */
-	set_cloexec(pipe_cc);
-	set_cloexec(pipe_ld);
-	set_cloexec(pipe_exec);
 
 	/* fork compiler */
 	switch (fork()) {
