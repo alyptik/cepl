@@ -105,9 +105,6 @@ void cleanup(struct program *restrict prog)
 		rl_cleanup_after_signal();
 	/* free generated completions */
 	free_str_list(&comp_list);
-	/* append history to history file */
-	if (prog->sflags.hist_flag && write_history(prog->hist_file))
-		WARN("%s", "write_history()");
 	free(prog->hist_file);
 	prog->hist_file = NULL;
 	free(prog->out_filename);
@@ -128,22 +125,21 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 	if (!prog->sflags.asm_flag || !prog->asm_filename || !*prog->asm_filename || !prog->src[1].total.buf)
 		return -1;
 
+	size_t buf_len = strlen(prog->src[1].total.buf) + 1;
 	int pipe_cc[2], asm_fd, status;
-	char src_buffer[strlen(prog->src[1].total.buf) + 1];
+	char src_buffer[buf_len];
 
-	if (sizeof src_buffer < 2)
+	if (buf_len < 2)
 		ERRX("%s", "empty source passed to write_asm()");
 	/* add trailing '\n' */
-	memcpy(src_buffer, prog->src[1].total.buf, MIN(sizeof src_buffer, strlen(prog->src[1].total.buf)));
-	src_buffer[sizeof src_buffer - 1] = '\n';
+	memcpy(src_buffer, prog->src[1].total.buf, buf_len - 1);
+	src_buffer[buf_len - 1] = '\n';
 	/* create pipe */
-	if (pipe(pipe_cc) == -1)
+	if (pipe(pipe_cc) < 0)
 		ERR("%s", "error making pipe_cc pipe");
 	/* set close-on-exec for pipe fds */
 	set_cloexec(pipe_cc);
-
-	if ((asm_fd = open(prog->asm_filename, O_WRONLY|O_CREAT|O_TRUNC,
-					S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) == -1) {
+	if ((asm_fd = open(prog->asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0) {
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
 		WARN("%s", "error opening asm output file");
@@ -173,7 +169,7 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 	/* parent */
 	default:
 		close(pipe_cc[0]);
-		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) == -1)
+		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) < 0)
 			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
@@ -190,15 +186,40 @@ int write_asm(struct program *restrict prog, char *const *restrict cc_args)
 	return 0;
 }
 
-void write_file(struct program *restrict prog)
+void write_files(struct program *restrict prog)
 {
+	int out_fd;
+	size_t buf_len, buf_pos;
+
+	/* write out history/asm output */
+	if (prog->sflags.hist_flag && write_history(prog->hist_file))
+		WARN("%s", "write_history()");
+	write_asm(prog, prog->cc_list.list);
 	/* return early if no file open */
 	if (!prog->sflags.out_flag || !prog->ofile || !prog->src[1].total.buf)
 		return;
+	if ((out_fd = fileno(prog->ofile)) < 0)
+		return;
+	/* find buffer length */
+	for (buf_pos = 0, buf_len = 0; prog->src[1].total.buf[buf_pos]; buf_pos++);
+	buf_len = buf_pos;
+	buf_pos = 0;
+
 	/* write out program to file */
-	fwrite(prog->src[1].total.buf, strlen(prog->src[1].total.buf), 1, prog->ofile);
-	fputc('\n', prog->ofile);
-	fflush(NULL);
+	for (;;) {
+		ptrdiff_t ret;
+		if ((ret = write(out_fd, prog->src[1].total.buf + buf_pos, buf_len - buf_pos)) < 0) {
+			if (errno == EINTR || errno == EAGAIN)
+				continue;
+			WARN("%s", "error writing to output fd");
+			break;
+		}
+		/* break on EOF */
+		if (!ret)
+			break;
+		buf_pos += ret;
+	}
+	fsync(out_fd);
 	fclose(prog->ofile);
 	prog->ofile = NULL;
 }
@@ -206,8 +227,7 @@ void write_file(struct program *restrict prog)
 void free_buffers(struct program *restrict prog)
 {
 	/* write out history/asm before freeing buffers */
-	write_file(prog);
-	write_asm(prog, prog->cc_list.list);
+	write_files(prog);
 	/* clean up user data */
 	free(prog->cur_line);
 	prog->cur_line = NULL;
