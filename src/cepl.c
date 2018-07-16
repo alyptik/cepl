@@ -842,8 +842,12 @@ int main(int argc, char **argv)
 		/* finalize source */
 		build_final(&program_state, argv);
 		/* print generated source code unless stdin is a pipe */
-		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
-			fprintf(stderr, "%s:\n==========\n%s\n==========\n", argv[0], program_state.src[0].total.buf);
+		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag) {
+			fprintf(stderr, "%s:\n", argv[0]);
+			fprintf(stderr, "==========\n");
+			fprintf(stderr, "%s\n", program_state.src[0].total.buf);
+			fprintf(stderr, "==========\n");
+		}
 		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, argv, true);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
