@@ -133,6 +133,7 @@ static inline void tty_fix(struct program *restrict prg)
 /* general signal handling function */
 static void sig_handler(int sig)
 {
+	static char const wtf[] = "wtf did you do to the signal mask to hit this return???\n";
 	/*
 	 * TODO (?):
 	 *
@@ -193,10 +194,10 @@ static void reg_handlers(void)
 	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
-		/* don't reset `SIGINT` handler */
-		sa[i].sa_flags = (sigs[i].sig == SIGINT)
-			? SA_RESTART
-			: SA_RESETHAND|SA_RESTART;
+		sa[i].sa_flags = SA_RESETHAND|SA_RESTART;
+		/* don't reset SIGINT handler */
+		if (sigs[i].sig == SIGINT)
+			sa[i].sa_flags &= ~SA_RESETHAND;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
 			ERR("%s %s", sigs[i].sig_name, "sigaction()");
 	}
