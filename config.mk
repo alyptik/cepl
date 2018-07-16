@@ -12,11 +12,11 @@ DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 OLVL ?= -O3
-LIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a 		\
+LDLIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a 		\
 	$(shell pkg-config ncursesw --libs --cflags 2>/dev/null			\
 		|| pkg-config ncurses --libs --cflags 2>/dev/null		\
 		|| echo '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
-ifneq "$(origin LIBS)" "command line"
+ifneq "$(origin LDLIBS)" "command line"
 	CFLAGS += -I$(READLINE)/include
 else
 	CFLAGS += -DRL_OVERRIDE
@@ -45,7 +45,6 @@ BINDIR := bin
 MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
 READLINE := readline
-ELF_LIBS := -lelf
 WARNINGS := -Wall -Wextra -pedantic					\
 		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
@@ -55,12 +54,14 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers		\
 		-Wno-missing-field-initializers -Wno-redundant-decls	\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable
+LDLIBS += -lelf
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline -fverbose-asm
-CFLAGS += -march=native -g3 -std=c11
-CFLAGS += -fPIC -fuse-ld=gold -fuse-linker-plugin
-CFLAGS +=  -fno-common -fno-strict-aliasing
+CFLAGS += -g3 -std=c11
+CFLAGS += -fPIC -fstack-protector-strong
+CFLAGS += -fuse-ld=gold -fuse-linker-plugin
+CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES)
 LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
 LDFLAGS += -Wl,--sort-common,--as-needed,--warn-common
