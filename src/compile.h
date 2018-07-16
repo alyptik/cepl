@@ -25,7 +25,12 @@ static inline void set_cloexec(int set_fd[static 2])
 
 static inline void pipe_fd(int in_fd, int out_fd)
 {
-	static char buf[PAGE_SIZE];
+	/* fallback buffer (not reentrant) */
+	static char failover[PAGE_SIZE];
+	char *primary = malloc(PAGE_SIZE);
+	char *buf = primary;
+	if (!buf)
+		buf = failover;
 	/* pipe data in a loop */
 	for (;;) {
 		ptrdiff_t ret;
@@ -45,6 +50,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 			break;
 		}
 	}
+	free(primary);
 }
 
 #endif
