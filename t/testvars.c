@@ -60,7 +60,7 @@ int main(void)
 	ok(extract_type(src, "bar") == T_INT, "succeed extracting signed type from `bar`.");
 	ok(extract_type(src, "baz") == T_INT, "succeed extracting signed type from `baz`.");
 	ok(extract_type(src, "quix") == T_PTR, "succeed extracting pointer type from `quix`.");
-	ok(extract_type(src, "res") == T_DBL, "succeed extracting floating type from `res`.");
+	ok(extract_type(src, "res") == T_FLT, "succeed extracting floating type from `res`.");
 	ok(extract_type(src, "boop") == T_INT, "succeed extracting signed type from `boop`.");
 	ok(extract_type(src, "florp") == T_UINT, "succeed extracting unsigned type from `florp`.");
 	ok(extract_type(src, "plonk") == T_PTR, "succeed extracting pointer type from `plonk`.");

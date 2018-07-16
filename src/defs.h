@@ -55,7 +55,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v6.1.0"
+#define VERSION_STRING	"CEPL v6.1.1"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -124,7 +124,7 @@ enum asm_type {
 /* possible types of tracked variable */
 enum var_type {
 	T_ERR, T_CHR, T_STR,
-	T_INT, T_UINT, T_DBL,
+	T_INT, T_UINT, T_FLT,
 	T_PTR, T_OTHER,
 };
 

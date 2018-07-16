@@ -50,12 +50,12 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	char *regex, *type_str;
 	char const beg_regex[] =
 			"(^[[:blank:]]*|[^,;]*[(){};[:blank:]]*)"
-			"(struct[^=]+|struct|union[^=]+|union|"
-			"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
-			"ptrdiff_t|intptr_t|intmax_t|uintmax_t|"
-			"wchar_t|char[0-9]+_t|char|double|float|"
-			"int|long|short|unsigned|void)[[:blank:]]+"
-			"([^;]*,[^&,;=]*|[^&;]*)(";
+			"(struct[^=]+|struct|union[^=]+|union"
+			"|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t"
+			"|ptrdiff_t|intptr_t|intmax_t|uintmax_t"
+			"|char|char[0-9]+_t|float|float_t|double"
+			"|wchar_t|int|long|short|unsigned|void)"
+			"[[:blank:]]+([^;]*,[^&,;=]*|[^&;]*)(";
 	char const end_regex[] = ")(\\[*)";
 	size_t regex_sz[2] = {
 		strlen(id) + sizeof beg_regex + sizeof end_regex - 1,
@@ -151,13 +151,13 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regfree(&reg);
 
 	/* double */
-	if (regcomp(&reg, "(float|double)", REG_EXTENDED|REG_NOSUB))
+	if (regcomp(&reg, "(float|float_t|double)", REG_EXTENDED|REG_NOSUB))
 		ERR("%s", "failed to compile regex");
 	if (!regexec(&reg, type_str, 1, 0, 0)) {
 		free(regex);
 		free(type_str);
 		regfree(&reg);
-		return T_DBL;
+		return T_FLT;
 	}
 	regfree(&reg);
 
@@ -218,11 +218,11 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		/* first/second/fourth capture is ignored */
 		char const middle_regex[] =
 			"(^|^[^;,]*;+[[:blank:]]*|^[^=,(){};&|'\"]+)"
-			"(struct[^=]+|struct|union[^=]+|union|"
-			"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
-			"ptrdiff_t|intptr_t|intmax_t|uintmax_t|"
-			"wchar_t|char[0-9]+_t|char|double|float|"
-			"int|long|short|unsigned|void)"
+			"(struct[^=]+|struct|union[^=]+|union"
+			"|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t"
+			"|ptrdiff_t|intptr_t|intmax_t|uintmax_t"
+			"|char|char[0-9]+_t|float|float_t|double"
+			"|wchar_t|int|long|short|unsigned|void)"
 			"[^=,(){};&|'\"[:alpha:]]+[[:blank:]]*\\**[[:blank:]]*"
 			"([[:alpha:]_][[:alnum:]_]*)[[:blank:]]*"
 			"([^=,(){};&|'\"[:alnum:][:blank:]]+$|[^;]*,|$|\\[|,)";
@@ -234,11 +234,11 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			/* first/second capture is ignored */
 			char const final_regex[] =
 				"(^[^,;]+\\{[^}]*\\}[^,;]*|[^,(){};|]+)"
-				"(|struct[^=]+|struct|union[^=]+|union|"
-				"_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t|"
-				"ptrdiff_t|intptr_t|intmax_t|uintmax_t|"
-				"wchar_t|char[0-9]+_t|char|double|float|"
-				"int|long|short|unsigned|void)"
+				"(|struct[^=]+|struct|union[^=]+|union"
+				"|_?[Bb]ool|[rs]?size_t|u?int[0-9]+_t"
+				"|ptrdiff_t|intptr_t|intmax_t|uintmax_t"
+				"|char|char[0-9]+_t|float|float_t|double"
+				"|wchar_t|int|long|short|unsigned|void)"
 				",[[:blank:]]*\\**[[:blank:]]*"
 				"([[:alpha:]_][[:alnum:]_]*)";
 
@@ -450,7 +450,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 			strchrnul(print_tmp, '_')[0] = 'l';
 			strchrnul(print_tmp, '_')[0] = 'u';
 			break;
-		case T_DBL:
+		case T_FLT:
 			strchrnul(print_tmp, '_')[0] = '%';
 			strchrnul(print_tmp, '_')[0] = '1';
 			strchrnul(print_tmp, '_')[0] = '%';
@@ -495,7 +495,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 			strmv(off, src_tmp, tmp_buf);
 			off += strlen(tmp_buf);
 			break;
-		case T_DBL:
+		case T_FLT:
 			/* cast floating type to long double */
 			tmp_buf = "\", (long double)";
 			strmv(off, src_tmp, tmp_buf);
