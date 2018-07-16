@@ -135,6 +135,7 @@ static inline void tty_fix(struct program *restrict prg)
 /* general signal handling function */
 static void sig_handler(int sig)
 {
+	static char const wtf[] = "wtf did you do to the signal mask to hit this return???\n";
 	/*
 	 * TODO (?):
 	 *
@@ -150,32 +151,27 @@ static void sig_handler(int sig)
 	/* cleanup input line */
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
-
-	/* cleanup and die if not SIGINT */
-	if (sig != SIGINT) {
-		free_buffers(&program_state);
-		cleanup(&program_state);
-		raise(sig);
-		/* this should never be hit, but just in case */
-		WARNX("%s", "wtf did you do to the signal mask to hit this return???");
-		return;
-	}
-
-	/* else abort current input line and longjmp back to loop beginning */
-	if (program_state.sflags.exec_flag) {
-		undo_last_line();
-		program_state.sflags.exec_flag = false;
-	}
-
 	/*
-	 * _n.b._
-	 *
-	 * the siglongjmp() here is needed in order to
-	 * handle using ^ to both both clear the
-	 * current command-line and also to abort
-	 * running code early
+	 * the siglongjmp() here is needed in order to handle using
+	 * ^C to both both clear the current command-line and also
+	 * to abort running code early
 	 */
-	siglongjmp(jmp_env, 1);
+	if (sig == SIGINT) {
+		/* else abort current input line and longjmp back to loop beginning */
+		if (program_state.sflags.exec_flag) {
+			undo_last_line();
+			program_state.sflags.exec_flag = false;
+		}
+		siglongjmp(jmp_env, 1);
+	}
+	/* cleanup and die if not SIGINT */
+	free_buffers(&program_state);
+	cleanup(&program_state);
+	raise(sig);
+	/* wat */
+	if (write(STDERR_FILENO, wtf, sizeof wtf) < 0)
+	    ERR("%s\n", wtf);
+	abort();
 }
 
 /* register signal handlers to make sure that history is written out */
@@ -197,7 +193,7 @@ static void reg_handlers(void)
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
 		sa[i].sa_flags = SA_RESETHAND|SA_RESTART;
-		/* don't reset `SIGINT` handler */
+		/* don't reset SIGINT handler */
 		if (sigs[i].sig == SIGINT)
 			sa[i].sa_flags &= ~SA_RESETHAND;
 		if (sigaction(sigs[i].sig, &sa[i], NULL) == -1)
