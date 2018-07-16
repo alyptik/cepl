@@ -18,7 +18,7 @@
 /* prototypes */
 void cleanup(struct program *restrict prog);
 int write_asm(struct program *restrict prog, char *const *restrict cc_args);
-void write_file(struct program *restrict prog);
+void write_files(struct program *restrict prog);
 void free_buffers(struct program *restrict prog);
 void init_buffers(struct program *restrict prog);
 size_t resize_sect(struct program *restrict prog, struct source_section *restrict sect, size_t off);
