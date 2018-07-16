@@ -65,7 +65,7 @@ dist: clean
 cscope:
 	@echo "[creating cscope database]"
 	$(RM) cscope.*
-	cscope -Ruqb
+	cscope -Rub
 tags TAGS:
 	@echo "[creating ctags file]"
 	$(RM) tags TAGS
