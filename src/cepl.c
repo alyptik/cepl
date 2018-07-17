@@ -655,7 +655,7 @@ int main(int argc, char **argv)
 	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
 	char const *const optstring = "hptvwc:a:f:e:i:l:I:o:";
 
-	/* initiatalize compiler arg array */
+	/* initialize compiler arg array */
 	build_hist_name();
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
@@ -663,7 +663,11 @@ int main(int argc, char **argv)
 	scan_input_file();
 	/* save stderr for signal handler */
 	program_state.saved_fd = dup(STDERR_FILENO);
-	/* initialize program_state.src[0].total and program_state.src[1].total then print version */
+	/*
+	 * initialize program_state.src[0].total
+	 * and program_state.src[1].total then
+	 * print version
+	 */
 	build_final(&program_state, argv);
 	if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
 		fprintf(stderr, "%s\n", VERSION_STRING);
@@ -671,14 +675,9 @@ int main(int argc, char **argv)
 	rl_set_signals();
 
 	/*
-	 * _n.b._
-	 *
-	 * the sigsetjmp() here is needed in order to
-	 * handle using ^ to both both clear the
-	 * current command-line and also to abort
-	 * running code early. on siglongjmp(),
-	 * reset the current prompt with a
-	 * newline character
+	 * the siglongjmp() here is needed in order to handle using
+	 * ^C to both both clear the current command-line and also
+	 * to abort running code early
 	 */
 	if (sigsetjmp(jmp_env, 1)) {
 		int rl_flags = 0;
