@@ -55,7 +55,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"CEPL v6.1.1"
+#define VERSION_STRING	"CEPL v6.1.2"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -215,7 +215,7 @@ static inline void reset_handlers(void)
 	};
 	struct sigaction sa[ARR_LEN(sigs)];
 	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
-		sa[i].sa_handler = SIG_IGN;
+		sa[i].sa_handler = SIG_DFL;
 		sigemptyset(&sa[i].sa_mask);
 		/* don't reset `SIGINT` handler */
 		sa[i].sa_flags = SA_RESETHAND;
