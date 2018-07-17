@@ -152,6 +152,8 @@ static void sig_handler(int sig)
 	/* cleanup input line */
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
+	/* fallback to kill children who have masked SIGINT */
+	kill(0, SIGKILL);
 	/* reap any leftover children */
 	while (wait(&ret) >= 0 && errno != ECHILD);
 	/*
