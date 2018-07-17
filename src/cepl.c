@@ -687,12 +687,12 @@ static bool prompt(int argc,
 	switch (stripped[0]) {
 	case ';':
 		switch(stripped[1]) {
-			/* pop last history statement */
+		/* pop last history statement */
 		case 'u':
 			undo_last_line();
 			break;
 
-			/* toggle writing at&t-dialect asm output */
+		/* toggle writing at&t-dialect asm output */
 		case 'a':
 			restore_flag_state(saved_flags);
 			toggle_att(stripped);
@@ -700,7 +700,7 @@ static bool prompt(int argc,
 			parse_opts(&program_state, argc, argv, optstring);
 			break;
 
-			/* toggle writing intel-dialect asm output */
+		/* toggle writing intel-dialect asm output */
 		case 'i':
 			restore_flag_state(saved_flags);
 			toggle_intel(stripped);
@@ -708,7 +708,7 @@ static bool prompt(int argc,
 			parse_opts(&program_state, argc, argv, optstring);
 			break;
 
-			/* toggle output file writing */
+		/* toggle output file writing */
 		case 'o':
 			restore_flag_state(saved_flags);
 			toggle_output_file(stripped);
@@ -716,7 +716,7 @@ static bool prompt(int argc,
 			parse_opts(&program_state, argc, argv, optstring);
 			break;
 
-			/* toggle library parsing */
+		/* toggle library parsing */
 		case 'p':
 			free_buffers(&program_state);
 			init_buffers(&program_state);
@@ -726,7 +726,7 @@ static bool prompt(int argc,
 			parse_opts(&program_state, argc, argv, optstring);
 			break;
 
-			/* toggle variable tracking */
+		/* toggle variable tracking */
 		case 't':
 			free_buffers(&program_state);
 			init_buffers(&program_state);
@@ -736,7 +736,7 @@ static bool prompt(int argc,
 			parse_opts(&program_state, argc, argv, optstring);
 			break;
 
-			/* toggle warnings */
+		/* toggle warnings */
 		case 'w':
 			free_buffers(&program_state);
 			init_buffers(&program_state);
@@ -746,7 +746,7 @@ static bool prompt(int argc,
 			parse_opts(&program_state, argc, argv, optstring);
 			break;
 
-			/* reset state */
+		/* reset state */
 		case 'r':
 			free_buffers(&program_state);
 			init_buffers(&program_state);
@@ -756,18 +756,18 @@ static bool prompt(int argc,
 			scan_input_file();
 			break;
 
-			/* define an include/macro/function */
+		/* define an include/macro/function */
 		case 'm': /* fallthrough */
 		case 'f':
 			parse_macro();
 			break;
 
-			/* show usage information */
+		/* show usage information */
 		case 'h':
 			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 			break;
 
-			/* clean up and exit program */
+		/* clean up and exit program */
 		case 'q':
 			free_buffers(&program_state);
 			cleanup(&program_state);
@@ -780,7 +780,7 @@ static bool prompt(int argc,
 		}
 		break;
 
-		/* dont append ';' for preprocessor directives */
+	/* dont append ';' for preprocessor directives */
 	case '#':
 		/* remove trailing ' ' and '\t' */
 		for (size_t i = strlen(stripped) - 1; i > 0; i--) {
@@ -794,33 +794,32 @@ static bool prompt(int argc,
 			strmv(CONCAT, program_state.src[i].body.buf, "\n");
 		break;
 
-		/* set to true before compiling */
-		program_state.sflags.exec_flag = true;
-		/* finalize source */
-		build_final(&program_state, argv);
-		/* print generated source code unless stdin is a pipe */
-		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag) {
-			fprintf(stderr, "%s:\n", argv[0]);
-			fprintf(stderr, "==========\n");
-			fprintf(stderr, "%s\n", program_state.src[0].total.buf);
-			fprintf(stderr, "==========\n");
-		}
-		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, argv, true);
-		/* print output and exit code if non-zero */
-		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
-			fprintf(stderr, "[exit status: %d]\n", ret);
+	default:
+		parse_normal();
+	}
 
-		/* reset io stream buffering modes */
-		tty_fix(&program_state);
+	/* set to true before compiling */
+	program_state.sflags.exec_flag = true;
+	/* finalize source */
+	build_final(&program_state, argv);
+	/* print generated source code unless stdin is a pipe */
+	if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag) {
+		fprintf(stderr, "%s:\n", argv[0]);
+		fprintf(stderr, "==========\n");
+		fprintf(stderr, "%s\n", program_state.src[0].total.buf);
+		fprintf(stderr, "==========\n");
+	}
+	int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, argv, true);
+	/* print output and exit code if non-zero */
+	if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
+		fprintf(stderr, "[exit status: %d]\n", ret);
 
-		/* exit if executed with `-e` argument */
-		if (program_state.sflags.eval_flag) {
-			/* don't call free() since this points to eval_arg[0] */
-			program_state.cur_line = NULL;
-			break;
-		}
-		/* cleanup old buffer */
-		free(program_state.cur_line);
+	/* reset io stream buffering modes */
+	tty_fix(&program_state);
+
+	/* exit if executed with `-e` argument */
+	if (program_state.sflags.eval_flag) {
+		/* don't call free() since this points to eval_arg[0] */
 		program_state.cur_line = NULL;
 		return false;
 	}
