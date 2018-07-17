@@ -136,12 +136,13 @@ static inline void tty_fix(struct program *restrict prg)
 static void sig_handler(int sig)
 {
 	static char const wtf[] = "wtf did you do to the signal mask to hit this return???\n";
+	int ret;
 	/*
 	 * TODO (?):
 	 *
 	 * this relies on stderr never being fd 0, unsure
 	 * if worth caring about the corner case where stderr
-	 * _is_ 0 (possible but *very* unlikely).
+	 * is 0 (possible but *very* unlikely).
 	 */
 	if (program_state.saved_fd)
 		dup2(program_state.saved_fd, STDOUT_FILENO);
@@ -151,13 +152,18 @@ static void sig_handler(int sig)
 	/* cleanup input line */
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
+	/* reap any leftover children */
+	while (wait(&ret) >= 0 && errno != ECHILD);
 	/*
 	 * the siglongjmp() here is needed in order to handle using
 	 * ^C to both both clear the current command-line and also
 	 * to abort running code early
 	 */
 	if (sig == SIGINT) {
-		/* else abort current input line and longjmp back to loop beginning */
+		/*
+		 * else abort current input line and
+		 * siglongjmp() back to loop beginning
+		 */
 		if (program_state.sflags.exec_flag) {
 			undo_last_line();
 			program_state.sflags.exec_flag = false;
