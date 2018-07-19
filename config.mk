@@ -52,11 +52,9 @@ DEBUG += -O1 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline -fverbose-asm
 CFLAGS += -g3 -std=c11 -I$(VENDOR)/include
 CFLAGS += -fPIC -fstack-protector-strong
-CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES)
 LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
-LDFLAGS += -Wl,--sort-common,--as-needed,--warn-common
 LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
 
 # vi:ft=make:
