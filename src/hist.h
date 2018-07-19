@@ -5,7 +5,7 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef HIST_H
+#if !defined(HIST_H)
 #define HIST_H 1
 
 #include "parseopts.h"
@@ -65,4 +65,4 @@ static inline void dedup_history_add(char *const *restrict line)
 	add_history(strip);
 }
 
-#endif
+#endif /* !defined(HIST_H) */

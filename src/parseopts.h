@@ -5,7 +5,7 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef PARSEOPTS_H
+#if !defined(PARSEOPTS_H)
 #define PARSEOPTS_H 1
 
 #include "defs.h"
@@ -26,4 +26,4 @@ void read_syms(struct str_list *restrict tokens, char const *restrict elf_file);
 void parse_libs(struct str_list *restrict symbols, char **restrict libs);
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring);
 
-#endif
+#endif /* !defined(PARSEOPTS_H) */

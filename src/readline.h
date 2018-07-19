@@ -5,7 +5,7 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef READLINE_H
+#if !defined(READLINE_H)
 #define READLINE_H 1
 
 #include "defs.h"
@@ -17,19 +17,19 @@
 #if RL_VERSION_MAJOR < 7
 # define rl_clear_visible_line() do { /*no-op*/ } while (0)
 #endif
-#ifndef RL_STATE_ISEARCH
+#if !defined(RL_STATE_ISEARCH)
 # define RL_STATE_ISEARCH 0
 #endif
-#ifndef RL_STATE_NSEARCH
+#if !defined(RL_STATE_NSEARCH)
 # define RL_STATE_BSEARCH 0
 #endif
-#ifndef RL_STATE_VIMOTION
+#if !defined(RL_STATE_VIMOTION)
 # define RL_STATE_VIMOTION 0
 #endif
-#ifndef RL_STATE_NUMERICARG
+#if !defined(RL_STATE_NUMERICARG)
 # define RL_STATE_NUMERICARG 0
 #endif
-#ifndef RL_STATE_MULTIKEY
+#if !defined(RL_STATE_MULTIKEY)
 # define RL_STATE_MULTIKEY 0
 #endif
 
@@ -47,4 +47,4 @@ static inline char **completer(char const *text, int start, int end)
 	return rl_completion_matches(text, generator);
 }
 
-#endif
+#endif /* !defined(READLINE_H) */

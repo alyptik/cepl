@@ -6,9 +6,8 @@
  */
 
 /* silence linter */
-#ifndef _GNU_SOURCE
-#	define _GNU_SOURCE
-#endif
+#undef _GNU_SOURCE
+#define _GNU_SOURCE
 
 #include "compile.h"
 #include "errs.h"

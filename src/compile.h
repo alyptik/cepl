@@ -5,7 +5,7 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef COMPILE_H
+#if !defined(COMPILE_H)
 #define COMPILE_H 1
 
 #include "defs.h"
@@ -53,4 +53,4 @@ static inline void pipe_fd(int in_fd, int out_fd)
 	free(primary);
 }
 
-#endif
+#endif /* !defined(COMPILE_H) */

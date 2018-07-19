@@ -5,7 +5,7 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef VARS_H
+#if !defined(VARS_H)
 #define VARS_H 1
 
 #include "compile.h"
@@ -80,4 +80,4 @@ static inline void gen_var_list(struct program *restrict prog)
 	}
 }
 
-#endif
+#endif /* !defined(VARS_H) */

@@ -5,11 +5,11 @@
  * See LICENSE.md file for copyright and license details.
  */
 
-#ifndef DEFS_H
+#if !defined(DEFS_H)
 #define DEFS_H 1
 
 /* silence linter */
-#ifndef _GNU_SOURCE
+#if !defined(_GNU_SOURCE)
 #	define _GNU_SOURCE
 #endif
 
@@ -431,4 +431,4 @@ static inline struct str_list strsplit(char const *restrict str)
 	return list_struct;
 }
 
-#endif
+#endif /* !defined(DEFS_H) */
