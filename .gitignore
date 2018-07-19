@@ -33,9 +33,6 @@ t/*
 *.a
 *.la
 *.lo
-*.old
-!/readline/lib
-!/readline/lib/*
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -44,6 +41,7 @@ t/*
 *.dylib
 
 # Executables
+*.old
 *.exe
 *.out
 *.app
@@ -58,5 +56,10 @@ t/*
 *.tar.gz
 debug.mk
 asan.mk
+
+# static libraries
+/vendor/*/
+!/vendor/lib/*.a
+!/vendor/include/
 
 # vi:ft=cfg:

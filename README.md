@@ -9,8 +9,6 @@ incremental undo, and assembler source code output.
 ## Dependencies
 
 * `gcc` (GNU C Compiler)
-* `readline` library
-* `libelf` ELF access library
 
 ## Usage
 ```bash
@@ -56,5 +54,7 @@ Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 ## Libraries used:
 
 * libtap ([zorgnax/libtap](https://github.com/zorgnax/libtap))
+* libz
 * libelf
 * libreadline
+* libhistory

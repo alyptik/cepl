@@ -5,22 +5,13 @@
 # See LICENSE.md file for copyright and license details.
 
 # add -Wrestrict if using gcc7 or higher
-DEBUG != gcc -v 2>&1 | awk '/version/ {if (substr($$3, 1, 1) > 6) {print "-Wrestrict"}}'
+RESTRICT := $(shell gcc -v 2>&1 | awk '/version/ { if (substr($$3, 1, 1) > 6) { print "-Wrestrict"; } }')
 
 # optional
 DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
 OLVL ?= -O3
-LDLIBS ?= $(READLINE)/lib/libreadline.a $(READLINE)/lib/libhistory.a 		\
-	$(shell pkg-config ncursesw --libs --cflags 2>/dev/null			\
-		|| pkg-config ncurses --libs --cflags 2>/dev/null		\
-		|| echo '-D_GNU_SOURCE -D_DEFAULT_SOURCE -lncursesw -ltinfo')
-ifneq "$(origin LDLIBS)" "command line"
-	CFLAGS += -I$(READLINE)/include
-else
-	CFLAGS += -DRL_OVERRIDE
-endif
 
 # mandatory
 LD = $(CC)
@@ -44,21 +35,22 @@ TAP := t/tap
 BINDIR := bin
 MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
-READLINE := readline
-WARNINGS := -Wall -Wextra -pedantic					\
+VENDOR := vendor
+WARNINGS := $(RESTRICT) -Wall -Wextra -pedantic				\
 		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
-		-Wshadow -Wstrict-overflow -Wwrite-strings
+		-Wshadow -Wstrict-overflow
 IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers		\
 		-Wno-implicit-fallthrough -Wno-inline -Wno-long-long	\
 		-Wno-missing-field-initializers -Wno-redundant-decls	\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
-		-Wno-unused-variable
-LDLIBS += -lelf
+		-Wno-unused-variable -Wno-write-strings
+LDLIBS += -D_GNU_SOURCE -D_DEFAULT_SOURCE -L$(VENDOR)/lib
+LDLIBS += -l:libreadline.a -l:libhistory.a -l:libncursesw.a -l:libelf.a -l:libz.a
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline -fverbose-asm
-CFLAGS += -g3 -std=c11
+CFLAGS += -g3 -std=c11 -I$(VENDOR)/include
 CFLAGS += -fPIC -fstack-protector-strong
 CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 CFLAGS += -fno-common -fno-strict-aliasing

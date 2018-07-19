@@ -14,7 +14,7 @@
 #include <readline/readline.h>
 
 /* stubs */
-#if defined RL_OVERRIDE || RL_VERSION_MAJOR < 7
+#if RL_VERSION_MAJOR < 7
 # define rl_clear_visible_line() do { /*no-op*/ } while (0)
 #endif
 #ifndef RL_STATE_ISEARCH
