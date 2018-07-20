@@ -49,9 +49,10 @@ LDLIBS += -D_GNU_SOURCE -D_DEFAULT_SOURCE -L$(VENDOR)/lib
 LDLIBS += -l:libreadline.a -l:libhistory.a -l:libncursesw.a -l:libelf.a -l:libz.a
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
-DEBUG += -fno-builtin -fno-inline -fverbose-asm
-CFLAGS += -g3 -std=c11 -I$(VENDOR)/include
-CFLAGS += -fPIC -fstack-protector-strong
+DEBUG += -fno-builtin -fno-inline
+CFLAGS += -I$(VENDOR)/include
+CFLAGS += -g3 -std=c11 -fPIC
+CFLAGS += -fstack-protector-strong
 CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES)
