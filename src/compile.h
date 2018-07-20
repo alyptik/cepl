@@ -25,16 +25,10 @@ static inline void set_cloexec(int set_fd[static 2])
 
 static inline void pipe_fd(int in_fd, int out_fd)
 {
-	/* fallback buffer (not reentrant) */
-	static char failover[PAGE_SIZE];
-	char *primary = malloc(PAGE_SIZE);
-	char *buf = primary;
-	if (!buf)
-		buf = failover;
-	/* pipe data in a loop */
+	/* splice data in a loop */
 	for (;;) {
 		ssize_t ret;
-		if ((ret = read(in_fd, buf, PAGE_SIZE)) < 0) {
+		if ((ret = splice(in_fd, NULL, out_fd, NULL, PAGE_SIZE, SPLICE_F_MOVE|SPLICE_F_MORE)) < 0) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 			WARN("%s", "error reading from input fd");
@@ -43,14 +37,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 		/* break on EOF */
 		if (!ret)
 			break;
-		if (write(out_fd, buf, ret) < 0) {
-			if (errno == EINTR || errno == EAGAIN)
-				continue;
-			WARN("%s", "error writing to output fd");
-			break;
-		}
 	}
-	free(primary);
 }
 
 #endif /* !defined(COMPILE_H) */
