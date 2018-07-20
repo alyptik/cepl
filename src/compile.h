@@ -33,7 +33,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 		buf = failover;
 	/* pipe data in a loop */
 	for (;;) {
-		ptrdiff_t ret;
+		ssize_t ret;
 		if ((ret = read(in_fd, buf, PAGE_SIZE)) < 0) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;

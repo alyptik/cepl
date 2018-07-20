@@ -206,7 +206,7 @@ void write_files(struct program *restrict prog)
 
 	/* write out program to file */
 	for (;;) {
-		ptrdiff_t ret;
+		ssize_t ret;
 		if ((ret = write(out_fd, prog->src[1].total.buf + buf_pos, buf_len - buf_pos)) < 0) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
