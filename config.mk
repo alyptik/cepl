@@ -45,8 +45,9 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers		\
 		-Wno-missing-field-initializers -Wno-redundant-decls	\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable -Wno-write-strings
-LDLIBS += -D_GNU_SOURCE -D_DEFAULT_SOURCE -L$(VENDOR)/lib
-LDLIBS += -l:libreadline.a -l:libhistory.a -l:libncursesw.a -l:libelf.a -l:libz.a
+LDLIBS += -D_GNU_SOURCE -D_DEFAULT_SOURCE
+LDLIBS += -lreadline -lhistory -lelf
+LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cflags --libs)
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
