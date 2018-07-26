@@ -65,18 +65,17 @@ static inline void gen_var_list(struct program *restrict prog)
 		return;
 	/* don't add duplicate keys to prog->var_list */
 	for (size_t i = 0; i < prog->id_list.cnt; i++) {
-		bool uniq = true;
 		for (ptrdiff_t j = prog->var_list.cnt - 1; j >= 0; j--) {
-			if (prog->type_list.list[i] != prog->var_list.list[j].type_spec
-					|| strcmp(prog->id_list.list[i], prog->var_list.list[j].id))
+			/* if type or id don't match then continue */
+			if (prog->type_list.list[i] != prog->var_list.list[j].type_spec)
 				continue;
-			/* break early if type or id match */
-			uniq = false;
-			break;
+			if (strcmp(prog->id_list.list[i], prog->var_list.list[j].id))
+				continue;
+			/* else return if a match is found */
+			return;
 		}
 		/* no matches found */
-		if (uniq)
-			append_var(&prog->var_list, prog->id_list.list[i], prog->type_list.list[i]);
+		append_var(&prog->var_list, prog->id_list.list[i], prog->type_list.list[i]);
 	}
 }
 
