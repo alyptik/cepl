@@ -59,6 +59,7 @@ asan.mk
 
 # static libraries
 /vendor/*/
+!/vendor/lib/
 !/vendor/lib/*.a
 !/vendor/include/
 
