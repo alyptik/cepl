@@ -28,7 +28,7 @@ static inline void pipe_fd(int in_fd, int out_fd)
 	/* splice data in a loop */
 	for (;;) {
 		ssize_t ret;
-		if ((ret = splice(in_fd, NULL, out_fd, NULL, PAGE_SIZE, SPLICE_F_MOVE|SPLICE_F_MORE)) < 0) {
+		if ((ret = splice(in_fd, NULL, out_fd, NULL, PAGE_SIZE, SPLICE_F_MOVE)) < 0) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
 			WARN("%s", "error reading from input fd");
