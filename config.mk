@@ -51,7 +51,6 @@ LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cf
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
-CFLAGS += -I$(VENDOR)/include
 CFLAGS += -g3 -std=c11 -fPIC
 CFLAGS += -fstack-protector-strong
 CFLAGS += -fuse-ld=gold -fuse-linker-plugin
