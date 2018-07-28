@@ -16,7 +16,7 @@ char *comp_arg_list[1];
 /* global linker flags and completions structs */
 struct str_list comp_list;
 /* source file includes template */
-char const *prelude =
+char const *prologue =
 	"#undef _BSD_SOURCE\n"
 	"#define _BSD_SOURCE\n"
 	"#undef _DEFAULT_SOURCE\n"

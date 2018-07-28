@@ -30,7 +30,7 @@ static char hist_name[] = "./.cepl_history";
 static struct program program_state;
 
 /* string to compile */
-extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
+extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 extern enum asm_type asm_dialect;
 
 static inline char *read_line(struct program *restrict prog)

@@ -20,7 +20,7 @@ static char *const ld_alt_list[] = {
 	NULL
 };
 
-extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
+extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 /* global linker arguments struct */
 extern struct str_list ld_list;
 extern char **environ;

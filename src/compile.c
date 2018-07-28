@@ -23,7 +23,7 @@ struct str_list ld_list;
 static char *const ld_alt_list[] = {
 	"gcc", "-pipe",
 	"-O0", "-fPIC",
-	"-xassembler", "-",
+	"-xassembler", "/dev/stdin",
 	"-lm", "-o", "/dev/stdout",
 	NULL
 };

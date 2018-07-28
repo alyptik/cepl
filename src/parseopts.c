@@ -62,7 +62,7 @@ static char *tmp_arg;
 
 extern struct str_list comp_list;
 extern char *comp_arg_list[];
-extern char const *prelude, *prog_start, *prog_start_user, *prog_end;
+extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
@@ -74,7 +74,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	*in_file = optarg;
 	regex_t reg[2];
 	bool after_main_signature = false;
-	int scan_state = IN_PRELUDE;
+	int scan_state = IN_PROLOGUE;
 	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 	char tmp_buf[PAGE_SIZE];
 	for (size_t i = 0; i < ARR_LEN(prog->input_src); i++) {
@@ -97,7 +97,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
 		switch (scan_state) {
 		/* pre-main */
-		case IN_PRELUDE:
+		case IN_PROLOGUE:
 			/* no match */
 			if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
 				buf_ptr = tmp_buf;
@@ -141,7 +141,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 			break;
 		}
 	}
-	prelude = prog->input_src[0];
+	prologue = prog->input_src[0];
 	prog_start = prog_start_user = prog->input_src[1];
 	prog_end = prog->input_src[2];
 	prog->sflags.in_flag ^= true;
@@ -406,7 +406,14 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	prog->sflags.track_flag ^= true;
 	/* initilize argument lists */
 	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-	/* TODO: allow use of other linkers besides gcc without breaking due to seek errors */
+	/*
+	 * TODO:
+	 *
+	 * currently you get seek errors when using
+	 * raw `ld`, so it's worked around by using
+	 * gcc for the link step. fix this properly
+	 * instead of using this band-aid.
+	 */
 	init_str_list(&prog->ld_list, "gcc");
 	init_str_list(&prog->lib_list, NULL);
 	/* re-zero prog->cc_list.list[0] so -c argument can be added */
@@ -414,7 +421,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
-
 		/* use input file */
 		case 'f':
 			parse_input_file(prog, &in_file);
@@ -492,9 +498,13 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	build_sym_list(prog);
 
 #ifdef _DEBUG
-	DPRINTF("%s", "cc command line: \"");
+	DPRINTF("%s", "compiler command line: \"");
 	for (size_t i = 0; prog->cc_list.list[i]; i++)
 		DPRINTF("%s ", prog->cc_list.list[i]);
+	DPRINTF("\b%s\n", "\"");
+	DPRINTF("%s", "linker command line: \"");
+	for (size_t i = 0; prog->ld_list.list[i]; i++)
+		DPRINTF("%s ", prog->ld_list.list[i]);
 	DPRINTF("\b%s\n", "\"");
 #endif
 

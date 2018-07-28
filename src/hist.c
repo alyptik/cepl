@@ -11,7 +11,7 @@
 extern struct str_list comp_list;
 
 /* source file includes template */
-char const *prelude =
+char const *prologue =
 	"#undef _BSD_SOURCE\n"
 	"#define _BSD_SOURCE\n"
 	"#undef _DEFAULT_SOURCE\n"
@@ -260,23 +260,23 @@ void init_buffers(struct program *restrict prog)
 	xcalloc(char, &prog->src[0].funcs.buf, 1, 1, "init");
 	xcalloc(char, &prog->src[0].body.buf, 1, strlen(prog_start_user) + 1, "init");
 	xcalloc(char, &prog->src[0].total.buf, 1,
-			strlen(prelude)
+			strlen(prologue)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3, "init");
 	prog->src[0].funcs.size = prog->src[0].funcs.max = 1;
 	prog->src[0].body.size = prog->src[0].body.max = strlen(prog_start_user) + 1;
-	prog->src[0].total.size = prog->src[0].total.max = strlen(prelude)
+	prog->src[0].total.size = prog->src[0].total.max = strlen(prologue)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	xcalloc(char, &prog->src[1].funcs.buf, 1, strlen(prelude) + 1, "init");
+	xcalloc(char, &prog->src[1].funcs.buf, 1, strlen(prologue) + 1, "init");
 	xcalloc(char, &prog->src[1].body.buf, 1, strlen(prog_start) + 1, "init");
-	xcalloc(char, &prog->src[1].total.buf, 1, strlen(prelude)
+	xcalloc(char, &prog->src[1].total.buf, 1, strlen(prologue)
 			+ strlen(prog_start)
 			+ strlen(prog_end) + 3, "init");
-	prog->src[1].funcs.size = prog->src[1].funcs.max = strlen(prelude) + 1;
+	prog->src[1].funcs.size = prog->src[1].funcs.max = strlen(prologue) + 1;
 	prog->src[1].body.size = prog->src[1].body.max = strlen(prog_start) + 1;
-	prog->src[1].total.size = prog->src[1].total.max = strlen(prelude)
+	prog->src[1].total.size = prog->src[1].total.max = strlen(prologue)
 			+ strlen(prog_start)
 			+ strlen(prog_end) + 3;
 	/* sanity check */
@@ -289,7 +289,7 @@ void init_buffers(struct program *restrict prog)
 	}
 	/* no memcpy for prgm[0].funcs */
 	strmv(0, prog->src[0].body.buf, prog_start_user);
-	strmv(0, prog->src[1].funcs.buf, prelude);
+	strmv(0, prog->src[1].funcs.buf, prologue);
 	strmv(0, prog->src[1].body.buf, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
