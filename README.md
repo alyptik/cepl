@@ -19,6 +19,8 @@ incremental undo, and assembler source code output.
 
 Run `make` then `./cepl` to start the interactive REPL.
 
+The following environment variables are respected: `CFLAGS`, `LDFLAGS`, `LDLIBS`, and `LIBS`.
+
 Command history is read from and saved to `~/.cepl_history`.
 
 #### CEPL understands the following options:
