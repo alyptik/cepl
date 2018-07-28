@@ -258,19 +258,47 @@ static inline void enable_warnings(struct program *restrict prog)
 	}
 }
 
+static inline void append_arg_list(struct program *restrict prog, char *const *cc_list, char *const *ld_list, char *const *lib_list)
+{
+	if (cc_list)
+		for (size_t i = 0; cc_list[i]; i++)
+			append_str(&prog->cc_list, cc_list[i], 0);
+	if (ld_list)
+		for (size_t i = 0; ld_list[i]; i++)
+			append_str(&prog->ld_list, ld_list[i], 0);
+	if (lib_list)
+		for (size_t i = 0; lib_list[i]; i++)
+			append_str(&prog->lib_list, lib_list[i], 0);
+	if (prog->sflags.warn_flag)
+		enable_warnings(prog);
+}
+
 static inline void build_arg_list(struct program *restrict prog, char *const *cc_list, char *const *ld_list)
 {
+	char *cflags = getenv("CFLAGS");
+	char *ldflags = getenv("LDFLAGS");
+	char *ldlibs = getenv("LDLIBS");
+	char *libs = getenv("LIBS");
+
 	/* default to gcc as a compiler */
 	if (!prog->cc_list.list[0][0])
 		strmv(0, prog->cc_list.list[0], "gcc");
-	/* finalize argument lists */
-	for (size_t i = 0; cc_arg_list[i]; i++)
-		append_str(&prog->cc_list, cc_list[i], 0);
-	for (size_t i = 0; ld_arg_list[i]; i++)
-		append_str(&prog->ld_list, ld_list[i], 0);
-	if (prog->sflags.warn_flag)
-		enable_warnings(prog);
-	/* append NULL to generated lists */
+	append_arg_list(prog, cc_list, ld_list, NULL);
+	/* parse CFLAGS, LDFLAGS, LDLIBS, and LIBS from the environment (-g flags will hang) */
+	if (cflags)
+		for (char *arg = strtok(cflags, " \t"); arg; arg = strtok(NULL, " \t"))
+			if (arg[0] != '-' && arg[1] != 'g')
+				append_str(&prog->cc_list, arg, 0);
+	if (ldflags)
+		for (char *arg = strtok(ldflags, " \t"); arg; arg = strtok(NULL, " \t"))
+			append_str(&prog->ld_list, arg, 0);
+	if (ldlibs)
+		for (char *arg = strtok(ldlibs, " \t"); arg; arg = strtok(NULL, " \t"))
+			append_str(&prog->lib_list, arg, 0);
+	if (libs)
+		for (char *arg = strtok(libs, " \t"); arg; arg = strtok(NULL, " \t"))
+			append_str(&prog->lib_list, arg, 0);
+	/* NULL-terminate lists */
 	append_str(&prog->cc_list, NULL, 0);
 	append_str(&prog->ld_list, NULL, 0);
 	append_str(&prog->lib_list, NULL, 0);
@@ -356,6 +384,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	enum asm_type asm_choice = NONE;
 	char *out_name = NULL, *in_file = NULL, *asm_file = NULL;
 	/* cleanup previous allocations */
+	free_str_list(&prog->cc_list);
 	free_str_list(&prog->ld_list);
 	free_str_list(&prog->lib_list);
 	free_str_list(&comp_list);
