@@ -151,10 +151,6 @@ static void sig_handler(int sig)
 	/* cleanup input line */
 	free(program_state.cur_line);
 	program_state.cur_line = NULL;
-	/* fallback to kill children who have masked SIGINT */
-	kill(0, SIGKILL);
-	/* reap any leftover children */
-	while (wait(&ret) >= 0 && errno != ECHILD);
 	/*
 	 * the siglongjmp() here is needed in order to handle using
 	 * ^C to both both clear the current command-line and also
@@ -174,6 +170,10 @@ static void sig_handler(int sig)
 	/* cleanup and die if not SIGINT */
 	free_buffers(&program_state);
 	cleanup(&program_state);
+	/* fallback to kill children who have masked SIGINT */
+	kill(0, SIGKILL);
+	/* reap any leftover children */
+	while (wait(&ret) >= 0 && errno != ECHILD);
 	raise(sig);
 	/* wat */
 	if (write(STDERR_FILENO, wtf, sizeof wtf) < 0)
