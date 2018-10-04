@@ -173,6 +173,8 @@ static inline void copy_libs(struct program *restrict prog)
 	strmv(CONCAT, buf, ".so");
 	append_str(&prog->lib_list, buf, 0);
 	append_str(&prog->ld_list, optarg, 2);
+	if (!prog->ld_list.list[prog->ld_list.cnt - 1])
+		ERRX("%s", "null ld_list member passed to memcpy()");
 	memcpy(prog->ld_list.list[prog->ld_list.cnt - 1], "-l", 2);
 }
 
