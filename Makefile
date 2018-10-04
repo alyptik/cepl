@@ -69,7 +69,4 @@ cscope:
 tags TAGS:
 	@echo "[creating ctags file]"
 	$(RM) tags TAGS
-	ctags -RGf $@ \
-		--langmap=c:+.h.C.H --fields=+l \
-		--c-kinds=+l-p --c++-kinds=+l-p --python-kinds=+lz \
-		--extras=+q --tag-relative=no .
+	ctags -Rf $@ --tag-relative --langmap=c:+.h.C.H --fields=+l --c-kinds=+l --c++-kinds=+l --extra=+q .
