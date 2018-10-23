@@ -8,24 +8,6 @@
 #if !defined(ERRS_H)
 #define ERRS_H 1
 
-#if defined(__INTEL_COMPILER)
-	typedef float _Float32;
-	typedef float _Float32x;
-	typedef double _Float64;
-	typedef double _Float64x;
-	typedef long double _Float128;
-	typedef enum ___LIB_VERSIONIMF_TYPE {
-		_IEEE_ = -1	/* IEEE-like behavior */
-		,_SVID_		/* SysV, Rel. 4 behavior */
-		,_XOPEN_	/* Unix98 */
-		,_POSIX_	/* POSIX */
-		,_ISOC_		/* ISO C9X */
-	} _LIB_VERSIONIMF_TYPE;
-# define _LIB_VERSION_TYPE _LIB_VERSIONIMF_TYPE;
-#else
-# include <complex.h>
-#endif /* defined(__INTEL_COMPILER) */
-
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>

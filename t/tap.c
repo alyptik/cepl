@@ -6,13 +6,7 @@ This file is licensed under the LGPL
 
 #define _DEFAULT_SOURCE 1
 
-#ifdef __INTEL_COMPILER
-#  define float_t long double
-#  define _Float128 float_t
-#else
-#  include <complex.h>
-#endif
-
+#include <complex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
