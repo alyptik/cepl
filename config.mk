@@ -21,21 +21,22 @@ MKALL = $(MKCFG) $(DEP)
 OBJ = $(SRC:.c=.o)
 TOBJ = $(TSRC:.c=.o)
 DEP = $(SRC:.c=.d) $(TSRC:.c=.d)
-TEST = $(filter-out $(TAP),$(TSRC:.c=))
+TEST = $(TSRC:.c=)
 UTEST = $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
 ASAN := -fsanitize=address,alignment,leak,undefined
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -MMD -MP
-TARGET := cepl
-MANPAGE := cepl.1
-COMPLETION := _cepl
-TAP := t/tap
+VENDOR := vendor
+CONTRIB := contrib
 BINDIR := bin
 MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
-VENDOR := vendor
+TARGET := cepl
+MANPAGE := cepl.1
+COMPLETION := _cepl
+TAP := $(CONTRIB)/libtap
 WARNINGS := $(RESTRICT) -Wall -Wextra -pedantic				\
 		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
@@ -51,11 +52,12 @@ LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cf
 MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
+DEBUG += -I$(TAP)
 CFLAGS += -g3 -std=c11 -fPIC
 CFLAGS += -fstack-protector-strong
 CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 CFLAGS += -fno-common -fno-strict-aliasing
-CFLAGS += $(WARNINGS) $(IGNORES)
+CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
 LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
 LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
 

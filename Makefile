@@ -28,8 +28,8 @@ debug:
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $^ $(LDLIBS) -o $@
-$(TEST): %: %.o $(TAP).o $(OBJ) $(TOBJ)
-	$(LD) $(LDFLAGS) $(TAP).o $(<:t/test%=src/%) $< $(LDLIBS) -o $@
+$(TEST): %: %.o $(TAP)/tap.o $(OBJ) $(TOBJ)
+	$(LD) $(LDFLAGS) $(TAP)/tap.o $(<:t/test%=src/%) $< $(LDLIBS) -o $@
 %.o: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
