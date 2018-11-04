@@ -44,7 +44,7 @@ matrix:
 
 before_install:
     - eval "${MATRIX_EVAL}"
-    - sudo apt-get install -qq --fix-missing elfutils libelf-dev libreadline-dev linux-headers-generic linux-libc-dev
+    - sudo apt-get install -qq --fix-missing --allow-unauthenticated elfutils libelf-dev libreadline-dev linux-headers-generic linux-libc-dev
     # Generate the header since one is missing on the Travis instance
     - sudo mkdir -p /usr/include/linux
     - printf "%s\n" \
