@@ -205,7 +205,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 
 #ifdef _DEBUG
 	if (strlen(ln))
-		DPRINTF("extract_id(): \"%s\"\n", ln);
+		printe("extract_id(): \"%s\"\n", ln);
 #endif
 
 	if (regcomp(&reg, initial_regex, REG_EXTENDED|REG_NEWLINE))
@@ -254,7 +254,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			regfree(&reg);
 			*off = matches[3].rm_eo;
 #ifdef _DEBUG
-			DPRINTF("regex [3]: %s\n", *id);
+			printe("regex [3]: %s\n", *id);
 #endif
 			return matches[3].rm_eo;
 		}
@@ -265,7 +265,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		regfree(&reg);
 		*off = matches[3].rm_eo;
 #ifdef _DEBUG
-		DPRINTF("regex [2]: %s\n", *id);
+		printe("regex [2]: %s\n", *id);
 #endif
 		return matches[3].rm_eo;
 	}
@@ -276,7 +276,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 	regfree(&reg);
 	*off = matches[1].rm_eo;
 #ifdef _DEBUG
-	DPRINTF("regex [1]: %s\n", *id);
+	printe("regex [1]: %s\n", *id);
 #endif
 	return matches[1].rm_eo;
 }

@@ -77,7 +77,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	int scan_state = IN_PROLOGUE;
 	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 	char tmp_buf[PAGE_SIZE];
-	for (size_t i = 0; i < ARR_LEN(prog->input_src); i++) {
+	for (size_t i = 0; i < arr_len(prog->input_src); i++) {
 		xmalloc(char, &prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
 		prog->input_src[i][0] = 0;
 	}
@@ -505,14 +505,14 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	build_sym_list(prog);
 
 #ifdef _DEBUG
-	DPRINTF("%s", "compiler command line: \"");
+	printe("%s", "compiler command line: \"");
 	for (size_t i = 0; prog->cc_list.list[i]; i++)
-		DPRINTF("%s ", prog->cc_list.list[i]);
-	DPRINTF("\b%s\n", "\"");
-	DPRINTF("%s", "linker command line: \"");
+		printe("%s ", prog->cc_list.list[i]);
+	printe("\b%s\n", "\"");
+	printe("%s", "linker command line: \"");
 	for (size_t i = 0; prog->ld_list.list[i]; i++)
-		DPRINTF("%s ", prog->ld_list.list[i]);
-	DPRINTF("\b%s\n", "\"");
+		printe("%s ", prog->ld_list.list[i]);
+	printe("\b%s\n", "\"");
 #endif
 
 	return prog->cc_list.list;

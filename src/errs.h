@@ -17,23 +17,23 @@
 #include <unistd.h>
 
 /* warning macros */
-# define WARN(FMT, ...) \
+# define WARN(fmt, ...) \
 	do { \
-		fprintf(stderr, "`%s`: [%s:%u] " FMT "\n", strerror(errno), __FILE__, __LINE__, __VA_ARGS__); \
+		fprintf(stderr, "%s:%s [%s:%u] " fmt "\n", strerror(errno), __func__, __FILE__, __LINE__, __VA_ARGS__); \
 	} while (0)
-# define WARNX(FMT, ... ) \
+# define WARNX(fmt, ... ) \
 	do { \
-		fprintf(stderr, "[%s:%u] " FMT "\n", __FILE__, __LINE__, __VA_ARGS__); \
+		fprintf(stderr, "%s [%s:%u] " fmt "\n", __func__, __FILE__, __LINE__, __VA_ARGS__); \
 	} while (0)
 /* error macros */
-# define ERR(FMT, ...) \
+# define ERR(fmt, ...) \
 	do { \
-		fprintf(stderr, "`%s`: [%s:%u] " FMT "\n", strerror(errno), __FILE__, __LINE__, __VA_ARGS__); \
+		fprintf(stderr, "%s:%s [%s:%u] " fmt "\n", strerror(errno), __func__, __FILE__, __LINE__, __VA_ARGS__); \
 		exit(EXIT_FAILURE); \
 	} while (0)
-# define ERRX(FMT, ...) \
+# define ERRX(fmt, ...) \
 	do { \
-		fprintf(stderr, "[%s:%u] " FMT "\n", __FILE__, __LINE__, __VA_ARGS__); \
+		fprintf(stderr, "%s [%s:%u] " fmt "\n", __func__, __FILE__, __LINE__, __VA_ARGS__); \
 		exit(EXIT_FAILURE); \
 	} while (0)
 

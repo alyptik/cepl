@@ -106,7 +106,7 @@ static inline void tty_break(struct program *restrict prg)
 		if (ioctl(cur_fd, TCGETA, cur_mode) < 0) {
 #ifdef _DEBUG
 			if (isatty(cur_fd))
-				DPRINTF("%s\n", "tty_break()");
+				printe("%s\n", "tty_break()");
 #endif
 			continue;
 		}
@@ -195,8 +195,8 @@ static void reg_handlers(void)
 		{SIGVTALRM, "SIGVTALRM"}, {SIGXCPU, "SIGXCPU"},
 		{SIGXFSZ, "SIGXFSZ"},
 	};
-	struct sigaction sa[ARR_LEN(sigs)];
-	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
+	struct sigaction sa[arr_len(sigs)];
+	for (size_t i = 0; i < arr_len(sigs); i++) {
 		sa[i].sa_handler = &sig_handler;
 		sigemptyset(&sa[i].sa_mask);
 		sa[i].sa_flags = SA_RESETHAND|SA_RESTART;
@@ -220,7 +220,7 @@ static inline char *gen_bin_str(char const *restrict in_str)
 	/* return early if NULL or empty string */
 	if (!in_str || !(in_len = strlen(in_str))) {
 #ifdef _DEBUG
-		DPRINTF("%s", "NULL or empty string passed to gen_bin_str()");
+		printe("%s", "NULL or empty string passed to gen_bin_str()");
 #endif
 		return "";
 	}
@@ -228,7 +228,7 @@ static inline char *gen_bin_str(char const *restrict in_str)
 	errno = 0;
 	unsigned long long num = strtoll(in_str, &end_ptr, 0);
 #ifdef _DEBUG
-	DPRINTF("endptr: \"%s\"\n*endptr = '%c'\n", end_ptr, *end_ptr);
+	printe("endptr: \"%s\"\n*endptr = '%c'\n", end_ptr, *end_ptr);
 #endif
 	/* return empty string on parse error */
 	if (errno || !in_len || (*end_ptr && (strspn(end_ptr, " \t;") != strlen(end_ptr))))
@@ -264,7 +264,7 @@ static inline char *gen_bin_str(char const *restrict in_str)
 	}
 
 #ifdef _DEBUG
-	DPRINTF("[%zu] %s - %s - %s\n", 8 - (cnt % 8), base_arr, rev_arr, final_array);
+	printe("[%zu] %s - %s - %s\n", 8 - (cnt % 8), base_arr, rev_arr, final_array);
 #endif
 	/* return empty string on error */
 	if (strlen(final_array) < 3)
@@ -318,7 +318,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 				ln_bin_pre, ln_bin, ln_bin_end,
 				ln_end);
 #ifdef _DEBUG
-		DPRINTF("eval_line(): \"%s\"\n", prg.cur_line);
+		printe("eval_line(): \"%s\"\n", prg.cur_line);
 #endif
 		for (size_t j = 0; j < 2; j++) {
 			resize_sect(&prg, &prg.src[j].body, sz);

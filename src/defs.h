@@ -23,39 +23,37 @@
 #include <unistd.h>
 
 /* macros */
-#define DEFAULT(ARG, ALT)	((ARG) ? (ARG) : (ALT))
-#define MIN(A, B)		(((A) < (B)) ? (A) : (B))
-#define MAX(A, B)		(((A) > (B)) ? (A) : (B))
-#define ARR_LEN(ARR)		((sizeof (ARR)) / (sizeof *(ARR)))
-#define FOR_EACH_IN(LIST)	for (size_t i = 0; i < (LIST).cnt; i++)
-#define DPRINTF(FMT, ...)	fprintf(stderr, "\033[92m" FMT "\033[00m", __VA_ARGS__)
+#define min(a, b)		(((a) < (b)) ? (a) : (b))
+#define max(a, b)		(((a) > (b)) ? (a) : (b))
+#define arr_len(arr)		((sizeof (arr)) / (sizeof *(arr)))
+#define printe(fmt, ...)	fprintf(stderr, "\033[92m" fmt "\033[00m", __VA_ARGS__)
 /* `malloc()` wrapper */
-#define xmalloc(TYPE, PTR, SZ, MSG) \
+#define xmalloc(type, ptr, sz, msg) \
 	do { \
-		void *tmp = malloc(SZ); \
+		void *tmp = malloc(sz); \
 		if (!tmp) \
-			ERR("%s", (MSG)); \
-		*(TYPE **)PTR = tmp; \
+			ERR("%s", (msg)); \
+		*(type **)ptr = tmp; \
 	} while (0)
 /* `calloc()` wrapper */
-#define xcalloc(TYPE, PTR, NMEMB, SZ, MSG) \
+#define xcalloc(type, ptr, nmemb, sz, msg) \
 	do { \
-		void *tmp = calloc((NMEMB), (SZ)); \
+		void *tmp = calloc((nmemb), (sz)); \
 		if (!tmp) \
-			ERR("%s", (MSG)); \
-		*(TYPE **)PTR = tmp; \
+			ERR("%s", (msg)); \
+		*(type **)ptr = tmp; \
 	} while (0)
 /* `realloc()` wrapper */
-#define xrealloc(TYPE, PTR, SZ, MSG) \
+#define xrealloc(type, ptr, sz, msg) \
 	do { \
-		void *tmp[2] = {0, *(TYPE **)PTR}; \
-		if (!(tmp[0] = realloc(tmp[1], SZ))) \
-			ERR("%s", (MSG)); \
-		*(TYPE **)PTR = tmp[0]; \
+		void *tmp[2] = {0, *(type **)ptr}; \
+		if (!(tmp[0] = realloc(tmp[1], sz))) \
+			ERR("%s", (msg)); \
+		*(type **)ptr = tmp[0]; \
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-6.3.0"
+#define VERSION_STRING	"cepl-6.3.1"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -213,8 +211,8 @@ static inline void reset_handlers(void)
 		{SIGVTALRM, "SIGVTALRM"}, {SIGXCPU, "SIGXCPU"},
 		{SIGXFSZ, "SIGXFSZ"},
 	};
-	struct sigaction sa[ARR_LEN(sigs)];
-	for (size_t i = 0; i < ARR_LEN(sigs); i++) {
+	struct sigaction sa[arr_len(sigs)];
+	for (size_t i = 0; i < arr_len(sigs); i++) {
 		sa[i].sa_handler = SIG_DFL;
 		sigemptyset(&sa[i].sa_mask);
 		/* don't reset `SIGINT` handler */

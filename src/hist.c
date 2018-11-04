@@ -97,7 +97,7 @@ void cleanup(struct program *restrict prog)
 	prog->out_filename = NULL;
 	free(prog->asm_filename);
 	prog->asm_filename = NULL;
-	for (size_t i = 0; i < ARR_LEN(prog->input_src); i++) {
+	for (size_t i = 0; i < arr_len(prog->input_src); i++) {
 		free(prog->input_src[i]);
 		prog->input_src[i] = NULL;
 	}
