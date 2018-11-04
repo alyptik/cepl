@@ -30,21 +30,9 @@ matrix:
       env:
         - MATRIX_EVAL="export PREFIX=~/.local CC=gcc-6 CXX=g++-6"
 
-    # works on Trusty
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-5.0 main"
-          packages:
-            - clang-5.0 lldb-5.0 lld-5.0
-      env:
-        - MATRIX_EVAL="export PREFIX=~/.local CC=clang-5.0 CXX=clang++-5.0"
-
 before_install:
     - eval "${MATRIX_EVAL}"
-    - sudo apt-get install -qq --fix-missing --allow-unauthenticated elfutils libelf-dev libreadline-dev linux-headers-generic linux-libc-dev
+    - sudo apt-get install -qq --fix-missing elfutils libelf-dev libreadline-dev linux-headers-generic linux-libc-dev
     # Generate the header since one is missing on the Travis instance
     - sudo mkdir -p /usr/include/linux
     - printf "%s\n" \
