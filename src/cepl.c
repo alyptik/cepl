@@ -405,6 +405,11 @@ static inline void toggle_output_file(char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (program_state.sflags.out_flag) {
+		/* delete output file */
+		if (program_state.out_filename && unlink(program_state.out_filename) < 0)
+			WARN("%s failed in %s", "unlink()", __func__);
+		free(program_state.out_filename);
+		program_state.out_filename = NULL;
 		program_state.sflags.out_flag ^= true;
 		return;
 	}
@@ -424,8 +429,7 @@ static inline void toggle_output_file(char *tbuf)
 	}
 	xcalloc(char, &program_state.out_filename, 1, strlen(tbuf) + 1, "program_state.out_filename calloc()");
 	strmv(0, program_state.out_filename, tbuf);
-	free_buffers(&program_state);
-	init_buffers(&program_state);
+	write_files(&program_state);
 }
 
 static inline void parse_macro(void)
