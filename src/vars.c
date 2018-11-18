@@ -19,7 +19,20 @@
 size_t tokenize(char const *restrict code, struct str_list *restrict tok_list)
 {
 	/* '$' is allowed as an extension (and yes some weirdos use it) */
-	char const tok_regex[] = "^([_$[:alpha:]]+[_$[:alnum:]]*|[.[:digit:]][.[:alnum:]]*|[^_$[:alnum:]])[[:space:]]*";
+	char const tok_regex[] =
+		"^("
+			/* identifier */
+			"[_$[:alpha:]]+[_$[:alnum:]]*"
+			/* integer constant */
+			"|[[:digit:]][[:alnum:]]*"
+			/* floating constant */
+			"|[[:digit:]]*\\.[[:alnum:]]+"
+			/* escape sequence */
+			"|\\\\[[:alnum:]]+"
+			/* other tokens (operators, parentheses, brackets, etc.) */
+			"|[^_$[:alnum:]]"
+		")"
+		"[[:space:]]*";
 	char const *pos = code;
 	size_t ntoks = 0;
 	regmatch_t matches[3];
