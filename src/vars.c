@@ -18,10 +18,10 @@
 /* lexing */
 size_t tokenize(char const *restrict code, struct str_list *restrict tok_list)
 {
-	/* '$' is allowed as an extension (and yes some weirdos use it) */
+	/* slightly naive lexer regex since all we care about are identifiers */
 	char const tok_regex[] =
 		"^("
-			/* identifier */
+			/* '$' is allowed as an extension for identifiers (and yes some weirdos do use it) */
 			"[_$[:alpha:]]+[_$[:alnum:]]*"
 			/* integer constant */
 			"|[[:digit:]][[:alnum:]]*"
