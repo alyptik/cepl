@@ -23,6 +23,17 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+/*
+ * new algorithm
+ */
+
+/* prototypes */
+size_t tokenize(char const *restrict code, struct str_list *restrict tok_list);
+
+/*
+ * old algorithm
+ */
+
 /* prototypes */
 enum var_type extract_type(char const *restrict ln, char const *restrict id);
 size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict off);

@@ -11,6 +11,63 @@
 
 #include "vars.h"
 
+/*
+ * new algorithm
+ */
+
+/* lexing */
+size_t tokenize(char const *restrict code, struct str_list *restrict tok_list)
+{
+	/* '$' is allowed as an extension (and yes some weirdos use it) */
+	char const tok_regex[] = "^([_$[:alpha:]]+[_$[:alnum:]]*|[.[:digit:]][.[:alnum:]]*|[^_$[:alnum:]])[[:space:]]*";
+	char const *pos = code;
+	regmatch_t matches[3];
+	regex_t reg;
+
+	/* sanity checks */
+	if (!code || !tok_list)
+		return 0;
+
+	size_t const code_len = strlen(code);
+	char const *const code_end = code + code_len;
+	if (regcomp(&reg, tok_regex, REG_EXTENDED))
+		ERR("%s", "failed to compile regex");
+
+	/* lexer loop */
+	while (pos < code_end) {
+		/* non-zero return or -1 value in rm_so means no captures */
+		if (regexec(&reg, pos, 2, matches, 0) || matches[1].rm_so == -1)
+			break;
+
+		/* regex capture offsets */
+		size_t match_sz[2] = {
+			/* total match */
+			matches[0].rm_eo - matches[0].rm_so,
+			/* from beginning of second capture to end of capture */
+			matches[1].rm_eo - matches[1].rm_so,
+		};
+
+		/* copy matched token */
+		char *tok;
+		xcalloc(char, &tok, 1, match_sz[1] + 1, "tokenize()");
+		memcpy(tok, pos, match_sz[1]);
+		append_str(tok_list, tok, 0);
+		free(tok);
+
+		/* advance to the next token */
+		pos += match_sz[0];
+	}
+
+	regfree(&reg);
+	return tok_list->cnt;
+}
+
+/* parsing */
+
+/*
+ * old algorithm
+ */
+
 /* fallback linker arg array */
 static char *const ld_alt_list[] = {
 	"gcc",
