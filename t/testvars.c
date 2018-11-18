@@ -40,13 +40,38 @@ int main(void)
 		"int plonk[5] = {1,2,3,4,5}, vroom[5] = {0};"
 		"struct foo { int boop; } kabonk = {0}, *klakow = &kabonk;";
 
-	plan(20);
+	plan(21);
+
+	/*
+	 * new algorithm
+	 */
+
+	struct str_list tok_list = {0};
+
+	init_str_list(&tok_list, NULL);
+
+	putchar('\n');
+	ok(tokenize(src, &tok_list) == 140, "succeed finding 140 tokens during lexing.");
+	/* print token list */
+	putchar('\n');
+	printf("tokens:");
+	for (size_t i = 0; i < tok_list.cnt; i++) {
+		putchar(' ');
+		printf("[%s]", tok_list.list[i]);
+	}
+	putchar('\n');
+
+	free_str_list(&tok_list);
+	putchar('\n');
+
+	/*
+	 * old algorithm
+	 */
 
 	/* initialize lists */
 	init_str_list(&prg.id_list, NULL);
 	init_type_list(&prg.type_list);
 
-	printf("%d", find_vars(&prg, src));
 	ok(find_vars(&prg, src) == 19, "succeed finding nineteen objects.");
 	ok(extract_type(src, "a") == T_UINT, "succeed extracting unsigned type from `a`.");
 	ok(extract_type(src, "b") == T_PTR, "succeed extracting pointer type from `b`.");
