@@ -16,6 +16,7 @@ t/*
 # Profiling
 *.gcda
 *.gcno
+oprofile_data/
 
 # Object files
 *.o
