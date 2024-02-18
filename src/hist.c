@@ -185,7 +185,7 @@ void write_files(struct program *restrict prog)
 	if ((out_fd = fileno(prog->ofile)) < 0)
 		return;
 	/* find buffer length */
-	for (buf_pos = 0, buf_len = 0; prog->src[1].total.buf[buf_pos]; buf_pos++);
+	for (buf_pos = 0; prog->src[1].total.buf[buf_pos]; buf_pos++);
 	buf_len = buf_pos;
 	buf_pos = 0;
 

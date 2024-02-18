@@ -53,7 +53,7 @@ MKALL += Makefile asan.mk
 DEBUG += -O1 -no-pie -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
-CFLAGS += -g3 -std=c11 -fPIC
+CFLAGS += -g3 -std=gnu2x -fPIC
 CFLAGS += -fstack-protector-strong
 CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 CFLAGS += -fno-common -fno-strict-aliasing

@@ -134,7 +134,7 @@ static inline void tty_fix(struct program *restrict prg)
 /* general signal handling function */
 static void sig_handler(int sig)
 {
-	static char const wtf[] = "wtf did you do to the signal mask to hit this return???\n";
+	static char const wtf[] = "wtf did you do to the signal mask to hit this return??\n";
 	int ret;
 	/*
 	 * TODO (?):

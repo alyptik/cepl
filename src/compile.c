@@ -12,6 +12,7 @@
 #include "compile.h"
 #include "parseopts.h"
 #include <linux/memfd.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -23,8 +24,8 @@ struct str_list ld_list;
 static char *const ld_alt_list[] = {
 	"gcc", "-pipe",
 	"-O0", "-fPIC",
-	"-xassembler", "/dev/stdin",
-	"-lm", "-o", "/dev/stdout",
+	"-xassembler", "-",
+	"-lm", "-o/tmp/cepl_program",
 	NULL
 };
 
@@ -32,7 +33,7 @@ extern char **environ;
 
 int compile(char const *restrict src, char *const cc_args[], char *const exec_args[], bool show_errors)
 {
-	int null_fd, mem_fd, status;
+	int null_fd, mem_fd, status, prog_fd;
 	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
 	size_t len = strlen(src);
 
@@ -141,10 +142,13 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	/* child */
 	case 0:
 		reset_handlers();
-		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
-			ERR("%s", "error creating mem_fd");
-		pipe_fd(pipe_exec[0], mem_fd);
-		fexecve(mem_fd, exec_args, environ);
+		/*
+		 * if ((mem_fd = memfd_create("cepl", 0)) == -1)
+		 *         ERR("%s", "error creating mem_fd");
+		 * pipe_fd(pipe_exec[0], mem_fd);
+		 * fexecve(mem_fd, exec_args, environ);
+		 */
+		execve("/tmp/cepl_program", exec_args, environ);
 		/* fexecve() should never return */
 		ERR("%s", "error forking executable");
 		break;
@@ -154,6 +158,8 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		close(pipe_exec[0]);
 		close(null_fd);
 		wait(&status);
+		if (unlink("/tmp/cepl_program") == -1)
+			WARN("%s", "unable to remove /tmp/cepl_program");
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			if (show_errors)

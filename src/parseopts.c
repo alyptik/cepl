@@ -35,16 +35,17 @@ static struct option long_opts[] = {
 };
 static char *const cc_arg_list[] = {
 	"-O0", "-pipe",
-	"-fPIC", "-std=c11",
-	"-S", "-xc", "/dev/stdin",
-	"-o", "/dev/stdout",
+	"-fPIC", "-std=gnu2x",
+	"-xc", "-",
+	"-S", "-o-",
 	NULL
 };
 static char *const ld_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-no-pie",
-	"-xassembler", "/dev/stdin",
-	"-lm", "-o", "/dev/stdout",
+	"-xassembler", "-",
+	"-lm", "-o/tmp/cepl_program",
+	/* "-lm", "-o-", */
 	NULL
 };
 static char *const warn_list[] = {
