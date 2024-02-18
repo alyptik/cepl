@@ -3,8 +3,8 @@
 local curcontext="$curcontext" state line ccs libs
 typeset -A opt_args
 
-ccs=(gcc clang icc)
-libs=(${${$(find -L /lib/ maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib/lib}%.so})
+ccs=(gcc clang)
+libs=(${${$(find -L /lib/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib/lib}%.so})
 
 _arguments -s \
 	{-a,--att=}'[Name of the file to output AT&T-dialect assembler code to.]:file:_files' \
