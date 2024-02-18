@@ -16,7 +16,7 @@ static char *const ld_alt_list[] = {
 	"gcc",
 	"-O0", "-pipe", "-fPIC",
 	"-xassembler", "-",
-	"-lm", "-o", "/dev/stdout",
+	"-lm", "-o/tmp/cepl_program",
 	NULL
 };
 
@@ -633,7 +633,13 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 			ERR("%s", "open()");
 		dup2(null_fd, STDIN_FILENO);
 		dup2(null_fd, STDOUT_FILENO);
-		fexecve(mem_fd, exec_args, environ);
+		/*
+		 * if ((mem_fd = memfd_create("cepl", 0)) == -1)
+		 *         ERR("%s", "error creating mem_fd");
+		 * pipe_fd(pipe_exec[0], mem_fd);
+		 * fexecve(mem_fd, exec_args, environ);
+		 */
+		execve("/tmp/cepl_program", exec_args, environ);
 		/* fexecve() should never return */
 		ERR("%s", "error forking executable");
 		break;
@@ -643,6 +649,8 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		close(pipe_exec[0]);
 		close(null_fd);
 		wait(&status);
+		if (unlink("/tmp/cepl_program") == -1)
+			WARN("%s", "unable to remove /tmp/cepl_program");
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			/* WARNX("executable returned non-zero exit code"); */

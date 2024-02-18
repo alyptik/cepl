@@ -17,17 +17,18 @@ struct str_list comp_list;
 char *input_src[3];
 /* global completion list struct */
 char *const cc_arg_list[] = {
-	"-O0", "-pipe", "-fPIC",
-	"-fverbose-asm", "-std=c11",
-	"-S", "-xc", "-",
-	"-o", "/dev/stdout",
+	"-O0", "-pipe",
+	"-fPIC", "-std=gnu2x",
+	"-xc", "-",
+	"-S", "-o-",
 	NULL
 };
 char *const ld_arg_list[] = {
 	"-O0", "-pipe",
 	"-fPIC", "-no-pie",
 	"-xassembler", "-",
-	"-lm", "-o", "/dev/stdout",
+	"-lm", "-o/tmp/cepl_program",
+	/* "-lm", "-o-", */
 	NULL
 };
 char *const warn_list[] = {

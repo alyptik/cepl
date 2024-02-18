@@ -15,11 +15,11 @@ int main(void)
 	char *const cc_args[] = {
 		"gcc",
 		"-O0", "-pipe",
-		"-fPIC", "-std=c11",
+		"-fPIC", "-std=gnu2x",
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
-		"-S", "-xc", "/dev/stdin",
-		"-lm", "-o", "/dev/stdout",
+		"-S", "-xc", "-",
+		"-lm", "-o-",
 		NULL
 	};
 
