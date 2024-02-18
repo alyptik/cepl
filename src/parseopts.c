@@ -339,6 +339,7 @@ void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
 	/* sanity check filename */
 	if (!elf_file)
 		return;
+
 	/* coordinate API and lib versions */
 	if (elf_version(EV_CURRENT) == EV_NONE)
 		ERR("%s", "libelf out of date");
