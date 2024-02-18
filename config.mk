@@ -55,10 +55,10 @@ DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
 CFLAGS += -g3 -std=gnu2x -fPIC
 CFLAGS += -fstack-protector-strong
-CFLAGS += -fuse-ld=gold -fuse-linker-plugin
+# CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
-LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
-LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
+# LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
+# LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
 
 # vi:ft=make:
