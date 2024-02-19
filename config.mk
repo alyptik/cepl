@@ -50,13 +50,13 @@ LDLIBS += -D_GNU_SOURCE -D_DEFAULT_SOURCE
 LDLIBS += -lreadline -lhistory -lelf
 LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cflags --libs)
 MKALL += Makefile asan.mk
-DEBUG += -O1 -no-pie -D_DEBUG
+DEBUG += -O1 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
-CFLAGS += -g3 -std=gnu2x -fPIC
+CFLAGS += -g3 -std=gnu2x
 CFLAGS += -fstack-protector-strong
 # CFLAGS += -fuse-ld=gold -fuse-linker-plugin
-CFLAGS += -fno-common -fno-strict-aliasing
+# CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
 # LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
 # LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
