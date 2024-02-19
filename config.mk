@@ -41,8 +41,8 @@ WARNINGS := $(RESTRICT) -Wall -Wextra -pedantic				\
 		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
 		-Wshadow -Wstrict-overflow
-IGNORES := -Wno-conversion -Wno-cpp -Wno-discarded-qualifiers		\
-		-Wno-implicit-fallthrough -Wno-inline -Wno-long-long	\
+IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
+	   	-Wno-inline -Wno-long-long				\
 		-Wno-missing-field-initializers -Wno-redundant-decls	\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable -Wno-write-strings
