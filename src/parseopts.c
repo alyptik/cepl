@@ -174,7 +174,7 @@ static inline void copy_compiler(struct program *restrict prog)
 static inline void copy_libs(struct program *restrict prog)
 {
 	char buf[strlen(optarg) + 12];
-	strmv(0, buf, "/lib/lib");
+	strmv(0, buf, "/lib64/lib");
 	strmv(CONCAT, buf, optarg);
 	strmv(CONCAT, buf, ".so");
 	append_str(&prog->lib_list, buf, 0);
