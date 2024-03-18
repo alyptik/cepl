@@ -24,7 +24,7 @@ static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
 /*
- * program source strucs (program_state.src[0] is
+ * program source struct (program_state.src[0] is
  * truncated for interactive printing)
  */
 static struct program program_state;
