@@ -488,7 +488,7 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		/* version flag */
 		case 'v':
 			fprintf(stderr, "%s\n", VERSION_STRING);
-			exit(0);
+			exit(EXIT_SUCCESS);
 			/* unused break */
 			break;
 
@@ -497,7 +497,9 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		case '?':
 		default:
 			fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
-			exit(0);
+			exit(EXIT_SUCCESS);
+			/* unused break */
+			break;
 		}
 	}
 
