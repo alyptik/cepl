@@ -74,7 +74,7 @@
 	";a[tt]\t\t\tToggle -a (output AT&T-dialect assembler code) flag\n\t" \
 	";h[elp]\t\t\tShow help\n\t" \
 	";i[ntel]\t\tToggle -a (output Intel-dialect assembler code) flag\n\t" \
-	";m[acro]\t\tDefine a function (e.g. \";f void bork(void) { puts(\"wark\"); }\")\n\t" \
+	";m[acro]\t\tLine is defined outside of main() (e.g. \";m void bork(void) { puts(\"wark\"); }\")\n\t" \
 	";o[utput]\t\tToggle -o (output C source code) flag\n\t" \
 	";p[arse]\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]\t\t\tExit CEPL\n\t" \
