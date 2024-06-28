@@ -18,7 +18,7 @@ char *input_src[3];
 /* global completion list struct */
 char *const cc_arg_list[] = {
 	"-O0", "-pipe",
-	"-fPIC", "-std=gnu2x",
+	"-fPIC", "-std=gnu23",
 	"-xc", "-",
 	"-S", "-o-",
 	NULL
