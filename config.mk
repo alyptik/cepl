@@ -53,8 +53,8 @@ MKALL += Makefile asan.mk
 DEBUG += -O1 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
-CFLAGS += -g3 -O3 -std=gnu23
-CFLAGS += -fstack-protector-strong
+CFLAGS += -g3 -O3 -march=native -pipe
+CFLAGS += -std=gnu2x -fstack-protector-strong
 # CFLAGS += -fuse-ld=gold -fuse-linker-plugin
 # CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)

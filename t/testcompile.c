@@ -15,7 +15,7 @@ int main(void)
 	char *const cc_args[] = {
 		"gcc",
 		"-O0", "-pipe",
-		"-fPIC", "-std=gnu23",
+		"-fPIC", "-std=gnu2x",
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
 		"-S", "-xc", "-",
