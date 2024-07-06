@@ -4,6 +4,7 @@ cscope.po.out
 tags
 TAGS
 *.swp
+\#*\#
 vgcore*
 
 # Binaries
