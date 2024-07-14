@@ -62,7 +62,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	};
 
 	/* append identifier to regex */
-	xcalloc(char, &regex, 1, regex_sz[0], "extract_type()");
+	xcalloc(&regex, 1, regex_sz[0], "extract_type()");
 	strmv(0, regex, beg_regex);
 	strmv(CONCAT, regex, id);
 	strmv(CONCAT, regex, end_regex);
@@ -88,7 +88,7 @@ enum var_type extract_type(char const *restrict ln, char const *restrict id)
 	regex_sz[1] = matches[3].rm_eo - matches[2].rm_so + matches[5].rm_eo - matches[5].rm_so + 1;
 
 	/* allocate space for second regex */
-	xcalloc(char, &type_str, 1, regex_sz[1], "extract_type()");
+	xcalloc(&type_str, 1, regex_sz[1], "extract_type()");
 	/* copy matched string */
 	memcpy(type_str, ln + matches[2].rm_so, match_sz[0]);
 	memcpy(type_str + match_sz[0], ln + matches[5].rm_so, match_sz[1]);
@@ -248,7 +248,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 				return 0;
 			}
 
-			xcalloc(char, id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
+			xcalloc(id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
 			/* set the output parameter and return the offset */
 			memcpy(*id, ln + matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 			regfree(&reg);
@@ -259,7 +259,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 			return matches[3].rm_eo;
 		}
 
-		xcalloc(char, id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
+		xcalloc(id, 1, matches[3].rm_eo - matches[3].rm_so + 1, "extract_id()");
 		/* set the output parameter and return the offset */
 		memcpy(*id, ln + matches[3].rm_so, matches[3].rm_eo - matches[3].rm_so);
 		regfree(&reg);
@@ -270,7 +270,7 @@ size_t extract_id(char const *restrict ln, char **restrict id, size_t *restrict 
 		return matches[3].rm_eo;
 	}
 
-	xcalloc(char, id, 1, matches[1].rm_eo - matches[1].rm_so + 1, "extract_id()");
+	xcalloc(id, 1, matches[1].rm_eo - matches[1].rm_so + 1, "extract_id()");
 	/* set the output parameter and return the offset */
 	memcpy(*id, ln + matches[1].rm_so, matches[1].rm_eo - matches[1].rm_so);
 	regfree(&reg);
@@ -289,7 +289,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 	/* sanity checks */
 	if (!prog || !code)
 		return -1;
-	xcalloc(char, &line_tmp[0], 1, strlen(code) + 1, "find_vars()");
+	xcalloc(&line_tmp[0], 1, strlen(code) + 1, "find_vars()");
 	line_tmp[1] = line_tmp[0];
 
 	/* initialize lists */
@@ -387,7 +387,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("%s", "`null_fd` open()");
 	/* copy source buffer */
-	xcalloc(char, &src_tmp, 1, strlen(prog->src[1].total.buf) + 1, "src_tmp realloc()");
+	xcalloc(&src_tmp, 1, strlen(prog->src[1].total.buf) + 1, "src_tmp realloc()");
 	strmv(0, src_tmp, prog->src[1].total.buf);
 	size_t off = strlen(prog->src[1].total.buf);
 
@@ -409,7 +409,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 			strmv(0, print_tmp, print_beg);
 		else
 			strmv(0, print_tmp, println_beg);
-		xrealloc(char, &src_tmp, strlen(src_tmp) + cur_sz + printf_sz, "src_tmp realloc()");
+		xrealloc(&src_tmp, strlen(src_tmp) + cur_sz + printf_sz, "src_tmp realloc()");
 
 		/* build format string */
 		switch (cur_type) {

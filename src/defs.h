@@ -28,28 +28,28 @@
 #define arr_len(arr)		((sizeof (arr)) / (sizeof *(arr)))
 #define printe(fmt, ...)	fprintf(stderr, "\033[92m" fmt "\033[00m", __VA_ARGS__)
 /* `malloc()` wrapper */
-#define xmalloc(type, ptr, sz, msg) \
+#define xmalloc(ptr, sz, msg) \
 	do { \
 		void *tmp = malloc(sz); \
 		if (!tmp) \
 			ERR("%s", (msg)); \
-		*(type **)ptr = tmp; \
+		*ptr = tmp; \
 	} while (0)
 /* `calloc()` wrapper */
-#define xcalloc(type, ptr, nmemb, sz, msg) \
+#define xcalloc(ptr, nmemb, sz, msg) \
 	do { \
 		void *tmp = calloc((nmemb), (sz)); \
 		if (!tmp) \
 			ERR("%s", (msg)); \
-		*(type **)ptr = tmp; \
+		*ptr = tmp; \
 	} while (0)
 /* `realloc()` wrapper */
-#define xrealloc(type, ptr, sz, msg) \
+#define xrealloc(ptr, sz, msg) \
 	do { \
-		void *tmp[2] = {0, *(type **)ptr}; \
+		void *tmp[2] = {0, *ptr}; \
 		if (!(tmp[0] = realloc(tmp[1], sz))) \
 			ERR("%s", (msg)); \
-		*(type **)ptr = tmp[0]; \
+		*ptr = tmp[0]; \
 	} while (0)
 
 /* global version and usage strings */
@@ -309,11 +309,11 @@ static inline void init_str_list(struct str_list *restrict list_struct, char *re
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(char, &list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
+	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "list_ptr calloc()");
 	if (!init_str)
 		return;
 	list_struct->cnt++;
-	xcalloc(char, &list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_str_list()");
+	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(init_str) + 1, "init_str_list()");
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
 }
 
@@ -325,13 +325,13 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
-		xrealloc(char, &list_struct->list, sizeof *list_struct->list * list_struct->max, "append_str()");
+		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_str()");
 	}
 	if (!string) {
 		list_struct->list[list_struct->cnt - 1] = NULL;
 		return;
 	}
-	xcalloc(char, &list_struct->list[list_struct->cnt - 1], 1, strlen(string) + pad + 1, "append_str()");
+	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(string) + pad + 1, "append_str()");
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
 }
 
@@ -339,7 +339,7 @@ static inline void init_type_list(struct type_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(int, &list_struct->list, 1, sizeof *list_struct->list, "init_type_list()");
+	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "init_type_list()");
 }
 
 static inline void append_type(struct type_list *restrict list_struct, enum var_type type_spec)
@@ -347,7 +347,7 @@ static inline void append_type(struct type_list *restrict list_struct, enum var_
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
-		xrealloc(int, &list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
+		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
 	}
 	list_struct->list[list_struct->cnt - 1] = type_spec;
 }
@@ -356,7 +356,7 @@ static inline void init_flag_list(struct flag_list *restrict list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
-	xcalloc(int, &list_struct->list, 1, sizeof *list_struct->list, "init_flag_list()");
+	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "init_flag_list()");
 	list_struct->cnt++;
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
@@ -366,7 +366,7 @@ static inline void append_flag(struct flag_list *restrict list_struct, enum src_
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;
-		xrealloc(int, &list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
+		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_flag()");
 	}
 	list_struct->list[list_struct->cnt - 1] = flag;
 }

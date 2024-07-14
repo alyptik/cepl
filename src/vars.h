@@ -34,9 +34,9 @@ static inline void init_var_list(struct var_list *restrict var_list)
 	char init_str[] = "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL";
 	var_list->cnt = 0;
 	var_list->max = 1;
-	xcalloc(char, &var_list->list, 1, sizeof *var_list->list, "init_prog->var_list()");
+	xcalloc(&var_list->list, 1, sizeof *var_list->list, "init_prog->var_list()");
 	var_list->cnt++;
-	xcalloc(char, &var_list->list[var_list->cnt - 1].id, 1, strlen(init_str) + 1, "init_prog->var_list");
+	xcalloc(&var_list->list[var_list->cnt - 1].id, 1, strlen(init_str) + 1, "init_prog->var_list");
 	strmv(0, var_list->list[var_list->cnt - 1].id, init_str);
 	var_list->list[var_list->cnt - 1].type_spec = T_ERR;
 }
@@ -48,9 +48,9 @@ static inline void append_var(struct var_list *restrict var_list, char const *re
 	/* realloc if cnt reaches current size */
 	if (++var_list->cnt >= var_list->max) {
 		var_list->max *= 2;
-		xrealloc(char, &var_list->list, sizeof *var_list->list * var_list->max, "append_var()");
+		xrealloc(&var_list->list, sizeof *var_list->list * var_list->max, "append_var()");
 	}
-	xcalloc(char, &var_list->list[var_list->cnt - 1].id, 1, strlen(id) + 1, "append_var()");
+	xcalloc(&var_list->list[var_list->cnt - 1].id, 1, strlen(id) + 1, "append_var()");
 	strmv(0, var_list->list[var_list->cnt - 1].id, id);
 	var_list->list[var_list->cnt - 1].type_spec = type_spec;
 }

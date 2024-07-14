@@ -79,7 +79,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
 	char tmp_buf[PAGE_SIZE];
 	for (size_t i = 0; i < arr_len(prog->input_src); i++) {
-		xmalloc(char, &prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
+		xmalloc(&prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
 		prog->input_src[i][0] = 0;
 	}
 
@@ -103,7 +103,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 			if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
 				buf_ptr = tmp_buf;
 				sz[0] += strlen(tmp_buf);
-				xrealloc(char, &prog->input_src[0], sz[0], "xrealloc(char)");
+				xrealloc(&prog->input_src[0], sz[0], "xrealloc(char)");
 				strmv(CONCAT, prog->input_src[0], tmp_buf);
 				break;
 			}
@@ -116,7 +116,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 			if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
 				buf_ptr = tmp_buf;
 				sz[1] += strlen(tmp_buf);
-				xrealloc(char, &prog->input_src[1], sz[1], "xrealloc(char)");
+				xrealloc(&prog->input_src[1], sz[1], "xrealloc(char)");
 				strmv(CONCAT, prog->input_src[1], tmp_buf);
 				if (!after_main_signature) {
 					after_main_signature = true;
@@ -137,7 +137,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 		case IN_EPILOGUE:
 			buf_ptr = tmp_buf;
 			sz[2] += strlen(tmp_buf);
-			xrealloc(char, &prog->input_src[2], sz[2], "xrealloc(char)");
+			xrealloc(&prog->input_src[2], sz[2], "xrealloc(char)");
 			strmv(CONCAT, prog->input_src[2], tmp_buf);
 			break;
 		}
@@ -232,7 +232,7 @@ static inline void copy_asm_filename(struct program *restrict prog, char **asm_f
 {
 	/* asm output flag */
 	if (prog->sflags.asm_flag && *asm_file && !prog->asm_filename) {
-		xcalloc(char, &prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
+		xcalloc(&prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
 		strmv(0, prog->asm_filename, *asm_file);
 		if (!strcmp(prog->cc_list.list[0], "icc"))
 			*asm_choice = ATT;
@@ -247,7 +247,7 @@ static inline void set_out_file(struct program *restrict prog, char *restrict ou
 	/* output file flag */
 	if (prog->sflags.out_flag) {
 		if (out_name && !prog->out_filename) {
-			xcalloc(char, &prog->out_filename, 1, strlen(out_name) + 1, "prog->out_filename calloc()");
+			xcalloc(&prog->out_filename, 1, strlen(out_name) + 1, "prog->out_filename calloc()");
 			strmv(0, prog->out_filename, out_name);
 		}
 		if (prog->ofile)

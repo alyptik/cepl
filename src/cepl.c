@@ -311,7 +311,7 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 			+ strlen(ln_bin_pre) + strlen(ln_bin) + strlen(ln_bin_end)
 			+ strlen(temp.list[i]) * 2;
 		/* initialize source buffers */
-		xcalloc(char, &prg.cur_line, 1, sz, "eval_line() calloc");
+		xcalloc(&prg.cur_line, 1, sz, "eval_line() calloc");
 		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s%s%s%s", ln_beg,
 				ln_long[0], temp.list[i], ln_long[1],
 				ln_hex[0], temp.list[i], ln_hex[1],
@@ -427,7 +427,7 @@ static inline void toggle_output_file(char *tbuf)
 		free(program_state.out_filename);
 		program_state.out_filename = NULL;
 	}
-	xcalloc(char, &program_state.out_filename, 1, strlen(tbuf) + 1, "program_state.out_filename calloc()");
+	xcalloc(&program_state.out_filename, 1, strlen(tbuf) + 1, "program_state.out_filename calloc()");
 	strmv(0, program_state.out_filename, tbuf);
 	write_files(&program_state);
 }

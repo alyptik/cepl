@@ -242,9 +242,9 @@ void free_buffers(struct program *restrict prog)
 void init_buffers(struct program *restrict prog)
 {
 	/* user is truncated source for display */
-	xcalloc(char, &prog->src[0].funcs.buf, 1, 1, "init");
-	xcalloc(char, &prog->src[0].body.buf, 1, strlen(prog_start_user) + 1, "init");
-	xcalloc(char, &prog->src[0].total.buf, 1,
+	xcalloc(&prog->src[0].funcs.buf, 1, 1, "init");
+	xcalloc(&prog->src[0].body.buf, 1, strlen(prog_start_user) + 1, "init");
+	xcalloc(&prog->src[0].total.buf, 1,
 			strlen(prologue)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3, "init");
@@ -254,9 +254,9 @@ void init_buffers(struct program *restrict prog)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	xcalloc(char, &prog->src[1].funcs.buf, 1, strlen(prologue) + 1, "init");
-	xcalloc(char, &prog->src[1].body.buf, 1, strlen(prog_start) + 1, "init");
-	xcalloc(char, &prog->src[1].total.buf, 1, strlen(prologue)
+	xcalloc(&prog->src[1].funcs.buf, 1, strlen(prologue) + 1, "init");
+	xcalloc(&prog->src[1].body.buf, 1, strlen(prog_start) + 1, "init");
+	xcalloc(&prog->src[1].total.buf, 1, strlen(prologue)
 			+ strlen(prog_start)
 			+ strlen(prog_end) + 3, "init");
 	prog->src[1].funcs.size = prog->src[1].funcs.max = strlen(prologue) + 1;
@@ -295,7 +295,7 @@ size_t resize_sect(struct program *restrict prog, struct source_section *restric
 	size_t alloc_sz = strlen(sect->buf) + strlen(prog->cur_line) + off + 1;
 	if (!sect->size || !sect->max) {
 		/* current length + line length + extra characters + \0 */
-		xrealloc(char, &sect->buf, alloc_sz, "rsz_buf()");
+		xrealloc(&sect->buf, alloc_sz, "rsz_buf()");
 		return alloc_sz;
 	}
 	sect->size += alloc_sz;
@@ -305,7 +305,7 @@ size_t resize_sect(struct program *restrict prog, struct source_section *restric
 	/* double until size is reached */
 	while ((sect->max <<= 1) < sect->size);
 	/* current length + line length + extra characters + \0 */
-	xrealloc(char, &sect->buf, sect->max, "rsz_buf()");
+	xrealloc(&sect->buf, sect->max, "rsz_buf()");
 	return sect->size;
 }
 

@@ -55,7 +55,7 @@ int main (void)
 	plan(14);
 
 	using_history();
-	xcalloc(char, &prg.cur_line, 1, EVAL_LIMIT, "lptr calloc()");
+	xcalloc(&prg.cur_line, 1, EVAL_LIMIT, "lptr calloc()");
 	strmv(0, prg.cur_line, "int foobar");
 	prg.asm_filename = asm_error;
 
