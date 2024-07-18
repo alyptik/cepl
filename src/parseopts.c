@@ -162,11 +162,6 @@ static inline void copy_compiler(struct program *restrict prog)
 			prog->cc_list.list[0] = tmp_arg;
 			memset(prog->cc_list.list[0], 0, strlen(optarg) + 1);
 		}
-		/* use gcc to generate assembler if compiling with clang  */
-		if (!strcmp("clang", optarg)) {
-			strmv(0, prog->cc_list.list[0], "gcc");
-			return;
-		}
 		strmv(0, prog->cc_list.list[0], optarg);
 	}
 }
