@@ -46,7 +46,6 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable -Wno-write-strings
 LDLIBS += -lreadline -lhistory -lelf
-LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cflags --libs)
 DEBUG += -g3 -O0 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
