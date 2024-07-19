@@ -87,7 +87,8 @@
 	(struct state_flags){ \
 		.asm_flag = false, .eval_flag = false, .exec_flag = false, \
 		.in_flag = false, .out_flag = false, .parse_flag = true, \
-		.track_flag = true, .warn_flag = false, .hist_flag = false, \
+		.track_flag = true, .warn_flag = false, .cxx_flag = false, \
+		.hist_flag = false, \
 	}
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
@@ -170,7 +171,7 @@ struct source_code {
 struct state_flags {
 	bool asm_flag, eval_flag;
 	bool exec_flag, parse_flag;
-	bool track_flag, warn_flag;
+	bool track_flag, warn_flag, cxx_flag;
 	bool in_flag, out_flag, hist_flag;
 };
 
@@ -187,7 +188,7 @@ struct program {
 	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;
-	struct str_list cc_list, ld_list;
+	struct str_list cc_list;
 	struct str_list lib_list, sym_list;
 	struct str_list id_list;
 	struct type_list type_list;

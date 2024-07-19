@@ -20,15 +20,6 @@
 /* global linker arguments struct */
 struct str_list ld_list;
 
-/* fallback linker arg array */
-static char *const ld_alt_list[] = {
-	"gcc", "-pipe",
-	"-O0", "-fPIC",
-	"-xassembler", "-",
-	"-lm", "-o/tmp/cepl_program",
-	NULL
-};
-
 extern char **environ;
 
 int compile(char const *restrict src, char *const cc_args[], char *const exec_args[], bool show_errors)
@@ -90,43 +81,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			if (show_errors)
 				WARNX("%s", "compiler returned non-zero exit code");
-			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
-		}
-	}
-
-	/* fork linker */
-	switch (fork()) {
-	/* error */
-	case -1:
-		close(pipe_ld[0]);
-		close(pipe_exec[0]);
-		close(pipe_exec[1]);
-		ERR("%s", "error forking linker");
-		break;
-
-	/* child */
-	case 0:
-		if (!show_errors)
-			dup2(null_fd, STDERR_FILENO);
-		dup2(pipe_ld[0], STDIN_FILENO);
-		dup2(pipe_exec[1], STDOUT_FILENO);
-		if (ld_list.list)
-			execvp(ld_list.list[0], ld_list.list);
-		/* fallback linker exec */
-		execvp(ld_alt_list[0], ld_alt_list);
-		/* execvp() should never return */
-		ERR("%s", "error forking linker");
-		break;
-
-	/* parent */
-	default:
-		close(pipe_ld[0]);
-		close(pipe_exec[1]);
-		wait(&status);
-		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
-		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			if (show_errors)
-				WARNX("%s", "linker returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
