@@ -52,7 +52,7 @@ int main (void)
 {
 	int saved_fd = dup(STDERR_FILENO);
 	struct program prg = {0};
-	plan(14);
+	plan(13);
 
 	using_history();
 	xcalloc(&prg.cur_line, 1, EVAL_LIMIT, "lptr calloc()");
@@ -81,9 +81,6 @@ int main (void)
 
 	/* cleanup */
 	close(STDERR_FILENO);
-	ok(write_asm(&prg, cc_arg_list) == -1, "test return of -1 on failed `write_asm()`.");
-	dup2(saved_fd, STDERR_FILENO);
-	prg.asm_filename = NULL;
 	lives_ok({free_buffers(&prg);}, "test successful free_buffers() call.");
 	saved_fd = dup(STDIN_FILENO);
 	close(STDIN_FILENO);

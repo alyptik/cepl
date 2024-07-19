@@ -53,7 +53,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-6.3.1"
+#define VERSION_STRING	"cepl-8.0.0"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
@@ -85,10 +85,9 @@
 /* option default initializer */
 #define STATE_FLAG_DEF_INIT \
 	(struct state_flags){ \
-		.asm_flag = false, .eval_flag = false, .exec_flag = false, \
-		.in_flag = false, .out_flag = false, .parse_flag = true, \
-		.track_flag = true, .warn_flag = false, .cxx_flag = false, \
-		.hist_flag = false, \
+		.eval_flag = false, .exec_flag = false, .in_flag = false, \
+		.out_flag = false, .parse_flag = true, .track_flag = true, \
+		.warn_flag = false, .cxx_flag = false, .hist_flag = false, \
 	}
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
@@ -113,11 +112,6 @@ enum src_flag {
 /* input src state */
 enum scan_state {
 	IN_PROLOGUE, IN_MIDDLE, IN_EPILOGUE,
-};
-
-/* asm dialect */
-enum asm_type {
-	NONE, ATT, INTEL,
 };
 
 /* possible types of tracked variable */
@@ -169,7 +163,7 @@ struct source_code {
 
 /* struct definition for state flags */
 struct state_flags {
-	bool asm_flag, eval_flag;
+	bool eval_flag;
 	bool exec_flag, parse_flag;
 	bool track_flag, warn_flag, cxx_flag;
 	bool in_flag, out_flag, hist_flag;

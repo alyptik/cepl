@@ -31,7 +31,6 @@ static struct program program_state;
 
 /* string to compile */
 extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
-extern enum asm_type asm_dialect;
 
 static inline char *read_line(struct program *restrict prog)
 {
@@ -343,64 +342,6 @@ static void eval_line(int argc, char **restrict argv, char const *restrict optst
 	close(null_fd);
 }
 
-static inline void toggle_att(char *tbuf)
-{
-	/* if file was open, flip it and break early */
-	if (program_state.sflags.asm_flag) {
-		program_state.sflags.asm_flag ^= true;
-		return;
-	}
-	program_state.sflags.asm_flag ^= true;
-	tbuf = strpbrk(program_state.cur_line, " \t");
-	/* return if file name empty */
-	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
-		/* reset flag */
-		program_state.sflags.asm_flag ^= true;
-		return;
-	}
-	/* increment pointer to start of definition */
-	tbuf += strspn(tbuf, " \t");
-	if (program_state.asm_filename) {
-		free(program_state.asm_filename);
-		program_state.asm_filename = NULL;
-	}
-	if (!(program_state.asm_filename = calloc(1, strlen(tbuf) + 1)))
-		ERR("%s", "error during program_state.asm_filename calloc()");
-	strmv(0, program_state.asm_filename, tbuf);
-	free_buffers(&program_state);
-	init_buffers(&program_state);
-	asm_dialect = ATT;
-}
-
-static inline void toggle_intel(char *tbuf)
-{
-	/* if file was open, flip it and break early */
-	if (program_state.sflags.asm_flag) {
-		program_state.sflags.asm_flag ^= true;
-		return;
-	}
-	program_state.sflags.asm_flag ^= true;
-	tbuf = strpbrk(program_state.cur_line, " \t");
-	/* return if file name empty */
-	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
-		/* reset flag */
-		program_state.sflags.asm_flag ^= true;
-		return;
-	}
-	/* increment pointer to start of definition */
-	tbuf += strspn(tbuf, " \t");
-	if (program_state.asm_filename) {
-		free(program_state.asm_filename);
-		program_state.asm_filename = NULL;
-	}
-	if (!(program_state.asm_filename = calloc(1, strlen(tbuf) + 1)))
-		ERR("%s", "error during program_state.asm_filename calloc()");
-	strmv(0, program_state.asm_filename, tbuf);
-	free_buffers(&program_state);
-	init_buffers(&program_state);
-	asm_dialect = INTEL;
-}
-
 static inline void toggle_output_file(char *tbuf)
 {
 	/* if file was open, flip it and break early */
@@ -639,7 +580,6 @@ static inline void build_hist_name(void)
 
 static inline void save_flag_state(struct state_flags *restrict sflags)
 {
-	sflags->asm_flag = program_state.sflags.asm_flag;
 	sflags->eval_flag = program_state.sflags.eval_flag;
 	sflags->exec_flag = program_state.sflags.exec_flag;
 	sflags->in_flag = program_state.sflags.in_flag;
@@ -651,7 +591,6 @@ static inline void save_flag_state(struct state_flags *restrict sflags)
 
 static inline void restore_flag_state(struct state_flags *restrict sflags)
 {
-	program_state.sflags.asm_flag = sflags->asm_flag;
 	program_state.sflags.eval_flag = sflags->eval_flag;
 	program_state.sflags.exec_flag = sflags->exec_flag;
 	program_state.sflags.in_flag = sflags->in_flag;
@@ -664,7 +603,7 @@ static inline void restore_flag_state(struct state_flags *restrict sflags)
 int main(int argc, char **argv)
 {
 	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
-	char const *const optstring = "hptvwc:a:f:e:i:l:I:o:";
+	char const *const optstring = "hptvwc:f:e:l:I:o:";
 
 	/* initialize compiler arg array */
 	build_hist_name();
@@ -739,22 +678,6 @@ int main(int argc, char **argv)
 			/* pop last history statement */
 			case 'u':
 				undo_last_line();
-				break;
-
-			/* toggle writing at&t-dialect asm output */
-			case 'a':
-				restore_flag_state(&saved_flags);
-				toggle_att(stripped);
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
-
-			/* toggle writing intel-dialect asm output */
-			case 'i':
-				restore_flag_state(&saved_flags);
-				toggle_intel(stripped);
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle output file writing */

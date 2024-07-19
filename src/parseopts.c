@@ -17,15 +17,11 @@
 #include <regex.h>
 
 /* globals */
-enum asm_type asm_dialect = NONE;
-
 static struct option long_opts[] = {
-	{"att", required_argument, 0, 'a'},
 	{"cc", required_argument, 0, 'c'},
 	{"eval", required_argument, 0, 'e'},
 	{"file", required_argument, 0, 'f'},
 	{"help", no_argument, 0, 'h'},
-	{"intel", required_argument, 0, 'i'},
 	{"output", required_argument, 0, 'o'},
 	{"parse", no_argument, 0, 'p'},
 	{"tracking", no_argument, 0, 't'},
@@ -51,10 +47,6 @@ static char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
 	"-pedantic",
-	NULL
-};
-static char *const asm_list[] = {
-	"ERROR", "-masm=att", "-masm=intel",
 	NULL
 };
 static int option_index;
@@ -181,28 +173,6 @@ static inline void copy_libs(struct program *restrict prog)
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-l", 2);
 }
 
-static inline void set_att_flag(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
-{
-	if (*asm_file)
-		ERRX("%s", "too many output files specified");
-	if (*asm_choice)
-		ERRX("%s", "more than one assembler dialect specified");
-	*asm_choice = ATT;
-	*asm_file = optarg;
-	prog->sflags.asm_flag ^= true;
-}
-
-static inline void set_intel_flag(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
-{
-	if (*asm_file)
-		ERRX("%s", "too many output files specified");
-	if (*asm_choice)
-		ERRX("%s", "more than one assembler dialect specified");
-	*asm_choice = INTEL;
-	*asm_file = optarg;
-	prog->sflags.asm_flag ^= true;
-}
-
 static inline void copy_eval_code(struct program *restrict prog)
 {
 	if (strlen(optarg) > sizeof prog->eval_arg)
@@ -223,20 +193,6 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 		ERRX("%s", "too many output files specified");
 	*out_name = optarg;
 	prog->sflags.out_flag ^= true;
-}
-
-static inline void copy_asm_filename(struct program *restrict prog, char **asm_file, enum asm_type *asm_choice)
-{
-	/* asm output flag */
-	if (prog->sflags.asm_flag && *asm_file && !prog->asm_filename) {
-		xcalloc(&prog->asm_filename, 1, strlen(*asm_file) + 1, "prog->asm_filename calloc()");
-		strmv(0, prog->asm_filename, *asm_file);
-		if (!strcmp(prog->cc_list.list[0], "icc"))
-			*asm_choice = ATT;
-		if (!asm_dialect)
-			asm_dialect = *asm_choice;
-		append_str(&prog->cc_list, asm_list[*asm_choice], 0);
-	}
 }
 
 static inline void set_out_file(struct program *restrict prog, char *restrict out_name)
@@ -379,7 +335,6 @@ void parse_libs(struct str_list *restrict symbols, char **restrict libs)
 char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
-	enum asm_type asm_choice = NONE;
 	char *out_name = NULL, *in_file = NULL, *asm_file = NULL;
 	/* cleanup previous allocations */
 	free_str_list(&prog->cc_list);
@@ -414,11 +369,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			parse_input_file(prog, &in_file);
 			break;
 
-		/* at&t asm style */
-		case 'a':
-			set_att_flag(prog, &asm_file, &asm_choice);
-			break;
-
 		/* specify compiler */
 		case 'c':
 			copy_compiler(prog);
@@ -427,11 +377,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		/* eval string */
 		case 'e':
 			copy_eval_code(prog);
-			break;
-
-		/* intel asm style */
-		case 'i':
-			set_intel_flag(prog, &asm_file, &asm_choice);
 			break;
 
 		case 'I':
@@ -482,7 +427,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		}
 	}
 
-	copy_asm_filename(prog, &asm_file, &asm_choice);
 	set_out_file(prog, out_name);
 	/* c compiler */
 	if (!prog->sflags.cxx_flag)

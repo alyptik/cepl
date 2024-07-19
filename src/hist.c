@@ -95,79 +95,12 @@ void cleanup(struct program *restrict prog)
 	prog->hist_file = NULL;
 	free(prog->out_filename);
 	prog->out_filename = NULL;
-	free(prog->asm_filename);
-	prog->asm_filename = NULL;
 	for (size_t i = 0; i < arr_len(prog->input_src); i++) {
 		free(prog->input_src[i]);
 		prog->input_src[i] = NULL;
 	}
 	if (isatty(STDIN_FILENO) && !prog->sflags.eval_flag)
 		printf("\n%s\n\n", "Terminating program.");
-}
-
-int write_asm(struct program *restrict prog, char *const *restrict cc_args)
-{
-	/* return early if no file open */
-	if (!prog->sflags.asm_flag || !prog->asm_filename || !*prog->asm_filename || !prog->src[1].total.buf)
-		return -1;
-
-	size_t buf_len = strlen(prog->src[1].total.buf) + 1;
-	int pipe_cc[2], asm_fd, status;
-	char src_buffer[buf_len];
-
-	if (buf_len < 2)
-		ERRX("%s", "empty source passed to write_asm()");
-	/* add trailing '\n' */
-	memcpy(src_buffer, prog->src[1].total.buf, buf_len - 1);
-	src_buffer[buf_len - 1] = '\n';
-	/* create pipe */
-	if (pipe2(pipe_cc, O_CLOEXEC) < 0)
-		ERR("%s", "error making pipe_cc pipe");
-	if ((asm_fd = open(prog->asm_filename, O_WRONLY|O_CREAT|O_TRUNC, S_IWUSR|S_IRUSR|S_IRGRP|S_IROTH)) < 0) {
-		close(pipe_cc[0]);
-		close(pipe_cc[1]);
-		WARN("%s", "error opening asm output file");
-		return -1;
-	}
-
-	/* fork compiler */
-	switch (fork()) {
-	/* error */
-	case -1:
-		close(pipe_cc[0]);
-		close(pipe_cc[1]);
-		close(asm_fd);
-		ERR("%s", "error forking compiler");
-		break;
-
-	/* child */
-	case 0:
-		reset_handlers();
-		dup2(pipe_cc[0], STDIN_FILENO);
-		dup2(asm_fd, STDOUT_FILENO);
-		execvp(cc_args[0], cc_args);
-		/* execvp() should never return */
-		ERR("%s", "error forking compiler");
-		break;
-
-	/* parent */
-	default:
-		close(pipe_cc[0]);
-		if (write(pipe_cc[1], src_buffer, sizeof src_buffer) < 0)
-			ERR("%s", "error writing to pipe_cc[1]");
-		close(pipe_cc[1]);
-		wait(&status);
-		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
-		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			WARNX("%s", "compiler returned non-zero exit code");
-			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
-		}
-	}
-
-	fsync(asm_fd);
-	close(asm_fd);
-	/* program returned success */
-	return 0;
 }
 
 void write_files(struct program *restrict prog)
@@ -178,7 +111,6 @@ void write_files(struct program *restrict prog)
 	/* write out history/asm output */
 	if (prog->sflags.hist_flag && write_history(prog->hist_file))
 		WARN("%s", "write_history()");
-	write_asm(prog, prog->cc_list.list);
 	/* return early if no file open */
 	if (!prog->sflags.out_flag || !prog->ofile || !prog->src[1].total.buf)
 		return;
