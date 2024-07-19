@@ -2,7 +2,7 @@
 
 ![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
 
-An interactive C (ISO/IEC 9899:2011) read–eval–print loop (REPL) currently
+An interactive C and C++ read–eval–print loop (REPL) currently
 supporting multiple compilers, readline key-bindings/tab-completion,
 incremental undo, and assembler source code output.
 
@@ -43,7 +43,6 @@ Command history is read from and saved to `~/.cepl_history`.
 Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 
 	;a[tt]			Toggle -a (output AT&T-dialect assembler code) flag
-	;f[unction]		Define a function (e.g. ";f void bork(void) { puts("wark"); }")
 	;h[elp]			Show help
 	;i[ntel]		Toggle -i (output Intel-dialect assembler code) flag
 	;m[acro]		Define a macro (e.g. ";m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))")

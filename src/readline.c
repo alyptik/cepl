@@ -25,8 +25,8 @@ char *comp_arg_list[] = {
 	"__attribute__(", "malloc(", "calloc(", "free(", "memcpy(",
 	"memset(", "memcmp(", "fread(", "fwrite(", "strcat(", "strtok(",
 	"strcpy(", "strlen(", "puts(", "system(", "fopen(", "fclose(",
-	"sprintf(", "printf(", "scanf(", ";att", ";function", ";help",
-	";intel", ";macro", ";output", ";parse", ";quit", ";reset",
+	"sprintf(", "printf(", "scanf(", ";att", ";help", ";intel",
+	";macro", ";output", ";parse", ";quit", ";reset",
 	";tracking", ";undo", ";warnings", "typeof(", NULL
 };
 /* global completion list struct */
