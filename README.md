@@ -1,4 +1,4 @@
-# CEPL - *C Read-Eval-Print Loop*
+# CEPL - *A C and C++ Read-Eval-Print Loop*
 
 ![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
 
