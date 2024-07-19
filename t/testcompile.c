@@ -18,8 +18,8 @@ int main(void)
 		"-fPIC", "-std=gnu2x",
 		"-Wall", "-Wextra",
 		"-pedantic-errors",
-		"-S", "-xc", "-",
-		"-lm", "-o-",
+		"-xc", "-",
+		"-lm", "-o/tmp/cepl_program",
 		NULL
 	};
 
