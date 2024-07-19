@@ -5,7 +5,7 @@
 # See LICENSE.md file for copyright and license details.
 
 # add -Wrestrict if using gcc7 or higher
-RESTRICT := $(shell gcc -v 2>&1 | awk '/version/ { if (substr($$3, 1, 1) > 6) { print "-Wrestrict"; } }')
+RESTRICT := -Wrestrict
 
 # optional
 DESTDIR ?=
@@ -26,8 +26,7 @@ UTEST = $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
 HDR := $(wildcard src/*.h) $(wildcard t/*.h)
-ASAN := -fsanitize=address,alignment,leak,undefined
-CPPFLAGS := -D_FORTIFY_SOURCE=2 -D_GNU_SOURCE -MMD -MP
+CPPFLAGS := -D_GNU_SOURCE -MMD -MP
 VENDOR := vendor
 CONTRIB := contrib
 BINDIR := bin
@@ -48,7 +47,7 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
 		-Wno-unused-variable -Wno-write-strings
 LDLIBS += -lreadline -lhistory -lelf
 LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cflags --libs)
-DEBUG += -O1 -D_DEBUG
+DEBUG += -g3 -O0 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
 CFLAGS += -std=gnu2x -fstack-protector-strong
