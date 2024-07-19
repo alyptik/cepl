@@ -14,7 +14,7 @@ incremental undo, and assembler source code output.
 
 ## Usage
 ```bash
-./cepl [-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] [-l<libs>] [-I<includes>] [-o<out.c>]
+./cepl [-hptvw] [-c<compiler>] [-e<code>] [-l<libs>] [-I<includes>] [-o<out.c>]
 ```
 
 Run `make` then `./cepl` to start the interactive REPL.
