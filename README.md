@@ -23,6 +23,8 @@ The following environment variables are respected: `CFLAGS`, `LDFLAGS`, `LDLIBS`
 
 Command history is read from and saved to `~/.cepl_history`.
 
+To switch between C/C++ modes, specify your compiler with `-c`.
+
 #### CEPL understands the following options:
 
 	-c, --cc		Specify alternate compiler
