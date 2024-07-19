@@ -46,12 +46,6 @@ uninstall:
 	$(RM) $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
 	$(RM) $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
 	$(RM) $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
-dist: clean
-	@echo "[creating dist tarball]"
-	mkdir -p $(TARGET)/
-	cp -R LICENSE.md Makefile README.md $(HDR) $(SRC) $(TSRC) $(MANPAGE) $(TARGET)/
-	tar -czf $(TARGET).tar.gz $(TARGET)/
-	$(RM) -r $(TARGET)/
 cscope:
 	@echo "[creating cscope database]"
 	$(RM) cscope.*
