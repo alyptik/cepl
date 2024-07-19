@@ -46,19 +46,12 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
 		-Wno-missing-field-initializers -Wno-redundant-decls	\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable -Wno-write-strings
-LDLIBS += -D_GNU_SOURCE -D_DEFAULT_SOURCE
 LDLIBS += -lreadline -lhistory -lelf
 LDLIBS += $(shell pkg-config ncursesw --cflags --libs || pkg-config ncurses --cflags --libs)
-MKALL += Makefile asan.mk
 DEBUG += -O1 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
-CFLAGS += -g3 -O3 -march=native -pipe
 CFLAGS += -std=gnu2x -fstack-protector-strong
-# CFLAGS += -fuse-ld=gold -fuse-linker-plugin
-# CFLAGS += -fno-common -fno-strict-aliasing
 CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
-# LDFLAGS += -Wl,-O3,-z,relro,-z,now,-z,noexecstack
-# LDFLAGS += $(filter-out $(WARNINGS),$(CFLAGS))
 
 # vi:ft=make:

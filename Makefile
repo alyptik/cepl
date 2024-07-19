@@ -11,7 +11,7 @@ all:
 MKCFG := config.mk
 export C_INCLUDE_PATH=$(READLINE)/include
 -include $(DEP) $(MKCFG)
-.PHONY: all check clean debug dist install test uninstall $(MKALL)
+.PHONY: all check clean debug dist install test uninstall
 
 debug:
 	$(MAKE) $(TARGET) check OLVL= CFLAGS="$(DEBUG_CFLAGS)" LDFLAGS="$(DEBUG_LDFLAGS)"
