@@ -88,32 +88,25 @@ char const *prog_end =
 
 int main (void)
 {
-	char const optstring[] = "hptvwc:a:e:f:i:l:I:o:";
+	char const optstring[] = "hptvwc:e:f:l:I:o:";
 	char *libs[] = {"ssl", "readline", NULL};
 	struct program prg = {0};
-	char *out_filename = NULL, *asm_filename = NULL, **result;
+	char *out_filename = NULL, **result;
 	ptrdiff_t ret;
 	char out_tmp[] = "/tmp/ceplXXXXXX";
 	char out_fallback[] = "./ceplXXXXXX";
-	char asm_tmp[] = "/tmp/cepl_asmXXXXXX";
-	char asm_fallback[] = "./cepl_asmXXXXXX";
 	int tmp_fd[2];
-	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1 || (tmp_fd[1] = mkstemp(asm_tmp)) == -1) {
+	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1) {
 		memset(out_tmp, 0, sizeof out_tmp);
 		memcpy(out_tmp, out_fallback, sizeof out_fallback);
 		WARN("%s\n%s", "failed calling mkstemp()", "attempting to create a tmpfile in ./ instead");
 		if ((tmp_fd[0] = mkstemp(out_tmp)) == -1)
 			ERR("%s", "mkstemp() out file");
-		memset(asm_tmp, 0, sizeof asm_tmp);
-		memcpy(asm_tmp, asm_fallback, sizeof asm_fallback);
-		WARN("%s\n%s", "failed calling mkstemp()", "attempting to create a tmpfile in ./ instead");
-		if ((tmp_fd[1] = mkstemp(asm_tmp)) == -1)
-			ERR("%s", "mkstemp() asm file");
 	}
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
 		"-c", "gcc", "-o", out_tmp,
-		"-a", asm_tmp, NULL
+		NULL
 	};
 	int argc = sizeof argv / sizeof argv[0] - 1;
 	/* print argument strings */
@@ -142,10 +135,7 @@ int main (void)
 	close(tmp_fd[1]);
 	if (remove(out_tmp) == -1)
 		WARN("%s", "remove() out_tmp");
-	if (remove(asm_tmp) == -1)
-		WARN("%s", "remove() asm_tmp");
 	free(out_filename);
-	free(asm_filename);
 
 	done_testing();
 }
