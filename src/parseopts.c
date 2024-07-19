@@ -497,10 +497,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	for (size_t i = 0; prog->cc_list.list[i]; i++)
 		printe("%s ", prog->cc_list.list[i]);
 	printe("\b%s\n", "\"");
-	printe("%s", "linker command line: \"");
-	for (size_t i = 0; prog->ld_list.list[i]; i++)
-		printe("%s ", prog->ld_list.list[i]);
-	printe("\b%s\n", "\"");
 #endif
 
 	return prog->cc_list.list;

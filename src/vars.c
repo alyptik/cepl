@@ -11,15 +11,6 @@
 
 #include "vars.h"
 
-/* fallback linker arg array */
-static char *const ld_alt_list[] = {
-	"gcc",
-	"-O0", "-pipe", "-fPIC",
-	"-xassembler", "-",
-	"-lm", "-o/tmp/cepl_program",
-	NULL
-};
-
 extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 /* global linker arguments struct */
 extern struct str_list ld_list;
@@ -354,7 +345,7 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 int print_vars(struct program *restrict prog, char *const *restrict cc_args, char **exec_args)
 {
 	int status, mem_fd, null_fd;
-	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
+	int pipe_cc[2], pipe_exec[2];
 	char *src_tmp;
 	char *term = getenv("TERM");
 	bool has_color = term
@@ -536,8 +527,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* create pipes */
 	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_cc pipe");
-	if (pipe2(pipe_ld, O_CLOEXEC) == -1)
-		ERR("%s", "error making pipe_ld pipe");
 	if (pipe2(pipe_exec, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_exec pipe");
 
@@ -547,8 +536,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	case -1:
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
-		close(pipe_ld[0]);
-		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
 		ERR("%s", "error forking compiler");
@@ -557,7 +544,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* child */
 	case 0:
 		dup2(null_fd, STDERR_FILENO);
-		dup2(pipe_ld[1], STDOUT_FILENO);
 		dup2(pipe_cc[0], STDIN_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
@@ -567,7 +553,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* parent */
 	default:
 		close(pipe_cc[0]);
-		close(pipe_ld[1]);
 		if (write(pipe_cc[1], final, sizeof final) == -1)
 			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
@@ -575,41 +560,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			/* WARNX("compiler returned non-zero exit code"); */
-			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
-		}
-	}
-
-	/* fork linker */
-	switch (fork()) {
-	/* error */
-	case -1:
-		close(pipe_ld[0]);
-		close(pipe_exec[0]);
-		close(pipe_exec[1]);
-		ERR("%s", "error forking linker");
-		break;
-
-	/* child */
-	case 0:
-		dup2(null_fd, STDERR_FILENO);
-		dup2(pipe_exec[1], STDOUT_FILENO);
-		dup2(pipe_ld[0], STDIN_FILENO);
-		if (ld_list.list)
-			execvp(ld_list.list[0], ld_list.list);
-		/* fallback linker exec */
-		execvp(ld_alt_list[0], ld_alt_list);
-		/* execvp() should never return */
-		ERR("%s", "error forking linker");
-		break;
-
-	/* parent */
-	default:
-		close(pipe_ld[0]);
-		close(pipe_exec[1]);
-		wait(&status);
-		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
-		if (WIFEXITED(status) && WEXITSTATUS(status)) {
-			/* WARNX("linker returned non-zero exit code"); */
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -625,20 +575,11 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* child */
 	case 0:
 		reset_handlers();
-		if ((mem_fd = syscall(SYS_memfd_create, "cepl_memfd", MFD_CLOEXEC)) == -1)
-			ERR("%s", "error creating mem_fd");
-		pipe_fd(pipe_exec[0], mem_fd);
 		/* redirect stdout/stdin to /dev/null */
 		if (!(null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
 			ERR("%s", "open()");
 		dup2(null_fd, STDIN_FILENO);
 		dup2(null_fd, STDOUT_FILENO);
-		/*
-		 * if ((mem_fd = memfd_create("cepl", 0)) == -1)
-		 *         ERR("%s", "error creating mem_fd");
-		 * pipe_fd(pipe_exec[0], mem_fd);
-		 * fexecve(mem_fd, exec_args, environ);
-		 */
 		execve("/tmp/cepl_program", exec_args, environ);
 		/* fexecve() should never return */
 		ERR("%s", "error forking executable");

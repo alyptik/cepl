@@ -25,7 +25,7 @@ extern char **environ;
 int compile(char const *restrict src, char *const cc_args[], char *const exec_args[], bool show_errors)
 {
 	int null_fd, mem_fd, status, prog_fd;
-	int pipe_cc[2], pipe_ld[2], pipe_exec[2];
+	int pipe_cc[2], pipe_exec[2];
 	size_t len = strlen(src);
 
 	if (!src || !cc_args || !exec_args)
@@ -40,8 +40,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	/* create pipes */
 	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_cc pipe");
-	if (pipe2(pipe_ld, O_CLOEXEC) == -1)
-		ERR("%s", "error making pipe_ld pipe");
 	if (pipe2(pipe_exec, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_exec pipe");
 
@@ -51,8 +49,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	case -1:
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
-		close(pipe_ld[0]);
-		close(pipe_ld[1]);
 		close(pipe_exec[0]);
 		close(pipe_exec[1]);
 		ERR("%s", "error forking compiler");
@@ -63,7 +59,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 		if (!show_errors)
 			dup2(null_fd, STDERR_FILENO);
 		dup2(pipe_cc[0], STDIN_FILENO);
-		dup2(pipe_ld[1], STDOUT_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
 		ERR("%s", "error forking compiler");
@@ -72,7 +67,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	/* parent */
 	default:
 		close(pipe_cc[0]);
-		close(pipe_ld[1]);
 		if (write(pipe_cc[1], src, len) == -1)
 			ERR("%s", "error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
