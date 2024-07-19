@@ -3,7 +3,7 @@
 local curcontext="$curcontext" state line ccs libs
 typeset -A opt_args
 
-ccs=(gcc clang)
+ccs=(gcc clang g++ clang++)
 libs=(${${$(find -L /lib/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib/lib}%.so})
 
 _arguments -s \
