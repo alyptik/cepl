@@ -95,13 +95,11 @@ int main (void)
 	ptrdiff_t ret;
 	char out_tmp[] = "/tmp/ceplXXXXXX";
 	char out_fallback[] = "./ceplXXXXXX";
-	int tmp_fd[2];
-	if ((tmp_fd[0] = mkstemp(out_tmp)) == -1) {
+	int tmp_fd;
+	if ((tmp_fd = mkstemp(out_tmp)) == -1) {
 		memset(out_tmp, 0, sizeof out_tmp);
 		memcpy(out_tmp, out_fallback, sizeof out_fallback);
 		WARN("%s\n%s", "failed calling mkstemp()", "attempting to create a tmpfile in ./ instead");
-		if ((tmp_fd[0] = mkstemp(out_tmp)) == -1)
-			ERR("%s", "mkstemp() out file");
 	}
 	char *argv[] = {
 		"cepl", "-lssl", "-I.",
@@ -131,8 +129,7 @@ int main (void)
 
 	/* cleanup */
 	free_argv(&result);
-	close(tmp_fd[0]);
-	close(tmp_fd[1]);
+	close(tmp_fd);
 	if (remove(out_tmp) == -1)
 		WARN("%s", "remove() out_tmp");
 	free(out_filename);
