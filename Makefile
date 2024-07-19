@@ -10,19 +10,9 @@ all:
 # user configuration
 MKCFG := config.mk
 export C_INCLUDE_PATH=$(READLINE)/include
-# if previously built with `-fsanitize=address` we have to use `ASAN` flags
-ASAN_OPT != test -f asan.mk
-ifeq ($(.SHELLSTATUS),0)
-	OLVL = $(ASAN)
-endif
 -include $(DEP) $(MKCFG)
-.PHONY: all asan check clean debug dist install test uninstall $(MKALL)
+.PHONY: all check clean debug dist install test uninstall $(MKALL)
 
-asan:
-	# asan indicator flag
-	@touch asan.mk
-	$(MAKE) clean
-	$(MAKE) $(TARGET) check OLVL= CFLAGS="$(DEBUG_CFLAGS)" LDFLAGS="$(DEBUG_LDFLAGS)"
 debug:
 	$(MAKE) $(TARGET) check OLVL= CFLAGS="$(DEBUG_CFLAGS)" LDFLAGS="$(DEBUG_LDFLAGS)"
 
@@ -42,7 +32,7 @@ test check: $(TEST)
 	./t/testvars
 clean:
 	@echo "[cleaning]"
-	$(RM) $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz cscope.* tags TAGS asan.mk
+	$(RM) $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz cscope.* tags TAGS
 install: $(TARGET)
 	@echo "[installing]"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
