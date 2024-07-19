@@ -7,12 +7,10 @@ ccs=(gcc clang g++ clang++)
 libs=(${${$(find -L /lib/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib/lib}%.so})
 
 _arguments -s \
-	{-a,--att=}'[Name of the file to output AT&T-dialect assembler code to.]:file:_files' \
 	{-c,--cc=}"[Specify alternate compiler.]:compiler:($ccs)" \
 	{-e,--eval=}'[Evaluate the following argument as C code.]:code:' \
 	{-f,--file=}'[Name of file to use as starting C code template.]:file:_files' \
 	{-h,--help}'[Show help/usage information.]' \
-	{-i,--intel=}'[Name of the file to output Intel-dialect assembler code to.]:file:_files' \
 	{-o,--output=}'[Name of the file to output C source code to.]:file:_files' \
 	{-p,--parse}'[Disable addition of dynamic library symbols to readline completion.]' \
 	{-t,--tracking}'[Toggle variable tracking.]' \
