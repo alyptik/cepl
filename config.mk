@@ -11,7 +11,6 @@ RESTRICT := -Wrestrict
 DESTDIR ?=
 PREFIX ?= /usr/local
 CC ?= gcc
-OLVL ?= -O3
 
 # mandatory
 LD = $(CC)
@@ -46,10 +45,10 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
 		-Wno-sign-conversion -Wno-strict-prototypes		\
 		-Wno-unused-variable -Wno-write-strings
 LDLIBS += -lreadline -lhistory -lelf
-DEBUG += -g3 -O0 -D_DEBUG
+DEBUG += -g3 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
-CFLAGS += -std=gnu2x -fstack-protector-strong
+CFLAGS += -std=gnu2x
 CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
 
 # vi:ft=make:
