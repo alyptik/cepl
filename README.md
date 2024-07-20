@@ -36,7 +36,11 @@ with `-c` such as:
 
     cepl -cg++ -lboost_filesystem -lboost_context -lboost_system
 
-to run in C++ mode linking against Boost.
+to run in C++ mode linking against Boost and compiling with g++, or:
+
+    cepl -cclang -lelf
+
+to run in C mode linking against libelf and compiling with clang.
 
 #### CEPL understands the following options:
 

@@ -53,7 +53,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-8.7.2"
+#define VERSION_STRING	"cepl-8.7.3"
 #define USAGE_STRING \
 	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
