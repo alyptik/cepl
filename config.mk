@@ -4,9 +4,6 @@
 # AUTHOR: Joey Pabalinas <joeypabalinas@gmail.com>
 # See LICENSE.md file for copyright and license details.
 
-# add -Wrestrict if using gcc7 or higher
-RESTRICT := -Wrestrict
-
 # optional
 DESTDIR ?=
 PREFIX ?= /usr/local
@@ -36,7 +33,7 @@ TARGET := cepl
 MANPAGE := cepl.1
 COMPLETION := _cepl
 TAP := $(CONTRIB)/libtap
-WARNINGS := $(RESTRICT) -Wall -Wextra -pedantic				\
+WARNINGS := -Wrestrict -Wall -Wextra -pedantic				\
 		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
 		-Wshadow -Wstrict-overflow
