@@ -53,16 +53,14 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-8.7.4"
+#define VERSION_STRING	"cepl-8.7.5"
 #define USAGE_STRING \
-	"[-hptvw] [-(a|i)<asm.s>] [-c<compiler>] [-e<code>] " \
+	"[-hptvw] [-c<compiler>] [-e<code>] " \
 	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
-	"-a, --att\t\tName of the file to output AT&T-dialect assembler code to\n\t" \
 	"-c, --cc\t\tSpecify alternate compiler\n\t" \
 	"-e, --eval\t\tEvaluate the following argument as C code\n\t" \
 	"-f, --file\t\tName of file to use as starting C code template\n\t" \
 	"-h, --help\t\tShow help/usage information\n\t" \
-	"-i, --intel\t\tName of the file to output Intel-dialect assembler code to\n\t" \
 	"-o, --output\t\tName of the file to output C source code to\n\t" \
 	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
 	"-t, --tracking\t\tToggle variable tracking\n\t" \
@@ -71,9 +69,7 @@
 	"-l\t\t\tLink against specified library (flag can be repeated)\n\t" \
 	"-I\t\t\tSearch directory for header files (flag can be repeated)\n" \
 	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t" \
-	";a[tt]\t\t\tToggle -a (output AT&T-dialect assembler code) flag\n\t" \
 	";h[elp]\t\t\tShow help\n\t" \
-	";i[ntel]\t\tToggle -a (output Intel-dialect assembler code) flag\n\t" \
 	";m[acro]\t\tLine is defined outside of main() (e.g. \";m void bork(void) { puts(\"wark\"); }\")\n\t" \
 	";o[utput]\t\tToggle -o (output C source code) flag\n\t" \
 	";p[arse]\t\tToggle -p (shared library parsing) flag\n\t" \
