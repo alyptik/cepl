@@ -7,6 +7,10 @@ TAGS
 \#*\#
 vgcore*
 
+# dist
+*.tar
+*.tar.gz
+
 # Binaries
 cepl
 t/*
