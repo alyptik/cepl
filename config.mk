@@ -49,7 +49,6 @@ LDLIBS += -lreadline -lhistory -lelf
 DEBUG += -g3 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
 DEBUG += -I$(TAP)
-CFLAGS += -std=gnu2x
 CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
 
 # vi:ft=make:
