@@ -53,4 +53,4 @@ cscope:
 tags TAGS:
 	@echo "[creating ctags file]"
 	$(RM) tags TAGS
-	ctags -Rf $@ --tag-relative=yes --langmap=c:+.h.C.H --fields=+l --c-kinds=+l --c++-kinds=+l --extras=+q .
+	ctags -Rf $@ --tag-relative=yes --langmap=c:+.h.C.H --fields=+l --c-kinds=+p --c++-kinds=+p --fields=+iaS --extras=+q .
