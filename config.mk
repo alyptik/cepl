@@ -16,23 +16,22 @@ DEBUG_LDFLAGS = $(LDFLAGS) $(DEBUG)
 MKALL = $(MKCFG) $(DEP)
 OBJ = $(SRC:.c=.o)
 TOBJ = $(TSRC:.c=.o)
-DEP = $(SRC:.c=.d) $(TSRC:.c=.d)
-SU = $(SRC:.c=.su) $(TSRC:.c=.su)
+COBJ = $(CSRC:.c=.o)
+DEP = $(SRC:.c=.d) $(TSRC:.c=.d) $(wildcard contrib/libtap/*.d)
+SU = $(SRC:.c=.su) $(TSRC:.c=.su) $(wildcard contrib/libtap/*.su)
 TEST = $(TSRC:.c=)
 UTEST = $(filter-out src/$(TARGET).o,$(SRC:.c=.o))
 SRC := $(wildcard src/*.c)
 TSRC := $(wildcard t/*.c)
-HDR := $(wildcard src/*.h) $(wildcard t/*.h)
+CSRC := $(wildcard contrib/libtap/*.c)
+HDR := $(wildcard src/*.h) $(wildcard t/*.h) $(wildcard contrib/libtap/*.h)
 CPPFLAGS := -D_GNU_SOURCE -MMD -MP
-VENDOR := vendor
-CONTRIB := contrib
 BINDIR := bin
 MANDIR := share/man/man1
 COMPDIR := share/zsh/site-functions
 TARGET := cepl
 MANPAGE := cepl.1
 COMPLETION := _cepl
-TAP := $(CONTRIB)/libtap
 WARNINGS := -Wrestrict -Wall -Wextra -pedantic				\
 		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
 		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
@@ -45,7 +44,7 @@ IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
 LDLIBS += -lreadline -lhistory -lelf
 DEBUG += -g3 -D_DEBUG
 DEBUG += -fno-builtin -fno-inline
-DEBUG += -I$(TAP)
-CFLAGS += $(WARNINGS) $(IGNORES) -I$(TAP)
+DEBUG += -Icontrib/libtab
+CFLAGS += $(WARNINGS) $(IGNORES) -Icontrib/libtap
 
 # vi:ft=make:

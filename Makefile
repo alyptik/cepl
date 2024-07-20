@@ -18,8 +18,8 @@ debug:
 
 $(TARGET): %: $(OBJ)
 	$(LD) $(LDFLAGS) $^ $(LDLIBS) -o $@
-$(TEST): %: %.o $(TAP)/tap.o $(OBJ) $(TOBJ)
-	$(LD) $(LDFLAGS) $(TAP)/tap.o $(<:t/test%=src/%) $< $(LDLIBS) -o $@
+$(TEST): %: %.o $(OBJ) $(TOBJ) $(COBJ)
+	$(LD) $(LDFLAGS) contrib/libtap/tap.o $(<:t/test%=src/%) $< $(LDLIBS) -o $@
 %.o: %.c $(HDR)
 	$(CC) $(CFLAGS) $(OLVL) $(CPPFLAGS) -c $< -o $@
 
@@ -32,7 +32,7 @@ test check: $(TEST)
 	./t/testvars
 clean:
 	@echo "[cleaning]"
-	$(RM) $(DEP) $(SU) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz cscope.* tags TAGS
+	$(RM) $(DEP) $(SU) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(COBJ) cscope.* tags TAGS
 install: $(TARGET)
 	@echo "[installing]"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)

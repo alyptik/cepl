@@ -3,8 +3,8 @@
 ![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
 
 A readline C and C++ REPL (read–eval–print loop) which supports
-multiple compilers, readline key-bindings/tab-completion,
-incremental undo, and source code output.
+multiple compilers, key-bindings/tab-completion, incremental
+undo, and source code output.
 
 ## Dependencies
 
@@ -42,7 +42,7 @@ to run in C++ mode linking against Boost and compiling with g++, or:
 
 to run in C mode linking against libelf and compiling with clang.
 
-#### CEPL understands the following options:
+#### cepl understands the following options:
 
 	-c, --cc		Specify alternate compiler
 	-e, --eval		Evaluate the following argument as C code
@@ -55,7 +55,7 @@ to run in C mode linking against libelf and compiling with clang.
 	-l			Link against specified library (flag can be repeated)
 	-I			Search directory for header files (flag can be repeated)
 
-#### CEPL understands the following control sequences:
+#### cepl understands the following control sequences:
 
 Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 
@@ -69,7 +69,7 @@ Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 	;u[ndo]			Incremental undo (can be repeated)
 	;w[arnings]		Toggle -w (pedantic warnings) flag
 
-## Libraries used:
+## Required libraries:
 
 * libtap ([zorgnax/libtap](https://github.com/zorgnax/libtap))
 * libelf
