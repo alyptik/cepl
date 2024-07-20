@@ -1,10 +1,10 @@
-# CEPL - *A C and C++ Read-Eval-Print Loop*
+# cepl - *a C and C++ REPL*
 
 ![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
 
-An interactive C and C++ read–eval–print loop (REPL) currently
-supporting multiple compilers, readline key-bindings/tab-completion,
-incremental undo, and assembler source code output.
+A readline C and C++ REPL (read–eval–print loop) which supports
+multiple compilers, readline key-bindings/tab-completion,
+incremental undo, and source code output.
 
 ## Dependencies
 
@@ -19,11 +19,24 @@ incremental undo, and assembler source code output.
 
 Run `make` then `./cepl` to start the interactive REPL.
 
-The following environment variables are respected: `CFLAGS`, `LDFLAGS`, `LDLIBS`, and `LIBS`.
+To install after building, set the environment variables `DESTDIR`
+and `PREFIX` if needed, then run `make install`:
+
+    PREFIX=/usr make install
+
+to install everything to `/usr`.
+
+The following environment variables are respected: `CFLAGS`, `LDFLAGS`,
+`LDLIBS`, and `LIBS`.
 
 Command history is read from and saved to `~/.cepl_history`.
 
-To switch between C/C++ modes, specify your compiler with `-c`.
+To switch between C/C++ modes, specify your C or C++ compiler
+with `-c` such as:
+
+    cepl -cg++ -lboost_filesystem -lboost_context -lboost_system
+
+to run in C++ mode linking against Boost.
 
 #### CEPL understands the following options:
 

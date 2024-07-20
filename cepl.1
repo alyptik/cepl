@@ -1,26 +1,38 @@
-.TH CEPL: "1" "October 2018" "cepl-6\&.3\&.0" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-8\&.7\&.2" "User Commands"
 
 .SH "NAME"
-cepl \- a C11 Read\-Eval\-Print Loop
+cepl \- a C and C++ REPL
 
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hptvw] [\-(a|i)\fI<asm\&.s>\fR] [\-c\fI<compiler>\fR] [\-e\fI<code>\fR] [\-l\fI<libs>\fR] [\-I\fI<includes>\fR] [\-o\fI<out\&.c>\fR]
+\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-e\fI<code>\fR] [\-l\fI<libs>\fR] [\-I\fI<includes>\fR] [\-o\fI<out\&.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
 .sp
-C and C++ read\-eval\-print loop (\fBREPL\fR) currently supporting multiple compilers, readline key\-bindings/tab\-completion, variable tracking, and incremental undo\&.
+A readline C and C++ REPL (read–eval–print loop) which supports multiple
+compilers, readline key-bindings/tab-completion, incremental undo, and
+source code output.
 .fi
 
 .SH "USAGE"
 .sp
-The following environment variables are respected: \fBCFLAGS\fR, \fBLDFLAGS\fR, \fBLDLIBS\fR, and \fBLIBS\fR.
+The following environment variables are respected: \fBCFLAGS\fR, \fBLDFLAGS\fR,
+\fBLDLIBS\fR, and \fBLIBS\fR.
 .sp
 Command history is read from and saved to \fI~/\&.cepl_history\fR\&.
 .sp
-To switch between C/C++ modes, specify your compiler with \fI\-c\fR.
+To switch between C/C++ modes, specify your C or C++ compiler
+with \fI-c\fR such as:
+.sp
+    \fIcepl -cg++ -lboost_filesystem -lboost_context -lboost_system\fR
+.sp
+to run in C++ mode linking against Boost and compiling with g++, or:
+.sp
+    \fIcepl -cclang -lelf\fR
+.sp
+to run in C mode linking against libelf and compiling with clang.
 .fi
 
 .SS "OPTIONS"
