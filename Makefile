@@ -33,7 +33,7 @@ test check: $(TEST)
 clean:
 	@echo "[cleaning]"
 	$(RM) $(DEP) $(SU) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(COBJ) \
-		cepl-$(shell sed '1!d; s/.*\([0-9]\).*\([0-9]\).*\([0-9]\).*/\1.\2.\3/' cepl.1).tar \
+		cepl-$(shell sed '1!d; s/.*\([0-9]\).*\([0-9]\).*\([0-9]\).*/\1.\2.\3/' cepl.1).tar.gz \
 		cscope.* tags TAGS
 install: $(TARGET)
 	@echo "[installing]"
