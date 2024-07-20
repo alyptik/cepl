@@ -32,7 +32,7 @@ test check: $(TEST)
 	./t/testvars
 clean:
 	@echo "[cleaning]"
-	$(RM) $(DEP) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz cscope.* tags TAGS
+	$(RM) $(DEP) $(SU) $(TARGET) $(TEST) $(OBJ) $(TOBJ) $(TARGET).tar.gz cscope.* tags TAGS
 install: $(TARGET)
 	@echo "[installing]"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
