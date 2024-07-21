@@ -53,15 +53,15 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-8.7.7"
+#define VERSION_STRING	"cepl-9.0.0"
 #define USAGE_STRING \
-	"[-hptvw] [-c<compiler>] [-e<code>] " \
-	"[-l<libs>] [-I<includes>] [-o<out.c>]\n\t" \
-	"-c, --cc\t\tSpecify alternate compiler\n\t" \
-	"-e, --eval\t\tEvaluate the following argument as C code\n\t" \
-	"-f, --file\t\tName of file to use as starting C code template\n\t" \
+	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
+	"[-l<library>] [-I<include directory>] [-o<out.c>]\n\t" \
+	"-c, --compiler\t\tSpecify alternate compiler\n\t" \
+	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t" \
+	"-f, --file\t\tSource file to import\n\t" \
 	"-h, --help\t\tShow help/usage information\n\t" \
-	"-o, --output\t\tName of the file to output C source code to\n\t" \
+	"-o, --output\t\tName of the file to output C/C++ source code to\n\t" \
 	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
 	"-t, --tracking\t\tToggle variable tracking\n\t" \
 	"-v, --version\t\tShow version information\n\t" \
@@ -94,7 +94,7 @@
 /* page size for buffer count */
 #define PAGE_SIZE	0x1000
 /* max eval string length */
-#define EVAL_LIMIT	PAGE_SIZE
+#define EVAL_LIMIT	(PAGE_SIZE * PAGE_SIZE)
 /* max possible types */
 #define TNUM		7
 /* `strmv() `concat constant */

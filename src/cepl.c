@@ -2,7 +2,7 @@
  * cepl.c - REPL translation unit
  *
  * AUTHOR: Joey Pabalinas <joeypabalinas@gmail.com>
- * See LICENSE.md file for copyright and license details.
+ * See LICENSE file for copyright and license details.
  */
 
 /* silence linter */
@@ -27,7 +27,7 @@ static char hist_name[] = "./.cepl_history";
  * program source struct (program_state.src[0] is
  * truncated for interactive printing)
  */
-static struct program program_state;
+struct program program_state;
 
 /* string to compile */
 extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
@@ -207,139 +207,6 @@ static void reg_handlers(void)
 	}
 	if (at_quick_exit(&free_bufs))
 		WARN("%s", "at_quick_exit(&free_bufs)");
-}
-
-static inline char *gen_bin_str(char const *restrict in_str)
-{
-	size_t in_len = 0, cnt = 0, num_octets = 0;
-	char base_arr[65] = {0}, *base_ptr = base_arr, *end_ptr;
-	char rev_arr[sizeof base_arr + sizeof base_arr / 8] = {0}, *rev_ptr = rev_arr;
-	static char final_array[sizeof rev_arr], *final_ptr = NULL;
-
-	/* return early if NULL or empty string */
-	if (!in_str || !(in_len = strlen(in_str))) {
-#ifdef _DEBUG
-		printe("%s", "NULL or empty string passed to gen_bin_str()");
-#endif
-		return "";
-	}
-	/* reset for ERANGE / EINVAL check */
-	errno = 0;
-	unsigned long long num = strtoll(in_str, &end_ptr, 0);
-#ifdef _DEBUG
-	printe("endptr: \"%s\"\n*endptr = '%c'\n", end_ptr, *end_ptr);
-#endif
-	/* return empty string on parse error */
-	if (errno || !in_len || (*end_ptr && (strspn(end_ptr, " \t;") != strlen(end_ptr))))
-		return "";
-
-	/* build base binary string */
-	while (num) {
-		for (long long i = 0; i < ffsll(num) - 1; i++) {
-			sprintf(base_ptr++, "%c", '0');
-			num >>= 1;
-			cnt++;
-		}
-		sprintf(base_ptr++, "%c", '1');
-		num >>= 1;
-		cnt++;
-	}
-
-	/* zero fill and reverse the digits */
-	for (; cnt % 8; cnt++)
-		sprintf(base_ptr++, "%c", '0');
-	for (size_t i = 0, j = cnt - 1; i < cnt; i++, j--)
-		rev_arr[j] = base_arr[i];
-
-	/* convert it to "0b_0000000_000..." format */
-	memset(final_array, 0, sizeof final_array);
-	final_ptr = final_array + 2;
-	sprintf(final_array, "%s", "0b");
-	num_octets = strlen(rev_arr) / 8;
-	for (size_t i = 0; i < num_octets; i++) {
-		sprintf(final_ptr, "%c%.8s", '_', rev_ptr);
-		rev_ptr += 8;
-		final_ptr += 9;
-	}
-
-#ifdef _DEBUG
-	printe("[%zu] %s - %s - %s\n", 8 - (cnt % 8), base_arr, rev_arr, final_array);
-#endif
-	/* return empty string on error */
-	if (strlen(final_array) < 3)
-		return "";
-
-	return final_array;
-}
-
-static void eval_line(int argc, char **restrict argv, char const *restrict optstring)
-{
-	/* return early if line is a cepl command */
-	if (program_state.cur_line && *program_state.cur_line == ';')
-		return;
-
-	char const *const term = getenv("TERM");
-	struct program prg = {0};
-	struct str_list temp = strsplit(program_state.cur_line);
-	bool has_color = term
-		&& isatty(STDOUT_FILENO)
-		&& isatty(STDERR_FILENO)
-		&& strcmp(term, "")
-		&& strcmp(term, "dumb");
-	char const *const ln_beg = has_color
-		? "fprintf(stderr, \"" YELLOW "%s[%lld, %#llx%s\\n" RST "\", \"result = \", "
-		: "fprintf(stderr, \"%s[%lld, %#llx%s\\n\", \"result = \", ";
-	char const *const ln_long[] = {"(long long)(", "), "};
-	char const *const ln_hex[] = {"(unsigned long long)(", "), \""};
-	char const *const ln_end = "\");";
-
-	/* bit bucket */
-	parse_opts(&prg, argc, argv, optstring);
-	init_buffers(&prg);
-	build_final(&prg, argv);
-	/* don't write out files for line evaluation */
-	prg.sflags = (struct state_flags){0};
-
-	for (size_t i = 0; i < temp.cnt; i++) {
-		char const *const ln_bin = gen_bin_str(temp.list[i]);
-		char const *const ln_bin_pre = strlen(ln_bin) ? ", " : "";
-		char const *const ln_bin_end = "]";
-		size_t sz = 1 + strlen(ln_beg) + strlen(ln_end)
-			+ strlen(ln_long[0]) + strlen(ln_long[1])
-			+ strlen(ln_hex[0]) + strlen(ln_hex[1])
-			+ strlen(ln_bin_pre) + strlen(ln_bin) + strlen(ln_bin_end)
-			+ strlen(temp.list[i]) * 2;
-		/* initialize source buffers */
-		xcalloc(&prg.cur_line, 1, sz, "eval_line() calloc");
-		sprintf(prg.cur_line, "%s%s%s%s%s%s%s%s%s%s%s", ln_beg,
-				ln_long[0], temp.list[i], ln_long[1],
-				ln_hex[0], temp.list[i], ln_hex[1],
-				ln_bin_pre, ln_bin, ln_bin_end,
-				ln_end);
-#ifdef _DEBUG
-		printe("eval_line(): \"%s\"\n", prg.cur_line);
-#endif
-		for (size_t j = 0; j < 2; j++) {
-			resize_sect(&prg, &prg.src[j].body, sz);
-			resize_sect(&prg, &prg.src[j].total, sz);
-		}
-		/* extract identifiers and types */
-		if (temp.list[i][0] != ';' && !find_vars(&prg, temp.list[i])) {
-			build_body(&prg);
-			build_final(&prg, argv);
-		}
-	}
-
-	/* print line evaluation */
-	int null_fd;
-	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-		ERR("%s", "open()");
-	dup2(null_fd, STDOUT_FILENO);
-	compile(prg.src[1].total.buf, program_state.cc_list.list, argv, false);
-	free_buffers(&prg);
-	free_str_list(&temp);
-	dup2(program_state.saved_fd, STDOUT_FILENO);
-	close(null_fd);
 }
 
 static inline void toggle_output_file(char *tbuf)
@@ -603,7 +470,7 @@ static inline void restore_flag_state(struct state_flags *restrict sflags)
 int main(int argc, char **argv)
 {
 	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
-	char const *const optstring = "hptvwc:f:e:l:I:o:";
+	char const *const optstring = "hptvwc:f:e:o:l:I:";
 
 	/* initialize compiler arg array */
 	build_hist_name();
@@ -669,7 +536,6 @@ int main(int argc, char **argv)
 		}
 		stripped = program_state.cur_line;
 		stripped += strspn(stripped, " \t");
-		eval_line(argc, argv, optstring);
 
 		/* control sequence and preprocessor directive parsing */
 		switch (stripped[0]) {

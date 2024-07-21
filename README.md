@@ -2,21 +2,18 @@
 
 ![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
 
-A readline C and C++ REPL (read–eval–print loop) which supports
-multiple compilers, key-bindings/tab-completion, incremental
-undo, and source code output.
+A readline C and C++ REPL with history, tab-completion, and undo.
 
 ## Dependencies
 
 * `gcc` (GNU C Compiler)
-* `readline` library
+* `readline` Console display library
 * `libelf` ELF access library
 
 ## Usage
 ```bash
-./cepl [-hptvw] [-c<compiler>] [-e<code>] [-l<libs>] [-I<includes>] [-o<out.c>]
+./cepl [-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file> ] [-l<library>] [-I<include directory>] [-o<out.c>]
 ```
-
 Run `make` then `./cepl` to start the interactive REPL.
 
 To install after building, set the environment variables `DESTDIR`
@@ -38,16 +35,18 @@ with `-c` such as:
 
 to run in C++ mode linking against Boost and compiling with g++, or:
 
-    cepl -cclang -lelf
+    cepl -cclang -lelf -oout.c
 
-to run in C mode linking against libelf and compiling with clang.
+to run in C mode linking against libelf and compiling with clang, saving
+your code to `out.c` on exit.
 
-#### cepl understands the following options:
+#### Command line options:
 
-	-c, --cc		Specify alternate compiler
-	-e, --eval		Evaluate the following argument as C code
+	-c, --compiler		Specify alternate compiler
+	-e, --eval		Evaluate the following argument as C/C++ code
+	-f, --file		Source file to import
 	-h, --help		Show help/usage information
-	-o, --output		Name of the file to output C source code to
+	-o, --output		Name of the file to output C/C++ code to
 	-p, --parse		Disable addition of dynamic library symbols to readline completion
 	-t, --tracking		Toggle variable tracking
 	-v, --version		Show version information
@@ -55,9 +54,7 @@ to run in C mode linking against libelf and compiling with clang.
 	-l			Link against specified library (flag can be repeated)
 	-I			Search directory for header files (flag can be repeated)
 
-#### cepl understands the following control sequences:
-
-Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
+#### Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 
 	;h[elp]			Show help
 	;m[acro]		Define a macro (e.g. ";m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))")
@@ -71,6 +68,5 @@ Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 
 ## Required libraries:
 
-* libtap ([zorgnax/libtap](https://github.com/zorgnax/libtap))
 * libelf
 * libreadline

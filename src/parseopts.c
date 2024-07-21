@@ -2,7 +2,7 @@
  * parseopts.c - option parsing
  *
  * AUTHOR: Joey Pabalinas <joeypabalinas@gmail.com>
- * See LICENSE.md file for copyright and license details.
+ * See LICENSE file for copyright and license details.
  */
 
 /* silence linter */
@@ -18,7 +18,7 @@
 
 /* globals */
 static struct option long_opts[] = {
-	{"cc", required_argument, 0, 'c'},
+	{"compiler", required_argument, 0, 'c'},
 	{"eval", required_argument, 0, 'e'},
 	{"file", required_argument, 0, 'f'},
 	{"help", no_argument, 0, 'h'},
@@ -30,14 +30,14 @@ static struct option long_opts[] = {
 	{0}
 };
 static char *const cc_arg_list[] = {
-	"-O0", "-pipe",
+	"-g3", "-O0", "-pipe",
 	"-fPIC", "-std=gnu2x",
 	"-xc", "-",
 	"-o/tmp/cepl_program",
 	NULL
 };
 static char *const ccxx_arg_list[] = {
-	"-O0", "-pipe",
+	"-g3", "-O0", "-pipe",
 	"-fPIC", "-std=gnu++2a",
 	"-xc++", "-",
 	"-o/tmp/cepl_program",

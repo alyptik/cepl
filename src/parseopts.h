@@ -2,7 +2,7 @@
  * parseopts.h - option parsing
  *
  * AUTHOR: Joey Pabalinas <joeypabalinas@gmail.com>
- * See LICENSE.md file for copyright and license details.
+ * See LICENSE file for copyright and license details.
  */
 
 #if !defined(PARSEOPTS_H)

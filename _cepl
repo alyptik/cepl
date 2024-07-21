@@ -1,13 +1,13 @@
 #compdef cepl
 
-local curcontext="$curcontext" state line ccs libs
+local curcontext="$curcontext" state line compilers libs
 typeset -A opt_args
 
-ccs=(gcc clang g++ clang++)
+compilers=(gcc clang g++ clang++)
 libs=(${${$(find -L /lib/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib/lib}%.so})
 
 _arguments -s \
-	{-c,--cc=}"[Specify alternate compiler.]:compiler:($ccs)" \
+	{-c,--compiler=}"[Specify alternate compiler.]:compiler:($compilers)" \
 	{-e,--eval=}'[Evaluate the following argument as C code.]:code:' \
 	{-f,--file=}'[Name of file to use as starting C code template.]:file:_files' \
 	{-h,--help}'[Show help/usage information.]' \

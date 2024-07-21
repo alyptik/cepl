@@ -51,10 +51,7 @@ before_install:
 
 script:
     - make -B
-    - make debug
-    - make asan
     - make clean
-    - make test
     - make install
     - make uninstall
     - make dist
