@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <termio.h>
+#include <termios.h>
 #include <unistd.h>
 
 /* macros */
@@ -168,7 +168,7 @@ struct state_flags {
 /* standard io stream state state */
 struct termio_state {
 	bool modes_changed;
-	struct termio save_modes[4];
+	struct termios save_modes[4];
 };
 
 /* monolithic program structure */

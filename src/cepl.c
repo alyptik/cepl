@@ -97,12 +97,12 @@ static inline void tty_break(struct program *restrict prg)
 {
 	if (prg->tty_state.modes_changed)
 		return;
-	struct termio *cur_mode = prg->tty_state.save_modes;
+	struct termios *cur_mode = prg->tty_state.save_modes;
 	FILE *streams[] = {stdin, stdout, stderr, NULL};
 	for (FILE **cur = streams; *cur; cur_mode++, cur++) {
-		struct termio mod_modes = {0};
+		struct termios mod_modes = {0};
 		int cur_fd = fileno(*cur);
-		if (ioctl(cur_fd, TCGETA, cur_mode) < 0) {
+		if (tcgetattr(cur_fd, cur_mode) < 0) {
 #ifdef _DEBUG
 			if (isatty(cur_fd))
 				printe("%s\n", "tty_break()");
@@ -113,7 +113,7 @@ static inline void tty_break(struct program *restrict prg)
 		mod_modes.c_lflag &= ~ICANON;
 		mod_modes.c_cc[VMIN] = 1;
 		mod_modes.c_cc[VTIME] = 0;
-		ioctl(cur_fd, TCSETAW, &mod_modes);
+		tcsetattr(cur_fd, TCSANOW, &mod_modes);
 	}
 	prg->tty_state.modes_changed = true;
 }
@@ -123,10 +123,10 @@ static inline void tty_fix(struct program *restrict prg)
 {
 	if (prg->tty_state.modes_changed)
 		return;
-	struct termio *cur_mode = prg->tty_state.save_modes;
+	struct termios *cur_mode = prg->tty_state.save_modes;
 	FILE *streams[] = {stdin, stdout, stderr, NULL};
 	for (FILE **cur = streams; *cur; cur_mode++, cur++)
-		ioctl(fileno(*cur), TCSETAW, cur_mode);
+		tcsetattr(fileno(*cur), TCSANOW, cur_mode);
 	prg->tty_state.modes_changed = false;
 }
 
