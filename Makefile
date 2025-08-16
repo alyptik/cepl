@@ -30,12 +30,12 @@ install: $(TARGET)
 	mkdir -p $(DESTDIR)$(PREFIX)/$(MANDIR)
 	mkdir -p $(DESTDIR)$(PREFIX)/$(COMPDIR)
 	install -c $(TARGET) $(DESTDIR)$(PREFIX)/$(BINDIR)
-	install -c $(MANPAGE) $(DESTDIR)$(PREFIX)/$(MANDIR)
+	bzip2 -c $(MANPAGE) > $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE).bz2
 	cat $(COMPLETION) > $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 uninstall:
 	@echo "[uninstalling]"
 	$(RM) $(DESTDIR)$(PREFIX)/$(BINDIR)/$(TARGET)
-	$(RM) $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE)
+	$(RM) $(DESTDIR)$(PREFIX)/$(MANDIR)/$(MANPAGE).bz2
 	$(RM) $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 dist: clean
 	@echo "[creating source tarball]"
