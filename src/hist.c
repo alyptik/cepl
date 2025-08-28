@@ -10,8 +10,9 @@
 /* externs */
 extern struct str_list comp_list;
 
-/* source file includes template */
-char const *prologue =
+/* source file includes templates */
+char const *prologue = NULL;
+char const *c_prologue =
 	"#undef _BSD_SOURCE\n"
 	"#define _BSD_SOURCE\n"
 	"#undef _DEFAULT_SOURCE\n"
@@ -66,6 +67,72 @@ char const *prologue =
 	"#include <wctype.h>\n"
 	"#include <unistd.h>\n\n"
 	"extern char **environ;\n\n"
+	"#line 1\n";
+char const *cxx_prologue =
+	"#undef _BSD_SOURCE\n"
+	"#define _BSD_SOURCE\n"
+	"#undef _DEFAULT_SOURCE\n"
+	"#define _DEFAULT_SOURCE\n"
+	"#undef _GNU_SOURCE\n"
+	"#define _GNU_SOURCE\n"
+	"#undef _POSIX_C_SOURCE\n"
+	"#define _POSIX_C_SOURCE 200809L\n"
+	"#undef _SVID_SOURCE\n"
+	"#define _SVID_SOURCE\n"
+	"#undef _XOPEN_SOURCE\n"
+	"#define _XOPEN_SOURCE 700\n\n"
+	"#include <algorithm>\n"
+	"#include <any>\n"
+	"#include <atomic>\n"
+	"#include <barrier>\n"
+	"#include <bitset>\n"
+	"#include <cassert>\n"
+	"#include <cctype>\n"
+	"#include <cerrno>\n"
+	"#include <cfloat>\n"
+	"#include <cinttypes>\n"
+	"#include <climits>\n"
+	"#include <cmath>\n"
+	"#include <complex>\n"
+	"#include <condition_variable>\n"
+	"#include <coroutine>\n"
+	"#include <csetjmp>\n"
+	"#include <csignal>\n"
+	"#include <cstdarg>\n"
+	"#include <cstddef>\n"
+	"#include <cstdint>\n"
+	"#include <cstdio>\n"
+	"#include <cstdlib>\n"
+	"#include <cstring>\n"
+	"#include <ctime>\n"
+	"#include <exception>\n"
+	"#include <filesystem>\n"
+	"#include <fstream>\n"
+	"#include <future>\n"
+	"#include <ios>\n"
+	"#include <iostream>\n"
+	"#include <iterator>\n"
+	"#include <limits>\n"
+	"#include <list>\n"
+	"#include <map>\n"
+	"#include <memory>\n"
+	"#include <mutex>\n"
+	"#include <numbers>\n"
+	"#include <queue>\n"
+	"#include <random>\n"
+	"#include <regex>\n"
+	"#include <semaphore>\n"
+	"#include <set>\n"
+	"#include <source_location>\n"
+	"#include <stack>\n"
+	"#include <string>\n"
+	"#include <thread>\n"
+	"#include <typeinfo>\n"
+	"#include <type_traits>\n"
+	"#include <utility>\n"
+	"#include <vector>\n\n"
+	"extern char **environ;\n\n"
+	"using namespace std;\n\n"
 	"#line 1\n";
 
 /* compiler pre-program */
@@ -173,6 +240,12 @@ void free_buffers(struct program *restrict prog)
 
 void init_buffers(struct program *restrict prog)
 {
+	/* use appropriate prologue depending on c or c++ mode */
+	if (!strcmp(prog->cc_list.list[0], "g++") || !strcmp(prog->cc_list.list[0], "clang++"))
+		prologue = cxx_prologue;
+	else
+		prologue = c_prologue;
+
 	/* user is truncated source for display */
 	xcalloc(&prog->src[0].funcs.buf, 1, 1, "init");
 	xcalloc(&prog->src[0].body.buf, 1, strlen(prog_start_user) + 1, "init");
