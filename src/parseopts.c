@@ -184,7 +184,13 @@ static inline void copy_eval_code(struct program *restrict prog)
 static inline void copy_header_dirs(struct program *restrict prog)
 {
 	append_str(&prog->cc_list, optarg, 2);
-	strmv(0, prog->cc_list.list[prog->cc_list.cnt - 1], "-I");
+	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-I", 2);
+}
+
+static inline void copy_lib_dirs(struct program *restrict prog)
+{
+	append_str(&prog->cc_list, optarg, 2);
+	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-L", 2);
 }
 
 static inline void copy_out_file(struct program *restrict prog, char **restrict out_name)
@@ -379,9 +385,14 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			copy_eval_code(prog);
 			break;
 
+		/* header directory flag */
 		case 'I':
-			/* header directory flag */
 			copy_header_dirs(prog);
+			break;
+
+		/* library directory flag */
+		case 'L':
+			copy_lib_dirs(prog);
 			break;
 
 		/* dynamic library flag */

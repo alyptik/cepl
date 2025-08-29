@@ -53,10 +53,11 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-9.0.3"
+#define VERSION_STRING	"cepl-9.1.0"
 #define USAGE_STRING \
 	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
-	"[-l<library>] [-I<include directory>] [-o<out.c>]\n\t" \
+	"[-l<library>] [-I<include directory>] [-L<library directory>] " \
+	"[-o<out.c>]\n\t" \
 	"-c, --compiler\t\tSpecify alternate compiler\n\t" \
 	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t" \
 	"-f, --file\t\tSource file to import\n\t" \
@@ -67,7 +68,8 @@
 	"-v, --version\t\tShow version information\n\t" \
 	"-w, --warnings\t\tCompile with \"-Wall -Wextra -pedantic\" flags\n\t" \
 	"-l\t\t\tLink against specified library (flag can be repeated)\n\t" \
-	"-I\t\t\tSearch directory for header files (flag can be repeated)\n" \
+	"-I\t\t\tSearch directory for header files (flag can be repeated)\n\t" \
+	"-L\t\t\tSearch directory for libraries (flag can be repeated)\n" \
 	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t" \
 	";h[elp]\t\t\tShow help\n\t" \
 	";m[acro]\t\tLine is defined outside of main() (e.g. \";m void bork(void) { puts(\"wark\"); }\")\n\t" \

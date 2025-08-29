@@ -1,4 +1,4 @@
-.TH CEPL: "1" "July 2024" "cepl-9\&.0\&.3" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-9\&.1\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C and C++ REPL
@@ -6,7 +6,7 @@ cepl \- a C and C++ REPL
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluåte>\fR] [\-f\fI<file>\fR] [\-l\fI<library>\fR] [\-I\fI<include directory>\fR] [\-o\fI<out\&.c>\fR]
+\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] [\-f\fI<file>\fR] [\-l\fI<library>\fR] [\-I\fI<include directory>\fR] [\-L\fI<library directory>\fR] [\-o\fI<out\&.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
@@ -60,6 +60,8 @@ Command line options:
 \fB\-l\fR			Link against specified library (flag can be repeated)
 .HP
 \fB\-I\fR			Search directory for header files (flag can be repeated)
+.HP
+\fB\-L\fR			Search directory for libraries (flag can be repeated)
 .fi
 
 .SS "COMMANDS"
