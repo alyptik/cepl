@@ -23,8 +23,6 @@
 #include <unistd.h>
 
 /* macros */
-#define min(a, b)		(((a) < (b)) ? (a) : (b))
-#define max(a, b)		(((a) > (b)) ? (a) : (b))
 #define arr_len(arr)		((sizeof (arr)) / (sizeof *(arr)))
 #define printe(fmt, ...)	fprintf(stderr, "\033[92m" fmt "\033[00m", __VA_ARGS__)
 /* `malloc()` wrapper */

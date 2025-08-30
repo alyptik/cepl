@@ -344,8 +344,8 @@ int find_vars(struct program *restrict prog, char const *restrict code)
 
 int print_vars(struct program *restrict prog, char *const *restrict cc_args, char **exec_args)
 {
-	int status, mem_fd, null_fd;
-	int pipe_cc[2], pipe_exec[2];
+	int status, null_fd;
+	int pipe_cc[2];
 	char *src_tmp;
 	char *term = getenv("TERM");
 	bool has_color = term
@@ -527,8 +527,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	/* create pipes */
 	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_cc pipe");
-	if (pipe2(pipe_exec, O_CLOEXEC) == -1)
-		ERR("%s", "error making pipe_exec pipe");
 
 	/* fork compiler */
 	switch (fork()) {
@@ -536,8 +534,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	case -1:
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
-		close(pipe_exec[0]);
-		close(pipe_exec[1]);
 		ERR("%s", "error forking compiler");
 		break;
 
@@ -568,7 +564,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	switch (fork()) {
 	/* error */
 	case -1:
-		close(pipe_exec[0]);
 		ERR("%s", "error forking executable");
 		break;
 
@@ -581,13 +576,12 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 		dup2(null_fd, STDIN_FILENO);
 		dup2(null_fd, STDOUT_FILENO);
 		execve("/tmp/cepl_program", exec_args, environ);
-		/* fexecve() should never return */
+		/* execve() should never return */
 		ERR("%s", "error forking executable");
 		break;
 
 	/* parent */
 	default:
-		close(pipe_exec[0]);
 		close(null_fd);
 		wait(&status);
 		if (unlink("/tmp/cepl_program") == -1)

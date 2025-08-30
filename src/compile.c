@@ -24,8 +24,8 @@ extern char **environ;
 
 int compile(char const *restrict src, char *const cc_args[], char *const exec_args[], bool show_errors)
 {
-	int null_fd, mem_fd, status, prog_fd;
-	int pipe_cc[2], pipe_exec[2];
+	int null_fd, status, prog_fd;
+	int pipe_cc[2];
 	size_t len = strlen(src);
 
 	if (!src || !cc_args || !exec_args)
@@ -40,8 +40,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	/* create pipes */
 	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
 		ERR("%s", "error making pipe_cc pipe");
-	if (pipe2(pipe_exec, O_CLOEXEC) == -1)
-		ERR("%s", "error making pipe_exec pipe");
 
 	/* fork compiler */
 	switch (fork()) {
@@ -49,8 +47,6 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	case -1:
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
-		close(pipe_exec[0]);
-		close(pipe_exec[1]);
 		ERR("%s", "error forking compiler");
 		break;
 
@@ -83,27 +79,19 @@ int compile(char const *restrict src, char *const cc_args[], char *const exec_ar
 	switch (fork()) {
 	/* error */
 	case -1:
-		close(pipe_exec[0]);
 		ERR("%s", "error forking executable");
 		break;
 
 	/* child */
 	case 0:
 		reset_handlers();
-		/*
-		 * if ((mem_fd = memfd_create("cepl", 0)) == -1)
-		 *         ERR("%s", "error creating mem_fd");
-		 * pipe_fd(pipe_exec[0], mem_fd);
-		 * fexecve(mem_fd, exec_args, environ);
-		 */
 		execve("/tmp/cepl_program", exec_args, environ);
-		/* fexecve() should never return */
+		/* execve() should never return */
 		ERR("%s", "error forking executable");
 		break;
 
 	/* parent */
 	default:
-		close(pipe_exec[0]);
 		close(null_fd);
 		wait(&status);
 		if (unlink("/tmp/cepl_program") == -1)
