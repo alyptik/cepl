@@ -240,8 +240,8 @@ void free_buffers(struct program *restrict prog)
 
 void init_buffers(struct program *restrict prog)
 {
-	/* use appropriate prologue depending on c or c++ mode */
-	if (!strcmp(prog->cc_list.list[0], "g++") || !strcmp(prog->cc_list.list[0], "clang++"))
+	/* use appropriate prologue for compiler type (c or c++) */
+	if (prog->cc_list.list[0][strlen(prog->cc_list.list[0]) - 1] == '+')
 		prologue = cxx_prologue;
 	else
 		prologue = c_prologue;
