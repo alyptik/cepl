@@ -26,29 +26,29 @@
 #define arr_len(arr)		((sizeof (arr)) / (sizeof *(arr)))
 #define printe(fmt, ...)	fprintf(stderr, "\033[92m" fmt "\033[00m", __VA_ARGS__)
 /* `malloc()` wrapper */
-#define xmalloc(ptr, sz, msg) \
-	do { \
-		void *tmp = malloc(sz); \
-		if (!tmp) \
-			ERR("%s", (msg)); \
-		*ptr = tmp; \
-	} while (0)
+#define xmalloc(ptr, sz, msg)				\
+	({						\
+		void *tmp = malloc(sz);			\
+		if (!tmp)				\
+			ERR("%s", (msg));		\
+		*ptr = tmp;				\
+	})
 /* `calloc()` wrapper */
-#define xcalloc(ptr, nmemb, sz, msg) \
-	do { \
-		void *tmp = calloc((nmemb), (sz)); \
-		if (!tmp) \
-			ERR("%s", (msg)); \
-		*ptr = tmp; \
-	} while (0)
+#define xcalloc(ptr, nmemb, sz, msg)			\
+	({						\
+		void *tmp = calloc((nmemb), (sz));	\
+		if (!tmp)				\
+			ERR("%s", (msg));		\
+		*ptr = tmp;				\
+	})
 /* `realloc()` wrapper */
-#define xrealloc(ptr, sz, msg) \
-	do { \
-		void *tmp[2] = {0, *ptr}; \
-		if (!(tmp[0] = realloc(tmp[1], sz))) \
-			ERR("%s", (msg)); \
-		*ptr = tmp[0]; \
-	} while (0)
+#define xrealloc(ptr, sz, msg)				\
+	({						\
+		void *tmp[2] = {0, *ptr};		\
+		if (!(tmp[0] = realloc(tmp[1], sz)))	\
+			ERR("%s", (msg));		\
+		*ptr = tmp[0];				\
+	})
 
 /* global version and usage strings */
 #define VERSION_STRING	"cepl-11.0.0"

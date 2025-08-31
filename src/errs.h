@@ -17,24 +17,24 @@
 #include <unistd.h>
 
 /* warning macros */
-# define WARN(fmt, ...) \
-	do { \
-		fprintf(stderr, "%s:%s [%s:%u] " fmt "\n", strerror(errno), __func__, __FILE__, __LINE__, __VA_ARGS__); \
-	} while (0)
-# define WARNX(fmt, ... ) \
-	do { \
-		fprintf(stderr, "%s [%s:%u] " fmt "\n", __func__, __FILE__, __LINE__, __VA_ARGS__); \
-	} while (0)
+# define WARN(fmt, ...)													\
+	({														\
+		fprintf(stderr, "%s:%s [%s:%u] " fmt "\n", strerror(errno), __func__, __FILE__, __LINE__, __VA_ARGS__);	\
+	})
+# define WARNX(fmt, ... )												\
+	({														\
+		fprintf(stderr, "%s [%s:%u] " fmt "\n", __func__, __FILE__, __LINE__, __VA_ARGS__);			\
+	})
 /* error macros */
-# define ERR(fmt, ...) \
-	do { \
-		fprintf(stderr, "%s:%s [%s:%u] " fmt "\n", strerror(errno), __func__, __FILE__, __LINE__, __VA_ARGS__); \
-		exit(EXIT_FAILURE); \
-	} while (0)
-# define ERRX(fmt, ...) \
-	do { \
-		fprintf(stderr, "%s [%s:%u] " fmt "\n", __func__, __FILE__, __LINE__, __VA_ARGS__); \
-		exit(EXIT_FAILURE); \
-	} while (0)
+# define ERR(fmt, ...)													\
+	({														\
+		fprintf(stderr, "%s:%s [%s:%u] " fmt "\n", strerror(errno), __func__, __FILE__, __LINE__, __VA_ARGS__);	\
+		exit(EXIT_FAILURE);											\
+	})
+# define ERRX(fmt, ...)													\
+	({														\
+		fprintf(stderr, "%s [%s:%u] " fmt "\n", __func__, __FILE__, __LINE__, __VA_ARGS__);			\
+		exit(EXIT_FAILURE);											\
+	})
 
 #endif /* !defined(ERRS_H) */
