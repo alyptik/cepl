@@ -4,10 +4,7 @@ local curcontext="$curcontext" state line compilers stds libs
 typeset -A opt_args
 
 compilers=(gcc clang g++ clang++)
-stds=(c90 c99 c11 c17 c23
-	gnu90 gnu99 gnu11 gnu17 gnu23
-	c++98 c++11 c++14 c++17 c++20 c++23 c++26
-	gnu++98 gnu++11 gnu++14 gnu++17 gnu++23 gnu++26)
+stds=(${:-c{90,99,11,17,23}} ${:-gnu{90,99,11,17,23}} ${:-c++{98,11,14,17,20,23,26}} ${:-gnu++{98,11,14,17,23,26}})
 libs=(${${$(find -L /lib64/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib64/lib}%.so})
 
 _arguments -s \
