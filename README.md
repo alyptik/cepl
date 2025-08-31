@@ -43,17 +43,18 @@ your code to `out.c` on exit.
 #### Command line options:
 
 	-c, --compiler		Specify alternate compiler
-	-e, --eval		Evaluate the following argument as C/C++ code
-	-f, --file		Source file to import
-	-h, --help		Show help/usage information
+	-e, --eval		    Evaluate the following argument as C/C++ code
+	-f, --file		    Source file to import
+	-h, --help		    Show help/usage information
 	-o, --output		Name of the file to output C/C++ code to
-	-p, --parse		Disable addition of dynamic library symbols to readline completion
+	-p, --parse		    Disable addition of dynamic library symbols to readline completion
+	-s, --std		    Specify which C/C++ standard to use
 	-t, --tracking		Toggle variable tracking
 	-v, --version		Show version information
 	-w, --warnings		Compile with "-Wall -Wextra -pedantic" flags
-	-l			Link against specified library (flag can be repeated)
-	-I			Search directory for header files (flag can be repeated)
-	-L			Search directory for libraries (flag can be repeated)
+	-l			        Link against specified library (flag can be repeated)
+	-I			        Search directory for header files (flag can be repeated)
+	-L			        Search directory for libraries (flag can be repeated)
 
 #### Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 

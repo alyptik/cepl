@@ -1,9 +1,13 @@
 #compdef cepl
 
-local curcontext="$curcontext" state line compilers libs
+local curcontext="$curcontext" state line compilers stds libs
 typeset -A opt_args
 
 compilers=(gcc clang g++ clang++)
+stds=(c90 c99 c11 c17 c23
+	gnu90 gnu99 gnu11 gnu17 gnu23
+	c++98 c++11 c++14 c++17 c++20 c++23 c++26
+	gnu++98 gnu++11 gnu++14 gnu++17 gnu++23 gnu++26)
 libs=(${${$(find -L /lib64/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib64/lib}%.so})
 
 _arguments -s \
@@ -13,6 +17,7 @@ _arguments -s \
 	{-h,--help}'[Show help/usage information.]' \
 	{-o,--output=}'[Name of the file to output C source code to.]:file:_files' \
 	{-p,--parse}'[Disable addition of dynamic library symbols to readline completion.]' \
+	{-s,--std=}"[Specify which C/C++ standard to use.]:std:($stds)" \
 	{-t,--tracking}'[Toggle variable tracking.]' \
 	{-v,--version}'[Show version information.]' \
 	{-w,--warnings}'[Compile with "-Wall -Wextra -pedantic" flags.]' \

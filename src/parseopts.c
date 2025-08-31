@@ -24,6 +24,7 @@ static struct option long_opts[] = {
 	{"help", no_argument, 0, 'h'},
 	{"output", required_argument, 0, 'o'},
 	{"parse", no_argument, 0, 'p'},
+	{"std", required_argument , 0, 's'},
 	{"tracking", no_argument, 0, 't'},
 	{"version", no_argument, 0, 'v'},
 	{"warnings", no_argument, 0, 'w'},
@@ -31,15 +32,13 @@ static struct option long_opts[] = {
 };
 static char *const cc_arg_list[] = {
 	"-g3", "-O0", "-pipe",
-	"-fPIC", "-std=gnu2x",
-	"-xc", "-",
+	"-fPIC", "-xc", "-",
 	"-o/tmp/cepl_program",
 	NULL
 };
 static char *const ccxx_arg_list[] = {
 	"-g3", "-O0", "-pipe",
-	"-fPIC", "-std=gnu++2a",
-	"-xc++", "-",
+	"-fPIC", "-xc++", "-",
 	"-o/tmp/cepl_program",
 	NULL
 };
@@ -191,6 +190,13 @@ static inline void copy_lib_dirs(struct program *restrict prog)
 {
 	append_str(&prog->cc_list, optarg, 2);
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-L", 2);
+}
+
+static inline void copy_std(struct program *restrict prog)
+{
+	prog->sflags.std_flag = true;
+	append_str(&prog->cc_list, optarg, 5);
+	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
 }
 
 static inline void copy_out_file(struct program *restrict prog, char **restrict out_name)
@@ -400,6 +406,11 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 			copy_libs(prog);
 			break;
 
+		/* standard flag */
+		case 's':
+			copy_std(prog);
+			break;
+
 		/* output file flag */
 		case 'o':
 			copy_out_file(prog, &out_name);
@@ -440,11 +451,20 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 	set_out_file(prog, out_name);
 	/* c compiler */
-	if (!prog->sflags.cxx_flag)
+	if (!prog->sflags.cxx_flag) {
+		if (!prog->sflags.std_flag) {
+			append_str(&prog->cc_list, "gnu23", 5);
+			memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
+		}
 		build_arg_list(prog, cc_arg_list);
 	/* c++ compiler */
-	else
+	} else {
+		if (!prog->sflags.std_flag) {
+			append_str(&prog->cc_list, "gnu++26", 5);
+			memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
+		}
 		build_arg_list(prog, ccxx_arg_list);
+	}
 	build_sym_list(prog);
 
 #ifdef _DEBUG

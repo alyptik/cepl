@@ -51,7 +51,7 @@
 	} while (0)
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-10.0.0"
+#define VERSION_STRING	"cepl-11.0.0"
 #define USAGE_STRING \
 	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
 	"[-l<library>] [-I<include directory>] [-L<library directory>] " \
@@ -62,6 +62,7 @@
 	"-h, --help\t\tShow help/usage information\n\t" \
 	"-o, --output\t\tName of the file to output C/C++ source code to\n\t" \
 	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
+	"-s, --std\t\tSpecify which C/C++ standard to use\n\t" \
 	"-t, --tracking\t\tToggle variable tracking\n\t" \
 	"-v, --version\t\tShow version information\n\t" \
 	"-w, --warnings\t\tCompile with \"-Wall -Wextra -pedantic\" flags\n\t" \
@@ -84,6 +85,7 @@
 		.eval_flag = false, .exec_flag = false, .in_flag = false, \
 		.out_flag = false, .parse_flag = true, .track_flag = true, \
 		.warn_flag = false, .cxx_flag = false, .hist_flag = false, \
+		.std_flag = false, \
 	}
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
@@ -160,7 +162,7 @@ struct source_code {
 /* struct definition for state flags */
 struct state_flags {
 	bool eval_flag;
-	bool exec_flag, parse_flag;
+	bool exec_flag, parse_flag, std_flag;
 	bool track_flag, warn_flag, cxx_flag;
 	bool in_flag, out_flag, hist_flag;
 };
