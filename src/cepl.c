@@ -557,31 +557,31 @@ int main(int argc, char **argv)
 			/* toggle library parsing */
 			case 'p':
 				free_buffers(&program_state);
-				parse_opts(&program_state, argc, argv, optstring);
-				init_buffers(&program_state);
 				restore_flag_state(&saved_flags);
 				program_state.sflags.parse_flag ^= true;
 				save_flag_state(&saved_flags);
+				parse_opts(&program_state, argc, argv, optstring);
+				init_buffers(&program_state);
 				break;
 
 			/* toggle variable tracking */
 			case 't':
 				free_buffers(&program_state);
-				parse_opts(&program_state, argc, argv, optstring);
-				init_buffers(&program_state);
 				restore_flag_state(&saved_flags);
 				program_state.sflags.track_flag ^= true;
 				save_flag_state(&saved_flags);
+				parse_opts(&program_state, argc, argv, optstring);
+				init_buffers(&program_state);
 				break;
 
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
-				parse_opts(&program_state, argc, argv, optstring);
-				init_buffers(&program_state);
 				restore_flag_state(&saved_flags);
 				program_state.sflags.warn_flag ^= true;
 				save_flag_state(&saved_flags);
+				parse_opts(&program_state, argc, argv, optstring);
+				init_buffers(&program_state);
 				break;
 
 			/* reset state */
@@ -589,8 +589,6 @@ int main(int argc, char **argv)
 				free_buffers(&program_state);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				save_flag_state(&saved_flags);
 				scan_input_file();
 				break;
 

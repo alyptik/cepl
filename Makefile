@@ -57,7 +57,7 @@ $(TARGET): %: $(OBJ)
 clean:
 	@echo "[cleaning]"
 	$(RM) $(TARGET) $(OBJ) $(DEP) cscope.* tags TAGS \
-		cepl-$(shell sed '1!d; s/.*\([0-9]\).*\([0-9]\).*\([0-9]\).*/\1.\2.\3/' cepl.1).tar.gz
+		cepl-$(shell sed '1!d; s/.*cepl-\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\).*/\1.\2.\3/' cepl.1).tar.gz
 install: $(TARGET)
 	@echo "[installing]"
 	mkdir -p $(DESTDIR)$(PREFIX)/$(BINDIR)
@@ -73,9 +73,9 @@ uninstall:
 	$(RM) $(DESTDIR)$(PREFIX)/$(COMPDIR)/$(COMPLETION)
 dist: clean
 	@echo "[creating source tarball]"
-	tar cf cepl-$(shell sed '1!d; s/.*\([0-9]\).*\([0-9]\).*\([0-9]\).*/\1.\2.\3/' cepl.1).tar \
+	tar cf cepl-$(shell sed '1!d; s/.*cepl-\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\).*/\1.\2.\3/' cepl.1).tar \
 		LICENSE Makefile README.md _cepl cepl.1 cepl.gif cepl.json src
-	gzip cepl-$(shell sed '1!d; s/.*\([0-9]\).*\([0-9]\).*\([0-9]\).*/\1.\2.\3/' cepl.1).tar
+	gzip cepl-$(shell sed '1!d; s/.*cepl-\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\).*/\1.\2.\3/' cepl.1).tar
 cscope:
 	@echo "[creating cscope database]"
 	$(RM) cscope.*
