@@ -13,10 +13,10 @@ CC ?= gcc
 LD = $(CC)
 DEBUG_CFLAGS = $(CFLAGS) $(DEBUG)
 DEBUG_LDFLAGS = $(LDFLAGS)
-OBJ = $(SRC:.c=.o)
-DEP = $(SRC:.c=.d)
 SRC := $(wildcard src/*.c)
 HDR := $(wildcard src/*.h)
+OBJ := $(SRC:.c=.o)
+DEP := $(SRC:.c=.d)
 CPPFLAGS := -D_GNU_SOURCE -MMD -MP
 BINDIR := bin
 MANDIR := share/man/man1
@@ -24,10 +24,10 @@ COMPDIR := share/zsh/site-functions
 TARGET := cepl
 MANPAGE := cepl.1
 COMPLETION := _cepl
-WARNINGS := -Wrestrict -Wall -Wextra -pedantic				\
-		-Wcast-align -Wfloat-equal -Wmissing-declarations	\
-		-Wmissing-prototypes -Wnested-externs -Wpointer-arith	\
-		-Wshadow -Wstrict-overflow
+WARNINGS := -Wall -Wextra -Wcast-align -Wfloat-equal			\
+		-Wmissing-declarations -Wmissing-prototypes		\
+		-Wnested-externs -Wpointer-arith -Wshadow		\
+		-Wstrict-overflow
 IGNORES := -Wno-conversion -Wno-cpp -Wno-implicit-fallthrough		\
 	   	-Wno-inline -Wno-long-long				\
 		-Wno-missing-field-initializers -Wno-redundant-decls	\
