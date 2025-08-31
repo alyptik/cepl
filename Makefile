@@ -7,9 +7,9 @@
 # optional
 DESTDIR ?=
 PREFIX ?= /usr/local
-CC ?= gcc
 
 # mandatory
+CC = gcc
 LD = $(CC)
 DEBUG_CFLAGS = $(CFLAGS) $(DEBUG)
 DEBUG_LDFLAGS = $(LDFLAGS)
