@@ -135,7 +135,7 @@ static inline void parse_input_file(struct program *restrict prog, char **restri
 	prologue = prog->input_src[0];
 	prog_start = prog_start_user = prog->input_src[1];
 	prog_end = prog->input_src[2];
-	prog->sflags.in_flag ^= true;
+	prog->state_flags ^= INPUT_FLAG;
 	xfclose(&tmp_file);
 }
 
@@ -146,7 +146,7 @@ static inline void copy_compiler(struct program *restrict prog)
 		size_t pval_len = strlen("FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL") + 1;
 		/* set cxx_flag if c++ compiler */
 		if (!strcmp(optarg, "g++") || !strcmp(optarg, "clang++"))
-			prog->sflags.cxx_flag = true;
+			prog->state_flags |= CXX_FLAG;
 		/* realloc if needed */
 		if (cc_len > pval_len) {
 			if (!(tmp_arg = realloc(prog->cc_list.list[0], cc_len)))
@@ -177,7 +177,7 @@ static inline void copy_eval_code(struct program *restrict prog)
 	if (strlen(optarg) > sizeof prog->eval_arg)
 		ERRX("%s", "eval string too long");
 	strmv(0, prog->eval_arg, optarg);
-	prog->sflags.eval_flag ^= true;
+	prog->state_flags ^= EVAL_FLAG;
 }
 
 static inline void copy_header_dirs(struct program *restrict prog)
@@ -194,7 +194,7 @@ static inline void copy_lib_dirs(struct program *restrict prog)
 
 static inline void copy_std(struct program *restrict prog)
 {
-	prog->sflags.std_flag = true;
+	prog->state_flags |= STD_FLAG;
 	append_str(&prog->cc_list, optarg, 5);
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
 }
@@ -204,13 +204,13 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 	if (*out_name)
 		ERRX("%s", "too many output files specified");
 	*out_name = optarg;
-	prog->sflags.out_flag ^= true;
+	prog->state_flags ^= OUT_FLAG;
 }
 
 static inline void set_out_file(struct program *restrict prog, char *restrict out_name)
 {
 	/* output file flag */
-	if (prog->sflags.out_flag) {
+	if (prog->state_flags & OUT_FLAG) {
 		if (out_name && !prog->out_filename) {
 			xcalloc(&prog->out_filename, 1, strlen(out_name) + 1, "prog->out_filename calloc()");
 			strmv(0, prog->out_filename, out_name);
@@ -225,7 +225,7 @@ static inline void set_out_file(struct program *restrict prog, char *restrict ou
 static inline void enable_warnings(struct program *restrict prog)
 {
 	/* append warning flags */
-	if (prog->sflags.warn_flag) {
+	if (prog->state_flags & WARN_FLAG) {
 		for (size_t i = 0; warn_list[i]; i++)
 			append_str(&prog->cc_list, warn_list[i], 0);
 	}
@@ -239,7 +239,7 @@ static inline void append_arg_list(struct program *restrict prog, char *const *c
 	if (lib_list)
 		for (size_t i = 0; lib_list[i]; i++)
 			append_str(&prog->lib_list, lib_list[i], 0);
-	if (prog->sflags.warn_flag)
+	if (prog->state_flags & WARN_FLAG)
 		enable_warnings(prog);
 }
 
@@ -272,7 +272,7 @@ static inline void build_arg_list(struct program *restrict prog, char *const *cc
 static inline void build_sym_list(struct program *restrict prog)
 {
 	/* parse ELF shared libraries for completions */
-	if (prog->sflags.parse_flag) {
+	if (prog->state_flags & PARSE_FLAG) {
 		init_str_list(&comp_list, NULL);
 		init_str_list(&prog->sym_list, NULL);
 		parse_libs(&prog->sym_list, prog->lib_list.list);
@@ -360,14 +360,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	option_index = 0;
 	optind = 1;
 
-	/*
-	 * TODO XXX:
-	 *
-	 * you currently need to need to invert the parse and track flags
-	 * because they start out true; need to figure out why and fix it.
-	 */
-	prog->sflags.parse_flag ^= true;
-	prog->sflags.track_flag ^= true;
 	/* initilize argument lists */
 	init_str_list(&prog->cc_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 	init_str_list(&prog->lib_list, NULL);
@@ -418,17 +410,17 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 		/* parse flag */
 		case 'p':
-			prog->sflags.parse_flag ^= true;
+			prog->state_flags ^= PARSE_FLAG;
 			break;
 
 		/* track flag */
 		case 't':
-			prog->sflags.track_flag ^= true;
+			prog->state_flags ^= TRACK_FLAG;
 			break;
 
 		/* warning flag */
 		case 'w':
-			prog->sflags.warn_flag ^= true;
+			prog->state_flags ^= WARN_FLAG;
 			break;
 
 		/* version flag */
@@ -450,20 +442,20 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 	}
 
 	set_out_file(prog, out_name);
-	/* c compiler */
-	if (!prog->sflags.cxx_flag) {
-		if (!prog->sflags.std_flag) {
-			append_str(&prog->cc_list, "gnu23", 5);
-			memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
-		}
-		build_arg_list(prog, cc_arg_list);
 	/* c++ compiler */
-	} else {
-		if (!prog->sflags.std_flag) {
+	if (prog->state_flags & CXX_FLAG) {
+		if (!(prog->state_flags & STD_FLAG)) {
 			append_str(&prog->cc_list, "gnu++26", 5);
 			memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
 		}
 		build_arg_list(prog, ccxx_arg_list);
+	/* c compiler */
+	} else {
+		if (!(prog->state_flags & STD_FLAG)) {
+			append_str(&prog->cc_list, "gnu23", 5);
+			memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
+		}
+		build_arg_list(prog, cc_arg_list);
 	}
 	build_sym_list(prog);
 

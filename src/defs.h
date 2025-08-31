@@ -51,7 +51,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-11.0.0"
+#define VERSION_STRING	"cepl-12.0.0"
 #define USAGE_STRING \
 	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
 	"[-l<library>] [-I<include directory>] [-L<library directory>] " \
@@ -79,14 +79,20 @@
 	";t[racking]\t\tToggle variable tracking\n\t" \
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]\t\tToggle -w (pedantic warnings) flag"
-/* option default initializer */
-#define STATE_FLAG_DEF_INIT \
-	(struct state_flags){ \
-		.eval_flag = false, .exec_flag = false, .in_flag = false, \
-		.out_flag = false, .parse_flag = true, .track_flag = true, \
-		.warn_flag = false, .cxx_flag = false, .hist_flag = false, \
-		.std_flag = false, \
-	}
+
+/* state flags */
+#define CXX_FLAG		0x01
+#define EVAL_FLAG		0x02
+#define EXEC_FLAG		0x04
+#define HIST_FLAG		0x08
+#define INPUT_FLAG		0x10
+#define OUT_FLAG		0x20
+#define PARSE_FLAG		0x40
+#define STD_FLAG		0x80
+#define TRACK_FLAG		0x100
+#define WARN_FLAG		0x200
+
+/* terminal color escapes */
 #define	RED		"\\033[31m"
 #define	GREEN		"\\033[32m"
 #define	YELLOW		"\\033[33m"
@@ -159,14 +165,6 @@ struct source_code {
 	struct flag_list flags;
 };
 
-/* struct definition for state flags */
-struct state_flags {
-	bool eval_flag;
-	bool exec_flag, parse_flag, std_flag;
-	bool track_flag, warn_flag, cxx_flag;
-	bool in_flag, out_flag, hist_flag;
-};
-
 /* standard io stream state state */
 struct termio_state {
 	bool modes_changed;
@@ -177,6 +175,7 @@ struct termio_state {
 struct program {
 	FILE *ofile;
 	int saved_fd;
+	unsigned state_flags;
 	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;
@@ -186,7 +185,6 @@ struct program {
 	struct type_list type_list;
 	struct var_list var_list;
 	struct source_code src[2];
-	struct state_flags sflags;
 	struct termio_state tty_state;
 };
 
@@ -215,15 +213,6 @@ static inline void reset_handlers(void)
 	}
 }
 
-/* `fclose()` wrapper */
-static inline void xfclose(FILE **restrict out_file)
-{
-	if (!out_file || !*out_file)
-		return;
-	if (fclose(*out_file) == EOF)
-		WARN("%s", "xfclose()");
-}
-
 /* `fopen()` wrapper */
 static inline void xfopen(FILE **restrict file, char const *restrict path, char const *restrict fmode)
 {
@@ -231,13 +220,13 @@ static inline void xfopen(FILE **restrict file, char const *restrict path, char 
 		ERR("%s", "xfopen()");
 }
 
-/* `fread()` wrapper */
-static inline size_t xfread(void *restrict ptr, size_t sz, size_t nmemb, FILE *restrict stream)
+/* `fclose()` wrapper */
+static inline void xfclose(FILE **restrict out_file)
 {
-	size_t cnt;
-	if ((cnt = fread(ptr, sz, nmemb, stream)) < nmemb)
-		return 0;
-	return cnt;
+	if (!out_file || !*out_file)
+		return;
+	if (fclose(*out_file) == EOF)
+		WARN("%s", "xfclose()");
 }
 
 /* recursive free */

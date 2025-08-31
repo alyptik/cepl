@@ -166,7 +166,7 @@ void cleanup(struct program *restrict prog)
 		free(prog->input_src[i]);
 		prog->input_src[i] = NULL;
 	}
-	if (isatty(STDIN_FILENO) && !prog->sflags.eval_flag)
+	if (isatty(STDIN_FILENO) && !(prog->state_flags & EVAL_FLAG))
 		printf("\n%s\n\n", "Terminating program.");
 }
 
@@ -176,10 +176,10 @@ void write_files(struct program *restrict prog)
 	size_t buf_len, buf_pos;
 
 	/* write out history/asm output */
-	if (prog->sflags.hist_flag && write_history(prog->hist_file))
+	if ((prog->state_flags & HIST_FLAG) && write_history(prog->hist_file))
 		WARN("%s", "write_history()");
 	/* return early if no file open */
-	if (!prog->sflags.out_flag || !prog->ofile || !prog->src[1].total.buf)
+	if (!(prog->state_flags & OUT_FLAG) || !prog->ofile || !prog->src[1].total.buf)
 		return;
 	if ((out_fd = fileno(prog->ofile)) < 0)
 		return;
@@ -386,7 +386,7 @@ void build_final(struct program *restrict prog, char **argv)
 		strmv(0, prog->src[i].total.buf, prog->src[i].funcs.buf);
 		strmv(CONCAT, prog->src[i].total.buf, prog->src[i].body.buf);
 		/* print variable values */
-		if (prog->sflags.track_flag && i == 1)
+		if ((prog->state_flags & TRACK_FLAG) && i == 1)
 			print_vars(prog, prog->cc_list.list, argv);
 		strmv(CONCAT, prog->src[i].total.buf, prog_end);
 	}

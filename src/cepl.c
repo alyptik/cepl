@@ -35,9 +35,9 @@ extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 static inline char *read_line(struct program *restrict prog)
 {
 	/* false while waiting for input */
-	prog->sflags.exec_flag = false;
+	prog->state_flags &= ~EXEC_FLAG;
 	/* return early if executed with `-e` argument */
-	if (prog->sflags.eval_flag)
+	if (prog->state_flags & EVAL_FLAG)
 		return prog->cur_line = prog->eval_arg;
 	/* use an empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO))
@@ -73,7 +73,7 @@ static inline void undo_last_line(void)
 		return;
 	pop_history(&program_state);
 	/* break early if tracking disabled */
-	if (!program_state.sflags.track_flag)
+	if (!(program_state.state_flags & TRACK_FLAG))
 		return;
 	init_vars();
 	/* add vars from previous lines */
@@ -160,9 +160,9 @@ static void sig_handler(int sig)
 		 * else abort current input line and
 		 * siglongjmp() back to loop beginning
 		 */
-		if (program_state.sflags.exec_flag) {
+		if (program_state.state_flags & EXEC_FLAG) {
 			undo_last_line();
-			program_state.sflags.exec_flag = false;
+			program_state.state_flags &= ~EXEC_FLAG;
 		}
 		siglongjmp(jmp_env, 1);
 	}
@@ -212,21 +212,21 @@ static void reg_handlers(void)
 static inline void toggle_output_file(char *tbuf)
 {
 	/* if file was open, flip it and break early */
-	if (program_state.sflags.out_flag) {
+	if (program_state.state_flags & OUT_FLAG) {
 		/* delete output file */
 		if (program_state.out_filename && unlink(program_state.out_filename) < 0)
 			WARN("%s failed in %s", "unlink()", __func__);
 		free(program_state.out_filename);
 		program_state.out_filename = NULL;
-		program_state.sflags.out_flag ^= true;
+		program_state.state_flags ^= OUT_FLAG;
 		return;
 	}
-	program_state.sflags.out_flag ^= true;
+	program_state.state_flags ^= OUT_FLAG;
 	tbuf = strpbrk(program_state.cur_line, " \t");
 	/* return if file name empty */
 	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
 		/* reset flag */
-		program_state.sflags.out_flag ^= true;
+		program_state.state_flags ^= OUT_FLAG;
 		return;
 	}
 	/* increment pointer to start of definition */
@@ -306,7 +306,7 @@ static inline void parse_macro(void)
 			tmp_list = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp_list.cnt; i++) {
 				/* extract identifiers and types */
-				if (program_state.sflags.track_flag && find_vars(&program_state, tmp_list.list[i]))
+				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp_list.list[i]))
 					gen_var_list(&program_state);
 			}
 			free_str_list(&tmp_list);
@@ -320,7 +320,7 @@ static inline void parse_macro(void)
 			tmp_list = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp_list.cnt; i++) {
 				/* extract identifiers and types */
-				if (program_state.sflags.track_flag && find_vars(&program_state, tmp_list.list[i]))
+				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp_list.list[i]))
 					gen_var_list(&program_state);
 			}
 			free_str_list(&tmp_list);
@@ -358,7 +358,7 @@ static inline void parse_normal(void)
 			struct str_list tmp = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp.cnt; i++) {
 				/* extract identifiers and types */
-				if (program_state.sflags.track_flag && find_vars(&program_state, tmp.list[i]))
+				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp.list[i]))
 					gen_var_list(&program_state);
 			}
 			free_str_list(&tmp);
@@ -373,7 +373,7 @@ static inline void parse_normal(void)
 			struct str_list tmp = strsplit(program_state.cur_line);
 			for (size_t i = 0; i < tmp.cnt; i++) {
 				/* extract identifiers and types */
-				if (program_state.sflags.track_flag && find_vars(&program_state, tmp.list[i]))
+				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp.list[i]))
 					gen_var_list(&program_state);
 			}
 			free_str_list(&tmp);
@@ -384,13 +384,13 @@ static inline void parse_normal(void)
 /* parse input file if one is specified */
 static inline void scan_input_file(void)
 {
-	if (!program_state.sflags.in_flag)
+	if (!(program_state.state_flags & INPUT_FLAG))
 		return;
 	init_vars();
 	char *prog_buf = strchr(prog_start_user, '{');
 	if (!prog_buf)
 		return;
-	if (program_state.sflags.track_flag && find_vars(&program_state, ++prog_buf))
+	if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, ++prog_buf))
 		gen_var_list(&program_state);
 }
 
@@ -429,7 +429,7 @@ static inline void build_hist_name(void)
 		WARN("%s", "error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
-		program_state.sflags.hist_flag = true;
+		program_state.state_flags |= HIST_FLAG;
 	}
 	/* read program_state.hist_file if size is non-zero */
 	stat(program_state.hist_file, &hist_stat);
@@ -445,35 +445,31 @@ static inline void build_hist_name(void)
 	}
 }
 
-static inline void save_flag_state(struct state_flags *restrict sflags)
+static inline void save_flag_state(unsigned *restrict sflags)
 {
-	sflags->eval_flag = program_state.sflags.eval_flag;
-	sflags->exec_flag = program_state.sflags.exec_flag;
-	sflags->in_flag = program_state.sflags.in_flag;
-	sflags->out_flag = program_state.sflags.out_flag;
-	sflags->parse_flag = program_state.sflags.parse_flag;
-	sflags->track_flag = program_state.sflags.track_flag;
-	sflags->warn_flag = program_state.sflags.warn_flag;
+	if (!sflags) {
+		WARNX("%s", "null pointer passed to save_flag_state()");
+		return;
+	}
+	*sflags &= 0;
+	*sflags |= program_state.state_flags;
 }
 
-static inline void restore_flag_state(struct state_flags *restrict sflags)
+static inline void restore_flag_state(unsigned sflags)
 {
-	program_state.sflags.eval_flag = sflags->eval_flag;
-	program_state.sflags.exec_flag = sflags->exec_flag;
-	program_state.sflags.in_flag = sflags->in_flag;
-	program_state.sflags.out_flag = sflags->out_flag;
-	program_state.sflags.parse_flag = sflags->parse_flag;
-	program_state.sflags.track_flag = sflags->track_flag;
-	program_state.sflags.warn_flag = sflags->warn_flag;
+	program_state.state_flags &= 0;
+	program_state.state_flags |= sflags;
 }
 
 int main(int argc, char **argv)
 {
-	struct state_flags saved_flags = STATE_FLAG_DEF_INIT;
+	unsigned saved_flags;
 	char const *const optstring = "hptvwc:f:e:o:l:s:I:L:";
 
 	/* initialize compiler arg array */
 	build_hist_name();
+	/* set default state flags */
+	program_state.state_flags = PARSE_FLAG|TRACK_FLAG;
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
@@ -486,7 +482,7 @@ int main(int argc, char **argv)
 	 * print version
 	 */
 	build_final(&program_state, argv);
-	if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag)
+	if (isatty(STDIN_FILENO) && (program_state.state_flags & EVAL_FLAG))
 		fprintf(stderr, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
@@ -548,7 +544,7 @@ int main(int argc, char **argv)
 
 			/* toggle output file writing */
 			case 'o':
-				restore_flag_state(&saved_flags);
+				restore_flag_state(saved_flags);
 				toggle_output_file(stripped);
 				save_flag_state(&saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
@@ -557,8 +553,8 @@ int main(int argc, char **argv)
 			/* toggle library parsing */
 			case 'p':
 				free_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				program_state.sflags.parse_flag ^= true;
+				restore_flag_state(saved_flags);
+				program_state.state_flags ^= PARSE_FLAG;
 				save_flag_state(&saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
@@ -567,8 +563,8 @@ int main(int argc, char **argv)
 			/* toggle variable tracking */
 			case 't':
 				free_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				program_state.sflags.track_flag ^= true;
+				restore_flag_state(saved_flags);
+				program_state.state_flags ^= TRACK_FLAG;
 				save_flag_state(&saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
@@ -577,8 +573,8 @@ int main(int argc, char **argv)
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
-				restore_flag_state(&saved_flags);
-				program_state.sflags.warn_flag ^= true;
+				restore_flag_state(saved_flags);
+				program_state.state_flags ^= WARN_FLAG;
 				save_flag_state(&saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
@@ -635,11 +631,11 @@ int main(int argc, char **argv)
 		}
 
 		/* set to true before compiling */
-		program_state.sflags.exec_flag = true;
+		program_state.state_flags |= EXEC_FLAG;
 		/* finalize source */
 		build_final(&program_state, argv);
 		/* print generated source code unless stdin is a pipe */
-		if (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag) {
+		if (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG)) {
 			fprintf(stderr, "%s:\n", argv[0]);
 			fprintf(stderr, "==========\n");
 			fprintf(stderr, "%s\n", program_state.src[0].total.buf);
@@ -647,14 +643,14 @@ int main(int argc, char **argv)
 		}
 		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, argv, true);
 		/* print output and exit code if non-zero */
-		if (ret || (isatty(STDIN_FILENO) && !program_state.sflags.eval_flag))
+		if (ret || (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG)))
 			fprintf(stderr, "[exit status: %d]\n", ret);
 
 		/* reset io stream buffering modes */
 		tty_fix(&program_state);
 
 		/* exit if executed with `-e` argument */
-		if (program_state.sflags.eval_flag) {
+		if (program_state.state_flags & EVAL_FLAG) {
 			/* don't call free() since this points to eval_arg[0] */
 			program_state.cur_line = NULL;
 			break;
