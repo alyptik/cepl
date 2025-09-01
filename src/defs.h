@@ -52,9 +52,9 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-15.0.0"
+#define VERSION_STRING	"cepl-15.1.0"
 #define USAGE_STRING \
-	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
+	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
 	"[-o<out.c>]\n\t" \
 	"-c, --compiler\t\tSpecify alternate compiler\n\t" \
