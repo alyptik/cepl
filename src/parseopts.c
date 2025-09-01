@@ -45,7 +45,6 @@ static char *const ccxx_arg_list[] = {
 static char *const warn_list[] = {
 	"-Wall", "-Wextra",
 	"-Wno-unused",
-	"-pedantic",
 	NULL
 };
 static int option_index;
