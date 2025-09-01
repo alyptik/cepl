@@ -164,6 +164,8 @@ static void sig_handler(int sig)
 			undo_last_line();
 			program_state.state_flags &= ~EXEC_FLAG;
 		}
+		/* reap any leftover children */
+		while (wait(&ret) >= 0 && errno != ECHILD);
 		siglongjmp(jmp_env, 1);
 	}
 	/* cleanup and die if not SIGINT */
