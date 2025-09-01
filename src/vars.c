@@ -372,7 +372,7 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	if (strlen(prog->src[1].total.buf) < 2)
 		ERRX("%s", "empty source string passed to print_prog->var_list()");
 	/* return early if nothing to do */
-	if (!prog->src[1].total.buf || !cc_args || !exec_args || prog->var_list.cnt == 0)
+	if (!prog->src[1].total.buf || !cc_args || !exec_args || !prog->var_list.cnt)
 		return -1;
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
