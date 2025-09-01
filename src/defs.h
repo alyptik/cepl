@@ -52,7 +52,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-13.1.0"
+#define VERSION_STRING	"cepl-14.0.0"
 #define USAGE_STRING \
 	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
 	"[-l<library>] [-I<include directory>] [-L<library directory>] " \
@@ -64,7 +64,6 @@
 	"-o, --output\t\tName of the file to output C/C++ source code to\n\t" \
 	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
 	"-s, --std\t\tSpecify which C/C++ standard to use\n\t" \
-	"-t, --tracking\t\tToggle variable tracking\n\t" \
 	"-v, --version\t\tShow version information\n\t" \
 	"-w, --warnings\t\tCompile with \"-Wall -Wextra -pedantic\" flags\n\t" \
 	"-l\t\t\tLink against specified library (flag can be repeated)\n\t" \
@@ -77,7 +76,6 @@
 	";p[arse]\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]\t\t\tExit CEPL\n\t" \
 	";r[eset]\t\tReset CEPL to its initial program state\n\t" \
-	";t[racking]\t\tToggle variable tracking\n\t" \
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)\n\t" \
 	";w[arnings]\t\tToggle -w (pedantic warnings) flag"
 
@@ -90,8 +88,7 @@
 #define OUT_FLAG		0x20u
 #define PARSE_FLAG		0x40u
 #define STD_FLAG		0x80u
-#define TRACK_FLAG		0x100u
-#define WARN_FLAG		0x200u
+#define WARN_FLAG		0x100u
 
 /* terminal color escapes */
 #define	RED		"\\033[31m"
@@ -120,13 +117,6 @@ enum scan_state {
 	IN_PROLOGUE, IN_MIDDLE, IN_EPILOGUE,
 };
 
-/* possible types of tracked variable */
-enum var_type {
-	T_ERR, T_CHR, T_STR,
-	T_INT, T_UINT, T_FLT,
-	T_PTR, T_OTHER,
-};
-
 /* struct definition for NULL-terminated string dynamic array */
 struct str_list {
 	size_t cnt, max;
@@ -137,21 +127,6 @@ struct str_list {
 struct flag_list {
 	size_t cnt, max;
 	enum src_flag *list;
-};
-
-/* struct definition for type dynamic array */
-struct type_list {
-	size_t cnt, max;
-	enum var_type *list;
-};
-
-/* struct definition for var-tracking array */
-struct var_list {
-	size_t cnt, max;
-	struct {
-		char *id;
-		enum var_type type_spec;
-	} *list;
 };
 
 /* struct definition for program source sections */
@@ -184,8 +159,6 @@ struct program {
 	struct str_list cc_list;
 	struct str_list lib_list, sym_list;
 	struct str_list id_list;
-	struct type_list type_list;
-	struct var_list var_list;
 	struct source_code src[2];
 	struct termios_state tty_state;
 };
@@ -317,23 +290,6 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	}
 	xcalloc(&list_struct->list[list_struct->cnt - 1], 1, strlen(string) + pad + 1, "append_str()");
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
-}
-
-static inline void init_type_list(struct type_list *restrict list_struct)
-{
-	list_struct->cnt = 0;
-	list_struct->max = 1;
-	xcalloc(&list_struct->list, 1, sizeof *list_struct->list, "init_type_list()");
-}
-
-static inline void append_type(struct type_list *restrict list_struct, enum var_type type_spec)
-{
-	/* realloc if cnt reaches current size */
-	if (++list_struct->cnt >= list_struct->max) {
-		list_struct->max *= 2;
-		xrealloc(&list_struct->list, sizeof *list_struct->list * list_struct->max, "append_type()");
-	}
-	list_struct->list[list_struct->cnt - 1] = type_spec;
 }
 
 static inline void init_flag_list(struct flag_list *restrict list_struct)

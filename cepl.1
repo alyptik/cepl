@@ -1,4 +1,4 @@
-.TH CEPL: "1" "July 2024" "cepl-13\&.1\&.0" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-14\&.0\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C and C++ REPL
@@ -6,7 +6,7 @@ cepl \- a C and C++ REPL
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] \
+\fIcepl\fR [\-hpvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] \
 [\-f\fI<file>\fR] [\-l\fI<library>\fR] [\-I\fI<include directory>\fR] \
 [\-L\fI<library directory>\fR] [\-s\fI<standard>\fR] [\-o\fI<out\&.c>\fR]
 .fi
@@ -55,8 +55,6 @@ Command line options:
 .HP
 \fB\-s\fR, \fB\-\-std\fR		Specify which C/C++ standard to use
 .HP
-\fB\-t\fR, \fB\-\-tracking\fR	Toggle variable tracking
-.HP
 \fB\-v\fR, \fB\-\-version\fR	Show version information
 .HP
 \fB\-w\fR, \fB\-\-warnings\fR	Compile with \fB\-pedantic\fR \fB\-Wall\fR \fB\-Wextra\fR flags
@@ -85,8 +83,6 @@ Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is opti
 \fB;q[uit]\fR		Exit CEPL
 .HP
 \fB;r[eset]\fR		Reset CEPL to its initial program state
-.HP
-\fB;t[racking]\fR	Toggle variable tracking
 .HP
 \fB;u[ndo]\fR		Incremental undo (can be repeated)
 .HP

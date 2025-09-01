@@ -215,15 +215,8 @@ void free_buffers(struct program *restrict prog)
 	/* clean up user data */
 	free(prog->cur_line);
 	prog->cur_line = NULL;
-	free(prog->type_list.list);
-	prog->type_list.list = NULL;
 	free_str_list(&prog->id_list);
 	free_str_list(&prog->cc_list);
-	if (prog->var_list.list) {
-		for (size_t i = 0; i < prog->var_list.cnt; i++)
-			free(prog->var_list.list[i].id);
-		free(prog->var_list.list);
-	}
 	/* free program structs */
 	for (size_t i = 0; i < 2; i++) {
 		free(prog->src[i].funcs.buf);
@@ -288,9 +281,6 @@ void init_buffers(struct program *restrict prog)
 		init_str_list(&prog->src[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 		init_flag_list(&prog->src[i].flags);
 	}
-	init_var_list(&prog->var_list);
-	init_type_list(&prog->type_list);
-	init_str_list(&prog->id_list, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
 }
 
 size_t resize_sect(struct program *restrict prog, struct source_section *restrict sect, size_t off)
@@ -386,9 +376,6 @@ void build_final(struct program *restrict prog, char **argv)
 	for (size_t i = 0; i < 2; i++) {
 		strmv(0, prog->src[i].total.buf, prog->src[i].funcs.buf);
 		strmv(CONCAT, prog->src[i].total.buf, prog->src[i].body.buf);
-		/* print variable values */
-		if ((prog->state_flags & TRACK_FLAG) && i == 1)
-			print_vars(prog, prog->cc_list.list, argv);
 		strmv(CONCAT, prog->src[i].total.buf, prog_end);
 	}
 }

@@ -25,7 +25,6 @@ static struct option long_opts[] = {
 	{"output", required_argument, 0, 'o'},
 	{"parse", no_argument, 0, 'p'},
 	{"std", required_argument , 0, 's'},
-	{"tracking", no_argument, 0, 't'},
 	{"version", no_argument, 0, 'v'},
 	{"warnings", no_argument, 0, 'w'},
 	{0}
@@ -410,11 +409,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 		/* parse flag */
 		case 'p':
 			prog->state_flags ^= PARSE_FLAG;
-			break;
-
-		/* track flag */
-		case 't':
-			prog->state_flags ^= TRACK_FLAG;
 			break;
 
 		/* warning flag */

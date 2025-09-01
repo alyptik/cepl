@@ -14,7 +14,6 @@
 #include "hist.h"
 #include "parseopts.h"
 #include "readline.h"
-#include "vars.h"
 #include <setjmp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -52,37 +51,12 @@ static inline char *read_line(struct program *restrict prog)
 	return prog->cur_line;
 }
 
-static inline void init_vars(void)
-{
-	if (program_state.type_list.list) {
-		free(program_state.type_list.list);
-		program_state.type_list.list = NULL;
-	}
-	if (program_state.var_list.list) {
-		for (size_t i = 0; i < program_state.var_list.cnt; i++)
-			free(program_state.var_list.list[i].id);
-		free(program_state.var_list.list);
-	}
-	init_var_list(&program_state.var_list);
-}
-
 static inline void undo_last_line(void)
 {
 	/* break early if no history to pop */
 	if (program_state.src[0].flags.cnt < 1 || program_state.src[1].flags.cnt < 1)
 		return;
 	pop_history(&program_state);
-	/* break early if tracking disabled */
-	if (!(program_state.state_flags & TRACK_FLAG))
-		return;
-	init_vars();
-	/* add vars from previous lines */
-	for (size_t i = 1; i < program_state.src[0].lines.cnt; i++) {
-		if (program_state.src[0].lines.list[i] && program_state.src[0].flags.list[i] == IN_MAIN) {
-			if (find_vars(&program_state, program_state.src[0].lines.list[i]))
-				gen_var_list(&program_state);
-		}
-	}
 }
 
 /* exit handler registration */
@@ -272,7 +246,6 @@ static inline void toggle_output_file(char *tbuf)
 
 static inline void parse_macro(void)
 {
-	struct str_list tmp_list;
 	char *saved, *tmp_buf;
 	/* remove trailing ' ' and '\t' */
 	for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
@@ -332,14 +305,6 @@ static inline void parse_macro(void)
 			build_funcs(&program_state);
 			for (size_t i = 0; i < 2; i++)
 				strmv(CONCAT, program_state.src[i].funcs.buf, "\n");
-
-			tmp_list = strsplit(program_state.cur_line);
-			for (size_t i = 0; i < tmp_list.cnt; i++) {
-				/* extract identifiers and types */
-				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp_list.list[i]))
-					gen_var_list(&program_state);
-			}
-			free_str_list(&tmp_list);
 			break;
 
 		default:
@@ -347,13 +312,6 @@ static inline void parse_macro(void)
 			/* append ';' if no trailing '}', ';', or '\' */
 			for (size_t i = 0; i < 2; i++)
 				strmv(CONCAT, program_state.src[i].funcs.buf, ";\n");
-			tmp_list = strsplit(program_state.cur_line);
-			for (size_t i = 0; i < tmp_list.cnt; i++) {
-				/* extract identifiers and types */
-				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp_list.list[i]))
-					gen_var_list(&program_state);
-			}
-			free_str_list(&tmp_list);
 		}
 	}
 	program_state.cur_line = saved;
@@ -385,13 +343,6 @@ static inline void parse_normal(void)
 				}
 				strmv(CONCAT, prg->src[i].body.buf, "\n");
 			}
-			struct str_list tmp = strsplit(program_state.cur_line);
-			for (size_t i = 0; i < tmp.cnt; i++) {
-				/* extract identifiers and types */
-				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp.list[i]))
-					gen_var_list(&program_state);
-			}
-			free_str_list(&tmp);
 			break;
 		   }
 
@@ -400,28 +351,8 @@ static inline void parse_normal(void)
 			/* append ';' if no trailing '}', ';', or '\' */
 			for (size_t i = 0; i < 2; i++)
 				strmv(CONCAT, program_state.src[i].body.buf, ";\n");
-			struct str_list tmp = strsplit(program_state.cur_line);
-			for (size_t i = 0; i < tmp.cnt; i++) {
-				/* extract identifiers and types */
-				if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, tmp.list[i]))
-					gen_var_list(&program_state);
-			}
-			free_str_list(&tmp);
 		}
 	}
-}
-
-/* parse input file if one is specified */
-static inline void scan_input_file(void)
-{
-	if (!(program_state.state_flags & INPUT_FLAG))
-		return;
-	init_vars();
-	char *prog_buf = strchr(prog_start_user, '{');
-	if (!prog_buf)
-		return;
-	if ((program_state.state_flags & TRACK_FLAG) && find_vars(&program_state, ++prog_buf))
-		gen_var_list(&program_state);
 }
 
 static inline void build_hist_name(void)
@@ -487,15 +418,14 @@ static inline void restore_flag_state(unsigned sflags)
 int main(int argc, char **argv)
 {
 	unsigned saved_flags;
-	char const *const optstring = "hptvwc:f:e:o:l:s:I:L:";
+	char const *const optstring = "hpvwc:f:e:o:l:s:I:L:";
 
 	/* set default state flags */
-	program_state.state_flags = PARSE_FLAG|TRACK_FLAG;
+	program_state.state_flags |= PARSE_FLAG;
 	build_hist_name();
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
-	scan_input_file();
 	/* save stderr for signal handler */
 	program_state.saved_fd = dup(STDERR_FILENO);
 	/*
@@ -570,16 +500,6 @@ int main(int argc, char **argv)
 				init_buffers(&program_state);
 				break;
 
-			/* toggle variable tracking */
-			case 't':
-				free_buffers(&program_state);
-				restore_flag_state(saved_flags);
-				program_state.state_flags ^= TRACK_FLAG;
-				save_flag_state(&saved_flags);
-				parse_opts(&program_state, argc, argv, optstring);
-				init_buffers(&program_state);
-				break;
-
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
@@ -595,7 +515,6 @@ int main(int argc, char **argv)
 				free_buffers(&program_state);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
-				scan_input_file();
 				break;
 
 			/* define an include/macro/function */

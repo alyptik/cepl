@@ -15,7 +15,6 @@ _arguments -s \
 	{-o,--output=}'[Name of the file to output C source code to.]:file:_files' \
 	{-p,--parse}'[Disable addition of dynamic library symbols to readline completion.]' \
 	{-s,--std=}"[Specify which C/C++ standard to use.]:std:($stds)" \
-	{-t,--tracking}'[Toggle variable tracking.]' \
 	{-v,--version}'[Show version information.]' \
 	{-w,--warnings}'[Compile with "-Wall -Wextra -pedantic" flags.]' \
 	-l"[Link against specified library (flag can be repeated).]:library:($libs)" \
