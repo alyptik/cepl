@@ -52,14 +52,13 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-14.0.0"
+#define VERSION_STRING	"cepl-15.0.0"
 #define USAGE_STRING \
-	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
-	"[-l<library>] [-I<include directory>] [-L<library directory>] " \
-	"[-s<standard>] [-o<out.c>]\n\t" \
+	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
+	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
+	"[-o<out.c>]\n\t" \
 	"-c, --compiler\t\tSpecify alternate compiler\n\t" \
 	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t" \
-	"-f, --file\t\tSource file to import\n\t" \
 	"-h, --help\t\tShow help/usage information\n\t" \
 	"-o, --output\t\tName of the file to output C/C++ source code to\n\t" \
 	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \

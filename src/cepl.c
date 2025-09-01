@@ -418,7 +418,7 @@ static inline void restore_flag_state(unsigned sflags)
 int main(int argc, char **argv)
 {
 	unsigned saved_flags;
-	char const *const optstring = "hpvwc:f:e:o:l:s:I:L:";
+	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
 
 	/* set default state flags */
 	program_state.state_flags |= PARSE_FLAG;

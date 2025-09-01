@@ -1,4 +1,4 @@
-.TH CEPL: "1" "July 2024" "cepl-14\&.0\&.0" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-15\&.0\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C and C++ REPL
@@ -7,8 +7,9 @@ cepl \- a C and C++ REPL
 .sp
 .nf
 \fIcepl\fR [\-hpvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] \
-[\-f\fI<file>\fR] [\-l\fI<library>\fR] [\-I\fI<include directory>\fR] \
-[\-L\fI<library directory>\fR] [\-s\fI<standard>\fR] [\-o\fI<out\&.c>\fR]
+[\-l\fI<library>\fR] [\-I\fI<include directory>\fR] \
+[\-L\fI<library directory>\fR] [\-s\fI<standard>\fR] \
+[\-o\fI<out\&.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
@@ -44,8 +45,6 @@ Command line options:
 \fB\-c\fR, \fB\-\-compiler\fR	Specify alternate compiler
 .HP
 \fB\-e\fR, \fB\-\-eval\fR	Evaluate argument as C/C++ code
-.HP
-\fB\-f\fR, \fB\-\-file\fR	Source file to import
 .HP
 \fB\-h\fR, \fB\-\-help\fR	Show help/usage information
 .HP

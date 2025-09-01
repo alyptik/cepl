@@ -44,7 +44,6 @@ your code to `out.c` on exit.
 
 	-c, --compiler		Specify alternate compiler
 	-e, --eval		    Evaluate the following argument as C/C++ code
-	-f, --file		    Source file to import
 	-h, --help		    Show help/usage information
 	-o, --output		Name of the file to output C/C++ code to
 	-p, --parse		    Disable addition of dynamic library symbols to readline completion

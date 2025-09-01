@@ -20,7 +20,6 @@
 static struct option long_opts[] = {
 	{"compiler", required_argument, 0, 'c'},
 	{"eval", required_argument, 0, 'e'},
-	{"file", required_argument, 0, 'f'},
 	{"help", no_argument, 0, 'h'},
 	{"output", required_argument, 0, 'o'},
 	{"parse", no_argument, 0, 'p'},
@@ -55,87 +54,6 @@ extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 /* getopts variables */
 extern char *optarg;
 extern int optind, opterr, optopt;
-
-static inline void parse_input_file(struct program *restrict prog, char **restrict in_file)
-{
-	if (*in_file)
-		ERRX("%s", "too many input files specified");
-	*in_file = optarg;
-	regex_t reg[2];
-	bool after_main_signature = false;
-	int scan_state = IN_PROLOGUE;
-	size_t sz[3] = {PAGE_SIZE, PAGE_SIZE, PAGE_SIZE};
-	char tmp_buf[PAGE_SIZE];
-	for (size_t i = 0; i < arr_len(prog->input_src); i++) {
-		xmalloc(&prog->input_src[i], PAGE_SIZE, "malloc() prog->input_src");
-		prog->input_src[i][0] = 0;
-	}
-
-	/* regexes for pre-main, main, and return */
-	char const main_regex[] = "^[[:blank:]]*int[[:blank:]]+main[^\\(]*\\(";
-	char const end_regex[] = "^[[:blank:]]*return[[:blank:]]+[^;]+;";
-	if (regcomp(&reg[0], main_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
-		ERR("%s", "failed to compile main_regex");
-	if (regcomp(&reg[1], end_regex, REG_EXTENDED|REG_NEWLINE|REG_NOSUB))
-		ERR("%s", "failed to compile end_regex");
-	FILE *tmp_file;
-	xfopen(&tmp_file, *in_file, "r");
-	char *buf_ptr, *ret = fgets(tmp_buf, PAGE_SIZE, tmp_file);
-
-	/* loop over file lines */
-	for (; ret; ret = fgets(tmp_buf, PAGE_SIZE, tmp_file)) {
-		switch (scan_state) {
-		/* pre-main */
-		case IN_PROLOGUE:
-			/* no match */
-			if (regexec(&reg[0], tmp_buf, 1, 0, 0)) {
-				buf_ptr = tmp_buf;
-				sz[0] += strlen(tmp_buf);
-				xrealloc(&prog->input_src[0], sz[0], "xrealloc(char)");
-				strmv(CONCAT, prog->input_src[0], tmp_buf);
-				break;
-			}
-			regfree(&reg[0]);
-			scan_state = IN_MIDDLE;
-
-		/* main */
-		case IN_MIDDLE:
-			/* no match */
-			if (regexec(&reg[1], tmp_buf, 1, 0, 0)) {
-				buf_ptr = tmp_buf;
-				sz[1] += strlen(tmp_buf);
-				xrealloc(&prog->input_src[1], sz[1], "xrealloc(char)");
-				strmv(CONCAT, prog->input_src[1], tmp_buf);
-				if (!after_main_signature) {
-					after_main_signature = true;
-					break;
-				}
-				/* strip leading whitespace */
-				buf_ptr += strspn(buf_ptr, " \t");
-				strchrnul(buf_ptr, '\n')[0] = 0;
-				/* skip single chars and argc/argv void statements */
-				if (strlen(buf_ptr) > 1 && strcmp(buf_ptr, "(void)argc, (void)argv;"))
-					dedup_history_add(&buf_ptr);
-				break;
-			}
-			regfree(&reg[1]);
-			scan_state = IN_EPILOGUE;
-
-		/* return */
-		case IN_EPILOGUE:
-			buf_ptr = tmp_buf;
-			sz[2] += strlen(tmp_buf);
-			xrealloc(&prog->input_src[2], sz[2], "xrealloc(char)");
-			strmv(CONCAT, prog->input_src[2], tmp_buf);
-			break;
-		}
-	}
-	prologue = prog->input_src[0];
-	prog_start = prog_start_user = prog->input_src[1];
-	prog_end = prog->input_src[2];
-	prog->state_flags ^= INPUT_FLAG;
-	xfclose(&tmp_file);
-}
 
 static inline void copy_compiler(struct program *restrict prog)
 {
@@ -366,11 +284,6 @@ char **parse_opts(struct program *restrict prog, int argc, char **argv, char con
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
-		/* use input file */
-		case 'f':
-			parse_input_file(prog, &in_file);
-			break;
-
 		/* specify compiler */
 		case 'c':
 			copy_compiler(prog);
