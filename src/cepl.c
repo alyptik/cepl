@@ -209,6 +209,23 @@ static void reg_handlers(void)
 		WARN("%s", "at_quick_exit(&free_bufs)");
 }
 
+static inline void setup_readline(void)
+{
+	int rl_flags = 0;
+	rl_flags |= RL_STATE_ISEARCH;
+	rl_flags |= RL_STATE_NSEARCH;
+	rl_flags |= RL_STATE_VIMOTION;
+	rl_flags |= RL_STATE_NUMERICARG;
+	rl_flags |= RL_STATE_MULTIKEY;
+	rl_clear_visible_line();
+	rl_reset_line_state();
+	rl_free_line_state();
+	rl_cleanup_after_signal();
+	RL_UNSETSTATE(rl_flags);
+	rl_line_buffer[rl_point = rl_end = rl_mark = 0] = 0;
+	rl_initialize();
+}
+
 static inline void toggle_output_file(char *tbuf)
 {
 	/* if file was open, flip it and break early */
@@ -493,19 +510,7 @@ int main(int argc, char **argv)
 	 * to abort running code early
 	 */
 	if (sigsetjmp(jmp_env, 1)) {
-		int rl_flags = 0;
-		rl_flags |= RL_STATE_ISEARCH;
-		rl_flags |= RL_STATE_NSEARCH;
-		rl_flags |= RL_STATE_VIMOTION;
-		rl_flags |= RL_STATE_NUMERICARG;
-		rl_flags |= RL_STATE_MULTIKEY;
-		rl_clear_visible_line();
-		rl_reset_line_state();
-		rl_free_line_state();
-		rl_cleanup_after_signal();
-		RL_UNSETSTATE(rl_flags);
-		rl_line_buffer[rl_point = rl_end = rl_mark = 0] = 0;
-		rl_initialize();
+		setup_readline();
 		fputc('\n', stderr);
 	}
 
