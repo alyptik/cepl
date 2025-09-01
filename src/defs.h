@@ -166,7 +166,7 @@ struct source_code {
 };
 
 /* standard io stream state state */
-struct termio_state {
+struct termios_state {
 	bool modes_changed;
 	struct termios save_modes[4];
 };
@@ -185,7 +185,7 @@ struct program {
 	struct type_list type_list;
 	struct var_list var_list;
 	struct source_code src[2];
-	struct termio_state tty_state;
+	struct termios_state tty_state;
 };
 
 /* reset signal handlers before fork */
