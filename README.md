@@ -12,7 +12,7 @@ A readline C and C++ REPL with history, tab-completion, and undo.
 
 ## Usage
 ```bash
-./cepl [-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file> ] [-l<library>] [-I<include directory>] [-L<library directory>] [-o<out.c>]
+./cepl [-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file> ] [-l<library>] [-I<include directory>] [-L<library directory>] [-s<standard>] [-o<out.c>]
 ```
 Run `make` then `./cepl` to start the interactive REPL.
 

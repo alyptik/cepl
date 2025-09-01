@@ -6,7 +6,9 @@ cepl \- a C and C++ REPL
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] [\-f\fI<file>\fR] [\-l\fI<library>\fR] [\-I\fI<include directory>\fR] [\-L\fI<library directory>\fR] [\-o\fI<out\&.c>\fR]
+\fIcepl\fR [\-hptvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] \
+[\-f\fI<file>\fR] [\-l\fI<library>\fR] [\-I\fI<include directory>\fR] \
+[\-L\fI<library directory>\fR] [\-s\fI<standard>\fR] [\-o\fI<out\&.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
@@ -76,7 +78,7 @@ Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is opti
 .HP
 \fB;m[acro]\fR		Define a macro/function (e\&.g\&. \fB;f void bork(void) { puts("wark"); }\fR)
 .HP
-\fB;o[utput]\fR	Toggle -o (output C source code) flag
+\fB;o[utput]\fR		Toggle -o (output C source code) flag
 .HP
 \fB;p[arse]\fR		Toggle -p (shared library parsing) flag
 .HP

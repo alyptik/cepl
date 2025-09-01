@@ -25,6 +25,7 @@
 /* macros */
 #define arr_len(arr)		((sizeof (arr)) / (sizeof *(arr)))
 #define printe(fmt, ...)	fprintf(stderr, "\033[92m" fmt "\033[00m", __VA_ARGS__)
+
 /* `malloc()` wrapper */
 #define xmalloc(ptr, sz, msg)				\
 	({						\
@@ -55,7 +56,7 @@
 #define USAGE_STRING \
 	"[-hptvw] [-c<compiler>] [-e<code to evaluate>] [-f<file>] " \
 	"[-l<library>] [-I<include directory>] [-L<library directory>] " \
-	"[-o<out.c>]\n\t" \
+	"[-s<standard>] [-o<out.c>]\n\t" \
 	"-c, --compiler\t\tSpecify alternate compiler\n\t" \
 	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t" \
 	"-f, --file\t\tSource file to import\n\t" \
@@ -99,6 +100,7 @@
 #define	PURPLE		"\\033[35m"
 #define	CYAN		"\\033[36m"
 #define	RST		"\\033[00m"
+
 /* page size for buffer count */
 #define PAGE_SIZE	0x1000u
 /* max eval string length */
