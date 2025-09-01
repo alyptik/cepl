@@ -144,7 +144,7 @@ static inline void copy_compiler(struct program *restrict prog)
 		size_t cc_len = strlen(optarg) + 1;
 		size_t pval_len = strlen("FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL") + 1;
 		/* set cxx_flag if c++ compiler */
-		if (!strcmp(optarg, "g++") || !strcmp(optarg, "clang++"))
+		if (optarg[strlen(optarg) - 1] == '+')
 			prog->state_flags |= CXX_FLAG;
 		/* realloc if needed */
 		if (cc_len > pval_len) {
