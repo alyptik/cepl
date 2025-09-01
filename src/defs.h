@@ -81,16 +81,16 @@
 	";w[arnings]\t\tToggle -w (pedantic warnings) flag"
 
 /* state flags */
-#define CXX_FLAG		0x01
-#define EVAL_FLAG		0x02
-#define EXEC_FLAG		0x04
-#define HIST_FLAG		0x08
-#define INPUT_FLAG		0x10
-#define OUT_FLAG		0x20
-#define PARSE_FLAG		0x40
-#define STD_FLAG		0x80
-#define TRACK_FLAG		0x100
-#define WARN_FLAG		0x200
+#define CXX_FLAG		0x01u
+#define EVAL_FLAG		0x02u
+#define EXEC_FLAG		0x04u
+#define HIST_FLAG		0x08u
+#define INPUT_FLAG		0x10u
+#define OUT_FLAG		0x20u
+#define PARSE_FLAG		0x40u
+#define STD_FLAG		0x80u
+#define TRACK_FLAG		0x100u
+#define WARN_FLAG		0x200u
 
 /* terminal color escapes */
 #define	RED		"\\033[31m"
@@ -100,7 +100,7 @@
 #define	CYAN		"\\033[36m"
 #define	RST		"\\033[00m"
 /* page size for buffer count */
-#define PAGE_SIZE	0x1000
+#define PAGE_SIZE	0x1000u
 /* max eval string length */
 #define EVAL_LIMIT	(PAGE_SIZE * PAGE_SIZE)
 /* max possible types */
