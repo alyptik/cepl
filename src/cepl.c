@@ -483,10 +483,9 @@ int main(int argc, char **argv)
 	unsigned saved_flags;
 	char const *const optstring = "hptvwc:f:e:o:l:s:I:L:";
 
-	/* initialize compiler arg array */
-	build_hist_name();
 	/* set default state flags */
 	program_state.state_flags = PARSE_FLAG|TRACK_FLAG;
+	build_hist_name();
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);

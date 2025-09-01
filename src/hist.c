@@ -175,9 +175,10 @@ void write_files(struct program *restrict prog)
 	int out_fd;
 	size_t buf_len, buf_pos;
 
-	/* write out history/asm output */
-	if ((prog->state_flags & HIST_FLAG) && write_history(prog->hist_file))
-		WARN("%s", "write_history()");
+	/* write out history */
+	if (prog->state_flags & HIST_FLAG)
+		write_history(prog->hist_file);
+
 	/* return early if no file open */
 	if (!(prog->state_flags & OUT_FLAG) || !prog->ofile || !prog->src[1].total.buf)
 		return;
