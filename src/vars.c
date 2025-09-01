@@ -571,8 +571,6 @@ int print_vars(struct program *restrict prog, char *const *restrict cc_args, cha
 	case 0:
 		reset_handlers();
 		/* redirect stdout/stdin to /dev/null */
-		if (!(null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)))
-			ERR("%s", "open()");
 		dup2(null_fd, STDIN_FILENO);
 		dup2(null_fd, STDOUT_FILENO);
 		execve("/tmp/cepl_program", exec_args, environ);
