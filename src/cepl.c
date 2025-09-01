@@ -166,6 +166,8 @@ static void sig_handler(int sig)
 		}
 		/* reap any leftover children */
 		while (wait(&ret) >= 0 && errno != ECHILD);
+		/* remove /tmp/cepl_program if it exists */
+		unlink("/tmp/cepl_program");
 		siglongjmp(jmp_env, 1);
 	}
 	/* cleanup and die if not SIGINT */
