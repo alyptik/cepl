@@ -52,7 +52,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-17.0.0"
+#define VERSION_STRING	"cepl-17.0.1"
 #define USAGE_STRING \
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
@@ -141,7 +141,7 @@ struct termios_state {
 struct program {
 	FILE *ofile;
 	int saved_fd;
-	unsigned state_flags;
+	unsigned int state_flags;
 	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
 	char *out_filename, *asm_filename;

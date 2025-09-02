@@ -392,7 +392,7 @@ static inline void build_hist_name(void)
 	}
 }
 
-static inline void save_flag_state(unsigned *restrict sflags)
+static inline void save_flag_state(unsigned int *restrict sflags)
 {
 	if (!sflags) {
 		WARNX("%s", "null pointer passed to save_flag_state()");
@@ -402,7 +402,7 @@ static inline void save_flag_state(unsigned *restrict sflags)
 	*sflags |= program_state.state_flags;
 }
 
-static inline void restore_flag_state(unsigned sflags)
+static inline void restore_flag_state(unsigned int sflags)
 {
 	program_state.state_flags &= 0;
 	program_state.state_flags |= sflags;
@@ -410,7 +410,7 @@ static inline void restore_flag_state(unsigned sflags)
 
 int main(int argc, char **argv)
 {
-	unsigned saved_flags;
+	unsigned int saved_flags;
 	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
 
 	/* set default state flags */
