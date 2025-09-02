@@ -54,7 +54,7 @@ extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 extern char *optarg;
 extern int optind, opterr, optopt;
 
-static inline void copy_compiler(struct program *restrict prog)
+static inline void copy_compiler(struct program *prog)
 {
 	if (!prog->cc_list.list[0][0]) {
 		size_t cc_len = strlen(optarg) + 1;
@@ -74,7 +74,7 @@ static inline void copy_compiler(struct program *restrict prog)
 	}
 }
 
-static inline void copy_libs(struct program *restrict prog)
+static inline void copy_libs(struct program *prog)
 {
 	char buf[strlen(optarg) + 12];
 	strmv(0, buf, "/lib64/lib");
@@ -87,7 +87,7 @@ static inline void copy_libs(struct program *restrict prog)
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-l", 2);
 }
 
-static inline void copy_eval_code(struct program *restrict prog)
+static inline void copy_eval_code(struct program *prog)
 {
 	if (strlen(optarg) > sizeof prog->eval_arg)
 		ERRX("%s", "eval string too long");
@@ -95,26 +95,26 @@ static inline void copy_eval_code(struct program *restrict prog)
 	prog->state_flags |= EVAL_FLAG;
 }
 
-static inline void copy_header_dirs(struct program *restrict prog)
+static inline void copy_header_dirs(struct program *prog)
 {
 	append_str(&prog->cc_list, optarg, 2);
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-I", 2);
 }
 
-static inline void copy_lib_dirs(struct program *restrict prog)
+static inline void copy_lib_dirs(struct program *prog)
 {
 	append_str(&prog->cc_list, optarg, 2);
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-L", 2);
 }
 
-static inline void copy_std(struct program *restrict prog)
+static inline void copy_std(struct program *prog)
 {
 	prog->state_flags |= STD_FLAG;
 	append_str(&prog->cc_list, optarg, 5);
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-std=", 5);
 }
 
-static inline void copy_out_file(struct program *restrict prog, char **restrict out_name)
+static inline void copy_out_file(struct program *prog, char **out_name)
 {
 	if (*out_name)
 		ERRX("%s", "too many output files specified");
@@ -122,7 +122,7 @@ static inline void copy_out_file(struct program *restrict prog, char **restrict 
 	prog->state_flags ^= OUT_FLAG;
 }
 
-static inline void set_out_file(struct program *restrict prog, char *restrict out_name)
+static inline void set_out_file(struct program *prog, char *out_name)
 {
 	/* output file flag */
 	if (prog->state_flags & OUT_FLAG) {
@@ -137,7 +137,7 @@ static inline void set_out_file(struct program *restrict prog, char *restrict ou
 	}
 }
 
-static inline void enable_warnings(struct program *restrict prog)
+static inline void enable_warnings(struct program *prog)
 {
 	/* append warning flags */
 	if (prog->state_flags & WARN_FLAG) {
@@ -146,7 +146,7 @@ static inline void enable_warnings(struct program *restrict prog)
 	}
 }
 
-static inline void append_arg_list(struct program *restrict prog, char *const *cc_list, char *const *lib_list)
+static inline void append_arg_list(struct program *prog, char *const *cc_list, char *const *lib_list)
 {
 	if (cc_list)
 		for (size_t i = 0; cc_list[i]; i++)
@@ -158,7 +158,7 @@ static inline void append_arg_list(struct program *restrict prog, char *const *c
 		enable_warnings(prog);
 }
 
-static inline void build_arg_list(struct program *restrict prog, char *const *cc_list)
+static inline void build_arg_list(struct program *prog, char *const *cc_list)
 {
 	char *cflags = getenv("CFLAGS");
 	char *ldlibs = getenv("LDLIBS");
@@ -184,7 +184,7 @@ static inline void build_arg_list(struct program *restrict prog, char *const *cc
 	append_str(&prog->lib_list, NULL, 0);
 }
 
-static inline void build_sym_list(struct program *restrict prog)
+static inline void build_sym_list(struct program *prog)
 {
 	/* parse ELF shared libraries for completions */
 	if (prog->state_flags & PARSE_FLAG) {
@@ -201,7 +201,7 @@ static inline void build_sym_list(struct program *restrict prog)
 	}
 }
 
-void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
+void read_syms(struct str_list *tokens, char const *elf_file)
 {
 	int elf_fd;
 	GElf_Shdr shdr;
@@ -244,7 +244,7 @@ void read_syms(struct str_list *restrict tokens, char const *restrict elf_file)
 	close(elf_fd);
 }
 
-void parse_libs(struct str_list *restrict symbols, char **restrict libs)
+void parse_libs(struct str_list *symbols, char **libs)
 {
 	for (size_t i = 0; libs[i]; i++) {
 		struct str_list cur_syms = {.cnt = 0, .max = 1, .list = NULL};
@@ -259,7 +259,7 @@ void parse_libs(struct str_list *restrict symbols, char **restrict libs)
 	append_str(symbols, NULL, 0);
 }
 
-char **parse_opts(struct program *restrict prog, int argc, char **argv, char const *optstring)
+char **parse_opts(struct program *prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
 	char *out_name = NULL, *in_file = NULL, *asm_file = NULL;

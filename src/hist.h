@@ -15,19 +15,19 @@
 #include <sys/types.h>
 
 /* prototypes */
-void cleanup(struct program *restrict prog);
-int write_asm(struct program *restrict prog, char *const *restrict cc_args);
-void write_files(struct program *restrict prog);
-void free_buffers(struct program *restrict prog);
-void init_buffers(struct program *restrict prog);
-size_t resize_sect(struct program *restrict prog, struct source_section *restrict sect, size_t off);
-void pop_history(struct program *restrict prog);
-void build_body(struct program *restrict prog);
-void build_funcs(struct program *restrict prog);
-void build_final(struct program *restrict prog, char **argv);
+void cleanup(struct program *prog);
+int write_asm(struct program *prog, char *const *cc_args);
+void write_files(struct program *prog);
+void free_buffers(struct program *prog);
+void init_buffers(struct program *prog);
+size_t resize_sect(struct program *prog, struct source_section *sect, size_t off);
+void pop_history(struct program *prog);
+void build_body(struct program *prog);
+void build_funcs(struct program *prog);
+void build_final(struct program *prog, char **argv);
 
 /* look for current line in readline history */
-static inline void dedup_history_add(char *const *restrict line)
+static inline void dedup_history_add(char *const *line)
 {
 	/* return early on empty input */
 	if (!line || !*line)

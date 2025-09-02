@@ -149,7 +149,7 @@ char const *prog_end =
 		"\n\treturn 0;\n"
 	"}\n";
 
-void cleanup(struct program *restrict prog)
+void cleanup(struct program *prog)
 {
 	/* avoid segfault when stdin is not a tty */
 	if (isatty(STDIN_FILENO)) {
@@ -171,7 +171,7 @@ void cleanup(struct program *restrict prog)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
-void write_files(struct program *restrict prog)
+void write_files(struct program *prog)
 {
 	int out_fd;
 	size_t buf_len, buf_pos;
@@ -209,7 +209,7 @@ void write_files(struct program *restrict prog)
 	prog->ofile = NULL;
 }
 
-void free_buffers(struct program *restrict prog)
+void free_buffers(struct program *prog)
 {
 	/* write out history/asm before freeing buffers */
 	write_files(prog);
@@ -233,7 +233,7 @@ void free_buffers(struct program *restrict prog)
 	}
 }
 
-void init_buffers(struct program *restrict prog)
+void init_buffers(struct program *prog)
 {
 	/* use appropriate prologue for compiler type (c or c++) */
 	if (prog->cc_list.list[0][strlen(prog->cc_list.list[0]) - 1] == '+')
@@ -284,7 +284,7 @@ void init_buffers(struct program *restrict prog)
 	}
 }
 
-size_t resize_sect(struct program *restrict prog, struct source_section *restrict sect, size_t off)
+size_t resize_sect(struct program *prog, struct source_section *sect, size_t off)
 {
 	/* sanity check */
 	if (!sect->buf || !prog->cur_line)
@@ -306,7 +306,7 @@ size_t resize_sect(struct program *restrict prog, struct source_section *restric
 	return sect->size;
 }
 
-void pop_history(struct program *restrict prog)
+void pop_history(struct program *prog)
 {
 	for (size_t i = 0; i < 2; i++) {
 		switch(prog->src[i].flags.list[--prog->src[i].flags.cnt]) {
@@ -334,7 +334,7 @@ void pop_history(struct program *restrict prog)
 	}
 }
 
-void build_body(struct program *restrict prog)
+void build_body(struct program *prog)
 {
 	/* sanity check */
 	if (!prog || !prog->cur_line) {
@@ -350,7 +350,7 @@ void build_body(struct program *restrict prog)
 	}
 }
 
-void build_funcs(struct program *restrict prog)
+void build_funcs(struct program *prog)
 {
 	/* sanity check */
 	if (!prog || !prog->cur_line) {
@@ -366,7 +366,7 @@ void build_funcs(struct program *restrict prog)
 	}
 }
 
-void build_final(struct program *restrict prog, char **argv)
+void build_final(struct program *prog, char **argv)
 {
 	/* sanity check */
 	if (!prog || !argv) {

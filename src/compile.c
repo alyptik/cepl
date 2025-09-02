@@ -14,7 +14,7 @@
 
 extern char **environ;
 
-int compile(char const *restrict src, char *const cc_args[], bool show_errors)
+int compile(char const *src, char *const cc_args[], bool show_errors)
 {
 	int null_fd, status, prog_fd;
 	int pipe_cc[2];

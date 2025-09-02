@@ -178,14 +178,14 @@ static inline void reset_handlers(void)
 }
 
 /* `fopen()` wrapper */
-static inline void xfopen(FILE **restrict file, char const *restrict path, char const *restrict fmode)
+static inline void xfopen(FILE **file, char const *path, char const *fmode)
 {
 	if (!(*file = fopen(path, fmode)))
 		ERR("%s", "xfopen()");
 }
 
 /* `fclose()` wrapper */
-static inline void xfclose(FILE **restrict out_file)
+static inline void xfclose(FILE **out_file)
 {
 	if (!out_file || !*out_file)
 		return;
@@ -194,7 +194,7 @@ static inline void xfclose(FILE **restrict out_file)
 }
 
 /* recursive free */
-static inline ptrdiff_t free_argv(char ***restrict argv)
+static inline ptrdiff_t free_argv(char ***argv)
 {
 	ptrdiff_t cnt;
 	if (!argv || !*argv)
@@ -207,7 +207,7 @@ static inline ptrdiff_t free_argv(char ***restrict argv)
 }
 
 /* emulate `strcat()` if `off < 0`, else copy `src` to `dest` at offset `off` */
-static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restrict src) {
+static inline void strmv(ptrdiff_t off, char *dest, char const *src) {
 	/* sanity checks */
 	if (!dest || !src)
 		ERRX("%s", "NULL pointer passed to strmv()");
@@ -229,7 +229,7 @@ static inline void strmv(ptrdiff_t off, char *restrict dest, char const *restric
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
-static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
+static inline ptrdiff_t free_str_list(struct str_list *plist)
 {
 	size_t null_cnt = 0;
 	/* return -1 if passed NULL pointers */
@@ -251,7 +251,7 @@ static inline ptrdiff_t free_str_list(struct str_list *restrict plist)
 	return null_cnt;
 }
 
-static inline void init_str_list(struct str_list *restrict list_struct, char *restrict init_str)
+static inline void init_str_list(struct str_list *list_struct, char *init_str)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -263,7 +263,7 @@ static inline void init_str_list(struct str_list *restrict list_struct, char *re
 	strmv(0, list_struct->list[list_struct->cnt - 1], init_str);
 }
 
-static inline void append_str(struct str_list *restrict list_struct, char const *restrict string, size_t pad)
+static inline void append_str(struct str_list *list_struct, char const *string, size_t pad)
 {
 	/* sanity checks */
 	if (!list_struct->list)
@@ -281,7 +281,7 @@ static inline void append_str(struct str_list *restrict list_struct, char const 
 	strmv(pad, list_struct->list[list_struct->cnt - 1], string);
 }
 
-static inline void init_flag_list(struct flag_list *restrict list_struct)
+static inline void init_flag_list(struct flag_list *list_struct)
 {
 	list_struct->cnt = 0;
 	list_struct->max = 1;
@@ -290,7 +290,7 @@ static inline void init_flag_list(struct flag_list *restrict list_struct)
 	list_struct->list[list_struct->cnt - 1] = EMPTY;
 }
 
-static inline void append_flag(struct flag_list *restrict list_struct, enum src_flag flag)
+static inline void append_flag(struct flag_list *list_struct, enum src_flag flag)
 {
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {

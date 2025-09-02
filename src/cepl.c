@@ -28,7 +28,7 @@ static struct program *prog_ptr;
 /* string to compile */
 extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 
-static inline char *read_line(struct program *restrict prog)
+static inline char *read_line(struct program *prog)
 {
 	/* false while waiting for input */
 	prog->state_flags &= ~EXEC_FLAG;
@@ -48,7 +48,7 @@ static inline char *read_line(struct program *restrict prog)
 	return prog->cur_line;
 }
 
-static inline void undo_last_line(struct program *restrict prog)
+static inline void undo_last_line(struct program *prog)
 {
 	/* break early if no history to pop */
 	if (prog->src[0].flags.cnt < 1 || prog->src[1].flags.cnt < 1)
@@ -64,7 +64,7 @@ static inline void free_bufs(void)
 }
 
 /* set io streams to non-buffering */
-static inline void tty_break(struct program *restrict prog)
+static inline void tty_break(struct program *prog)
 {
 	if (prog->tty_state.modes_changed)
 		return;
@@ -90,7 +90,7 @@ static inline void tty_break(struct program *restrict prog)
 }
 
 /* reset attributes of standard io streams */
-static inline void tty_fix(struct program *restrict prog)
+static inline void tty_fix(struct program *prog)
 {
 	if (prog->tty_state.modes_changed)
 		return;
@@ -203,7 +203,7 @@ static inline void setup_readline(void)
 	rl_initialize();
 }
 
-static inline void toggle_output_file(struct program *restrict prog, char *tbuf)
+static inline void toggle_output_file(struct program *prog, char *tbuf)
 {
 	/* if file was open, flip it and break early */
 	if (prog->state_flags & OUT_FLAG) {
@@ -234,7 +234,7 @@ static inline void toggle_output_file(struct program *restrict prog, char *tbuf)
 	write_files(prog);
 }
 
-static inline void parse_macro(struct program *restrict prog)
+static inline void parse_macro(struct program *prog)
 {
 	char *saved, *tmp_buf;
 	/* remove trailing ' ' and '\t' */
@@ -306,7 +306,7 @@ static inline void parse_macro(struct program *restrict prog)
 	prog->cur_line = saved;
 }
 
-static inline void parse_normal(struct program *restrict prog)
+static inline void parse_normal(struct program *prog)
 {
 	/* remove trailing ' ' and '\t' */
 	for (size_t i = strlen(prog->cur_line) - 1; i > 0; i--) {
@@ -342,7 +342,7 @@ static inline void parse_normal(struct program *restrict prog)
 	}
 }
 
-static inline void build_hist_name(struct program *restrict prog)
+static inline void build_hist_name(struct program *prog)
 {
 	struct stat hist_stat;
 	size_t buf_sz = sizeof hist_name, hist_len = 0;

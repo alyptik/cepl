@@ -12,6 +12,6 @@
 #include "errs.h"
 
 /* prototypes */
-int compile(char const *restrict src, char *const cc_args[], bool show_errors);
+int compile(char const *src, char *const cc_args[], bool show_errors);
 
 #endif /* !defined(COMPILE_H) */
