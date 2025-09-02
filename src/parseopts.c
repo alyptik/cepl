@@ -93,7 +93,7 @@ static inline void copy_eval_code(struct program *restrict prog)
 	if (strlen(optarg) > sizeof prog->eval_arg)
 		ERRX("%s", "eval string too long");
 	strmv(0, prog->eval_arg, optarg);
-	prog->state_flags ^= EVAL_FLAG;
+	prog->state_flags |= EVAL_FLAG;
 }
 
 static inline void copy_header_dirs(struct program *restrict prog)
