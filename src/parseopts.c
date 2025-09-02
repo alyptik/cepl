@@ -83,7 +83,7 @@ static inline void copy_libs(struct program *prog)
 	append_str(&prog->lib_list, buf, 0);
 	append_str(&prog->cc_list, optarg, 2);
 	if (!prog->cc_list.list[prog->cc_list.cnt - 1])
-		ERRX("%s", "null ld_list member passed to memcpy()");
+		ERRX("%s", "null cc_list member passed to memcpy()");
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-l", 2);
 }
 
@@ -119,7 +119,7 @@ static inline void copy_out_file(struct program *prog, char **out_name)
 	if (*out_name)
 		ERRX("%s", "too many output files specified");
 	*out_name = optarg;
-	prog->state_flags ^= OUT_FLAG;
+	prog->state_flags |= OUT_FLAG;
 }
 
 static inline void set_out_file(struct program *prog, char *out_name)
