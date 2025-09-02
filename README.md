@@ -40,6 +40,9 @@ to run in C++ mode linking against Boost and compiling with g++, or:
 to run in C mode linking against libelf and compiling with clang, saving
 your code to `out.c` on exit.
 
+When the `-l` flag is passed, the library argument is scanned for symbols
+which are then added to readline completion.
+
 #### Command line options:
 
 	-c, --compiler		Specify alternate compiler
