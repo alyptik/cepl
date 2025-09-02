@@ -242,23 +242,23 @@ void init_buffers(struct program *prog)
 		prologue = c_prologue;
 
 	/* user is truncated source for display */
-	xcalloc(&prog->src[0].funcs.buf, 1, 1, "init");
-	xcalloc(&prog->src[0].body.buf, 1, strlen(prog_start_user) + 1, "init");
+	xcalloc(&prog->src[0].funcs.buf, 1, 1, "init()");
+	xcalloc(&prog->src[0].body.buf, 1, strlen(prog_start_user) + 1, "init()");
 	xcalloc(&prog->src[0].total.buf, 1,
 			strlen(prologue)
 			+ strlen(prog_start_user)
-			+ strlen(prog_end) + 3, "init");
+			+ strlen(prog_end) + 3, "init()");
 	prog->src[0].funcs.size = prog->src[0].funcs.max = 1;
 	prog->src[0].body.size = prog->src[0].body.max = strlen(prog_start_user) + 1;
 	prog->src[0].total.size = prog->src[0].total.max = strlen(prologue)
 			+ strlen(prog_start_user)
 			+ strlen(prog_end) + 3;
 	/* actual is source passed to compiler */
-	xcalloc(&prog->src[1].funcs.buf, 1, strlen(prologue) + 1, "init");
-	xcalloc(&prog->src[1].body.buf, 1, strlen(prog_start) + 1, "init");
+	xcalloc(&prog->src[1].funcs.buf, 1, strlen(prologue) + 1, "init()");
+	xcalloc(&prog->src[1].body.buf, 1, strlen(prog_start) + 1, "init()");
 	xcalloc(&prog->src[1].total.buf, 1, strlen(prologue)
 			+ strlen(prog_start)
-			+ strlen(prog_end) + 3, "init");
+			+ strlen(prog_end) + 3, "init()");
 	prog->src[1].funcs.size = prog->src[1].funcs.max = strlen(prologue) + 1;
 	prog->src[1].body.size = prog->src[1].body.max = strlen(prog_start) + 1;
 	prog->src[1].total.size = prog->src[1].total.max = strlen(prologue)
@@ -269,7 +269,7 @@ void init_buffers(struct program *prog)
 		if (!prog->src[i].funcs.buf || !prog->src[i].body.buf || !prog->src[i].total.buf) {
 			free_buffers(prog);
 			cleanup(prog);
-			ERR("%s", "prgm[2] calloc()");
+			ERR("%s", "prog[2] calloc()");
 		}
 	}
 	/* no memcpy for prgm[0].funcs */
@@ -278,8 +278,8 @@ void init_buffers(struct program *prog)
 	strmv(0, prog->src[1].body.buf, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
-		init_str_list(&prog->src[i].lines, "init");
-		init_str_list(&prog->src[i].hist, "init");
+		init_str_list(&prog->src[i].lines, "initial");
+		init_str_list(&prog->src[i].hist, "initial");
 		init_flag_list(&prog->src[i].flags);
 	}
 }

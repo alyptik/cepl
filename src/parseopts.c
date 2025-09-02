@@ -58,7 +58,7 @@ static inline void copy_compiler(struct program *prog)
 {
 	if (!prog->cc_list.list[0][0]) {
 		size_t cc_len = strlen(optarg) + 1;
-		size_t pval_len = strlen("init") + 1;
+		size_t pval_len = strlen("initial") + 1;
 		/* set cxx_flag if c++ compiler */
 		if (optarg[strlen(optarg) - 1] == '+')
 			prog->state_flags |= CXX_FLAG;
@@ -279,7 +279,7 @@ char **parse_opts(struct program *prog, int argc, char **argv, char const *optst
 	optind = 1;
 
 	/* initilize argument lists */
-	init_str_list(&prog->cc_list, "init");
+	init_str_list(&prog->cc_list, "initial");
 	init_str_list(&prog->lib_list, NULL);
 	/* re-zero prog->cc_list.list[0] so -c argument can be added */
 	memset(prog->cc_list.list[0], 0, strlen(prog->cc_list.list[0]) + 1);
