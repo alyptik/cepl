@@ -11,14 +11,6 @@
 
 #include "compile.h"
 #include "parseopts.h"
-#include <linux/memfd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/syscall.h>
-#include <sys/types.h>
-
-/* global linker arguments struct */
-struct str_list ld_list;
 
 extern char **environ;
 

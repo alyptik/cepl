@@ -10,7 +10,6 @@
 
 #include "defs.h"
 #include "errs.h"
-#include <fcntl.h>
 
 /* prototypes */
 int compile(char const *restrict src, char *const cc_args[], bool show_errors);
