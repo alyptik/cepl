@@ -519,8 +519,7 @@ int main(int argc, char **argv)
 				break;
 
 			/* define an include/macro/function */
-			case 'm': /* fallthrough */
-			case 'f':
+			case 'm':
 				parse_macro();
 				break;
 
