@@ -278,8 +278,8 @@ void init_buffers(struct program *restrict prog)
 	strmv(0, prog->src[1].body.buf, prog_start);
 	/* init source history and flag lists */
 	for (size_t i = 0; i < 2; i++) {
-		init_str_list(&prog->src[i].lines, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
-		init_str_list(&prog->src[i].hist, "FOOBARTHISVALUEDOESNTMATTERTROLLOLOLOL");
+		init_str_list(&prog->src[i].lines, "init");
+		init_str_list(&prog->src[i].hist, "init");
 		init_flag_list(&prog->src[i].flags);
 	}
 }
