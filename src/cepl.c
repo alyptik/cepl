@@ -191,13 +191,6 @@ static inline void setup_readline(void)
 {
 	int rl_flags = 0;
 
-	/* enable completion */
-	rl_completion_entry_function = &generator;
-	rl_attempted_completion_function = &completer;
-	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{}()[]";
-	rl_completion_suppress_append = 1;
-	rl_bind_key('\t', &rl_complete);
-
 	/* setup readline */
 	rl_flags |= RL_STATE_ISEARCH;
 	rl_flags |= RL_STATE_NSEARCH;
@@ -423,6 +416,14 @@ int main(int argc, char **argv)
 	/* set default state flags */
 	program_state.state_flags |= PARSE_FLAG;
 	build_hist_name();
+
+	/* enable completion */
+	rl_completion_entry_function = &generator;
+	rl_attempted_completion_function = &completer;
+	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{}()[]";
+	rl_completion_suppress_append = 1;
+	rl_bind_key('\t', &rl_complete);
+
 	save_flag_state(&saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
