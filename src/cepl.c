@@ -106,15 +106,6 @@ static void sig_handler(int sig)
 {
 	static char const wtf[] = "wtf did you do to the signal mask to hit this return??\n";
 	int ret;
-	/*
-	 * TODO (?):
-	 *
-	 * this relies on stderr never being fd 0, unsure
-	 * if worth caring about the corner case where stderr
-	 * is 0 (possible but *very* unlikely).
-	 */
-	if (prog_ptr->saved_fd)
-		dup2(prog_ptr->saved_fd, STDOUT_FILENO);
 	/* reset io stream buffering modes */
 	tty_break(prog_ptr);
 	tty_fix(prog_ptr);
@@ -419,8 +410,6 @@ int main(int argc, char **argv)
 	saved_flags = program_state.state_flags;
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
-	/* save stderr for signal handler */
-	program_state.saved_fd = dup(STDERR_FILENO);
 	/*
 	 * initialize program_state.src[0].total
 	 * and program_state.src[1].total then
@@ -428,7 +417,7 @@ int main(int argc, char **argv)
 	 */
 	build_final(&program_state, argv);
 	if (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG))
-		fprintf(stderr, "%s\n", VERSION_STRING);
+		fprintf(stdout, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
 
@@ -439,7 +428,7 @@ int main(int argc, char **argv)
 	 */
 	if (sigsetjmp(jmp_env, 1)) {
 		reset_readline();
-		fputc('\n', stderr);
+		fputc('\n', stdout);
 	}
 
 	/* loop readline() until EOF is read */
@@ -522,7 +511,7 @@ int main(int argc, char **argv)
 
 			/* show usage information */
 			case 'h':
-				fprintf(stderr, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
+				fprintf(stdout, "%s %s %s\n", "Usage:", argv[0], USAGE_STRING);
 				break;
 
 			/* clean up and exit program */
@@ -562,15 +551,15 @@ int main(int argc, char **argv)
 		build_final(&program_state, argv);
 		/* print generated source code unless stdin is a pipe */
 		if (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG)) {
-			fprintf(stderr, "%s:\n", argv[0]);
-			fprintf(stderr, "==========\n");
-			fprintf(stderr, "%s\n", program_state.src[0].total.buf);
-			fprintf(stderr, "==========\n");
+			fprintf(stdout, "%s:\n", argv[0]);
+			fprintf(stdout, "==========\n");
+			fprintf(stdout, "%s\n", program_state.src[0].total.buf);
+			fprintf(stdout, "==========\n");
 		}
 		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, true);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG)))
-			fprintf(stderr, "[exit status: %d]\n", ret);
+			fprintf(stdout, "[exit status: %d]\n", ret);
 
 		/* reset io stream buffering modes */
 		tty_fix(&program_state);

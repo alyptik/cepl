@@ -140,7 +140,6 @@ struct termios_state {
 /* monolithic program structure */
 struct program {
 	FILE *ofile;
-	int saved_fd;
 	unsigned int state_flags;
 	char *input_src[3], eval_arg[EVAL_LIMIT];
 	char *cur_line, *hist_file;
