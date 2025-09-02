@@ -1,7 +1,5 @@
 # cepl - *a C and C++ REPL*
 
-![cepl](https://raw.githubusercontent.com/alyptik/cepl/master/cepl.gif)
-
 A readline C and C++ REPL with history, tab-completion, and undo.
 
 ## Dependencies

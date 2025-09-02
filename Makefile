@@ -74,7 +74,7 @@ uninstall:
 dist: clean
 	@echo "[creating source tarball]"
 	tar cf cepl-$(shell sed '1!d; s/.*cepl-\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\).*/\1.\2.\3/' cepl.1).tar \
-		LICENSE Makefile README.md _cepl cepl.1 cepl.gif cepl.json src
+		LICENSE Makefile README.md _cepl cepl.1 src
 	gzip cepl-$(shell sed '1!d; s/.*cepl-\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\)\\\&\.\([0-9][0-9]*\).*/\1.\2.\3/' cepl.1).tar
 cscope:
 	@echo "[creating cscope database]"
