@@ -349,9 +349,13 @@ static inline void build_hist_name(struct program *restrict prog)
 	char const *const home_env = getenv("HOME");
 	FILE *make_hist = NULL;
 
-	/* add hist_length of “$HOME/” if home_env is non-NULL */
-	if (home_env && strcmp(home_env, ""))
-		buf_sz += strlen(home_env) + 1;
+	/* return early if $HOME is unset or zero-length */
+	if (!home_env || !strcmp(home_env, ""))
+		return;
+
+	/* add hist_length of “$HOME/” */
+	buf_sz += strlen(home_env) + 1;
+
 	/* prepend "~/" to history fihist_lename ("~/.cepl_history" by default) */
 	if (!(prog->hist_file = calloc(1, buf_sz)))
 		ERR("%s", "program_state.hist_file malloc()");
