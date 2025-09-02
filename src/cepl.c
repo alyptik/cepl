@@ -390,24 +390,6 @@ static inline void build_hist_name(struct program *restrict prog)
 	}
 }
 
-static inline void save_flag_state(struct program *restrict prog, unsigned int *restrict sflags)
-{
-	if (!sflags) {
-		WARNX("%s", "null pointer passed to save_flag_state()");
-		return;
-	}
-	*sflags = prog->state_flags;
-}
-
-static inline void restore_flag_state(struct program *restrict prog, unsigned int *restrict sflags)
-{
-	if (!sflags) {
-		WARNX("%s", "null pointer passed to restore_flag_state()");
-		return;
-	}
-	prog->state_flags = *sflags;
-}
-
 int main(int argc, char **argv)
 {
 	/*
@@ -422,7 +404,7 @@ int main(int argc, char **argv)
 	prog_ptr = &program_state;
 
 	/* set default state flags */
-	program_state.state_flags |= PARSE_FLAG;
+	program_state.state_flags = PARSE_FLAG;
 	build_hist_name(&program_state);
 
 	/* enable completion */
@@ -432,7 +414,8 @@ int main(int argc, char **argv)
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
 
-	save_flag_state(&program_state, &saved_flags);
+	/* save flag state */
+	saved_flags = program_state.state_flags;
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
 	/* save stderr for signal handler */
@@ -492,18 +475,22 @@ int main(int argc, char **argv)
 
 			/* toggle output file writing */
 			case 'o':
-				restore_flag_state(&program_state, &saved_flags);
+				/* restore flag state */
+				program_state.state_flags = saved_flags;
 				toggle_output_file(&program_state, stripped);
-				save_flag_state(&program_state, &saved_flags);
+				/* save flag state */
+				saved_flags = program_state.state_flags;
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle library parsing */
 			case 'p':
 				free_buffers(&program_state);
-				restore_flag_state(&program_state, &saved_flags);
+				/* restore flag state */
+				program_state.state_flags = saved_flags;
 				program_state.state_flags ^= PARSE_FLAG;
-				save_flag_state(&program_state, &saved_flags);
+				/* save flag state */
+				saved_flags = program_state.state_flags;
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
 				break;
@@ -511,9 +498,11 @@ int main(int argc, char **argv)
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
-				restore_flag_state(&program_state, &saved_flags);
+				/* restore flag state */
+				program_state.state_flags = saved_flags;
 				program_state.state_flags ^= WARN_FLAG;
-				save_flag_state(&program_state, &saved_flags);
+				/* save flag state */
+				saved_flags = program_state.state_flags;
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
 				break;
