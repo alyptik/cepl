@@ -265,7 +265,7 @@ void parse_libs(struct str_list *symbols, char **libs)
 char **parse_opts(struct program *prog, int argc, char **argv, char const *optstring)
 {
 	int opt;
-	char *out_name = NULL, *in_file = NULL, *asm_file = NULL;
+	char *out_name = NULL;
 	/* cleanup previous allocations */
 	free_str_list(&prog->cc_list);
 	free_str_list(&prog->lib_list);
