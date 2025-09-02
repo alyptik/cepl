@@ -22,11 +22,8 @@
 static sigjmp_buf jmp_env;
 /* TODO: change history filename to a non-hardcoded string */
 static char hist_name[] = "./.cepl_history";
-/*
- * program source struct (program_state.src[0] is
- * truncated for interactive printing)
- */
-struct program program_state;
+/* global pointer for signal handler */
+static struct program *prog_ptr;
 
 /* string to compile */
 extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
@@ -51,27 +48,27 @@ static inline char *read_line(struct program *restrict prog)
 	return prog->cur_line;
 }
 
-static inline void undo_last_line(void)
+static inline void undo_last_line(struct program *restrict prog)
 {
 	/* break early if no history to pop */
-	if (program_state.src[0].flags.cnt < 1 || program_state.src[1].flags.cnt < 1)
+	if (prog->src[0].flags.cnt < 1 || prog->src[1].flags.cnt < 1)
 		return;
-	pop_history(&program_state);
+	pop_history(prog);
 }
 
 /* exit handler registration */
 static inline void free_bufs(void)
 {
-	free_buffers(&program_state);
-	cleanup(&program_state);
+	free_buffers(prog_ptr);
+	cleanup(prog_ptr);
 }
 
 /* set io streams to non-buffering */
-static inline void tty_break(struct program *restrict prg)
+static inline void tty_break(struct program *restrict prog)
 {
-	if (prg->tty_state.modes_changed)
+	if (prog->tty_state.modes_changed)
 		return;
-	struct termios *cur_mode = prg->tty_state.save_modes;
+	struct termios *cur_mode = prog->tty_state.save_modes;
 	FILE *streams[] = {stdin, stdout, stderr, NULL};
 	for (FILE **cur = streams; *cur; cur_mode++, cur++) {
 		struct termios mod_modes = {0};
@@ -89,19 +86,19 @@ static inline void tty_break(struct program *restrict prg)
 		mod_modes.c_cc[VTIME] = 0;
 		tcsetattr(cur_fd, TCSANOW, &mod_modes);
 	}
-	prg->tty_state.modes_changed = true;
+	prog->tty_state.modes_changed = true;
 }
 
 /* reset attributes of standard io streams */
-static inline void tty_fix(struct program *restrict prg)
+static inline void tty_fix(struct program *restrict prog)
 {
-	if (prg->tty_state.modes_changed)
+	if (prog->tty_state.modes_changed)
 		return;
-	struct termios *cur_mode = prg->tty_state.save_modes;
+	struct termios *cur_mode = prog->tty_state.save_modes;
 	FILE *streams[] = {stdin, stdout, stderr, NULL};
 	for (FILE **cur = streams; *cur; cur_mode++, cur++)
 		tcsetattr(fileno(*cur), TCSANOW, cur_mode);
-	prg->tty_state.modes_changed = false;
+	prog->tty_state.modes_changed = false;
 }
 
 /* general signal handling function */
@@ -116,14 +113,14 @@ static void sig_handler(int sig)
 	 * if worth caring about the corner case where stderr
 	 * is 0 (possible but *very* unlikely).
 	 */
-	if (program_state.saved_fd)
-		dup2(program_state.saved_fd, STDOUT_FILENO);
+	if (prog_ptr->saved_fd)
+		dup2(prog_ptr->saved_fd, STDOUT_FILENO);
 	/* reset io stream buffering modes */
-	tty_break(&program_state);
-	tty_fix(&program_state);
+	tty_break(prog_ptr);
+	tty_fix(prog_ptr);
 	/* cleanup input line */
-	free(program_state.cur_line);
-	program_state.cur_line = NULL;
+	free(prog_ptr->cur_line);
+	prog_ptr->cur_line = NULL;
 	/*
 	 * the siglongjmp() here is needed in order to handle using
 	 * ^C to both both clear the current command-line and also
@@ -134,9 +131,9 @@ static void sig_handler(int sig)
 		 * else abort current input line and
 		 * siglongjmp() back to loop beginning
 		 */
-		if (program_state.state_flags & EXEC_FLAG) {
-			undo_last_line();
-			program_state.state_flags &= ~EXEC_FLAG;
+		if (prog_ptr->state_flags & EXEC_FLAG) {
+			undo_last_line(prog_ptr);
+			prog_ptr->state_flags &= ~EXEC_FLAG;
 		}
 		/* reap any leftover children */
 		while (wait(&ret) >= 0 && errno != ECHILD);
@@ -145,8 +142,8 @@ static void sig_handler(int sig)
 		siglongjmp(jmp_env, 1);
 	}
 	/* cleanup and die if not SIGINT */
-	free_buffers(&program_state);
-	cleanup(&program_state);
+	free_buffers(prog_ptr);
+	cleanup(prog_ptr);
 	/* fallback to kill children who have masked SIGINT */
 	kill(0, SIGKILL);
 	/* reap any leftover children */
@@ -206,149 +203,146 @@ static inline void setup_readline(void)
 	rl_initialize();
 }
 
-static inline void toggle_output_file(char *tbuf)
+static inline void toggle_output_file(struct program *restrict prog, char *tbuf)
 {
 	/* if file was open, flip it and break early */
-	if (program_state.state_flags & OUT_FLAG) {
+	if (prog->state_flags & OUT_FLAG) {
 		/* delete output file */
-		if (program_state.out_filename && unlink(program_state.out_filename) < 0)
+		if (prog->out_filename && unlink(prog->out_filename) < 0)
 			WARN("%s failed in %s", "unlink()", __func__);
-		free(program_state.out_filename);
-		program_state.out_filename = NULL;
-		program_state.state_flags ^= OUT_FLAG;
+		free(prog->out_filename);
+		prog->out_filename = NULL;
+		prog->state_flags ^= OUT_FLAG;
 		return;
 	}
-	program_state.state_flags ^= OUT_FLAG;
-	tbuf = strpbrk(program_state.cur_line, " \t");
+	prog->state_flags ^= OUT_FLAG;
+	tbuf = strpbrk(prog->cur_line, " \t");
 	/* return if file name empty */
 	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
 		/* reset flag */
-		program_state.state_flags ^= OUT_FLAG;
+		prog->state_flags ^= OUT_FLAG;
 		return;
 	}
 	/* increment pointer to start of definition */
 	tbuf += strspn(tbuf, " \t");
-	if (program_state.out_filename) {
-		free(program_state.out_filename);
-		program_state.out_filename = NULL;
+	if (prog->out_filename) {
+		free(prog->out_filename);
+		prog->out_filename = NULL;
 	}
-	xcalloc(&program_state.out_filename, 1, strlen(tbuf) + 1, "program_state.out_filename calloc()");
-	strmv(0, program_state.out_filename, tbuf);
-	write_files(&program_state);
+	xcalloc(&prog->out_filename, 1, strlen(tbuf) + 1, "prog->out_filename calloc()");
+	strmv(0, prog->out_filename, tbuf);
+	write_files(prog);
 }
 
-static inline void parse_macro(void)
+static inline void parse_macro(struct program *restrict prog)
 {
 	char *saved, *tmp_buf;
 	/* remove trailing ' ' and '\t' */
-	for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
-		if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
+	for (size_t i = strlen(prog->cur_line) - 1; i > 0; i--) {
+		if (prog->cur_line[i] != ' ' && prog->cur_line[i] != '\t')
 			break;
-		program_state.cur_line[i] = '\0';
+		prog->cur_line[i] = '\0';
 	}
-	tmp_buf = strpbrk(program_state.cur_line, " \t");
+	tmp_buf = strpbrk(prog->cur_line, " \t");
 	/* return if function definition empty */
 	if (!tmp_buf || strspn(tmp_buf, " \t") == strlen(tmp_buf))
 		return;
-	saved = program_state.cur_line;
+	saved = prog->cur_line;
 	/* increment pointer to start of definition */
 	tmp_buf += strspn(tmp_buf, " \t");
 	/* re-allocate enough memory for program_state.cur_line + '\n' + '\n' + '\0' */
 	size_t sz = strlen(tmp_buf) + 3;
 	for (size_t i = 0; i < 2; i++) {
 		/* keep line length to a minimum */
-		struct program *prg = &program_state;
-		resize_sect(prg, &prg->src[i].funcs, sz);
+		resize_sect(prog, &prog->src[i].funcs, sz);
 	}
-	program_state.cur_line = tmp_buf;
+	prog->cur_line = tmp_buf;
 
-	switch (program_state.cur_line[0]) {
+	switch (prog->cur_line[0]) {
 	/* dont append ';' for preprocessor directives */
 	case '#':
 		/* remove trailing ' ' and '\t' */
-		for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
-			if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
+		for (size_t i = strlen(prog->cur_line) - 1; i > 0; i--) {
+			if (prog->cur_line[i] != ' ' && prog->cur_line[i] != '\t')
 				break;
-			program_state.cur_line[i] = '\0';
+			prog->cur_line[i] = '\0';
 		}
-		build_funcs(&program_state);
+		build_funcs(prog);
 		for (size_t i = 0; i < 2; i++)
-			strmv(CONCAT, program_state.src[i].funcs.buf, "\n");
+			strmv(CONCAT, prog->src[i].funcs.buf, "\n");
 		break;
 
 	default:
 		/* remove trailing ' ' and '\t' */
-		for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
-			if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
+		for (size_t i = strlen(prog->cur_line) - 1; i > 0; i--) {
+			if (prog->cur_line[i] != ' ' && prog->cur_line[i] != '\t')
 				break;
-			program_state.cur_line[i] = '\0';
+			prog->cur_line[i] = '\0';
 		}
 
-		switch(program_state.cur_line[strlen(program_state.cur_line) - 1]) {
+		switch(prog->cur_line[strlen(prog->cur_line) - 1]) {
 		case '{': /* fallthough */
 		case '}': /* fallthough */
 		case ';': /* fallthough */
 		case '\\':
 			/* remove extra trailing ';' */
-			for (size_t j = strlen(program_state.cur_line) - 1; j > 0; j--) {
-				if (program_state.cur_line[j] != ';' || program_state.cur_line[j - 1] != ';')
+			for (size_t j = strlen(prog->cur_line) - 1; j > 0; j--) {
+				if (prog->cur_line[j] != ';' || prog->cur_line[j - 1] != ';')
 					break;
-				program_state.cur_line[j] = '\0';
+				prog->cur_line[j] = '\0';
 			}
-			build_funcs(&program_state);
+			build_funcs(prog);
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].funcs.buf, "\n");
+				strmv(CONCAT, prog->src[i].funcs.buf, "\n");
 			break;
 
 		default:
-			build_funcs(&program_state);
+			build_funcs(prog);
 			/* append ';' if no trailing '}', ';', or '\' */
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].funcs.buf, ";\n");
+				strmv(CONCAT, prog->src[i].funcs.buf, ";\n");
 		}
 	}
-	program_state.cur_line = saved;
+	prog->cur_line = saved;
 }
 
-static inline void parse_normal(void)
+static inline void parse_normal(struct program *restrict prog)
 {
 	/* remove trailing ' ' and '\t' */
-	for (size_t i = strlen(program_state.cur_line) - 1; i > 0; i--) {
-		if (program_state.cur_line[i] != ' ' && program_state.cur_line[i] != '\t')
+	for (size_t i = strlen(prog->cur_line) - 1; i > 0; i--) {
+		if (prog->cur_line[i] != ' ' && prog->cur_line[i] != '\t')
 			break;
-		program_state.cur_line[i] = '\0';
+		prog->cur_line[i] = '\0';
 	}
-	switch(program_state.cur_line[strlen(program_state.cur_line) - 1]) {
+	switch(prog->cur_line[strlen(prog->cur_line) - 1]) {
 	case '{': /* fallthough */
 	case '}': /* fallthough */
 	case ';': /* fallthough */
 	case '\\': {
-			build_body(&program_state);
+			build_body(prog);
 			for (size_t i = 0; i < 2; i++) {
-				/* keep line length to a minimum */
-				struct program *prg = &program_state;
 				/* remove extra trailing ';' */
-				size_t b_len = strlen(prg->src[i].body.buf) - 1;
+				size_t b_len = strlen(prog->src[i].body.buf) - 1;
 				for (size_t j = b_len; j > 0; j--) {
-					if (prg->src[i].body.buf[j] != ';' || prg->src[i].body.buf[j - 1] != ';')
+					if (prog->src[i].body.buf[j] != ';' || prog->src[i].body.buf[j - 1] != ';')
 						break;
-					prg->src[i].body.buf[j] = '\0';
+					prog->src[i].body.buf[j] = '\0';
 				}
-				strmv(CONCAT, prg->src[i].body.buf, "\n");
+				strmv(CONCAT, prog->src[i].body.buf, "\n");
 			}
 			break;
 		   }
 
 	default: {
-			build_body(&program_state);
+			build_body(prog);
 			/* append ';' if no trailing '}', ';', or '\' */
 			for (size_t i = 0; i < 2; i++)
-				strmv(CONCAT, program_state.src[i].body.buf, ";\n");
+				strmv(CONCAT, prog->src[i].body.buf, ";\n");
 		}
 	}
 }
 
-static inline void build_hist_name(void)
+static inline void build_hist_name(struct program *restrict prog)
 {
 	struct stat hist_stat;
 	size_t buf_sz = sizeof hist_name, hist_len = 0;
@@ -359,63 +353,71 @@ static inline void build_hist_name(void)
 	if (home_env && strcmp(home_env, ""))
 		buf_sz += strlen(home_env) + 1;
 	/* prepend "~/" to history fihist_lename ("~/.cepl_history" by default) */
-	if (!(program_state.hist_file = calloc(1, buf_sz)))
+	if (!(prog->hist_file = calloc(1, buf_sz)))
 		ERR("%s", "program_state.hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "")) {
 		hist_len = strlen(home_env);
-		strmv(0, program_state.hist_file, home_env);
-		program_state.hist_file[hist_len++] = '/';
+		strmv(0, prog->hist_file, home_env);
+		prog->hist_file[hist_len++] = '/';
 	}
-	strmv(hist_len, program_state.hist_file, hist_name);
+	strmv(hist_len, prog->hist_file, hist_name);
 
 	/* initialize history sesssion */
 	using_history();
 	/* create history file if it doesn't exsit */
-	if (!(make_hist = fopen(program_state.hist_file, "ab"))) {
+	if (!(make_hist = fopen(prog->hist_file, "ab"))) {
 		WARN("%s", "error creating history file with fopen()");
 	} else {
 		fclose(make_hist);
-		program_state.state_flags |= HIST_FLAG;
+		prog->state_flags |= HIST_FLAG;
 	}
 	/* read program_state.hist_file if size is non-zero */
-	stat(program_state.hist_file, &hist_stat);
+	stat(prog->hist_file, &hist_stat);
 	if (hist_stat.st_size > 0) {
-		if (read_history(program_state.hist_file)) {
+		if (read_history(prog->hist_file)) {
 			char hist_pre[] = "error reading history from ";
-			char hist_full[sizeof hist_pre + strlen(program_state.hist_file)];
+			char hist_full[sizeof hist_pre + strlen(prog->hist_file)];
 			char *hist_ptr = hist_full;
 			strmv(0, hist_ptr, hist_pre);
-			strmv(sizeof hist_pre - 1, hist_ptr, program_state.hist_file);
+			strmv(sizeof hist_pre - 1, hist_ptr, prog->hist_file);
 			WARN("%s", hist_ptr);
 		}
 	}
 }
 
-static inline void save_flag_state(unsigned int *restrict sflags)
+static inline void save_flag_state(struct program *restrict prog, unsigned int *restrict sflags)
 {
 	if (!sflags) {
 		WARNX("%s", "null pointer passed to save_flag_state()");
 		return;
 	}
 	*sflags &= 0;
-	*sflags |= program_state.state_flags;
+	*sflags |= prog->state_flags;
 }
 
-static inline void restore_flag_state(unsigned int sflags)
+static inline void restore_flag_state(struct program *restrict prog, unsigned int sflags)
 {
-	program_state.state_flags &= 0;
-	program_state.state_flags |= sflags;
+	prog->state_flags &= 0;
+	prog->state_flags |= sflags;
 }
 
 int main(int argc, char **argv)
 {
-	unsigned int saved_flags;
+	/*
+	 * program source struct (program_state.src[0]
+	 * is truncated for interactive printing)
+	 */
+	static struct program program_state;
 	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
+	unsigned int saved_flags;
+
+	/* set global pointer for signal handler */
+	prog_ptr = &program_state;
 
 	/* set default state flags */
 	program_state.state_flags |= PARSE_FLAG;
-	build_hist_name();
+	build_hist_name(&program_state);
 
 	/* enable completion */
 	rl_completion_entry_function = &generator;
@@ -424,7 +426,7 @@ int main(int argc, char **argv)
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
 
-	save_flag_state(&saved_flags);
+	save_flag_state(&program_state, &saved_flags);
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
 	/* save stderr for signal handler */
@@ -467,9 +469,8 @@ int main(int argc, char **argv)
 		/* re-allocate enough memory for line + '\t' + ';' + '\n' + '\0' */
 		for (size_t i = 0; i < 2; i++) {
 			/* keep line length to a minimum */
-			struct program *prg = &program_state;
-			resize_sect(prg, &prg->src[i].body, 3);
-			resize_sect(prg, &prg->src[i].total, 3);
+			resize_sect(&program_state, &program_state.src[i].body, 3);
+			resize_sect(&program_state, &program_state.src[i].total, 3);
 		}
 		stripped = program_state.cur_line;
 		stripped += strspn(stripped, " \t");
@@ -480,23 +481,23 @@ int main(int argc, char **argv)
 			switch(stripped[1]) {
 			/* pop last history statement */
 			case 'u':
-				undo_last_line();
+				undo_last_line(&program_state);
 				break;
 
 			/* toggle output file writing */
 			case 'o':
-				restore_flag_state(saved_flags);
-				toggle_output_file(stripped);
-				save_flag_state(&saved_flags);
+				restore_flag_state(&program_state, saved_flags);
+				toggle_output_file(&program_state, stripped);
+				save_flag_state(&program_state, &saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle library parsing */
 			case 'p':
 				free_buffers(&program_state);
-				restore_flag_state(saved_flags);
+				restore_flag_state(&program_state, saved_flags);
 				program_state.state_flags ^= PARSE_FLAG;
-				save_flag_state(&saved_flags);
+				save_flag_state(&program_state, &saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
 				break;
@@ -504,9 +505,9 @@ int main(int argc, char **argv)
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
-				restore_flag_state(saved_flags);
+				restore_flag_state(&program_state, saved_flags);
 				program_state.state_flags ^= WARN_FLAG;
-				save_flag_state(&saved_flags);
+				save_flag_state(&program_state, &saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
 				break;
@@ -520,7 +521,7 @@ int main(int argc, char **argv)
 
 			/* define an include/macro/function */
 			case 'm':
-				parse_macro();
+				parse_macro(&program_state);
 				break;
 
 			/* show usage information */
@@ -556,7 +557,7 @@ int main(int argc, char **argv)
 			break;
 
 		default:
-			parse_normal();
+			parse_normal(&program_state);
 		}
 
 		/* set to true before compiling */
