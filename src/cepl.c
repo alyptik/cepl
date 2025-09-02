@@ -435,7 +435,7 @@ int main(int argc, char **argv)
 	 * print version
 	 */
 	build_final(&program_state, argv);
-	if (isatty(STDIN_FILENO) && (program_state.state_flags & EVAL_FLAG))
+	if (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG))
 		fprintf(stderr, "%s\n", VERSION_STRING);
 	reg_handlers();
 	rl_set_signals();
