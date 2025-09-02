@@ -1,4 +1,4 @@
-.TH CEPL: "1" "July 2024" "cepl-20\&.0\&.0" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-21\&.0\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C and C++ REPL
@@ -59,7 +59,7 @@ Command line options:
 .HP
 \fB\-v\fR, \fB\-\-version\fR	Show version information
 .HP
-\fB\-w\fR, \fB\-\-warnings\fR	Compile with \fB\-Wall\fR \fB\-Wextra\fR flags
+\fB\-w\fR, \fB\-\-warnings\fR	Compile with \fB\-Wall\fR \fB\-Wextra\fR \fB\-pedantic\fR flags
 .HP
 \fB\-l\fR			Link against specified library (flag can be repeated)
 .HP
@@ -88,7 +88,7 @@ Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is opti
 .HP
 \fB;u[ndo]\fR		Incremental undo (can be repeated)
 .HP
-\fB;w[arnings]\fR	Toggle -w (warnings) flag
+\fB;w[arnings]\fR	Toggle -w (pedantic warnings) flag
 .fi
 
 .SH "NOTES"

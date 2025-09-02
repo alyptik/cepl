@@ -4,7 +4,6 @@ A readline C and C++ REPL with history, tab-completion, and undo.
 
 ## Dependencies
 
-* `gcc` (GNU C Compiler)
 * `readline` Console display library
 * `libelf` ELF access library
 
@@ -50,7 +49,7 @@ which are then added to readline completion.
 	-p, --parse		    Disable addition of dynamic library symbols to readline completion
 	-s, --std		    Specify which C/C++ standard to use
 	-v, --version		Show version information
-	-w, --warnings		Compile with "-Wall -Wextra" flags
+	-w, --warnings		Compile with "-Wall -Wextra -pedantic" flags
 	-l			        Link against specified library (flag can be repeated)
 	-I			        Search directory for header files (flag can be repeated)
 	-L			        Search directory for libraries (flag can be repeated)
@@ -64,9 +63,4 @@ which are then added to readline completion.
 	;q[uit]			Exit CEPL
 	;r[eset]		Reset CEPL to its initial program state
 	;u[ndo]			Incremental undo (can be repeated)
-	;w[arnings]		Toggle -w (warnings) flag
-
-## Required libraries:
-
-* libelf
-* libreadline
+	;w[arnings]		Toggle -w (pedantic warnings) flag

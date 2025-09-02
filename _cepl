@@ -8,16 +8,16 @@ stds=(${:-c{90,99,11,17,23}} ${:-gnu{90,99,11,17,23}} ${:-c++{98,11,14,17,20,23,
 libs=(${${$(find -L /lib64/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib64/lib}%.so})
 
 _arguments -s \
-	{-c,--compiler=}"[Specify alternate compiler.]:compiler:($compilers)" \
-	{-e,--eval=}'[Evaluate the following argument as C code.]:code:' \
-	{-h,--help}'[Show help/usage information.]' \
-	{-o,--output=}'[Name of the file to output C source code to.]:file:_files' \
-	{-p,--parse}'[Disable addition of dynamic library symbols to readline completion.]' \
-	{-s,--std=}"[Specify which C/C++ standard to use.]:std:($stds)" \
-	{-v,--version}'[Show version information.]' \
-	{-w,--warnings}'[Compile with "-Wall -Wextra" flags.]' \
-	-l"[Link against specified library (flag can be repeated).]:library:($libs)" \
-	-I'[Search directory for header files (flag can be repeated).]:directory:_files -/' \
-	-L'[Search directory for libraries (flag can be repeated).]:directory:_files -/' \
+	{-c,--compiler=}"[Specify alternate compiler]:compiler:($compilers)" \
+	{-e,--eval=}'[Evaluate the following argument as C code]:code:' \
+	{-h,--help}'[Show help/usage information]' \
+	{-o,--output=}'[Name of the file to output C source code to]:file:_files' \
+	{-p,--parse}'[Disable addition of dynamic library symbols to readline completion]' \
+	{-s,--std=}"[Specify which C/C++ standard to use]:std:($stds)" \
+	{-v,--version}'[Show version information]' \
+	{-w,--warnings}'[Compile with "-Wall -Wextra -pedantic" flags]' \
+	-l"[Link against specified library (flag can be repeated)]:library:($libs)" \
+	-I'[Search directory for header files (flag can be repeated)]:directory:_files -/' \
+	-L'[Search directory for libraries (flag can be repeated)]:directory:_files -/' \
 	'*:' \
 	-- && ret=0

@@ -52,7 +52,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-20.0.0"
+#define VERSION_STRING	"cepl-21.0.0"
 #define USAGE_STRING \
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
@@ -64,7 +64,7 @@
 	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
 	"-s, --std\t\tSpecify which C/C++ standard to use\n\t" \
 	"-v, --version\t\tShow version information\n\t" \
-	"-w, --warnings\t\tCompile with \"-Wall -Wextra\" flags\n\t" \
+	"-w, --warnings\t\tCompile with \"-Wall -Wextra -pedantic\" flags\n\t" \
 	"-l\t\t\tLink against specified library (flag can be repeated)\n\t" \
 	"-I\t\t\tSearch directory for header files (flag can be repeated)\n\t" \
 	"-L\t\t\tSearch directory for libraries (flag can be repeated)\n" \
@@ -76,7 +76,7 @@
 	";q[uit]\t\t\tExit CEPL\n\t" \
 	";r[eset]\t\tReset CEPL to its initial program state\n\t" \
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)\n\t" \
-	";w[arnings]\t\tToggle -w (warnings) flag"
+	";w[arnings]\t\tToggle -w (pedantic warnings) flag"
 
 /* state flags */
 #define CXX_FLAG		0x01u
