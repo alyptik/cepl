@@ -392,14 +392,16 @@ static inline void save_flag_state(struct program *restrict prog, unsigned int *
 		WARNX("%s", "null pointer passed to save_flag_state()");
 		return;
 	}
-	*sflags &= 0;
-	*sflags |= prog->state_flags;
+	*sflags = prog->state_flags;
 }
 
-static inline void restore_flag_state(struct program *restrict prog, unsigned int sflags)
+static inline void restore_flag_state(struct program *restrict prog, unsigned int *restrict sflags)
 {
-	prog->state_flags &= 0;
-	prog->state_flags |= sflags;
+	if (!sflags) {
+		WARNX("%s", "null pointer passed to restore_flag_state()");
+		return;
+	}
+	prog->state_flags = *sflags;
 }
 
 int main(int argc, char **argv)
@@ -409,8 +411,8 @@ int main(int argc, char **argv)
 	 * is truncated for interactive printing)
 	 */
 	static struct program program_state;
-	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
 	unsigned int saved_flags;
+	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
 
 	/* set global pointer for signal handler */
 	prog_ptr = &program_state;
@@ -486,7 +488,7 @@ int main(int argc, char **argv)
 
 			/* toggle output file writing */
 			case 'o':
-				restore_flag_state(&program_state, saved_flags);
+				restore_flag_state(&program_state, &saved_flags);
 				toggle_output_file(&program_state, stripped);
 				save_flag_state(&program_state, &saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
@@ -495,7 +497,7 @@ int main(int argc, char **argv)
 			/* toggle library parsing */
 			case 'p':
 				free_buffers(&program_state);
-				restore_flag_state(&program_state, saved_flags);
+				restore_flag_state(&program_state, &saved_flags);
 				program_state.state_flags ^= PARSE_FLAG;
 				save_flag_state(&program_state, &saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
@@ -505,7 +507,7 @@ int main(int argc, char **argv)
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
-				restore_flag_state(&program_state, saved_flags);
+				restore_flag_state(&program_state, &saved_flags);
 				program_state.state_flags ^= WARN_FLAG;
 				save_flag_state(&program_state, &saved_flags);
 				parse_opts(&program_state, argc, argv, optstring);
