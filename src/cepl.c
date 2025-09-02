@@ -570,7 +570,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "%s\n", program_state.src[0].total.buf);
 			fprintf(stderr, "==========\n");
 		}
-		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, argv, true);
+		int ret = compile(program_state.src[1].total.buf, program_state.cc_list.list, true);
 		/* print output and exit code if non-zero */
 		if (ret || (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG)))
 			fprintf(stderr, "[exit status: %d]\n", ret);

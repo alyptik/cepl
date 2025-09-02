@@ -22,13 +22,14 @@ struct str_list ld_list;
 
 extern char **environ;
 
-int compile(char const *restrict src, char *const cc_args[], char *const exec_args[], bool show_errors)
+int compile(char const *restrict src, char *const cc_args[], bool show_errors)
 {
 	int null_fd, status, prog_fd;
 	int pipe_cc[2];
 	size_t len = strlen(src);
+	char *exec_args[] = {"/tmp/cepl_program", NULL};
 
-	if (!src || !cc_args || !exec_args)
+	if (!src || !cc_args)
 		ERRX("%s", "NULL pointer passed to compile()");
 	if (!len)
 		return 0;
