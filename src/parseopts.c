@@ -161,6 +161,7 @@ static inline void append_arg_list(struct program *prog, char *const *cc_list, c
 static inline void build_arg_list(struct program *prog, char *const *cc_list)
 {
 	char *cflags = getenv("CFLAGS");
+	char *ldflags = getenv("LDFLAGS");
 	char *ldlibs = getenv("LDLIBS");
 	char *libs = getenv("LIBS");
 
@@ -171,6 +172,9 @@ static inline void build_arg_list(struct program *prog, char *const *cc_list)
 	/* parse CFLAGS, LDFLAGS, LDLIBS, and LIBS from the environment */
 	if (cflags)
 		for (char *arg = strtok(cflags, " \t"); arg; arg = strtok(NULL, " \t"))
+			append_str(&prog->cc_list, arg, 0);
+	if (ldflags)
+		for (char *arg = strtok(ldflags, " \t"); arg; arg = strtok(NULL, " \t"))
 			append_str(&prog->cc_list, arg, 0);
 	if (ldlibs)
 		for (char *arg = strtok(ldlibs, " \t"); arg; arg = strtok(NULL, " \t"))
