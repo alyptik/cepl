@@ -184,7 +184,8 @@ static void reg_handlers(void)
 		WARN("%s", "at_quick_exit(&free_bufs)");
 }
 
-static inline void setup_readline(void)
+/* reset readline after signal */
+static inline void reset_readline(void)
 {
 	int rl_flags = 0;
 
@@ -437,7 +438,7 @@ int main(int argc, char **argv)
 	 * to abort running code early
 	 */
 	if (sigsetjmp(jmp_env, 1)) {
-		setup_readline();
+		reset_readline();
 		fputc('\n', stderr);
 	}
 
