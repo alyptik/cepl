@@ -168,11 +168,10 @@ static inline void build_arg_list(struct program *prog, char *const *cc_list)
 	if (!prog->cc_list.list[0][0])
 		strmv(0, prog->cc_list.list[0], "gcc");
 	append_arg_list(prog, cc_list, NULL);
-	/* parse CFLAGS, LDFLAGS, LDLIBS, and LIBS from the environment (-g flags will hang) */
+	/* parse CFLAGS, LDFLAGS, LDLIBS, and LIBS from the environment */
 	if (cflags)
 		for (char *arg = strtok(cflags, " \t"); arg; arg = strtok(NULL, " \t"))
-			if (arg[0] != '-' && arg[1] != 'g')
-				append_str(&prog->cc_list, arg, 0);
+			append_str(&prog->cc_list, arg, 0);
 	if (ldlibs)
 		for (char *arg = strtok(ldlibs, " \t"); arg; arg = strtok(NULL, " \t"))
 			append_str(&prog->lib_list, arg, 0);
