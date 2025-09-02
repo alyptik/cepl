@@ -323,12 +323,12 @@ char **parse_opts(struct program *prog, int argc, char **argv, char const *optst
 
 		/* parse flag */
 		case 'p':
-			prog->state_flags ^= PARSE_FLAG;
+			prog->state_flags &= ~PARSE_FLAG;
 			break;
 
 		/* warning flag */
 		case 'w':
-			prog->state_flags ^= WARN_FLAG;
+			prog->state_flags |= WARN_FLAG;
 			break;
 
 		/* version flag */
