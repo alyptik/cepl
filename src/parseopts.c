@@ -14,7 +14,6 @@
 #include "readline.h"
 #include <getopt.h>
 #include <limits.h>
-#include <regex.h>
 
 /* globals */
 static struct option long_opts[] = {
