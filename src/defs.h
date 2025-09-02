@@ -89,20 +89,10 @@
 #define STD_FLAG		0x80u
 #define WARN_FLAG		0x100u
 
-/* terminal color escapes */
-#define	RED		"\\033[31m"
-#define	GREEN		"\\033[32m"
-#define	YELLOW		"\\033[33m"
-#define	PURPLE		"\\033[35m"
-#define	CYAN		"\\033[36m"
-#define	RST		"\\033[00m"
-
 /* page size for buffer count */
 #define PAGE_SIZE	0x1000u
 /* max eval string length */
 #define EVAL_LIMIT	(PAGE_SIZE * PAGE_SIZE)
-/* max possible types */
-#define TNUM		7
 /* `strmv() `concat constant */
 #define CONCAT		(-1)
 
