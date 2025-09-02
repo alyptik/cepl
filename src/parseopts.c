@@ -160,15 +160,35 @@ static inline void append_arg_list(struct program *prog, char *const *cc_list, c
 
 static inline void build_arg_list(struct program *prog, char *const *cc_list)
 {
-	char *cflags = getenv("CFLAGS");
-	char *ldflags = getenv("LDFLAGS");
-	char *ldlibs = getenv("LDLIBS");
-	char *libs = getenv("LIBS");
+	char *cflags_orig = getenv("CFLAGS");
+	char *ldflags_orig = getenv("LDFLAGS");
+	char *ldlibs_orig = getenv("LDLIBS");
+	char *libs_orig = getenv("LIBS");
+	char *cflags = NULL, *ldflags = NULL, *ldlibs = NULL, *libs = NULL;
+
+	/* don't modify environment strings */
+	if (cflags_orig) {
+		xmalloc(&cflags, strlen(cflags_orig) + 1, "cflags");
+		strmv(0, cflags, cflags_orig);
+	}
+	if (ldflags_orig) {
+		xmalloc(&ldflags, strlen(ldflags_orig) + 1, "ldflags");
+		strmv(0, ldflags, ldflags_orig);
+	}
+	if (ldlibs_orig) {
+		xmalloc(&ldlibs, strlen(ldlibs_orig) + 1, "ldlibs");
+		strmv(0, ldlibs, ldlibs_orig);
+	}
+	if (libs_orig) {
+		xmalloc(&libs, strlen(libs_orig) + 1, "libs");
+		strmv(0, libs, libs_orig);
+	}
 
 	/* default to gcc as a compiler */
 	if (!prog->cc_list.list[0][0])
 		strmv(0, prog->cc_list.list[0], "gcc");
 	append_arg_list(prog, cc_list, NULL);
+
 	/* parse CFLAGS, LDFLAGS, LDLIBS, and LIBS from the environment */
 	if (cflags)
 		for (char *arg = strtok(cflags, " \t"); arg; arg = strtok(NULL, " \t"))
@@ -182,6 +202,13 @@ static inline void build_arg_list(struct program *prog, char *const *cc_list)
 	if (libs)
 		for (char *arg = strtok(libs, " \t"); arg; arg = strtok(NULL, " \t"))
 			append_str(&prog->lib_list, arg, 0);
+
+	/* free temporary environment strings */
+	free(cflags);
+	free(ldflags);
+	free(ldlibs);
+	free(libs);
+
 	/* NULL-terminate lists */
 	append_str(&prog->cc_list, NULL, 0);
 	append_str(&prog->lib_list, NULL, 0);
