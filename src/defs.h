@@ -29,10 +29,10 @@
 /* `malloc()` wrapper */
 #define xmalloc(ptr, sz, msg)				\
 	({						\
-		void *tmp = malloc(sz);			\
+		void *tmp = malloc((sz));		\
 		if (!tmp)				\
 			ERR("%s", (msg));		\
-		*ptr = tmp;				\
+		*(ptr) = tmp;				\
 	})
 /* `calloc()` wrapper */
 #define xcalloc(ptr, nmemb, sz, msg)			\
@@ -40,19 +40,19 @@
 		void *tmp = calloc((nmemb), (sz));	\
 		if (!tmp)				\
 			ERR("%s", (msg));		\
-		*ptr = tmp;				\
+		*(ptr) = tmp;				\
 	})
 /* `realloc()` wrapper */
 #define xrealloc(ptr, sz, msg)				\
 	({						\
-		void *tmp[2] = {0, *ptr};		\
-		if (!(tmp[0] = realloc(tmp[1], sz)))	\
+		void *tmp[2] = {0, *(ptr)};		\
+		if (!(tmp[0] = realloc(tmp[1], (sz))))	\
 			ERR("%s", (msg));		\
-		*ptr = tmp[0];				\
+		*(ptr) = tmp[0];			\
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-18.0.0"
+#define VERSION_STRING	"cepl-19.0.0"
 #define USAGE_STRING \
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
