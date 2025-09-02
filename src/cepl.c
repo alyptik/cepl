@@ -389,7 +389,6 @@ int main(int argc, char **argv)
 	 * is truncated for interactive printing)
 	 */
 	static struct program program_state;
-	unsigned int saved_flags;
 	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
 
 	/* set global pointer for signal handler */
@@ -407,7 +406,6 @@ int main(int argc, char **argv)
 	rl_bind_key('\t', &rl_complete);
 
 	/* save flag state */
-	saved_flags = program_state.state_flags;
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
 	/*
@@ -465,22 +463,14 @@ int main(int argc, char **argv)
 
 			/* toggle output file writing */
 			case 'o':
-				/* restore flag state */
-				program_state.state_flags = saved_flags;
 				toggle_output_file(&program_state, stripped);
-				/* save flag state */
-				saved_flags = program_state.state_flags;
 				parse_opts(&program_state, argc, argv, optstring);
 				break;
 
 			/* toggle library parsing */
 			case 'p':
 				free_buffers(&program_state);
-				/* restore flag state */
-				program_state.state_flags = saved_flags;
 				program_state.state_flags ^= PARSE_FLAG;
-				/* save flag state */
-				saved_flags = program_state.state_flags;
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
 				break;
@@ -488,11 +478,7 @@ int main(int argc, char **argv)
 			/* toggle warnings */
 			case 'w':
 				free_buffers(&program_state);
-				/* restore flag state */
-				program_state.state_flags = saved_flags;
 				program_state.state_flags ^= WARN_FLAG;
-				/* save flag state */
-				saved_flags = program_state.state_flags;
 				parse_opts(&program_state, argc, argv, optstring);
 				init_buffers(&program_state);
 				break;
