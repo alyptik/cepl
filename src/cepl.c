@@ -408,7 +408,7 @@ int main(int argc, char **argv)
 	program_state.state_flags = PARSE_FLAG;
 	build_hist_name(&program_state);
 
-	/* enable completion */
+	/* enable readline completion */
 	rl_completion_entry_function = &generator;
 	rl_attempted_completion_function = &completer;
 	rl_basic_word_break_characters = " \t\n\"\\'`@$><=|&{}()[]";
