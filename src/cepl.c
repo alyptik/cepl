@@ -362,12 +362,9 @@ static inline void build_hist_name(struct program *prog)
 	/* initialize history sesssion */
 	using_history();
 	/* create history file if it doesn't exsit */
-	if (!(make_hist = fopen(prog->hist_file, "ab"))) {
-		WARN("%s", "error creating history file with fopen()");
-	} else {
-		fclose(make_hist);
-		prog->state_flags |= HIST_FLAG;
-	}
+	xfopen(&make_hist, prog->hist_file, "ab");
+	xfclose(&make_hist);
+	prog->state_flags |= HIST_FLAG;
 	/* read program_state.hist_file if size is non-zero */
 	stat(prog->hist_file, &hist_stat);
 	if (hist_stat.st_size > 0) {
@@ -405,7 +402,7 @@ int main(int argc, char **argv)
 	rl_completion_suppress_append = 1;
 	rl_bind_key('\t', &rl_complete);
 
-	/* save flag state */
+	/* parse commandline options */
 	parse_opts(&program_state, argc, argv, optstring);
 	init_buffers(&program_state);
 	/*

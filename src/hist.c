@@ -205,7 +205,7 @@ void write_files(struct program *prog)
 		buf_pos += ret;
 	}
 	fsync(out_fd);
-	fclose(prog->ofile);
+	xfclose(&prog->ofile);
 	prog->ofile = NULL;
 }
 

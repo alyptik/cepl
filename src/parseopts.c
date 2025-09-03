@@ -132,9 +132,8 @@ static inline void set_out_file(struct program *prog, char *out_name)
 			strmv(0, prog->out_filename, out_name);
 		}
 		if (prog->ofile)
-			fclose(prog->ofile);
-		if (!(prog->ofile = fopen(prog->out_filename, "wb")))
-			ERR("%s", "failed to create output file");
+			xfclose(&prog->ofile);
+		xfopen(&prog->ofile, prog->out_filename, "wb");
 	}
 }
 
