@@ -361,9 +361,6 @@ static inline void build_hist_name(struct program *prog)
 
 	/* initialize history sesssion */
 	using_history();
-	/* create history file if it doesn't exsit */
-	xfopen(&make_hist, prog->hist_file, "ab");
-	xfclose(&make_hist);
 	prog->state_flags |= HIST_FLAG;
 	/* read program_state.hist_file if size is non-zero */
 	stat(prog->hist_file, &hist_stat);
