@@ -4,6 +4,7 @@ A readline C and C++ REPL with history, tab-completion, and undo.
 
 ## Dependencies
 
+* `gcc` GNU C compiler
 * `readline` Console display library
 * `libelf` ELF access library
 
