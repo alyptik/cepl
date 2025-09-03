@@ -1,4 +1,4 @@
-.TH CEPL: "1" "July 2024" "cepl-21\&.0\&.0" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-22\&.0\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C and C++ REPL
@@ -78,17 +78,11 @@ Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is opti
 .HP
 \fB;m[acro]\fR		Define a macro/function (e\&.g\&. \fB;f void bork(void) { puts("wark"); }\fR)
 .HP
-\fB;o[utput]\fR		Toggle -o (output C source code) flag
-.HP
-\fB;p[arse]\fR		Toggle -p (shared library parsing) flag
-.HP
 \fB;q[uit]\fR		Exit CEPL
 .HP
 \fB;r[eset]\fR		Reset CEPL to its initial program state
 .HP
 \fB;u[ndo]\fR		Incremental undo (can be repeated)
-.HP
-\fB;w[arnings]\fR	Toggle -w (pedantic warnings) flag
 .fi
 
 .SH "NOTES"

@@ -195,37 +195,6 @@ static inline void reset_readline(void)
 	rl_initialize();
 }
 
-static inline void toggle_output_file(struct program *prog, char *tbuf)
-{
-	/* if file was open, flip it and break early */
-	if (prog->state_flags & OUT_FLAG) {
-		/* delete output file */
-		if (prog->out_filename && unlink(prog->out_filename) < 0)
-			WARN("%s failed in %s", "unlink()", __func__);
-		free(prog->out_filename);
-		prog->out_filename = NULL;
-		prog->state_flags ^= OUT_FLAG;
-		return;
-	}
-	prog->state_flags ^= OUT_FLAG;
-	tbuf = strpbrk(prog->cur_line, " \t");
-	/* return if file name empty */
-	if (!tbuf || strspn(tbuf, " \t") == strlen(tbuf)) {
-		/* reset flag */
-		prog->state_flags ^= OUT_FLAG;
-		return;
-	}
-	/* increment pointer to start of definition */
-	tbuf += strspn(tbuf, " \t");
-	if (prog->out_filename) {
-		free(prog->out_filename);
-		prog->out_filename = NULL;
-	}
-	xcalloc(&prog->out_filename, 1, strlen(tbuf) + 1, "prog->out_filename calloc()");
-	strmv(0, prog->out_filename, tbuf);
-	write_files(prog);
-}
-
 static inline void parse_macro(struct program *prog)
 {
 	char *saved, *tmp_buf;
@@ -453,28 +422,6 @@ int main(int argc, char **argv)
 			/* pop last history statement */
 			case 'u':
 				undo_last_line(&program_state);
-				break;
-
-			/* toggle output file writing */
-			case 'o':
-				toggle_output_file(&program_state, stripped);
-				parse_opts(&program_state, argc, argv, optstring);
-				break;
-
-			/* toggle library parsing */
-			case 'p':
-				free_buffers(&program_state);
-				program_state.state_flags ^= PARSE_FLAG;
-				parse_opts(&program_state, argc, argv, optstring);
-				init_buffers(&program_state);
-				break;
-
-			/* toggle warnings */
-			case 'w':
-				free_buffers(&program_state);
-				program_state.state_flags ^= WARN_FLAG;
-				parse_opts(&program_state, argc, argv, optstring);
-				init_buffers(&program_state);
 				break;
 
 			/* reset state */

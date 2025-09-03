@@ -59,9 +59,6 @@ which are then added to readline completion.
 
 	;h[elp]			Show help
 	;m[acro]		Define a macro (e.g. ";m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))")
-	;o[utput]		Toggle -o (output C source code) flag
-	;p[arse]		Toggle -p (shared library parsing) flag
 	;q[uit]			Exit CEPL
 	;r[eset]		Reset CEPL to its initial program state
 	;u[ndo]			Incremental undo (can be repeated)
-	;w[arnings]		Toggle -w (pedantic warnings) flag

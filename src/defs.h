@@ -52,7 +52,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-21.0.0"
+#define VERSION_STRING	"cepl-22.0.0"
 #define USAGE_STRING \
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
@@ -71,12 +71,9 @@
 	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t" \
 	";h[elp]\t\t\tShow help\n\t" \
 	";m[acro]\t\tLine is defined outside of main() (e.g. \";m void bork(void) { puts(\"wark\"); }\")\n\t" \
-	";o[utput]\t\tToggle -o (output C source code) flag\n\t" \
-	";p[arse]\t\tToggle -p (shared library parsing) flag\n\t" \
 	";q[uit]\t\t\tExit CEPL\n\t" \
 	";r[eset]\t\tReset CEPL to its initial program state\n\t" \
-	";u[ndo]\t\t\tIncremental pop_history (can be repeated)\n\t" \
-	";w[arnings]\t\tToggle -w (pedantic warnings) flag"
+	";u[ndo]\t\t\tIncremental pop_history (can be repeated)" \
 
 /* state flags */
 #define CXX_FLAG		0x01u
