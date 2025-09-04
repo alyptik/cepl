@@ -142,7 +142,7 @@ static void sig_handler(int sig)
 	raise(sig);
 	/* wat */
 	if (write(STDERR_FILENO, wtf, sizeof wtf) < 0)
-	    ERR("%s\n", wtf);
+	    ERR("%s", wtf);
 	abort();
 }
 

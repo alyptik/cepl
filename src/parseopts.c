@@ -29,13 +29,13 @@ static struct option long_opts[] = {
 };
 static char *const cc_arg_list[] = {
 	"-g3", "-O0", "-pipe",
-	"-fPIC", "-xc", "-",
+	"-xc", "-",
 	"-o/tmp/cepl_program",
 	NULL
 };
 static char *const ccxx_arg_list[] = {
 	"-g3", "-O0", "-pipe",
-	"-fPIC", "-xc++", "-",
+	"-xc++", "-",
 	"-o/tmp/cepl_program",
 	NULL
 };
