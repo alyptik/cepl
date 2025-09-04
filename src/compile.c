@@ -22,17 +22,17 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 	char *exec_args[] = {"/tmp/cepl_program", NULL};
 
 	if (!src || !cc_args)
-		ERRX("%s", "NULL pointer passed to compile()");
+		ERRX("NULL pointer passed to compile()");
 	if (!len)
 		return 0;
 
 	/* bit bucket */
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
-		ERR("%s", "open()");
+		ERR("open()");
 
 	/* create pipes */
 	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
-		ERR("%s", "error making pipe_cc pipe");
+		ERR("error making pipe_cc pipe");
 
 	/* fork compiler */
 	switch (fork()) {
@@ -40,7 +40,7 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 	case -1:
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
-		ERR("%s", "error forking compiler");
+		ERR("error forking compiler");
 		break;
 
 	/* child */
@@ -50,20 +50,20 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 		dup2(pipe_cc[0], STDIN_FILENO);
 		execvp(cc_args[0], cc_args);
 		/* execvp() should never return */
-		ERR("%s", "error forking compiler");
+		ERR("error forking compiler");
 		break;
 
 	/* parent */
 	default:
 		close(pipe_cc[0]);
 		if (write(pipe_cc[1], src, len) == -1)
-			ERR("%s", "error writing to pipe_cc[1]");
+			ERR("error writing to pipe_cc[1]");
 		close(pipe_cc[1]);
 		wait(&status);
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			if (show_errors)
-				WARNX("%s", "compiler returned non-zero exit code");
+				WARNX("compiler returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}
@@ -72,7 +72,7 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 	switch (fork()) {
 	/* error */
 	case -1:
-		ERR("%s", "error forking executable");
+		ERR("error forking executable");
 		break;
 
 	/* child */
@@ -80,7 +80,7 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 		reset_handlers();
 		execve("/tmp/cepl_program", exec_args, environ);
 		/* execve() should never return */
-		ERR("%s", "error forking executable");
+		ERR("error forking executable");
 		break;
 
 	/* parent */
@@ -88,11 +88,11 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 		close(null_fd);
 		wait(&status);
 		if (unlink("/tmp/cepl_program") == -1)
-			WARN("%s", "unable to remove /tmp/cepl_program");
+			WARN("unable to remove /tmp/cepl_program");
 		/* convert 255 to -1 since WEXITSTATUS() only returns the low-order 8 bits */
 		if (WIFEXITED(status) && WEXITSTATUS(status)) {
 			if (show_errors)
-				WARNX("%s", "executable returned non-zero exit code");
+				WARNX("executable returned non-zero exit code");
 			return (WEXITSTATUS(status) != 0xff) ? WEXITSTATUS(status) : -1;
 		}
 	}

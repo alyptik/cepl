@@ -196,7 +196,7 @@ void write_files(struct program *prog)
 		if ((ret = write(out_fd, prog->src[1].total.buf + buf_pos, buf_len - buf_pos)) < 0) {
 			if (errno == EINTR || errno == EAGAIN)
 				continue;
-			WARN("%s", "error writing to output fd");
+			WARN("error writing to output fd");
 			break;
 		}
 		/* break on EOF */
@@ -269,7 +269,7 @@ void init_buffers(struct program *prog)
 		if (!prog->src[i].funcs.buf || !prog->src[i].body.buf || !prog->src[i].total.buf) {
 			free_buffers(prog);
 			cleanup(prog);
-			ERR("%s", "prog[2] calloc()");
+			ERR("prog[2] calloc()");
 		}
 	}
 	/* no memcpy for prgm[0].funcs */
@@ -338,7 +338,7 @@ void build_body(struct program *prog)
 {
 	/* sanity check */
 	if (!prog || !prog->cur_line) {
-		WARNX("%s", "NULL pointer passed to build_body()");
+		WARNX("NULL pointer passed to build_body()");
 		return;
 	}
 	for (size_t i = 0; i < 2; i++) {
@@ -354,7 +354,7 @@ void build_funcs(struct program *prog)
 {
 	/* sanity check */
 	if (!prog || !prog->cur_line) {
-		WARNX("%s", "NULL pointer passed to build_funcs()");
+		WARNX("NULL pointer passed to build_funcs()");
 		return;
 	}
 	for (size_t i = 0; i < 2; i++) {
@@ -370,7 +370,7 @@ void build_final(struct program *prog, char **argv)
 {
 	/* sanity check */
 	if (!prog || !argv) {
-		WARNX("%s", "NULL pointer passed to build_final()");
+		WARNX("NULL pointer passed to build_final()");
 		return;
 	}
 	/* finish building current iteration of source code */

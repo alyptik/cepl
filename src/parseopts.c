@@ -84,14 +84,14 @@ static inline void copy_libs(struct program *prog)
 	append_str(&prog->lib_list, buf, 0);
 	append_str(&prog->cc_list, optarg, 2);
 	if (!prog->cc_list.list[prog->cc_list.cnt - 1])
-		ERRX("%s", "null cc_list member passed to memcpy()");
+		ERRX("null cc_list member passed to memcpy()");
 	memcpy(prog->cc_list.list[prog->cc_list.cnt - 1], "-l", 2);
 }
 
 static inline void copy_eval_code(struct program *prog)
 {
 	if (strlen(optarg) > sizeof prog->eval_arg)
-		ERRX("%s", "eval string too long");
+		ERRX("eval string too long");
 	strmv(0, prog->eval_arg, optarg);
 	prog->state_flags |= EVAL_FLAG;
 }
@@ -118,7 +118,7 @@ static inline void copy_std(struct program *prog)
 static inline void copy_out_file(struct program *prog, char **out_name)
 {
 	if (*out_name)
-		ERRX("%s", "too many output files specified");
+		ERRX("too many output files specified");
 	*out_name = optarg;
 	prog->state_flags |= OUT_FLAG;
 }
@@ -244,7 +244,7 @@ void read_syms(struct str_list *tokens, char const *elf_file)
 
 	/* coordinate API and lib versions */
 	if (elf_version(EV_CURRENT) == EV_NONE)
-		ERR("%s", "libelf out of date");
+		ERR("libelf out of date");
 	elf_fd = open(elf_file, O_RDONLY);
 	elf = elf_begin(elf_fd, ELF_C_READ, NULL);
 

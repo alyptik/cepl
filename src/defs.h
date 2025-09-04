@@ -177,7 +177,7 @@ static inline void reset_handlers(void)
 static inline void xfopen(FILE **file, char const *path, char const *fmode)
 {
 	if (!(*file = fopen(path, fmode)))
-		ERR("%s", "xfopen()");
+		ERR("xfopen()");
 }
 
 /* `fclose()` wrapper */
@@ -186,7 +186,7 @@ static inline void xfclose(FILE **out_file)
 	if (!out_file || !*out_file)
 		return;
 	if (fclose(*out_file) == EOF)
-		WARN("%s", "xfclose()");
+		WARN("xfclose()");
 }
 
 /* recursive free */
@@ -206,7 +206,7 @@ static inline ptrdiff_t free_argv(char ***argv)
 static inline void strmv(ptrdiff_t off, char *dest, char const *src) {
 	/* sanity checks */
 	if (!dest || !src)
-		ERRX("%s", "NULL pointer passed to strmv()");
+		ERRX("NULL pointer passed to strmv()");
 	ptrdiff_t src_sz;
 	char *dest_ptr = dest;
 	char const *src_end = src;
@@ -218,10 +218,10 @@ static inline void strmv(ptrdiff_t off, char *dest, char const *src) {
 	else
 		dest_ptr = dest + off;
 	if (!src_end || !dest_ptr)
-		ERRX("%s", "strmv() string not null-terminated");
+		ERRX("strmv() string not null-terminated");
 	src_sz = src_end - src;
 	if (src_sz < 0)
-		ERRX("%s", "strmv() src_end - src < 0");
+		ERRX("strmv() src_end - src < 0");
 	memcpy(dest_ptr, src, (size_t)src_sz + 1);
 }
 
@@ -263,7 +263,7 @@ static inline void append_str(struct str_list *list_struct, char const *string, 
 {
 	/* sanity checks */
 	if (!list_struct->list)
-		ERRX("%s", "NULL list_struct->list passed to append_str()");
+		ERRX("NULL list_struct->list passed to append_str()");
 	/* realloc if cnt reaches current size */
 	if (++list_struct->cnt >= list_struct->max) {
 		list_struct->max *= 2;

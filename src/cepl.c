@@ -172,7 +172,7 @@ static void reg_handlers(void)
 			ERR("%s %s", sigs[i].sig_name, "sigaction()");
 	}
 	if (at_quick_exit(&free_bufs))
-		WARN("%s", "at_quick_exit(&free_bufs)");
+		WARN("at_quick_exit(&free_bufs)");
 }
 
 /* reset readline after signal */
@@ -319,7 +319,7 @@ static inline void build_hist_name(struct program *prog)
 
 	/* prepend "~/" to history fihist_lename ("~/.cepl_history" by default) */
 	if (!(prog->hist_file = calloc(1, buf_sz)))
-		ERR("%s", "program_state.hist_file malloc()");
+		ERR("program_state.hist_file malloc()");
 	/* check if home_env is non-NULL */
 	if (home_env && strcmp(home_env, "")) {
 		hist_len = strlen(home_env);
