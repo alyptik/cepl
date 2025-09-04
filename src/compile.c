@@ -16,7 +16,7 @@ extern char **environ;
 
 int compile(char const *src, char *const cc_args[], bool show_errors)
 {
-	int null_fd, status, prog_fd;
+	int null_fd, status;
 	int pipe_cc[2];
 	size_t len = strlen(src);
 	char *exec_args[] = {"/tmp/cepl_program", NULL};
