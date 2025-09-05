@@ -398,9 +398,6 @@ int main(int argc, char **argv)
 		char *stripped = program_state.cur_line;
 		if (!*program_state.cur_line)
 			continue;
-		stripped += strspn(stripped, " \t;");
-		if (!*stripped && *program_state.cur_line != ';')
-			continue;
 		/* set io streams to non-buffering */
 		tty_break(&program_state);
 		/* re-enable completion if disabled */
