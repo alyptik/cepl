@@ -57,7 +57,7 @@ which are then added to readline completion.
 
 #### Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
 
-	;f[unction]		Line is defined outside of main() (e.g. ;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))
+	;f[unction]		Line is defined outside of main() (e.g. ;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))
 	;h[elp]			Show help
 	;m[an]			Show manpage for argument (e.g. ;m strpbrk)
 	;q[uit]			Exit CEPL
