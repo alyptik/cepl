@@ -348,14 +348,17 @@ static inline void build_hist_name(struct program *prog)
 static inline void show_man(const char *query)
 {
 	int ret;
+	char *split;
 	struct str_list man_args;
+	init_str_list(&man_args, "man");
 	/* skip ;m[an] */
 	query = strpbrk(query, " \t");
-	/* skip whitespace */
-	for (; *query == ' ' || *query == '\t'; query++);
-	/* set man argv */
-	init_str_list(&man_args, "man");
-	append_str(&man_args, query, 0);
+	xmalloc(&split, strlen(query) +1, "split");
+	strmv(0, split, query);
+	/* split query on whitespace */
+	for (char *arg = strtok(split, " \t"); arg; arg = strtok(NULL, " \t"))
+		append_str(&man_args, arg, 0);
+	free(split);
 	/* show man <query> */
 	switch (fork()) {
 	case -1:
