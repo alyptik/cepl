@@ -1,4 +1,4 @@
-.TH CEPL: "1" "July 2024" "cepl-23\&.0\&.0" "User Commands"
+.TH CEPL: "1" "July 2024" "cepl-24\&.0\&.0" "User Commands"
 
 .SH "NAME"
 cepl \- a C and C++ REPL
@@ -74,9 +74,11 @@ Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is opti
 .fi
 
 .HP
+\fB;f[unction]\fR	Line is defined outside of main() (e\&.g\&. \fB;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8))\fR)
+.HP
 \fB;h[elp]\fR		Show help
 .HP
-\fB;m[acro]\fR		Define a macro/function (e\&.g\&. \fB;f void bork(void) { puts("wark"); }\fR)
+\fB;m[an]\fR		Show manpage for argument (e\&.g\&. \fB;m strpbrk\fR)
 .HP
 \fB;q[uit]\fR		Exit CEPL
 .HP

@@ -52,7 +52,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-23.0.0"
+#define VERSION_STRING	"cepl-24.0.0"
 #define USAGE_STRING \
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
@@ -69,8 +69,9 @@
 	"-I\t\t\tSearch directory for header files (flag can be repeated)\n\t" \
 	"-L\t\t\tSearch directory for libraries (flag can be repeated)\n" \
 	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t" \
+	";f[unction]\t\tLine is defined outside of main() (e.g. ;m #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))\n\t" \
 	";h[elp]\t\t\tShow help\n\t" \
-	";m[acro]\t\tLine is defined outside of main() (e.g. \";m void bork(void) { puts(\"wark\"); }\")\n\t" \
+	";m[an]\t\t\tShow manpage for argument (e.g. ;m strpbrk\n\t" \
 	";q[uit]\t\t\tExit CEPL\n\t" \
 	";r[eset]\t\tReset CEPL to its initial program state\n\t" \
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)" \
