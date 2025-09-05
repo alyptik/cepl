@@ -195,7 +195,7 @@ static inline void reset_readline(void)
 	rl_initialize();
 }
 
-static inline void parse_macro(struct program *prog)
+static inline void parse_function(struct program *prog)
 {
 	char *saved, *tmp_buf;
 	/* remove trailing ' ' and '\t' */
@@ -345,6 +345,29 @@ static inline void build_hist_name(struct program *prog)
 	}
 }
 
+static inline void show_man(const char *query)
+{
+	int ret;
+	struct str_list man_args;
+	/* skip ;m[an] */
+	query = strpbrk(query, " \t");
+	/* skip whitespace */
+	for (; *query == ' ' || *query == '\t'; query++);
+	/* set man argv */
+	init_str_list(&man_args, "man");
+	append_str(&man_args, query, 0);
+	/* show man <query> */
+	switch (fork()) {
+	case -1:
+		ERR("show_man() fork()");
+	case 0:
+		execvp("man", man_args.list);
+		ERR("show_man() execvp()");
+	default:
+		wait(&ret);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	/*
@@ -416,6 +439,11 @@ int main(int argc, char **argv)
 		switch (stripped[0]) {
 		case ';':
 			switch(stripped[1]) {
+			/* show documentation about argument */
+			case 'm':
+				show_man(stripped);
+				break;
+
 			/* pop last history statement */
 			case 'u':
 				undo_last_line(&program_state);
@@ -429,8 +457,8 @@ int main(int argc, char **argv)
 				break;
 
 			/* define an include/macro/function */
-			case 'm':
-				parse_macro(&program_state);
+			case 'f':
+				parse_function(&program_state);
 				break;
 
 			/* show usage information */
