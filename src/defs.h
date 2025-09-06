@@ -77,15 +77,15 @@
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)"
 
 /* state flags */
-#define CXX_FLAG		0x01u
-#define EVAL_FLAG		0x02u
-#define EXEC_FLAG		0x04u
-#define HIST_FLAG		0x08u
-#define INPUT_FLAG		0x10u
-#define OUT_FLAG		0x20u
-#define PARSE_FLAG		0x40u
-#define STD_FLAG		0x80u
-#define WARN_FLAG		0x100u
+#define CXX_FLAG	0x01u
+#define EVAL_FLAG	0x02u
+#define EXEC_FLAG	0x04u
+#define HIST_FLAG	0x08u
+#define INPUT_FLAG	0x10u
+#define OUT_FLAG	0x20u
+#define PARSE_FLAG	0x40u
+#define STD_FLAG	0x80u
+#define WARN_FLAG	0x100u
 
 /* page size for buffer count */
 #define PAGE_SIZE	0x1000u
