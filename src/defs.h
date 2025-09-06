@@ -53,28 +53,28 @@
 
 /* global version and usage strings */
 #define VERSION_STRING	"cepl-26.0.0"
-#define USAGE_STRING \
-	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] " \
-	"[-I<include directory>] [-L<library directory>] [-s<standard>] " \
-	"[-o<out.c>]\n\t" \
-	"-c, --compiler\t\tSpecify alternate compiler\n\t" \
-	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t" \
-	"-h, --help\t\tShow help/usage information\n\t" \
-	"-o, --output\t\tName of the file to output C/C++ source code to\n\t" \
-	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t" \
-	"-s, --std\t\tSpecify which C/C++ standard to use\n\t" \
-	"-v, --version\t\tShow version information\n\t" \
-	"-w, --warnings\t\tCompile with \"-Wall -Wextra -pedantic\" flags\n\t" \
-	"-l\t\t\tLink against specified library (flag can be repeated)\n\t" \
-	"-I\t\t\tSearch directory for header files (flag can be repeated)\n\t" \
-	"-L\t\t\tSearch directory for libraries (flag can be repeated)\n" \
-	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t" \
-	";f[unction]\t\tLine is defined outside of main() (e.g. ;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))\n\t" \
-	";h[elp]\t\t\tShow help\n\t" \
-	";m[an]\t\t\tShow manpage for argument (e.g. ;m strpbrk\n\t" \
-	";q[uit]\t\t\tExit CEPL\n\t" \
-	";r[eset]\t\tReset CEPL to its initial program state\n\t" \
-	";u[ndo]\t\t\tIncremental pop_history (can be repeated)" \
+#define USAGE_STRING															\
+	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] "									\
+	"[-I<include directory>] [-L<library directory>] [-s<standard>] "								\
+	"[-o<out.c>]\n\t"														\
+	"-c, --compiler\t\tSpecify alternate compiler\n\t"										\
+	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t"								\
+	"-h, --help\t\tShow help/usage information\n\t"											\
+	"-o, --output\t\tName of the file to output C/C++ source code to\n\t"								\
+	"-p, --parse\t\tDisable addition of dynamic library symbols to readline completion\n\t"						\
+	"-s, --std\t\tSpecify which C/C++ standard to use\n\t"										\
+	"-v, --version\t\tShow version information\n\t"											\
+	"-w, --warnings\t\tCompile with \"-Wall -Wextra -pedantic\" flags\n\t"								\
+	"-l\t\t\tLink against specified library (flag can be repeated)\n\t"								\
+	"-I\t\t\tSearch directory for header files (flag can be repeated)\n\t"								\
+	"-L\t\t\tSearch directory for libraries (flag can be repeated)\n"								\
+	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t"						\
+	";f[unction]\t\tLine is defined outside of main() (e.g. ;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))\n\t"	\
+	";h[elp]\t\t\tShow help\n\t"													\
+	";m[an]\t\t\tShow manpage for argument (e.g. ;m strpbrk\n\t"									\
+	";q[uit]\t\t\tExit CEPL\n\t"													\
+	";r[eset]\t\tReset CEPL to its initial program state\n\t"									\
+	";u[ndo]\t\t\tIncremental pop_history (can be repeated)"
 
 /* state flags */
 #define CXX_FLAG		0x01u
