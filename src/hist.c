@@ -150,7 +150,7 @@ char const *prog_end =
 	"}\n";
 
 static const char *asm_arg_list[] = {
-	"-g3", "-O0",
+	"-g0", "-O0",
 	"-pipe", "-S",
 	NULL
 };
