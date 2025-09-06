@@ -202,14 +202,18 @@ static inline void write_asm(struct program *prog)
 
 	/* fork compiler */
 	switch (fork()) {
+	/* error */
 	case -1:
 		close(pipe_cc[0]);
 		close(pipe_cc[1]);
 		ERR("fork()");
+	/* child */
 	case 0:
+		close(pipe_cc[1]);
 		dup2(pipe_cc[0], STDIN_FILENO);
 		execvp(asm_args.list[0], asm_args.list);
 		ERR("execvp()");
+	/* parent */
 	default:
 		close(pipe_cc[0]);
 		if (write(pipe_cc[1], prog->src[1].total.buf, strlen(prog->src[1].total.buf)) == -1)
