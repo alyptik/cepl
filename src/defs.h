@@ -68,7 +68,7 @@
 	"-l\t\t\tLink against specified library (flag can be repeated)\n\t"								\
 	"-I\t\t\tSearch directory for header files (flag can be repeated)\n\t"								\
 	"-L\t\t\tSearch directory for libraries (flag can be repeated)\n"								\
-	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional).\n\t"						\
+	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional)\n\t"						\
 	";f[unction]\t\tLine is defined outside of main() (e.g. ;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))\n\t"	\
 	";h[elp]\t\t\tShow help\n\t"													\
 	";m[an]\t\t\tShow manpage for argument (e.g. ;m strpbrk\n\t"									\
@@ -77,15 +77,16 @@
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)"
 
 /* state flags */
-#define CXX_FLAG	0x01u
-#define EVAL_FLAG	0x02u
-#define EXEC_FLAG	0x04u
-#define HIST_FLAG	0x08u
-#define INPUT_FLAG	0x10u
-#define OUT_FLAG	0x20u
-#define PARSE_FLAG	0x40u
-#define STD_FLAG	0x80u
-#define WARN_FLAG	0x100u
+#define ASM_FLAG	0x01u
+#define CXX_FLAG	0x02u
+#define EVAL_FLAG	0x04u
+#define EXEC_FLAG	0x08u
+#define HIST_FLAG	0x10u
+#define INPUT_FLAG	0x20u
+#define OUT_FLAG	0x40u
+#define PARSE_FLAG	0x80u
+#define STD_FLAG	0x100u
+#define WARN_FLAG	0x200u
 
 /* page size for buffer count */
 #define PAGE_SIZE	0x1000u

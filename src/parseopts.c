@@ -17,6 +17,7 @@
 
 /* globals */
 static struct option long_opts[] = {
+	{"asm", required_argument, 0, 'a'},
 	{"compiler", required_argument, 0, 'c'},
 	{"eval", required_argument, 0, 'e'},
 	{"help", no_argument, 0, 'h'},
@@ -134,6 +135,25 @@ static inline void set_out_file(struct program *prog, char *out_name)
 		if (prog->ofile)
 			xfclose(&prog->ofile);
 		xfopen(&prog->ofile, prog->out_filename, "wb");
+	}
+}
+
+static inline void copy_asm_file(struct program *prog, char **asm_name)
+{
+	if (*asm_name)
+		ERRX("too many assembly files specified");
+	*asm_name = optarg;
+	prog->state_flags |= ASM_FLAG;
+}
+
+static inline void set_asm_file(struct program *prog, char *asm_name)
+{
+	/* assembly file flag */
+	if (prog->state_flags & ASM_FLAG) {
+		if (asm_name && !prog->asm_filename) {
+			xcalloc(&prog->asm_filename, 1, strlen(asm_name) + 1, "prog->asm_filename calloc()");
+			strmv(0, prog->asm_filename, asm_name);
+		}
 	}
 }
 
@@ -313,6 +333,10 @@ char **parse_opts(struct program *prog, int argc, char **argv, char const *optst
 
 	while ((opt = getopt_long(argc, argv, optstring, long_opts, &option_index)) != -1) {
 		switch (opt) {
+		/* output assembly */
+		case 'a':
+			copy_asm_file(prog, &asm_name);
+			break;
 		/* specify compiler */
 		case 'c':
 			copy_compiler(prog);
@@ -377,6 +401,7 @@ char **parse_opts(struct program *prog, int argc, char **argv, char const *optst
 	}
 
 	set_out_file(prog, out_name);
+	set_asm_file(prog, asm_name);
 	/* c++ compiler */
 	if (prog->state_flags & CXX_FLAG) {
 		if (!(prog->state_flags & STD_FLAG)) {

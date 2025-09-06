@@ -378,7 +378,7 @@ int main(int argc, char **argv)
 	 * is truncated for interactive printing)
 	 */
 	static struct program program_state;
-	char const *const optstring = "hpvwc:e:o:l:s:I:L:";
+	char const *const optstring = "hpvwa:c:e:o:l:s:I:L:";
 
 	/* set global pointer for signal handler */
 	prog_ptr = &program_state;

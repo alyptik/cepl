@@ -149,6 +149,12 @@ char const *prog_end =
 		"\n\treturn 0;\n"
 	"}\n";
 
+static const char *asm_arg_list[] = {
+	"-g3", "-O0",
+	"-pipe", "-S",
+	NULL
+};
+
 void cleanup(struct program *prog)
 {
 	/* avoid segfault when stdin is not a tty */
@@ -171,6 +177,48 @@ void cleanup(struct program *prog)
 		printf("\n%s\n\n", "Terminating program.");
 }
 
+static inline void write_asm(struct program *prog)
+{
+	int status;
+	int pipe_cc[2];
+	struct str_list asm_args;
+
+	/* build compiler arg list */
+	init_str_list(&asm_args, prog->cc_list.list[0]);
+	for (const char **p = asm_arg_list; *p; p++)
+		append_str(&asm_args, *p, 0);
+	if (!(prog->state_flags & CXX_FLAG))
+		append_str(&asm_args, "-xc", 0);
+	else
+		append_str(&asm_args, "-xc++", 0);
+	append_str(&asm_args, "-", 0);
+	append_str(&asm_args, prog->asm_filename, 2);
+	asm_args.list[asm_args.cnt - 1][0] = '-';
+	asm_args.list[asm_args.cnt - 1][1] = 'o';
+
+	/* create pipe */
+	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
+		ERR("error making pipe_cc pipe");
+
+	/* fork compiler */
+	switch (fork()) {
+	case -1:
+		close(pipe_cc[0]);
+		close(pipe_cc[1]);
+		ERR("fork()");
+	case 0:
+		dup2(pipe_cc[0], STDIN_FILENO);
+		execvp(asm_args.list[0], asm_args.list);
+		ERR("execvp()");
+	default:
+		close(pipe_cc[0]);
+		if (write(pipe_cc[1], prog->src[1].total.buf, strlen(prog->src[1].total.buf)) == -1)
+			ERR("error writing to pipe_cc[1]");
+		close(pipe_cc[1]);
+		wait(&status);
+	}
+}
+
 void write_files(struct program *prog)
 {
 	int out_fd;
@@ -179,6 +227,10 @@ void write_files(struct program *prog)
 	/* write out history */
 	if (prog->state_flags & HIST_FLAG)
 		write_history(prog->hist_file);
+
+	/* write out assembly */
+	if (prog->state_flags & ASM_FLAG)
+		write_asm(prog);
 
 	/* return early if no file open */
 	if (!(prog->state_flags & OUT_FLAG) || !prog->ofile || !prog->src[1].total.buf)
