@@ -30,7 +30,7 @@ int compile(char const *src, char *const cc_args[], bool show_errors)
 	if ((null_fd = open("/dev/null", O_WRONLY, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)) == -1)
 		ERR("open()");
 
-	/* create pipes */
+	/* create pipe */
 	if (pipe2(pipe_cc, O_CLOEXEC) == -1)
 		ERR("error making pipe_cc pipe");
 

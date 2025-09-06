@@ -221,6 +221,7 @@ static inline void write_asm(struct program *prog)
 		close(pipe_cc[1]);
 		wait(&status);
 	}
+	free_str_list(&asm_args);
 }
 
 void write_files(struct program *prog)
