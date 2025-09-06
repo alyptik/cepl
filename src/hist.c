@@ -95,7 +95,6 @@ char const *cxx_prologue =
 	"#include <cmath>\n"
 	"#include <complex>\n"
 	"#include <condition_variable>\n"
-	"#include <coroutine>\n"
 	"#include <csetjmp>\n"
 	"#include <csignal>\n"
 	"#include <cstdarg>\n"

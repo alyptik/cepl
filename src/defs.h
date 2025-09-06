@@ -52,7 +52,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-26.0.0"
+#define VERSION_STRING	"cepl-27.0.0"
 #define USAGE_STRING															\
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] "									\
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] "								\
