@@ -10,7 +10,7 @@ A readline C and C++ REPL with history, tab-completion, and undo.
 
 ## Usage
 ```bash
-./cepl [-hpvw] [-c<compiler>] [-e<code to evaluate>] [-f<file> ] [-l<library>] [-I<include directory>] [-L<library directory>] [-s<standard>] [-o<out.c>]
+./cepl [-hpvw] [-a<out.s>] [-c<compiler>] [-e<code to evaluate>] [-f<file> ] [-l<library>] [-I<include directory>] [-L<library directory>] [-s<standard>] [-o<out.c>]
 ```
 Run `make` then `./cepl` to start the interactive REPL.
 
@@ -43,19 +43,20 @@ which are then added to readline completion.
 
 #### Command line options:
 
+	-a, --asm			Name of file to output assembly to
 	-c, --compiler		Specify alternate compiler
-	-e, --eval		    Evaluate the following argument as C/C++ code
-	-h, --help		    Show help/usage information
+	-e, --eval			Evaluate the following argument as C/C++ code
+	-h, --help			Show help/usage information
 	-o, --output		Name of the file to output C/C++ code to
-	-p, --parse		    Disable addition of dynamic library symbols to readline completion
-	-s, --std		    Specify which C/C++ standard to use
+	-p, --parse			Disable addition of dynamic library symbols to readline completion
+	-s, --std			Specify which C/C++ standard to use
 	-v, --version		Show version information
 	-w, --warnings		Compile with "-Wall -Wextra -pedantic" flags
-	-l			        Link against specified library (flag can be repeated)
-	-I			        Search directory for header files (flag can be repeated)
-	-L			        Search directory for libraries (flag can be repeated)
+	-l					Link against specified library (flag can be repeated)
+	-I					Search directory for header files (flag can be repeated)
+	-L					Search directory for libraries (flag can be repeated)
 
-#### Lines prefixed with a `;` are interpreted as commands (`[]` text is optional).
+#### Lines prefixed with a `;` are interpreted as commands (`[]` text is optional)
 
 	;f[unction]		Line is defined outside of main() (e.g. ;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))
 	;h[elp]			Show help

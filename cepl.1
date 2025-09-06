@@ -6,10 +6,10 @@ cepl \- a C and C++ REPL
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIcepl\fR [\-hpvw] [\-c\fI<compiler>\fR] [\-e\fI<code to evaluate>\fR] \
-[\-l\fI<library>\fR] [\-I\fI<include directory>\fR] \
-[\-L\fI<library directory>\fR] [\-s\fI<standard>\fR] \
-[\-o\fI<out\&.c>\fR]
+\fIcepl\fR [\-hpvw] [\-a<out.s>] [\-c\fI<compiler>\fR] \
+[\-e\fI<code to evaluate>\fR] [\-l\fI<library>\fR] \
+[\-I\fI<include directory>\fR] [\-L\fI<library directory>\fR] \
+[\-s\fI<standard>\fR] [\-o\fI<out\&.c>\fR]
 .fi
 
 .SH "DESCRIPTION"
@@ -45,6 +45,8 @@ Command line options:
 .fi
 
 .HP
+\fB\-a\fR, \fB\-\-asm\fR		Name of file to output assembly to
+.HP
 \fB\-c\fR, \fB\-\-compiler\fR	Specify alternate compiler
 .HP
 \fB\-e\fR, \fB\-\-eval\fR	Evaluate argument as C/C++ code
@@ -70,7 +72,7 @@ Command line options:
 
 .SS "COMMANDS"
 .sp
-Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is optional)\&.
+Lines prefixed with a \fB;\fR are interpreted as commands (\fB[]\fR text is optional)
 .fi
 
 .HP

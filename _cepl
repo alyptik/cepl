@@ -8,6 +8,7 @@ stds=(${:-c{90,99,11,17,23}} ${:-gnu{90,99,11,17,23}} ${:-c++{98,11,14,17,20,23,
 libs=(${${$(find -L /lib64/ -maxdepth 1 -type f -regex '.*/lib[A-Za-z-]*.so' -printf '%p ')#/lib64/lib}%.so})
 
 _arguments -s \
+	{-a,--asm=}'[Name of file to output assembly to]:file:_files' \
 	{-c,--compiler=}"[Specify alternate compiler]:compiler:($compilers)" \
 	{-e,--eval=}'[Evaluate the following argument as C code]:code:' \
 	{-h,--help}'[Show help/usage information]' \

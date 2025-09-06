@@ -57,6 +57,7 @@
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] "									\
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] "								\
 	"[-o<out.c>]\n\t"														\
+	"-a, --asm\t\tName of file to output assembly to\n\t"										\
 	"-c, --compiler\t\tSpecify alternate compiler\n\t"										\
 	"-e, --eval\t\tEvaluate the following argument as C/C++ code\n\t"								\
 	"-h, --help\t\tShow help/usage information\n\t"											\
