@@ -16,7 +16,6 @@
 
 /* prototypes */
 void cleanup(struct program *prog);
-int write_asm(struct program *prog, char *const *cc_args);
 void write_files(struct program *prog);
 void free_buffers(struct program *prog);
 void init_buffers(struct program *prog);
