@@ -353,7 +353,7 @@ static inline void show_man(const char *query)
 	init_str_list(&man_args, "man");
 	/* skip ;m[an] */
 	query = strpbrk(query, " \t");
-	xmalloc(&split, strlen(query) +1, "split");
+	xmalloc(&split, strlen(query) + 1, "split");
 	strmv(0, split, query);
 	/* split query on whitespace */
 	for (char *arg = strtok(split, " \t"); arg; arg = strtok(NULL, " \t"))
