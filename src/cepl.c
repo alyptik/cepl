@@ -400,7 +400,7 @@ int main(int argc, char **argv)
 	/*
 	 * initialize program_state.src[0].total
 	 * and program_state.src[1].total then
-	 * print version
+	 * print version if interactive
 	 */
 	build_final(&program_state, argv);
 	if (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG))
@@ -410,8 +410,8 @@ int main(int argc, char **argv)
 
 	/*
 	 * the siglongjmp() here is needed in order to handle using
-	 * ^C to both both clear the current command-line and also
-	 * to abort running code early
+	 * ^C to both clear the current command-line and to abort
+	 * running code early
 	 */
 	if (sigsetjmp(jmp_env, 1)) {
 		reset_readline();
