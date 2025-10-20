@@ -26,6 +26,18 @@
 #define arr_len(arr)		((sizeof (arr)) / (sizeof *(arr)))
 #define printe(fmt, ...)	fprintf(stderr, "\033[92m" fmt "\033[00m", __VA_ARGS__)
 
+/* ANSI color codes for prompts */
+#define COLOR_RESET		"\033[0m"
+#define COLOR_RED		"\033[31m"
+#define COLOR_GREEN		"\033[32m"
+#define COLOR_YELLOW		"\033[33m"
+#define COLOR_BLUE		"\033[34m"
+#define COLOR_MAGENTA		"\033[35m"
+#define COLOR_CYAN		"\033[36m"
+#define COLOR_WHITE		"\033[37m"
+#define COLOR_BOLD_GREEN	"\033[1;32m"
+#define COLOR_BOLD_CYAN		"\033[1;36m"
+
 /* `malloc()` wrapper */
 #define xmalloc(ptr, sz, msg)					\
 	({							\
@@ -52,7 +64,7 @@
 	})
 
 /* global version and usage strings */
-#define VERSION_STRING	"cepl-27.0.1"
+#define VERSION_STRING	"cepl-28.0.0"
 #define USAGE_STRING															\
 	"[-hpvw] [-c<compiler>] [-e<code to evaluate>] [-l<library>] "									\
 	"[-I<include directory>] [-L<library directory>] [-s<standard>] "								\

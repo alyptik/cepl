@@ -28,6 +28,16 @@ static struct program *prog_ptr;
 /* string to compile */
 extern char const *prologue, *prog_start, *prog_start_user, *prog_end;
 
+static inline char *get_colored_prompt(struct program *prog)
+{
+	static char prompt[128];
+	char const *mode_str = (prog->state_flags & CXX_FLAG) ? "C++" : "C";
+	/* Create colored prompt: CYAN cepl: YELLOW C++/C GREEN > RESET */
+	snprintf(prompt, sizeof(prompt), "%scepl:%s%s%s>%s ",
+	         COLOR_BOLD_CYAN, COLOR_YELLOW, mode_str, COLOR_BOLD_GREEN, COLOR_RESET);
+	return prompt;
+}
+
 static inline char *read_line(struct program *prog)
 {
 	/* false while waiting for input */
@@ -35,9 +45,9 @@ static inline char *read_line(struct program *prog)
 	/* return early if executed with `-e` argument */
 	if (prog->state_flags & EVAL_FLAG)
 		return prog->cur_line = prog->eval_arg;
-	/* use an empty prompt if stdin is a pipe */
+	/* use colored prompt for tty, empty prompt if stdin is a pipe */
 	if (isatty(STDIN_FILENO))
-		return prog->cur_line = readline(">>> ");
+		return prog->cur_line = readline(get_colored_prompt(prog));
 	/* redirect stdout to /dev/null */
 	FILE *bitbucket;
 	xfopen(&bitbucket, "/dev/null", "r+b");
