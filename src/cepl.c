@@ -343,16 +343,8 @@ static inline void build_hist_name(struct program *prog)
 	prog->state_flags |= HIST_FLAG;
 	/* read program_state.hist_file if size is non-zero */
 	stat(prog->hist_file, &hist_stat);
-	if (hist_stat.st_size > 0) {
-		if (read_history(prog->hist_file)) {
-			char hist_pre[] = "error reading history from ";
-			char hist_full[sizeof hist_pre + strlen(prog->hist_file)];
-			char *hist_ptr = hist_full;
-			strmv(0, hist_ptr, hist_pre);
-			strmv(sizeof hist_pre - 1, hist_ptr, prog->hist_file);
-			WARN("%s", hist_ptr);
-		}
-	}
+	if (hist_stat.st_size > 0)
+		read_history(prog->hist_file);
 }
 
 static inline void show_man(const char *query)
