@@ -318,7 +318,6 @@ static inline void build_hist_name(struct program *prog)
 	struct stat hist_stat;
 	size_t buf_sz = sizeof hist_name, hist_len = 0;
 	char const *const home_env = getenv("HOME");
-	FILE *make_hist = NULL;
 
 	/* return early if $HOME is unset or zero-length */
 	if (!home_env || !strcmp(home_env, ""))
