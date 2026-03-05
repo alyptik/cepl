@@ -423,7 +423,7 @@ int main(int argc, char **argv)
 	/* loop readline() until EOF is read */
 	while (read_line(&program_state)) {
 		/* if all whitespace (non-state commands) or empty read a new line */
-		char *stripped = program_state.cur_line;
+		char *stripped;
 		if (!*program_state.cur_line)
 			continue;
 		/* set io streams to non-buffering */
