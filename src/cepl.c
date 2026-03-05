@@ -369,6 +369,7 @@ static inline void show_man(const char *query)
 		ERR("show_man() execvp()");
 	default:
 		wait(&ret);
+		free_str_list(&man_args);
 	}
 }
 
