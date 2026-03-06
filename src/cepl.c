@@ -402,11 +402,14 @@ int main(int argc, char **argv)
 	/*
 	 * initialize program_state.src[0].total
 	 * and program_state.src[1].total then
-	 * print version if interactive
+	 * print version and help if interactive
 	 */
 	build_final(&program_state, argv);
 	if (isatty(STDIN_FILENO) && !(program_state.state_flags & EVAL_FLAG))
+	{
 		fprintf(stdout, "%s\n", VERSION_STRING);
+		fprintf(stdout, "%s\n", REPL_HELP);
+	}
 	reg_handlers();
 	rl_set_signals();
 

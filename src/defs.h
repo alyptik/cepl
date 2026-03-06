@@ -88,6 +88,14 @@
 	";q[uit]\t\t\tExit CEPL\n\t"													\
 	";r[eset]\t\tReset CEPL to its initial program state\n\t"									\
 	";u[ndo]\t\t\tIncremental pop_history (can be repeated)"
+#define REPL_HELP															\
+	"Lines prefixed with a \";\" are interpreted as commands ([] text is optional)\n\t"						\
+	";f[unction]\t\tLine is defined outside of main() (e.g. ;f #define SWAP2(X) ((((X) >> 8) & 0xff) | (((X) & 0xff) << 8)))\n\t"	\
+	";h[elp]\t\t\tShow help\n\t"													\
+	";m[an]\t\t\tShow manpage for argument (e.g. ;m strpbrk\n\t"									\
+	";q[uit]\t\t\tExit CEPL\n\t"													\
+	";r[eset]\t\tReset CEPL to its initial program state\n\t"									\
+	";u[ndo]\t\t\tIncremental pop_history (can be repeated)"
 
 /* state flags */
 #define ASM_FLAG	0x01u
