@@ -21,13 +21,12 @@ char *comp_arg_list[] = {
 	"uint32_t", "uint64_t", "char16_t", "char32_t", "wchar_t", "alignas",
 	"alignof", "_Atomic", "_Complex", "_Imaginary", "_Generic", "_Noreturn",
 	"_Static_assert", "_Thread_local", "#pragma", "#include", "#define",
-	"#if", "#ifdef", "#else", "#endif", "__VA_ARGS__", "__asm__(",
-	"__attribute__(", "malloc(", "calloc(", "free(", "memcpy(",
+	"#if", "#ifdef", "#else", "#endif", "__VA_ARGS__", "__VA_OPT__(",
+	"__asm__(", "__attribute__(", "malloc(", "calloc(", "free(", "memcpy(",
 	"memset(", "memcmp(", "fread(", "fwrite(", "strcat(", "strtok(",
 	"strcpy(", "strlen(", "puts(", "system(", "fopen(", "fclose(",
-	"sprintf(", "printf(", "scanf(", ";att", ";help", ";intel",
-	";macro", ";output", ";parse", ";quit", ";reset",
-	";tracking", ";undo", ";warnings", "typeof(", NULL
+	"sprintf(", "printf(", "scanf(", ";function", ";help", ";man",
+	";quit", ";reset", ";undo", "typeof(", NULL
 };
 /* global completion list struct */
 struct str_list comp_list;
